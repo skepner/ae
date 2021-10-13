@@ -35,12 +35,18 @@ subproject('pybind11')
 
 test_basic = executable('test-basic', 'cc/test/basic.cc',
                  include_directories : include_directories('./cc'),
-                 dependencies : [dependency('fmt'), dependency('xlnt'), dependency('simdjson'), dependency('range-v3'),
-                                 lexy
-                                ],
+                 dependencies : [dependency('fmt'), dependency('xlnt'), dependency('simdjson'), dependency('range-v3'), lexy],
                  install : true)
 
 test('ae test basic', test_basic)
+
+test_virus_name = executable('test-virus-name', 'cc/test/virus-name.cc',
+                             'cc/virus/name-parse.cc',
+                 include_directories : include_directories('./cc'),
+                 dependencies : [dependency('fmt'), lexy],
+                 install : true)
+
+test('ae test virus name parsing', test_virus_name)
 
 # ----------------------------------------------------------------------
 # python module
