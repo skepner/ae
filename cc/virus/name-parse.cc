@@ -6,6 +6,7 @@
 #include "virus/name-parse.hh"
 #include "ext/fmt.hh"
 #include "ext/lexy.hh"
+#include "locdb/locdb.hh"
 
 // ======================================================================
 
@@ -222,8 +223,12 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
         lexy::trace<grammar::parts>(stderr, lexy::string_input{source});
     const auto result = lexy::parse<grammar::parts>(lexy::string_input{source}, lexy_ext::report_error);
     fmt::print("    {}\n", result.value());
-    if (types_match(result.value(), parts_t{part_t::subtype, part_t::letters, part_t::letter_mixed, part_t::digits}))
-        fmt::print("  A/LOC/ISO/YEAR\n");
+    const auto& locdb = ae::locationdb::get();
+    const auto parts = result.value();
+    if (types_match(parts, parts_t{part_t::subtype, part_t::letters, part_t::letter_mixed, part_t::digits}) || types_match(parts, parts_t{part_t::subtype, part_t::letters, part_t::digits, part_t::digits})) {
+        const auto new_loc = locdb.find(parts[1].head);
+        fmt::print("  A/LOC/ISO/YEAR  \"{}\" -> \"{}\"\n", parts[1].head, new_loc);
+    }
     return {};
 }
 

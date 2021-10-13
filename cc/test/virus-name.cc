@@ -2,7 +2,6 @@
 
 #include "ext/fmt.hh"
 #include "virus/name-parse.hh"
-#include "locdb/locdb.hh"
 
 static void virus_name_parsing_test();
 
@@ -10,7 +9,6 @@ static void virus_name_parsing_test();
 
 int main()
 {
-    const auto& locdb = ae::locationdb::get();
     virus_name_parsing_test();
     return 0;
 }
@@ -47,6 +45,8 @@ void virus_name_parsing_test()
 
         TestData{"A/SOUTH AFRICA/19/16",                                     {}}, // to_compare_t{A,              H,            "SINGAPORE", "INFIMH-16-0019",   "2016", R, P, E}},
         TestData{"A / SOUTH AFRICA/19/16",                                     {}}, // to_compare_t{A,              H,            "SINGAPORE", "INFIMH-16-0019",   "2016", R, P, E}},
+        TestData{"A/AINWAZEIN/19/16",                                     {}}, // to_compare_t{A,              H,            "SINGAPORE", "INFIMH-16-0019",   "2016", R, P, E}},
+        TestData{"A/广西南宁/19/16",                                     {}}, // to_compare_t{A,              H,            "SINGAPORE", "INFIMH-16-0019",   "2016", R, P, E}},
         // TestData{"A/BRISBANE/01/2018  NYMC-X-311 (18/160)",                            {}}, // to_compare_t{A,              H,            "BRISBANE", "1", "2018", Reassortant{"NYMC-311"}, P, E}}, // "(18/160)" removed by check_nibsc_extra
         // TestData{"A/Snowy Sheathbill/Antarctica/2899/2014",                            {}}, // to_compare_t{A,              hst{"SNOWY SHEATHBILL"}, "ANTARCTICA", "2899", "2014", R, P, E}},
         // TestData{"A/wigeon/Italy/6127-23/2007",                                        {}}, // to_compare_t{A,              hst{"WIGEON"}, "ITALY", "6127-23", "2007", R, P, E}},
