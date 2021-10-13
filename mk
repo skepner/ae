@@ -16,6 +16,8 @@ build()
         meson setup "${BUILD_DIR}" -Ddebug=true ${SETUP_ARGS}
         # --buildtype debugoptimized
         # -Dcpp_args=-O3
+    else
+        find_mk_time
     fi
     ${MK_TIME} meson compile -C "${BUILD_DIR}"
     BUILT=YES
@@ -63,6 +65,22 @@ find_compiler()
     if [[ ! -x "${CXX}" ]]; then
         fail "Compiler not found: ${CXX}"
     fi
+}
+
+# ----------------------------------------------------------------------
+
+find_mk_time()
+{
+    case $(uname) in
+        Darwin)
+            MK_TIME=gtime
+            ;;
+        Linux)
+            MK_TIME=time
+            ;;
+        *)
+            fail "Unsupported platform: $(name)"
+    esac
 }
 
 # ----------------------------------------------------------------------

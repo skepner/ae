@@ -40,10 +40,15 @@ ae::locationdb::v1::Db::Db(std::string_view path)
     simdjson::ondemand::parser parser;
     const auto json = simdjson::padded_string::load(path);
     auto doc = parser.iterate(json);
-    auto object = doc.get_object();
-    for(auto field : object) {
+    // auto object = doc.get_object();
+    for(auto field : doc.get_object()) {
         const std::string_view key = field.unescaped_key();
-        fmt::print("{}\n", key);
+        if (key == "  version") {
+            if (const std::string_view ver{field.value()}; ver != "locationdb-v2")
+                throw std::runtime_error{fmt::format("locdb: unsupported version: \"{}\"", ver)};
+        }
+        else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
+            fmt::print(">> locdb: unhandled \"{}\"\n", key);
     }
 
 } // ae::locationdb::v1::Db::Db
