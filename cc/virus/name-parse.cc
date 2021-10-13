@@ -69,6 +69,22 @@ namespace ae::virus::name::inline v1
 
         // ----------------------------------------------------------------------
 
+        struct letter_extra_predicate
+        {
+            constexpr bool operator()(lexy::code_point cp) { //
+                return //
+                    (cp.value() >= 0xC0 && cp.value() <= 0xFF) // Latin-1 Supplement (including math x and math division symbol)
+                    || (cp.value() >= 0x100 && cp.value() <= 0x17F) // Latin Extended-A
+                    // cyrillic ?
+                    || (cp.value() >= 0x4E00 && cp.value() <= 0x9FFF) // CJK Unified Ideographs
+                    ;
+            }
+        };
+
+        static constexpr auto letter_extra = dsl::code_point.if_<letter_extra_predicate>();
+
+        // ----------------------------------------------------------------------
+
         struct subtype_a
         {
             static constexpr auto A = dsl::lit_c<'A'> / dsl::lit_c<'a'>;
@@ -114,10 +130,10 @@ namespace ae::virus::name::inline v1
         struct letters
         {
             static constexpr auto whitespace = dsl::ascii::blank; // auto skip whitespaces
-            static constexpr auto letters_only = dsl::ascii::alpha / dsl::lit_c<'_'> / dsl::hyphen / dsl::ascii::blank;
+            static constexpr auto letters_only = dsl::ascii::alpha / letter_extra / dsl::lit_c<'_'> / dsl::hyphen / dsl::ascii::blank;
             static constexpr auto mixed = letters_only / dsl::ascii::digit / dsl::colon;
 
-            static constexpr auto rule = dsl::peek(dsl::ascii::alpha) >> dsl::capture(dsl::while_(letters_only)) + dsl::opt(dsl::peek_not(dsl::lit_c<'/'>) >> dsl::capture(dsl::while_(mixed)));
+            static constexpr auto rule = dsl::peek(dsl::ascii::alpha / letter_extra) >> dsl::capture(dsl::while_(letters_only)) + dsl::opt(dsl::peek_not(dsl::lit_c<'/'>) >> dsl::capture(dsl::while_(mixed)));
             static constexpr auto value = lexy::callback<part_t>([](auto lex1, auto lex2) {
                 if constexpr (std::is_same_v<decltype(lex2), lexy::nullopt>)
                     return part_t{lex1, part_t::letters};
@@ -220,8 +236,8 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
 {
     fmt::print(">>> parsing \"{}\"\n", source);
     if (tracing == parse_tracing::yes)
-        lexy::trace<grammar::parts>(stderr, lexy::string_input{source});
-    const auto result = lexy::parse<grammar::parts>(lexy::string_input{source}, lexy_ext::report_error);
+        lexy::trace<grammar::parts>(stderr, lexy::string_input<lexy::utf8_encoding>{source});
+    const auto result = lexy::parse<grammar::parts>(lexy::string_input<lexy::utf8_encoding>{source}, lexy_ext::report_error);
     fmt::print("    {}\n", result.value());
     const auto& locdb = ae::locationdb::get();
     const auto parts = result.value();
