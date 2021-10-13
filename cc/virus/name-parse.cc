@@ -9,13 +9,29 @@
 namespace ae::virus::name::inline v1
 {
 
+    template <class T> concept Lexeme = requires(T a) {
+        { a.begin() };
+        { a.end() };
+    };
+
     struct part_t
     {
-        enum type { undef, subtype, rest }; //, alpha, alpha_digits, digits_alpha, digits, other };
+        enum type { undef, subtype, letters, letter_mixed, digits, digit_mixed, rest };
 
-        std::string text{};
+        std::string head{};
+        std::string tail{};
         enum type type { undef };
         int _padding{0}; // avoid warning
+
+        part_t() = default;
+        part_t(const part_t&) = default;
+        part_t(part_t&&) = default;
+        part_t(std::string&& text, enum type typ) : head{std::move(text)}, type{typ} {}
+        part_t(const char* text, enum type typ) : head{text}, type{typ} {}
+        template <Lexeme Lex> part_t(Lex&& lexeme, enum type typ) : head{lexeme.begin(), lexeme.end()}, type{typ} {}
+        template <Lexeme Lex> part_t(Lex&& lex1, Lex&& lex2, enum type typ) : head{lex1.begin(), lex1.end()}, tail{lex2.begin(), lex2.end()}, type{typ} {}
+        part_t& operator=(const part_t&) = default;
+        part_t& operator=(part_t&&) = default;
     };
 
     using parts_t = std::array<part_t, 8>;
@@ -24,15 +40,15 @@ namespace ae::virus::name::inline v1
     {
         namespace dsl = lexy::dsl;
 
-        template <typename T> inline std::string to_string(const lexy::lexeme<T>& lexeme) { return {lexeme.begin(), lexeme.end()}; }
+        // template <typename T> inline std::string to_string(const lexy::lexeme<T>& lexeme) { return {lexeme.begin(), lexeme.end()}; }
 
         // ----------------------------------------------------------------------
 
         struct subtype_a
         {
-            static constexpr auto A = dsl::lit_c<'A'>;
-            static constexpr auto H = dsl::lit_c<'H'>;
-            static constexpr auto N = dsl::lit_c<'N'>;
+            static constexpr auto A = dsl::lit_c<'A'> / dsl::lit_c<'a'>;
+            static constexpr auto H = dsl::lit_c<'H'> / dsl::lit_c<'h'>;
+            static constexpr auto N = dsl::lit_c<'N'> / dsl::lit_c<'n'>;
             static constexpr auto OPEN = dsl::lit_c<'('>;
             static constexpr auto CLOSE = dsl::lit_c<')'>;
 
@@ -40,11 +56,16 @@ namespace ae::virus::name::inline v1
             struct hn
             {
                 static constexpr auto rule = dsl::peek(H) >> dsl::capture(H + dsl::digits<>) + dsl::opt(dsl::peek(N) >> dsl::capture(N + dsl::digits<>));
-                static constexpr auto value = lexy::callback<std::string>( //
-                    [](auto lex1, lexy::nullopt) { return to_string(lex1); },
-                    [](auto lex1, auto lex2) {
+                static constexpr auto value = lexy::callback<std::string>([](auto lex1, auto lex2) {
+                    if constexpr (std::is_same_v<decltype(lex2), lexy::nullopt>)
+                        return std::string{lex1.begin(), lex1.end()};
+                    else
                         return std::string{lex1.begin(), lex2.end()};
-                    });
+                });
+                // [](auto lex1, lexy::nullopt) { return std::string{lex1.begin(), lex1.end()}; },
+                // [](auto lex1, auto lex2) {
+                //     return std::string{lex1.begin(), lex2.end()};
+                // });
             };
 
             // A | AH3 | AH3N2 | A(H3N2) | A(H3)
@@ -60,7 +81,7 @@ namespace ae::virus::name::inline v1
 
         struct subtype_b
         {
-            static constexpr auto B = dsl::lit_c<'B'>;
+            static constexpr auto B = dsl::lit_c<'B'> / dsl::lit_c<'b'>;
 
             static constexpr auto rule = B;
             static constexpr auto value = lexy::callback<part_t>([]() { return part_t{"B", part_t::subtype}; });
@@ -68,10 +89,27 @@ namespace ae::virus::name::inline v1
 
         // ----------------------------------------------------------------------
 
+        // chunk starting with a letter, followed by letters, digits, -, _, :, space
+        struct letters
+        {
+            static constexpr auto letters_only = dsl::ascii::alpha / dsl::lit_c<'_'> / dsl::hyphen / dsl::ascii::blank;
+            static constexpr auto mixed = letters_only / dsl::ascii::digit / dsl::colon;
+
+            static constexpr auto rule = dsl::peek(dsl::ascii::alpha) >> dsl::capture(dsl::while_(letters_only)) + dsl::opt(dsl::peek_not(dsl::lit_c<'/'>) >> dsl::capture(dsl::while_(mixed)));
+            static constexpr auto value = lexy::callback<part_t>([](auto lex1, auto lex2) {
+                if constexpr (std::is_same_v<decltype(lex2), lexy::nullopt>)
+                    return part_t{lex1, part_t::letters};
+                else
+                    return part_t{lex1, lex2, part_t::letter_mixed};
+            });
+        };
+
+        // ----------------------------------------------------------------------
+
         struct rest
         {
             static constexpr auto rule = dsl::capture(dsl::any);
-            static constexpr auto value = lexy::callback<part_t>([](auto lexeme) { return part_t{to_string(lexeme), part_t::rest}; });
+            static constexpr auto value = lexy::callback<part_t>([](auto lexeme) { return part_t{lexeme, part_t::rest}; });
         };
 
         // ----------------------------------------------------------------------
@@ -82,12 +120,16 @@ namespace ae::virus::name::inline v1
             static constexpr auto rule =
                 (dsl::p<subtype_a> | dsl::p<subtype_b>)
                 + dsl::slash
+                + dsl::p<letters>
+                + dsl::slash
+                + dsl::p<letters>
+                + dsl::slash
                 // + dsl::p<tail_parts>
                 + dsl::p<rest>
                 + dsl::eof;
 
-            static constexpr auto value = lexy::callback<parts_t>([](auto subtype, auto rest) {
-                parts_t parts{subtype, rest};
+            static constexpr auto value = lexy::callback<parts_t>([](auto subtype, auto l1, auto l2, auto rest) {
+                parts_t parts{subtype, l1, l2, rest};
                 // std::move(std::begin(rest), std::end(rest), std::next(std::begin(parts)));
                 return parts;
             });
@@ -109,16 +151,14 @@ template <> struct fmt::formatter<enum ae::virus::name::part_t::type> : fmt::for
                 return format_to(ctx.out(), "subtype");
             case part_t::rest:
                 return format_to(ctx.out(), "rest");
-            // case part_t::alpha:
-            //     return format_to(ctx.out(), "alpha");
-            // case part_t::alpha_digits:
-            //     return format_to(ctx.out(), "alpha_digits");
-            // case part_t::digits_alpha:
-            //     return format_to(ctx.out(), "digits_alpha");
-            // case part_t::digits:
-            //     return format_to(ctx.out(), "digits");
-            // case part_t::other:
-            //     return format_to(ctx.out(), "other");
+            case part_t::letters:
+                return format_to(ctx.out(), "letters");
+            case part_t::letter_mixed:
+                return format_to(ctx.out(), "letter_mixed");
+            case part_t::digits:
+                return format_to(ctx.out(), "digits");
+            case part_t::digit_mixed:
+                return format_to(ctx.out(), "digit_mixed");
         }
         return ctx.out();
     }
@@ -127,7 +167,7 @@ template <> struct fmt::formatter<enum ae::virus::name::part_t::type> : fmt::for
 template <> struct fmt::formatter<ae::virus::name::part_t> : fmt::formatter<eu::fmt_helper::default_formatter> {
     template <typename FormatCtx> auto format(const ae::virus::name::part_t& value, FormatCtx& ctx)
     {
-        return format_to(ctx.out(), "<{}>\"{}\"", value.type, value.text);
+        return format_to(ctx.out(), "<{}>\"{}{}\"", value.type, value.head, value.tail);
     }
 };
 

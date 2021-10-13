@@ -26,7 +26,8 @@ void virus_name_parsing_test()
 {
     const std::array data{
         TestData{"A/SINGAPORE/INFIMH-16-0019/2016",                                    {}}, // to_compare_t{A,              H,            "SINGAPORE", "INFIMH-16-0019",   "2016", R, P, E}},
-        // TestData{"A(H3N2)/SINGAPORE/INFIMH-16-0019/2016",                              {}}, // to_compare_t{typ{"A(H3N2)"}, H,            "SINGAPORE", "INFIMH-16-0019",   "2016", R, P, E}},
+        TestData{"A(H3N2)/SINGAPORE/INFIMH-16-0019/2016",                              {}}, // to_compare_t{typ{"A(H3N2)"}, H,            "SINGAPORE", "INFIMH-16-0019",   "2016", R, P, E}},
+        TestData{"a(h3n2)/singapore/infimh-16-0019/2016",                              {}}, // to_compare_t{typ{"A(H3N2)"}, H,            "SINGAPORE", "INFIMH-16-0019",   "2016", R, P, E}},
         // TestData{"A(H3N2) / SINGAPORE /INFIMH-16-0019/2016",                              {}}, // to_compare_t{typ{"A(H3N2)"}, H,            "SINGAPORE", "INFIMH-16-0019",   "2016", R, P, E}},
         // TestData{"A(H3)/SINGAPORE/INFIMH-16-0019/2016",                              {}}, // to_compare_t{typ{"A(H3N2)"}, H,            "SINGAPORE", "INFIMH-16-0019",   "2016", R, P, E}},
         // TestData{"AH3N2/SINGAPORE/INFIMH-16-0019/2016",                                {}}, // to_compare_t{typ{"A(H3N2)"}, H,            "SINGAPORE", "INFIMH-16-0019",   "2016", R, P, E}},
