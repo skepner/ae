@@ -42,8 +42,9 @@ test('ae test basic', test_basic)
 
 test_virus_name = executable('test-virus-name', 'cc/test/virus-name.cc',
                              'cc/virus/name-parse.cc',
+                             'cc/locdb/locdb.cc',
                  include_directories : include_directories('./cc'),
-                 dependencies : [dependency('fmt'), lexy],
+                 dependencies : [dependency('fmt'), dependency('simdjson'), lexy],
                  install : true)
 
 test('ae test virus name parsing', test_virus_name)

@@ -2,6 +2,7 @@
 
 #include "ext/fmt.hh"
 #include "virus/name-parse.hh"
+#include "locdb/locdb.hh"
 
 static void virus_name_parsing_test();
 
@@ -9,6 +10,7 @@ static void virus_name_parsing_test();
 
 int main()
 {
+    const auto& locdb = ae::locationdb::get();
     virus_name_parsing_test();
     return 0;
 }
