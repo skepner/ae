@@ -1,6 +1,7 @@
 #include <array>
 #include <vector>
 #include <cctype>
+#include <algorithm>
 
 #include "virus/name-parse.hh"
 #include "ext/fmt.hh"
@@ -44,6 +45,7 @@ namespace ae::virus::name::inline v1
         part_t(part_t&&) = default;
         part_t(std::string&& text, enum type typ) : head{std::move(text)}, type{typ} {}
         part_t(const char* text, enum type typ) : head{text}, type{typ} {}
+        part_t(enum type typ) : type{typ} {}
         template <Lexeme Lex> part_t(Lex&& lexeme, enum type typ) : head{uppercase_strip(lexeme)}, type{typ} {}
         template <Lexeme Lex> part_t(Lex&& lex1, Lex&& lex2, enum type typ) : head{uppercase_strip(lex1)}, tail{uppercase_strip(lex2)}, type{typ} {}
         part_t& operator=(const part_t&) = default;
@@ -53,11 +55,16 @@ namespace ae::virus::name::inline v1
 
     using parts_t = std::array<part_t, 8>;
 
+    inline bool types_match(const parts_t& p1, const parts_t& p2)
+    {
+        return std::equal(p1.begin(), p1.end(), p2.begin(), [](const auto& e1, const auto& e2) { return e1.type == e2.type; });
+    }
+
+    // ======================================================================
+
     namespace grammar
     {
         namespace dsl = lexy::dsl;
-
-        // template <typename T> inline std::string to_string(const lexy::lexeme<T>& lexeme) { return {lexeme.begin(), lexeme.end()}; }
 
         // ----------------------------------------------------------------------
 
@@ -215,6 +222,8 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
         lexy::trace<grammar::parts>(stderr, lexy::string_input{source});
     const auto result = lexy::parse<grammar::parts>(lexy::string_input{source}, lexy_ext::report_error);
     fmt::print("    {}\n", result.value());
+    if (types_match(result.value(), parts_t{part_t::subtype, part_t::letters, part_t::letter_mixed, part_t::digits}))
+        fmt::print("  A/LOC/ISO/YEAR\n");
     return {};
 }
 
