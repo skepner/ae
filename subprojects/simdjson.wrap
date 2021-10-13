@@ -1,8 +1,8 @@
 [wrap-file]
-directory = simdjson-0.9.7
-source_url = https://github.com/simdjson/simdjson/archive/refs/tags/v0.9.7.tar.gz
-source_filename = v0.9.7.tar.gz
-source_hash = a21279ae4cf0049234a822c5c3550f99ec1707d3cda12156d331dcc8cd411ba0
+directory = simdjson-1.0.0
+source_url = https://github.com/simdjson/simdjson/archive/refs/tags/v1.0.0.tar.gz
+source_filename = v1.0.0.tar.gz
+source_hash = fe54be1459b37e88abd438b01968144ed4774699d1272dd47a790b9362c5df42
 patch_directory = simdjson
 
 [provide]

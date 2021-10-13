@@ -7,7 +7,7 @@ namespace ae::locationdb::inline v1
     class Db
     {
       private:
-        Db(const std::string& path);
+        Db(std::string_view path);
 
         friend const Db& get();
     };

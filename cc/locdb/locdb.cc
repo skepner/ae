@@ -35,7 +35,7 @@ const ae::locationdb::v1::Db& ae::locationdb::v1::get()
 
 // ----------------------------------------------------------------------
 
-ae::locationdb::v1::Db::Db(const std::string& path)
+ae::locationdb::v1::Db::Db(std::string_view path)
 {
     simdjson::ondemand::parser parser;
     const auto json = simdjson::padded_string::load(path);
