@@ -1,5 +1,7 @@
 #include <array>
 #include <vector>
+#include <cctype>
+
 #include "virus/name-parse.hh"
 #include "ext/fmt.hh"
 #include "ext/lexy.hh"
@@ -13,6 +15,20 @@ namespace ae::virus::name::inline v1
         { a.begin() };
         { a.end() };
     };
+
+    template <typename Iter> inline std::string uppercase_strip(Iter first, Iter last) {
+        while (first != last && std::isspace(*first)) ++first; // remove leading spaces
+        std::string res(static_cast<size_t>(last - first), '?');
+        auto output_end = std::transform(first, last, res.begin(), [](unsigned char cc) { return std::toupper(cc); });
+        if ((output_end - res.begin()) > 1) { // output is not empty
+            --output_end;
+            while (output_end != res.begin() && std::isspace(*output_end)) --output_end; // remove trailing spaces
+            res.resize(static_cast<size_t>(output_end - res.begin()) + 1);
+        }
+        return res;
+    }
+
+    template <Lexeme Lex> inline std::string uppercase_strip(Lex&& lexeme) { return uppercase_strip(lexeme.begin(), lexeme.end()); }
 
     struct part_t
     {
@@ -28,8 +44,8 @@ namespace ae::virus::name::inline v1
         part_t(part_t&&) = default;
         part_t(std::string&& text, enum type typ) : head{std::move(text)}, type{typ} {}
         part_t(const char* text, enum type typ) : head{text}, type{typ} {}
-        template <Lexeme Lex> part_t(Lex&& lexeme, enum type typ) : head{lexeme.begin(), lexeme.end()}, type{typ} {}
-        template <Lexeme Lex> part_t(Lex&& lex1, Lex&& lex2, enum type typ) : head{lex1.begin(), lex1.end()}, tail{lex2.begin(), lex2.end()}, type{typ} {}
+        template <Lexeme Lex> part_t(Lex&& lexeme, enum type typ) : head{uppercase_strip(lexeme)}, type{typ} {}
+        template <Lexeme Lex> part_t(Lex&& lex1, Lex&& lex2, enum type typ) : head{uppercase_strip(lex1)}, tail{uppercase_strip(lex2)}, type{typ} {}
         part_t& operator=(const part_t&) = default;
         part_t& operator=(part_t&&) = default;
         constexpr bool empty() const { return head.empty(); }
@@ -59,14 +75,10 @@ namespace ae::virus::name::inline v1
                 static constexpr auto rule = dsl::peek(H) >> dsl::capture(H + dsl::digits<>) + dsl::opt(dsl::peek(N) >> dsl::capture(N + dsl::digits<>));
                 static constexpr auto value = lexy::callback<std::string>([](auto lex1, auto lex2) {
                     if constexpr (std::is_same_v<decltype(lex2), lexy::nullopt>)
-                        return std::string{lex1.begin(), lex1.end()};
+                        return uppercase_strip(lex1);
                     else
-                        return std::string{lex1.begin(), lex2.end()};
+                        return uppercase_strip(lex1.begin(), lex2.end());
                 });
-                // [](auto lex1, lexy::nullopt) { return std::string{lex1.begin(), lex1.end()}; },
-                // [](auto lex1, auto lex2) {
-                //     return std::string{lex1.begin(), lex2.end()};
-                // });
             };
 
             // A | AH3 | AH3N2 | A(H3N2) | A(H3)
@@ -93,6 +105,7 @@ namespace ae::virus::name::inline v1
         // chunk starting with a letter, followed by letters, digits, -, _, :, space
         struct letters
         {
+            static constexpr auto whitespace = dsl::ascii::blank; // auto skip whitespaces
             static constexpr auto letters_only = dsl::ascii::alpha / dsl::lit_c<'_'> / dsl::hyphen / dsl::ascii::blank;
             static constexpr auto mixed = letters_only / dsl::ascii::digit / dsl::colon;
 
