@@ -1,0 +1,7 @@
+packagecache
+fmt-*
+xlnt-*
+simdjson-*
+range-v3-*
+pybind11-*
+lexy

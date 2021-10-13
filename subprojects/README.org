@@ -1,0 +1,17 @@
+# Time-stamp: <2021-10-11 12:08:47 eu>
+* Getting wrap
+https://mesonbuild.com/Wrapdb-projects.html
+
+#+BEGIN_SRC bash
+meson wrap install pegtl
+#+END_SRC
+
+* -------------------- local vars ----------------------------------------------------------------------
+  :PROPERTIES:
+  :VISIBILITY: folded
+  :END:
+  #+STARTUP: showall indent
+  Local Variables:
+  eval: (auto-fill-mode 0)
+  eval: (add-hook 'before-save-hook 'time-stamp)
+  End:

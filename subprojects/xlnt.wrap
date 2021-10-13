@@ -1,0 +1,9 @@
+[wrap-file]
+directory = xlnt-1.5.0
+source_url = https://github.com/tfussell/xlnt/archive/refs/tags/v1.5.0.tar.gz
+source_filename = v1.5.0.tar.gz
+source_hash = 8dec266d59ab6e4829da5dacea764a02887eeff5a5501c9a51ce796e735b90de
+patch_directory = xlnt
+
+[provide]
+xlnt = xlnt_dep

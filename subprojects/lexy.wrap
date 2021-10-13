@@ -1,0 +1,8 @@
+[wrap-git]
+directory = lexy
+url = https://github.com/foonathan/lexy.git
+revision = head
+# patch_directory = lexy
+
+[provide]
+lexy = lexy_dep
