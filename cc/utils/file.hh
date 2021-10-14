@@ -20,7 +20,7 @@ namespace ae::file
 
       // ----------------------------------------------------------------------
 
-    std::string decompress_if_necessary(std::string_view aSource);
+    std::string decompress_if_necessary(std::string_view aSource, size_t padding = 0); // padding to support simdjson
 
       // ----------------------------------------------------------------------
 
@@ -33,13 +33,13 @@ namespace ae::file
     {
      public:
         read_access() = default;
-        read_access(std::string_view aFilename);
+        read_access(std::string_view aFilename, size_t padding = 0);
         ~read_access();
         read_access(const read_access&) = delete;
         read_access(read_access&&);
         read_access& operator=(const read_access&) = delete;
         read_access& operator=(read_access&&);
-        operator std::string() const { return mapped_ ? decompress_if_necessary({mapped_, len_}) : decompress_if_necessary(data_); }
+        operator std::string() const { return mapped_ ? decompress_if_necessary({mapped_, len_}, padding_) : decompress_if_necessary(data_, padding_); }
         size_t size() const { return mapped_ ? len_ : data_.size(); }
         const char* data() const { return mapped_ ? mapped_ : data_.data(); }
         bool valid() const { return mapped_ != nullptr || !data_.empty(); }
@@ -49,6 +49,7 @@ namespace ae::file
         size_t len_ = 0;
         char* mapped_ = nullptr;
         std::string data_;
+        size_t padding_{0}; // to support simdjson
 
     }; // class read_access
 

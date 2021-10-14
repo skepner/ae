@@ -20,7 +20,7 @@ namespace ae::file
 
     inline bool gzip_compressed(const char* input) { return std::memcmp(input, gzip_internal::sGzipSig, sizeof(gzip_internal::sGzipSig)) == 0; }
     std::string gzip_compress(std::string_view input);
-    std::string gzip_decompress(std::string_view input);
+    std::string gzip_decompress(std::string_view input, size_t padding = 0); // padding to support simdjson
 
 } // namespace ae::file
 
@@ -79,7 +79,7 @@ inline std::string ae::file::gzip_compress(std::string_view input)
 
 // ----------------------------------------------------------------------
 
-inline std::string ae::file::gzip_decompress(std::string_view input)
+inline std::string ae::file::gzip_decompress(std::string_view input, size_t padding)
 {
     constexpr ssize_t BufSize = 409600;
     z_stream strm;
@@ -93,7 +93,9 @@ inline std::string ae::file::gzip_decompress(std::string_view input)
         throw std::runtime_error("gzip decompression failed during initialization");
 
     try {
-        std::string output(BufSize, ' ');
+        std::string output;
+        output.reserve(BufSize + padding);
+        output.resize(BufSize);
         ssize_t offset = 0;
         for (;;) {
             strm.next_out = reinterpret_cast<decltype(strm.next_out)>(output.data() + offset);
@@ -103,10 +105,12 @@ inline std::string ae::file::gzip_decompress(std::string_view input)
                 if (strm.avail_out > 0)
                     throw std::runtime_error("gzip decompression failed: unexpected end of input");
                 offset += BufSize;
+                output.reserve(static_cast<size_t>(offset + BufSize) + padding);
                 output.resize(static_cast<size_t>(offset + BufSize));
             }
             else if (r == Z_STREAM_END) {
                 output.resize(static_cast<size_t>(offset + BufSize) - strm.avail_out);
+                output.reserve(static_cast<size_t>(offset + BufSize) - strm.avail_out + padding);
                 break;
             }
             else {

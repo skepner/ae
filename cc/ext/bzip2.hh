@@ -35,7 +35,7 @@ namespace ae::file
 
       // ----------------------------------------------------------------------
 
-    inline std::string bz2_decompress(std::string_view input)
+    inline std::string bz2_decompress(std::string_view input, size_t padding = 0)
     {
         constexpr ssize_t BufSize = 409600;
         bz_stream strm;
@@ -47,7 +47,9 @@ namespace ae::file
         try {
             strm.next_in = const_cast<decltype(strm.next_in)>(input.data());
             strm.avail_in = static_cast<decltype(strm.avail_in)>(input.size());
-            std::string output(BufSize, ' ');
+            std::string output;
+            output.reserve(BufSize + padding);
+            output.resize(BufSize);
             ssize_t offset = 0;
             for (;;) {
                 strm.next_out = const_cast<decltype(strm.next_out)>(&*(output.begin() + offset));
@@ -57,10 +59,12 @@ namespace ae::file
                     if (strm.avail_out > 0)
                         throw std::runtime_error("bz2 decompression failed: unexpected end of input");
                     offset += BufSize;
+                    output.reserve(static_cast<size_t>(offset + BufSize) + padding);
                     output.resize(static_cast<size_t>(offset + BufSize));
                 }
                 else if (r == BZ_STREAM_END) {
                     output.resize(static_cast<size_t>(offset + BufSize) - strm.avail_out);
+                    output.reserve(static_cast<size_t>(offset + BufSize) - strm.avail_out + padding);
                     break;
                 }
                 else

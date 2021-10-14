@@ -38,13 +38,13 @@ namespace ae::file
       // ----------------------------------------------------------------------
 
     std::string xz_compress(std::string_view input);
-    std::string xz_decompress(std::string_view input);
+    std::string xz_decompress(std::string_view input, size_t padding = 0);  // padding to support simdjson
 
     // ----------------------------------------------------------------------
 
     namespace detail
     {
-        std::string process(lzma_stream* strm, std::string_view input);
+        std::string process(lzma_stream* strm, std::string_view input, size_t padding = 0);
     }
 
 } // namespace ae::file
@@ -55,11 +55,13 @@ constexpr ssize_t sXzBufSize = 409600;
 
 // ----------------------------------------------------------------------
 
-inline std::string ae::file::detail::process(lzma_stream* strm, std::string_view input)
+inline std::string ae::file::detail::process(lzma_stream* strm, std::string_view input, size_t padding)
 {
     strm->next_in = reinterpret_cast<const uint8_t*>(input.data());
     strm->avail_in = input.size();
-    std::string output(sXzBufSize, ' ');
+    std::string output;
+    output.reserve(sXzBufSize + padding);
+    output.resize(sXzBufSize);
     ssize_t offset = 0;
     for (;;) {
         strm->next_out = reinterpret_cast<uint8_t*>(&*(output.begin() + offset));
@@ -67,10 +69,12 @@ inline std::string ae::file::detail::process(lzma_stream* strm, std::string_view
         auto const r = lzma_code(strm, LZMA_FINISH);
         if (r == LZMA_STREAM_END) {
             output.resize(static_cast<size_t>(offset + sXzBufSize) - strm->avail_out);
+            output.reserve(static_cast<size_t>(offset + sXzBufSize) - strm->avail_out + padding);
             break;
         }
         else if (r == LZMA_OK) {
             offset += sXzBufSize;
+            output.reserve(static_cast<size_t>(offset + sXzBufSize) + padding);
             output.resize(static_cast<size_t>(offset + sXzBufSize));
         }
         else {
@@ -96,13 +100,13 @@ inline std::string ae::file::xz_compress(std::string_view input)
 
 // ----------------------------------------------------------------------
 
-inline std::string ae::file::xz_decompress(std::string_view input)
+inline std::string ae::file::xz_decompress(std::string_view input, size_t padding)
 {
     lzma_stream strm = LZMA_STREAM_INIT; /* alloc and init lzma_stream struct */
     if (lzma_stream_decoder(&strm, UINT64_MAX, LZMA_TELL_UNSUPPORTED_CHECK | LZMA_CONCATENATED) != LZMA_OK) {
         throw std::runtime_error("lzma decompression failed 1");
     }
-    return detail::process(&strm, input);
+    return detail::process(&strm, input, padding);
 
 } // ae::file::xz_decompress
 

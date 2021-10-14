@@ -18,15 +18,17 @@
 
 // ----------------------------------------------------------------------
 
-ae::file::read_access::read_access(std::string_view aFilename)
+ae::file::read_access::read_access(std::string_view aFilename, size_t padding) : padding_{padding}
 {
     if (aFilename == "-") {
         constexpr size_t chunk_size = 1024 * 100;
+        data_.reserve(chunk_size + padding_);
         data_.resize(chunk_size);
         ssize_t start = 0;
         for (;;) {
             if (const auto bytes_read = ::read(0, data_.data() + start, chunk_size); bytes_read > 0) {
                 start += bytes_read;
+                data_.reserve(static_cast<size_t>(start) + chunk_size + padding_);
                 data_.resize(static_cast<size_t>(start));
             }
             else
@@ -53,8 +55,7 @@ ae::file::read_access::read_access(std::string_view aFilename)
 
 // ----------------------------------------------------------------------
 
-ae::file::read_access::read_access(read_access&& other)
-    : fd{other.fd}, len_{other.len_}, mapped_{other.mapped_}, data_{other.data_}
+ae::file::read_access::read_access(read_access&& other) : fd{other.fd}, len_{other.len_}, mapped_{other.mapped_}, data_{other.data_}, padding_{other.padding_}
 {
     other.fd = -1;
     other.len_ = 0;
@@ -95,17 +96,21 @@ ae::file::read_access& ae::file::read_access::operator=(read_access&& other)
 
 // ----------------------------------------------------------------------
 
-std::string ae::file::decompress_if_necessary(std::string_view aSource)
+std::string ae::file::decompress_if_necessary(std::string_view aSource, size_t padding)
 {
     if (xz_compressed(aSource.data()))
-        return xz_decompress(aSource);
+        return xz_decompress(aSource, padding);
     else if (bz2_compressed(aSource.data()))
-        return bz2_decompress(aSource);
+        return bz2_decompress(aSource, padding);
     else if (gzip_compressed(aSource.data())) {
-        return gzip_decompress(aSource);
+        return gzip_decompress(aSource, padding);
     }
-    else
-        return std::string(aSource);
+    else {
+        std::string res;
+        res.reserve(aSource.size() + padding);
+        res = aSource;
+        return res;
+    }
 
 } // ae::file::decompress_if_necessary
 
