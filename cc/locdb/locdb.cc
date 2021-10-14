@@ -59,12 +59,9 @@ std::string_view ae::locationdb::v1::detail::get_db_path()
 // ----------------------------------------------------------------------
 
 ae::locationdb::v1::Db::Db(std::string_view path)
+    : parser_{path}
 {
-    simdjson::ondemand::parser parser;
-    json_ = simdjson::padded_string::load(path);
-    auto doc = parser.iterate(json_);
-    // auto object = doc.get_object();
-    for(auto field : doc.get_object()) {
+    for(auto field : parser_.doc().get_object()) {
         const std::string_view key = field.unescaped_key();
         if (key == "  version") {
             if (const std::string_view ver{field.value()}; ver != "locationdb-v2")
@@ -96,17 +93,6 @@ ae::locationdb::v1::Db::Db(std::string_view path)
                 auto it = val.begin();
                 // location loc{*it, *++it, *++it, *++it};
                 locations_.emplace(loc_en.unescaped_key(), location{*it, *++it, *++it, *++it});
-
-            //     auto it = val.begin();
-            //     location loc;
-            //     loc.latitude = *it;
-            //     ++it;
-            //     loc.longitude = *it;
-            //     ++it;
-            //     loc.country = std::string_view{*it};
-            //     ++it;
-            //     loc.province = std::string_view{*it};
-            //     locations_.emplace(std::string_view{loc_en.unescaped_key()}, loc);
             }
         }
         else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')

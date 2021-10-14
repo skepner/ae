@@ -27,4 +27,28 @@
 
 #pragma GCC diagnostic pop
 
+#include "utils/file.hh"
+
+// ----------------------------------------------------------------------
+
+namespace ae::simdjson
+{
+    class Parser
+    {
+      public:
+        Parser(std::string_view filename)
+            : parser_{},
+              json_{file::read(filename, ::simdjson::SIMDJSON_PADDING)},
+              doc_{parser_.iterate(json_, json_.capacity())}
+            {}
+
+        constexpr auto& doc() { return doc_; }
+
+      private:
+        ::simdjson::ondemand::parser parser_;
+        std::string json_;
+        decltype(parser_.iterate(json_, json_.capacity())) doc_;
+    };
+}
+
 // ----------------------------------------------------------------------

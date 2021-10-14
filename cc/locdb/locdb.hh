@@ -33,7 +33,7 @@ namespace ae::locationdb::inline v1
         std::string_view find(std::string_view look_for) const;
 
       private:
-        simdjson::padded_string json_;
+        simdjson::Parser parser_;
         std::map<std::string_view, std::string_view> cdc_abbreviations_;
         std::map<std::string_view, location> locations_;
         std::map<std::string_view, uint64_t> countries_; // name -> index in continents_
