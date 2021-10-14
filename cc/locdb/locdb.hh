@@ -9,6 +9,14 @@
 
 namespace ae::locationdb::inline v1
 {
+    class error : public std::runtime_error { public: using std::runtime_error::runtime_error; };
+
+    class Db;
+    const Db& get();
+    void db_path(std::string_view path);
+
+    // ----------------------------------------------------------------------
+
     class Db
     {
       public:
@@ -38,7 +46,6 @@ namespace ae::locationdb::inline v1
         friend const Db& get();
     };
 
-    const Db& get();
 }
 
 // ----------------------------------------------------------------------

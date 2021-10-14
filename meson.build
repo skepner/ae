@@ -12,7 +12,9 @@ project('ae', ['cpp'],
        )
 
 if meson.get_compiler('cpp').get_id() == 'clang'
-  add_project_arguments('-Weverything', '-Wno-c++98-compat', '-Wno-c++98-c++11-compat', '-Wno-c++98-compat-pedantic', language : 'cpp')
+  add_project_arguments('-Weverything',
+                        '-Wno-weak-vtables', '-Wno-c++98-compat', '-Wno-c++98-c++11-compat', '-Wno-c++98-compat-pedantic',
+                        language : 'cpp')
 endif
 
 # ----------------------------------------------------------------------

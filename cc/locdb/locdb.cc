@@ -1,13 +1,14 @@
 #undef NDEBUG
 
 #include <memory>
+#include <cstdlib>
 
 #include "locdb/locdb.hh"
 #include "ext/fmt.hh"
 
 // ----------------------------------------------------------------------
 
-namespace ae::locationdb::inline v1
+namespace ae::locationdb::inline v1::detail
 {
     static Db* db{nullptr};
 
@@ -17,7 +18,8 @@ namespace ae::locationdb::inline v1
 #pragma GCC diagnostic ignored "-Wglobal-constructors"
 #endif
 
-    static std::string db_path{"/r/locationdb.json"};
+    static std::string db_path;
+    static std::string_view get_db_path();
 
 #pragma GCC diagnostic pop
 }
@@ -26,11 +28,33 @@ namespace ae::locationdb::inline v1
 
 const ae::locationdb::v1::Db& ae::locationdb::v1::get()
 {
-    if (!db)
-        db = new Db(db_path);
-    return *db;
+    if (!detail::db)
+        detail::db = new Db(detail::get_db_path());
+    return *detail::db;
 
 } // ae::locationdb::v1::get
+
+// ----------------------------------------------------------------------
+
+void ae::locationdb::v1::db_path(std::string_view path)
+{
+    detail::db_path = path;
+
+} // ae::locationdb::v1::db_path
+
+// ----------------------------------------------------------------------
+
+std::string_view ae::locationdb::v1::detail::get_db_path()
+{
+    if (db_path.empty()) {
+        if (const char* ldb2_path = std::getenv("LOCATIONDB_V2"); ldb2_path)
+            db_path = ldb2_path;
+        else
+            throw error{"\nenv LOCATIONDB_V2 is not set\n"};
+    }
+    return db_path;
+
+} // ae::locationdb::v1::detail::get_db_path
 
 // ----------------------------------------------------------------------
 

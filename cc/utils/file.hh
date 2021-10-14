@@ -8,8 +8,8 @@
 #pragma GCC diagnostic push
 #ifdef __clang__
 #pragma GCC diagnostic ignored "-Wpadded"
-#pragma GCC diagnostic ignored "-Wweak-vtables"
 #endif
+
 // ----------------------------------------------------------------------
 
 namespace ae::file
