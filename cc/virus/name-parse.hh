@@ -19,9 +19,20 @@ namespace ae::virus::name::inline v1
         std::string name(mark_extra me = mark_extra::no) const;
     };
 
-    enum class parse_tracing { no, yes };
+    class parse_settings
+    {
+      public:
+        enum class tracing { no, yes };
 
-    Parts parse(std::string_view source, parse_tracing tracing = parse_tracing::no);
+        parse_settings() = default;
+
+        constexpr bool trace() const { return tracing_ == tracing::yes; }
+
+      private:
+        tracing tracing_{tracing::no};
+    };
+
+    Parts parse(std::string_view source, const parse_settings& settings = {});
 }
 
 // ----------------------------------------------------------------------

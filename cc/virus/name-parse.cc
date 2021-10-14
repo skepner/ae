@@ -321,9 +321,9 @@ std::string ae::virus::name::v1::Parts::name(mark_extra me) const
 
 // ----------------------------------------------------------------------
 
-ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, parse_tracing tracing)
+ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, const parse_settings& settings)
 {
-    if (tracing == parse_tracing::yes) {
+    if (settings.trace()) {
         fmt::print(">>> parsing \"{}\"\n", source);
         lexy::trace<grammar::parts>(stderr, lexy::string_input<lexy::utf8_encoding>{source});
     }
