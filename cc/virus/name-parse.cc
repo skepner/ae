@@ -13,18 +13,23 @@
 namespace ae::virus::name::inline v1
 {
 
-    template <class T> concept Lexeme = requires(T a) {
-        { a.begin() };
-        { a.end() };
+    template <class T>
+    concept Lexeme = requires(T a)
+    {
+        {a.begin()};
+        {a.end()};
     };
 
-    template <typename Iter> inline std::string uppercase_strip(Iter first, Iter last) {
-        while (first != last && std::isspace(*first)) ++first; // remove leading spaces
+    template <typename Iter> inline std::string uppercase_strip(Iter first, Iter last)
+    {
+        while (first != last && std::isspace(*first))
+            ++first; // remove leading spaces
         std::string res(static_cast<size_t>(last - first), '?');
         auto output_end = std::transform(first, last, res.begin(), [](unsigned char cc) { return std::toupper(cc); });
         if ((output_end - res.begin()) > 1) { // output is not empty
             --output_end;
-            while (output_end != res.begin() && std::isspace(*output_end)) --output_end; // remove trailing spaces
+            while (output_end != res.begin() && std::isspace(*output_end))
+                --output_end; // remove trailing spaces
             res.resize(static_cast<size_t>(output_end - res.begin()) + 1);
         }
         return res;
@@ -104,7 +109,7 @@ namespace ae::virus::name::inline v1
     {
         // types is no longer than parts
         return std::equal(types.begin(), types.end(), parts.begin(), [](part_type e2, const part_t& e1) { return e1.type[static_cast<size_t>(e2)]; }) &&
-            std::all_of(std::next(parts.begin(), types.size()), parts.end(), [](const auto& part) { return part.type.none(); });
+               std::all_of(std::next(parts.begin(), types.size()), parts.end(), [](const auto& part) { return part.type.none(); });
     }
 
     // ======================================================================
@@ -117,9 +122,10 @@ namespace ae::virus::name::inline v1
 
         struct letter_extra_predicate
         {
-            constexpr bool operator()(lexy::code_point cp) { //
-                return //
-                    (cp.value() >= 0xC0 && cp.value() <= 0xFF) // Latin-1 Supplement (including math x and math division symbol)
+            constexpr bool operator()(lexy::code_point cp)
+            {                                                       //
+                return                                              //
+                    (cp.value() >= 0xC0 && cp.value() <= 0xFF)      // Latin-1 Supplement (including math x and math division symbol)
                     || (cp.value() >= 0x100 && cp.value() <= 0x17F) // Latin Extended-A
                     // cyrillic ?
                     || (cp.value() >= 0x4E00 && cp.value() <= 0x9FFF) // CJK Unified Ideographs
@@ -179,7 +185,8 @@ namespace ae::virus::name::inline v1
             static constexpr auto letters_only = dsl::ascii::alpha / letter_extra / dsl::lit_c<'_'> / dsl::hyphen / dsl::ascii::blank;
             static constexpr auto mixed = letters_only / dsl::ascii::digit / dsl::colon;
 
-            static constexpr auto rule = dsl::peek(dsl::ascii::alpha / letter_extra) >> dsl::capture(dsl::while_(letters_only)) + dsl::opt(dsl::peek_not(dsl::lit_c<'/'>) >> dsl::capture(dsl::while_(mixed)));
+            static constexpr auto rule = dsl::peek(dsl::ascii::alpha / letter_extra) >>
+                                         dsl::capture(dsl::while_(letters_only)) + dsl::opt(dsl::peek_not(dsl::lit_c<'/'>) >> dsl::capture(dsl::while_(mixed)));
             static constexpr auto value = lexy::callback<part_t>([](auto lex1, auto lex2) {
                 if constexpr (std::is_same_v<decltype(lex2), lexy::nullopt>)
                     return part_t{lex1, part_type::letters_only};
@@ -221,12 +228,7 @@ namespace ae::virus::name::inline v1
         struct parts
         {
             static constexpr auto whitespace = dsl::ascii::blank; // auto skip whitespaces
-            static constexpr auto rule =
-                (dsl::p<subtype_a> | dsl::p<subtype_b>)
-                + dsl::slash
-                + dsl::p<slash_separated>
-                + dsl::p<rest>
-                + dsl::eof;
+            static constexpr auto rule = (dsl::p<subtype_a> | dsl::p<subtype_b>)+dsl::slash + dsl::p<slash_separated> + dsl::p<rest> + dsl::eof;
 
             static constexpr auto value = lexy::callback<parts_t>([](auto subtype, auto slash_separated, auto rest) {
                 parts_t parts{subtype};
@@ -238,7 +240,22 @@ namespace ae::virus::name::inline v1
         };
 
     } // namespace grammar
-            } // namespace ae::virus::name::inline v1
+
+    // ----------------------------------------------------------------------
+
+    // return source unchanged, if location not found but add message
+    inline std::string_view fix_location(std::string_view location, std::string_view source, parse_settings& settings)
+    {
+        if (const auto fixed = locationdb::get().find(location); !fixed.empty()) {
+            return fixed;
+        }
+        else {
+            settings.messages().unrecognized_location(location, source);
+            return location;
+        }
+    }
+
+} // namespace ae::virus::name::inline v1
 
 // ----------------------------------------------------------------------
 
@@ -321,21 +338,20 @@ std::string ae::virus::name::v1::Parts::name(mark_extra me) const
 
 // ----------------------------------------------------------------------
 
-ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, const parse_settings& settings)
+ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, parse_settings& settings)
 {
     if (settings.trace()) {
         fmt::print(">>> parsing \"{}\"\n", source);
         lexy::trace<grammar::parts>(stderr, lexy::string_input<lexy::utf8_encoding>{source});
     }
     const auto result = lexy::parse<grammar::parts>(lexy::string_input<lexy::utf8_encoding>{source}, lexy_ext::report_error);
-    const auto& locdb = ae::locationdb::get();
     const auto parts = result.value();
     if (types_match(parts, {part_type::subtype, part_type::letters_only, part_type::any, part_type::digits_only})) {
-        return {.subtype = parts[0], .location = std::string{locdb.find(parts[1].head)}, .isolation = parts[2], .year = parts[3]};
+        return {.subtype = parts[0], .location{fix_location(parts[1].head, source, settings)}, .isolation = parts[2], .year = parts[3]};
         // fmt::print(">>> {}  A/LOC/ISO/YEAR  \"{}\" -> \"{}\"\n", source, parts[1].head, new_loc);
     }
     else
-        fmt::print(stderr, ">> unhandled name \"{}\" {}\n", source, result.value());
+        settings.messages().message(fmt::format("unhandled name: \"{}\"", result.value()), source);
     return {};
 }
 

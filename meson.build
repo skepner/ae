@@ -13,7 +13,7 @@ project('ae', ['cpp'],
 
 if meson.get_compiler('cpp').get_id() == 'clang'
   add_project_arguments('-Weverything',
-                        '-Wno-weak-vtables', '-Wno-c++98-compat', '-Wno-c++98-c++11-compat', '-Wno-c++98-compat-pedantic',
+                        '-Wno-weak-vtables', '-Wno-padded', '-Wno-c++98-compat', '-Wno-c++98-c++11-compat', '-Wno-c++98-compat-pedantic',
                         language : 'cpp')
 endif
 
@@ -54,7 +54,7 @@ test('ae test basic', test_basic)
 test_virus_name = executable('test-virus-name', 'cc/test/virus-name.cc',
                              'cc/virus/name-parse.cc',
                              'cc/locdb/locdb.cc',
-                             'cc/utils/file.cc',
+                             'cc/utils/file.cc', 'cc/utils/messages.cc',
                  include_directories : include_directories('./cc'),
                  dependencies : [fmt, simdjson, bzip2, zlib, xz, lexy],
                  install : true)

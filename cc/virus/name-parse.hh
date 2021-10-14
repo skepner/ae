@@ -1,4 +1,7 @@
+#pragma once
+
 #include "ext/fmt.hh"
+#include "utils/messages.hh"
 
 // ======================================================================
 
@@ -27,12 +30,15 @@ namespace ae::virus::name::inline v1
         parse_settings() = default;
 
         constexpr bool trace() const { return tracing_ == tracing::yes; }
+        constexpr ae::Messages& messages() { return messages_; }
+        constexpr const ae::Messages& messages() const { return messages_; }
 
       private:
         tracing tracing_{tracing::no};
+        ae::Messages messages_;
     };
 
-    Parts parse(std::string_view source, const parse_settings& settings = {});
+    Parts parse(std::string_view source, parse_settings& settings);
 }
 
 // ----------------------------------------------------------------------

@@ -108,10 +108,11 @@ void virus_name_parsing_test()
     };
 
     // size_t errors = 0;
+    ae::virus::name::parse_settings settings{};
     for (const auto& entry : data) {
         try {
             // AD_DEBUG("{}", entry.raw_name);
-            const auto result = ae::virus::name::parse(entry.raw_name, ae::virus::name::parse_settings{});
+            const auto result = ae::virus::name::parse(entry.raw_name, settings);
             fmt::print("{}\n", result);
             // if (result != entry.expected) {
             //     AD_ERROR("{} <-- \"{}\"  expected: \"{}\"", result, entry.raw_name, entry.expected);
@@ -127,7 +128,7 @@ void virus_name_parsing_test()
             throw;
         }
     }
-
+    fmt::print("{}\n", settings.messages().report());
     // if (errors)
     //     throw std::runtime_error{fmt::format("test_builtin: {} errors found", errors)};
 
