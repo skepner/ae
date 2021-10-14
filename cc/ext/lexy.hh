@@ -1,3 +1,5 @@
+#pragma once
+
 #pragma GCC diagnostic push
 #ifdef __clang__
 
