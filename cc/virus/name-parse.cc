@@ -5,7 +5,6 @@
 #include <bitset>
 
 #include "virus/name-parse.hh"
-#include "ext/fmt.hh"
 #include "ext/lexy.hh"
 #include "locdb/locdb.hh"
 
@@ -88,16 +87,16 @@ namespace ae::virus::name::inline v1
         part_t() = default;
         part_t(const part_t&) = default;
         part_t(part_t&&) = default;
-        part_t(std::string&& text, type_t typ) :
-                head{std::move(text)}, type{typ} {}
-                part_t(const char* text, type_t typ) : head{text}, type{typ} {}
-                part_t(type_t typ) : type{typ} {}
-                template <Lexeme Lex> part_t(Lex && lexeme, type_t typ) : head{uppercase_strip(lexeme)}, type{typ} {}
-                template <Lexeme Lex> part_t(Lex && lex1, Lex && lex2, type_t typ) : head{uppercase_strip(lex1)}, tail{uppercase_strip(lex2)}, type{typ} {}
-                part_t& operator=(const part_t&) = default;
-                part_t& operator=(part_t&&) = default;
-                constexpr bool empty() const { return head.empty(); }
-                };
+        part_t(std::string&& text, type_t typ) : head{std::move(text)}, type{typ} {}
+        part_t(const char* text, type_t typ) : head{text}, type{typ} {}
+        part_t(type_t typ) : type{typ} {}
+        template <Lexeme Lex> part_t(Lex&& lexeme, type_t typ) : head{uppercase_strip(lexeme)}, type{typ} {}
+        template <Lexeme Lex> part_t(Lex&& lex1, Lex&& lex2, type_t typ) : head{uppercase_strip(lex1)}, tail{uppercase_strip(lex2)}, type{typ} {}
+        part_t& operator=(const part_t&) = default;
+        part_t& operator=(part_t&&) = default;
+        constexpr bool empty() const { return head.empty(); }
+        operator std::string() const { return fmt::format("{}{}", head, tail); }
+    };
 
     using parts_t = std::array<part_t, 8>;
 
@@ -299,6 +298,29 @@ template <> struct fmt::formatter<ae::virus::name::part_t> : fmt::formatter<eu::
 
 // ======================================================================
 
+std::string ae::virus::name::v1::Parts::name(mark_extra me) const
+{
+    fmt::memory_buffer out;
+    const std::string_view nothing{}, space{" "}, slash{"/"}, question{"?"};
+    const auto format_or = [&out](std::string_view field, std::string_view alt, std::string_view sep) {
+        if (!field.empty())
+            fmt::format_to(std::back_inserter(out), "{}{}", sep, field);
+        else if (!alt.empty())
+            fmt::format_to(std::back_inserter(out), "{}{}", sep, alt);
+    };
+    format_or(subtype, question, nothing);
+    format_or(host, nothing, slash);
+    format_or(location, question, slash);
+    format_or(isolation, question, slash);
+    format_or(year, question, slash);
+    format_or(reassortant, nothing, space);
+    format_or(extra, nothing, me == mark_extra::yes ? std::string_view{" * "} : space);
+    return fmt::to_string(out);
+
+} // ae::virus::name::v1::Parts::name
+
+// ----------------------------------------------------------------------
+
 ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, parse_tracing tracing)
 {
     if (tracing == parse_tracing::yes) {
@@ -309,8 +331,8 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
     const auto& locdb = ae::locationdb::get();
     const auto parts = result.value();
     if (types_match(parts, {part_type::subtype, part_type::letters_only, part_type::any, part_type::digits_only})) {
-        const auto new_loc = locdb.find(parts[1].head);
-        fmt::print(">>> {}  A/LOC/ISO/YEAR  \"{}\" -> \"{}\"\n", source, parts[1].head, new_loc);
+        return {.subtype = parts[0], .location = std::string{locdb.find(parts[1].head)}, .isolation = parts[2], .year = parts[3]};
+        // fmt::print(">>> {}  A/LOC/ISO/YEAR  \"{}\" -> \"{}\"\n", source, parts[1].head, new_loc);
     }
     else
         fmt::print(stderr, ">> unhandled name \"{}\" {}\n", source, result.value());

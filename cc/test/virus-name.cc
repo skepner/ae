@@ -112,6 +112,7 @@ void virus_name_parsing_test()
         try {
             // AD_DEBUG("{}", entry.raw_name);
             const auto result = ae::virus::name::parse(entry.raw_name, ae::virus::name::parse_tracing::no);
+            fmt::print("{}\n", result);
             // if (result != entry.expected) {
             //     AD_ERROR("{} <-- \"{}\"  expected: \"{}\"", result, entry.raw_name, entry.expected);
             //     ++errors;
