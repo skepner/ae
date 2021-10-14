@@ -101,10 +101,11 @@ namespace ae::virus::name::inline v1
 
     using parts_t = std::array<part_t, 8>;
 
-    template <size_t N> inline bool types_match(const parts_t& p1, const std::array<part_type, N>& p2)
+    inline bool types_match(const parts_t& parts, std::initializer_list<part_type> types)
     {
-        // p2 is no longer than p1
-        return std::equal(p2.begin(), p2.end(), p1.begin(), [](part_type e2, const part_t& e1) { return e1.type[static_cast<size_t>(e2)]; });
+        // types is no longer than parts
+        return std::equal(types.begin(), types.end(), parts.begin(), [](part_type e2, const part_t& e1) { return e1.type[static_cast<size_t>(e2)]; }) &&
+            std::all_of(std::next(parts.begin(), types.size()), parts.end(), [](const auto& part) { return part.type.none(); });
     }
 
     // ======================================================================
@@ -300,17 +301,19 @@ template <> struct fmt::formatter<ae::virus::name::part_t> : fmt::formatter<eu::
 
 ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, parse_tracing tracing)
 {
-    fmt::print(">>> parsing \"{}\"\n", source);
-    if (tracing == parse_tracing::yes)
+    if (tracing == parse_tracing::yes) {
+        fmt::print(">>> parsing \"{}\"\n", source);
         lexy::trace<grammar::parts>(stderr, lexy::string_input<lexy::utf8_encoding>{source});
+    }
     const auto result = lexy::parse<grammar::parts>(lexy::string_input<lexy::utf8_encoding>{source}, lexy_ext::report_error);
-    fmt::print("    {}\n", result.value());
     const auto& locdb = ae::locationdb::get();
     const auto parts = result.value();
-    if (types_match(parts, std::array{part_type::subtype, part_type::letters_only, part_type::any, part_type::digits_only})) {
+    if (types_match(parts, {part_type::subtype, part_type::letters_only, part_type::any, part_type::digits_only})) {
         const auto new_loc = locdb.find(parts[1].head);
-        fmt::print("  A/LOC/ISO/YEAR  \"{}\" -> \"{}\"\n", parts[1].head, new_loc);
+        fmt::print(">>> {}  A/LOC/ISO/YEAR  \"{}\" -> \"{}\"\n", source, parts[1].head, new_loc);
     }
+    else
+        fmt::print(stderr, ">> unhandled name \"{}\" {}\n", source, result.value());
     return {};
 }
 
