@@ -101,9 +101,10 @@ namespace ae::virus::name::inline v1
 
     using parts_t = std::array<part_t, 8>;
 
-    inline bool types_match(const parts_t& p1, const parts_t& p2)
+    template <size_t N> inline bool types_match(const parts_t& p1, const std::array<part_type, N>& p2)
     {
-        // ??? return std::equal(p1.begin(), p1.end(), p2.begin(), [](const auto& e1, const auto& e2) { return e1.type == e2.type; });
+        // p2 is no longer than p1
+        return std::equal(p2.begin(), p2.end(), p1.begin(), [](part_type e2, const part_t& e1) { return e1.type[static_cast<size_t>(e2)]; });
     }
 
     // ======================================================================
@@ -241,25 +242,46 @@ namespace ae::virus::name::inline v1
 
 // ----------------------------------------------------------------------
 
-template <> struct fmt::formatter<enum ae::virus::name::part_type> : fmt::formatter<eu::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(const enum ae::virus::name::part_type& value, FormatCtx& ctx)
+template <> struct fmt::formatter<ae::virus::name::part_t::type_t> : fmt::formatter<eu::fmt_helper::default_formatter> {
+    template <typename FormatCtx> auto format(const ae::virus::name::part_t::type_t& value, FormatCtx& ctx)
     {
         using namespace ae::virus::name;
-        switch (value) {
-            case part_t::undef:
-                return format_to(ctx.out(), "undef");
-            case part_t::subtype:
-                return format_to(ctx.out(), "subtype");
-            case part_t::rest:
-                return format_to(ctx.out(), "rest");
-            case part_t::letters:
-                return format_to(ctx.out(), "letters");
-            case part_t::letter_mixed:
-                return format_to(ctx.out(), "letter_mixed");
-            case part_t::digits:
-                return format_to(ctx.out(), "digits");
-            case part_t::digit_mixed:
-                return format_to(ctx.out(), "digit_mixed");
+
+        bool empty = true;
+        const auto add = [&empty, &ctx](const char* text) {
+            if (!empty)
+                format_to(ctx.out(), "{}", '|');
+            else
+                empty = false;
+            format_to(ctx.out(), "{}", text);
+        };
+
+        for (size_t pt = 0; pt < value.size(); ++pt)
+        {
+            if (value[pt]) {
+                switch (static_cast<part_type>(pt)) {
+                    case part_type::subtype:
+                        add("subtype");
+                        break;
+                    case part_type::any:
+                        add("any");
+                        break;
+                    case part_type::letters_only:
+                        add("letters_only");
+                        break;
+                    case part_type::letter_first:
+                        add("letter_first");
+                        break;
+                    case part_type::digits_only:
+                        add("digits_only");
+                        break;
+                    case part_type::digit_first:
+                        add("digit_first");
+                        break;
+                    case part_type::size_:
+                        break;
+                }
+            }
         }
         return ctx.out();
     }
@@ -268,10 +290,9 @@ template <> struct fmt::formatter<enum ae::virus::name::part_type> : fmt::format
 template <> struct fmt::formatter<ae::virus::name::part_t> : fmt::formatter<eu::fmt_helper::default_formatter> {
     template <typename FormatCtx> auto format(const ae::virus::name::part_t& value, FormatCtx& ctx)
     {
-        if (value.type == ae::virus::name::part_t::undef)
-            return ctx.out();
-        else
-            return format_to(ctx.out(), "<{}>\"{}{}\"", value.type, value.head, value.tail);
+        if (value.type.any())
+            format_to(ctx.out(), "<{}>\"{}{}\"", value.type, value.head, value.tail);
+        return ctx.out();
     }
 };
 
@@ -286,7 +307,7 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
     fmt::print("    {}\n", result.value());
     const auto& locdb = ae::locationdb::get();
     const auto parts = result.value();
-    if (types_match(parts, parts_t{part_t::subtype, part_t::letters, part_t::letter_mixed, part_t::digits}) || types_match(parts, parts_t{part_t::subtype, part_t::letters, part_t::digits, part_t::digits})) {
+    if (types_match(parts, std::array{part_type::subtype, part_type::letters_only, part_type::any, part_type::digits_only})) {
         const auto new_loc = locdb.find(parts[1].head);
         fmt::print("  A/LOC/ISO/YEAR  \"{}\" -> \"{}\"\n", parts[1].head, new_loc);
     }
