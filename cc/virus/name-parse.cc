@@ -2,6 +2,7 @@
 #include <vector>
 #include <cctype>
 #include <algorithm>
+#include <bitset>
 
 #include "virus/name-parse.hh"
 #include "ext/fmt.hh"
@@ -32,33 +33,77 @@ namespace ae::virus::name::inline v1
 
     template <Lexeme Lex> inline std::string uppercase_strip(Lex&& lexeme) { return uppercase_strip(lexeme.begin(), lexeme.end()); }
 
+    enum class part_type {
+        subtype, // A, B, A(H3N2)
+        any,
+        letters_only, // letter, cjk, space, underscore, dash
+        letter_first, // first symbol is a letter or cjk
+        digits_only,  // just decimal digits
+        digit_first,  // first symbol is a decimal digit
+        size_
+    };
+
     struct part_t
     {
-        enum type { undef, subtype, letters, letter_mixed, digits, digit_mixed, rest };
+        struct type_t : public std::bitset<static_cast<size_t>(part_type::size_)>
+        {
+            type_t() = default;
+            type_t(part_type tt)
+            {
+                switch (tt) {
+                    case part_type::subtype:
+                    case part_type::any:
+                        set(tt);
+                        break;
+                    case part_type::letters_only:
+                        set(tt);
+                        set(part_type::any);
+                        set(part_type::letter_first);
+                        break;
+                    case part_type::letter_first:
+                        set(tt);
+                        set(part_type::any);
+                        break;
+                    case part_type::digits_only:
+                        set(tt);
+                        set(part_type::any);
+                        set(part_type::digit_first);
+                        break;
+                    case part_type::digit_first:
+                        set(tt);
+                        set(part_type::any);
+                        break;
+                    case part_type::size_:
+                        break;
+                }
+            }
+
+            void set(part_type tt) { std::bitset<static_cast<size_t>(part_type::size_)>::set(static_cast<size_t>(tt)); }
+        };
 
         std::string head{};
         std::string tail{};
-        enum type type { undef };
-        int _padding{0}; // avoid warning
+        type_t type{};
 
         part_t() = default;
         part_t(const part_t&) = default;
         part_t(part_t&&) = default;
-        part_t(std::string&& text, enum type typ) : head{std::move(text)}, type{typ} {}
-        part_t(const char* text, enum type typ) : head{text}, type{typ} {}
-        part_t(enum type typ) : type{typ} {}
-        template <Lexeme Lex> part_t(Lex&& lexeme, enum type typ) : head{uppercase_strip(lexeme)}, type{typ} {}
-        template <Lexeme Lex> part_t(Lex&& lex1, Lex&& lex2, enum type typ) : head{uppercase_strip(lex1)}, tail{uppercase_strip(lex2)}, type{typ} {}
-        part_t& operator=(const part_t&) = default;
-        part_t& operator=(part_t&&) = default;
-        constexpr bool empty() const { return head.empty(); }
-    };
+        part_t(std::string&& text, type_t typ) :
+                head{std::move(text)}, type{typ} {}
+                part_t(const char* text, type_t typ) : head{text}, type{typ} {}
+                part_t(type_t typ) : type{typ} {}
+                template <Lexeme Lex> part_t(Lex && lexeme, type_t typ) : head{uppercase_strip(lexeme)}, type{typ} {}
+                template <Lexeme Lex> part_t(Lex && lex1, Lex && lex2, type_t typ) : head{uppercase_strip(lex1)}, tail{uppercase_strip(lex2)}, type{typ} {}
+                part_t& operator=(const part_t&) = default;
+                part_t& operator=(part_t&&) = default;
+                constexpr bool empty() const { return head.empty(); }
+                };
 
     using parts_t = std::array<part_t, 8>;
 
     inline bool types_match(const parts_t& p1, const parts_t& p2)
     {
-        return std::equal(p1.begin(), p1.end(), p2.begin(), [](const auto& e1, const auto& e2) { return e1.type == e2.type; });
+        // ??? return std::equal(p1.begin(), p1.end(), p2.begin(), [](const auto& e1, const auto& e2) { return e1.type == e2.type; });
     }
 
     // ======================================================================
@@ -109,10 +154,10 @@ namespace ae::virus::name::inline v1
             static constexpr auto rule = A >> dsl::opt(dsl::p<hn> | OPEN >> dsl::p<hn> + CLOSE);
             static constexpr auto value = lexy::callback<part_t>( //
                 [](lexy::nullopt) {
-                    return part_t{"A", part_t::subtype};
+                    return part_t{"A", part_type::subtype};
                 }, //
                 [](const std::string& a1) {
-                    return part_t{fmt::format("A({})", a1), part_t::subtype};
+                    return part_t{fmt::format("A({})", a1), part_type::subtype};
                 });
         };
 
@@ -121,7 +166,7 @@ namespace ae::virus::name::inline v1
             static constexpr auto B = dsl::lit_c<'B'> / dsl::lit_c<'b'>;
 
             static constexpr auto rule = B;
-            static constexpr auto value = lexy::callback<part_t>([]() { return part_t{"B", part_t::subtype}; });
+            static constexpr auto value = lexy::callback<part_t>([]() { return part_t{"B", part_type::subtype}; });
         };
 
         // ----------------------------------------------------------------------
@@ -136,9 +181,9 @@ namespace ae::virus::name::inline v1
             static constexpr auto rule = dsl::peek(dsl::ascii::alpha / letter_extra) >> dsl::capture(dsl::while_(letters_only)) + dsl::opt(dsl::peek_not(dsl::lit_c<'/'>) >> dsl::capture(dsl::while_(mixed)));
             static constexpr auto value = lexy::callback<part_t>([](auto lex1, auto lex2) {
                 if constexpr (std::is_same_v<decltype(lex2), lexy::nullopt>)
-                    return part_t{lex1, part_t::letters};
+                    return part_t{lex1, part_type::letters_only};
                 else
-                    return part_t{lex1, lex2, part_t::letter_mixed};
+                    return part_t{lex1, lex2, part_type::letter_first};
             });
         };
 
@@ -150,9 +195,9 @@ namespace ae::virus::name::inline v1
             static constexpr auto rule = dsl::peek(dsl::digit<>) >> dsl::capture(dsl::while_(dsl::digits<>)) + dsl::opt(dsl::peek(mixed) >> dsl::capture(dsl::while_(mixed)));
             static constexpr auto value = lexy::callback<part_t>([](auto lex1, auto lex2) {
                 if constexpr (std::is_same_v<decltype(lex2), lexy::nullopt>)
-                    return part_t{lex1, part_t::digits};
+                    return part_t{lex1, part_type::digits_only};
                 else
-                    return part_t{lex1, lex2, part_t::digit_mixed};
+                    return part_t{lex1, lex2, part_type::digit_first};
             });
         };
 
@@ -167,7 +212,7 @@ namespace ae::virus::name::inline v1
         struct rest
         {
             static constexpr auto rule = dsl::capture(dsl::any);
-            static constexpr auto value = lexy::callback<part_t>([](auto lexeme) { return part_t{lexeme, part_t::rest}; });
+            static constexpr auto value = lexy::callback<part_t>([](auto lexeme) { return part_t{lexeme, part_type::any}; });
         };
 
         // ----------------------------------------------------------------------
@@ -192,12 +237,12 @@ namespace ae::virus::name::inline v1
         };
 
     } // namespace grammar
-} // namespace ae::virus::name::inline v1
+            } // namespace ae::virus::name::inline v1
 
 // ----------------------------------------------------------------------
 
-template <> struct fmt::formatter<enum ae::virus::name::part_t::type> : fmt::formatter<eu::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(const enum ae::virus::name::part_t::type& value, FormatCtx& ctx)
+template <> struct fmt::formatter<enum ae::virus::name::part_type> : fmt::formatter<eu::fmt_helper::default_formatter> {
+    template <typename FormatCtx> auto format(const enum ae::virus::name::part_type& value, FormatCtx& ctx)
     {
         using namespace ae::virus::name;
         switch (value) {
