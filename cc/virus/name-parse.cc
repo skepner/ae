@@ -244,7 +244,7 @@ namespace ae::virus::name::inline v1
     // ----------------------------------------------------------------------
 
     // return source unchanged, if location not found but add message
-    inline std::string_view fix_location(std::string_view location, std::string_view source, parse_settings& settings)
+    inline std::string_view fix_location(const std::string& location, std::string_view source, parse_settings& settings)
     {
         if (const auto fixed = locationdb::get().find(location); !fixed.empty()) {
             return fixed;
@@ -254,6 +254,9 @@ namespace ae::virus::name::inline v1
             return location;
         }
     }
+
+    // return source unchanged, if year is not valid but add message
+    inline std::string fix_year(std::string_view year, std::string_view source, parse_settings& settings) { return std::string{source}; }
 
 } // namespace ae::virus::name::inline v1
 
@@ -340,6 +343,9 @@ std::string ae::virus::name::v1::Parts::name(mark_extra me) const
 
 ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, parse_settings& settings)
 {
+    const auto fix_location = [source, &settings](const part_t& part) { return name::fix_location(part, source, settings); };
+    const auto fix_year = [source, &settings](const part_t& part) { return name::fix_year(part.head, source, settings); };
+
     if (settings.trace()) {
         fmt::print(">>> parsing \"{}\"\n", source);
         lexy::trace<grammar::parts>(stderr, lexy::string_input<lexy::utf8_encoding>{source});
@@ -347,7 +353,7 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
     const auto result = lexy::parse<grammar::parts>(lexy::string_input<lexy::utf8_encoding>{source}, lexy_ext::report_error);
     const auto parts = result.value();
     if (types_match(parts, {part_type::subtype, part_type::letters_only, part_type::any, part_type::digits_only})) {
-        return {.subtype = parts[0], .location{fix_location(parts[1].head, source, settings)}, .isolation = parts[2], .year = parts[3]};
+        return {.subtype = parts[0], .location{fix_location(parts[1])}, .isolation = parts[2], .year = fix_year(parts[3])};
         // fmt::print(">>> {}  A/LOC/ISO/YEAR  \"{}\" -> \"{}\"\n", source, parts[1].head, new_loc);
     }
     else
