@@ -56,19 +56,19 @@ void virus_name_parsing_test()
         // TestData{"A/Mali 071 Ci/2015",                                                 {}}, // to_compare_t{A,              H,            "MALI", "71 CI", "2015", R, P, E}},
         // TestData{"A/Zambia/13/174/2013",                                               {}}, // to_compare_t{A,              H,            "ZAMBIA", "13-174", "2013", R, P, E}},
         // TestData{"A/Lyon/CHU18.54.48/2018",                                            {}}, // to_compare_t{A,              H,            "LYON CHU", "18.54.48", "2018", R, P, E}},
-        // TestData{"A/Lyon/CHU/R18.54.48/2018",                                          {}}, // to_compare_t{A,              H,            "LYON CHU", "R18.54.48", "2018", R, P, E}},
+        TestData{"A/Lyon/CHU/R18.54.48/2018",                                          {}}, // to_compare_t{A,              H,            "LYON CHU", "R18.54.48", "2018", R, P, E}},
         // TestData{"A/Algeria/G0281/16/2016",                                            {}}, // to_compare_t{A,              H,            "ALGERIA", "G0281-16", "2016", R, P, E}},
         // TestData{"A/chicken/Ghana/7/2015",                                             {}}, // to_compare_t{A,              hst{"CHICKEN"}, "GHANA", "7", "2015", R, P, E}},
         // TestData{"IVR-153 (A/CALIFORNIA/07/2009)",                                     {}}, // to_compare_t{A,              H,            "CALIFORNIA", "7", "2009", Reassortant{"IVR-153"}, P, E}},
         // TestData{"A/Antananarivo/1067/2016 CBER-11B C1.3",                             {}}, // to_compare_t{A,              H,            "ANTANANARIVO", "1067", "2016", Reassortant{"CBER-11B"}, P, "C1.3"}}, // CDC
         // TestData{"A/Montana/50/2016 CBER-07 D2.3",                                     {}}, // to_compare_t{A,              H,            "MONTANA", "50", "2016", Reassortant{"CBER-07"}, P, "D2.3"}}, // CDC
-        // TestData{"A/duck/Guangdong/4.30 DGCPLB014-O/2017",                             {}}, // to_compare_t{A,              hst{"DUCK"},  "GUANGDONG", "4.30 DGCPLB014-O", "2017", R, P, E}},
+        TestData{"A/duck/Guangdong/4.30 DGCPLB014-O/2017",                             {}}, // to_compare_t{A,              hst{"DUCK"},  "GUANGDONG", "4.30 DGCPLB014-O", "2017", R, P, E}},
         // TestData{"A/duck/Guangdong/02.11 DGQTXC195-P/2015(Mixed)",                     {}}, // to_compare_t{A,              hst{"DUCK"},  "GUANGDONG", "2.11 DGQTXC195-P", "2015", R, P, E}}, // (MIXED) removed
         // TestData{"A/duck/Guangdong/02.11 DGQTXC195-P/2015(H5N1)",                      {}}, // to_compare_t{typ{"A(H5N1)"}, hst{"DUCK"},  "GUANGDONG", "2.11 DGQTXC195-P", "2015", R, P, E}},
         // TestData{"A/swine/Chachoengsao/2003",                                          {}}, // to_compare_t{A,              hst{"SWINE"}, "CHACHOENGSAO", "UNKNOWN", "2003", R, P, E}},
 
         // // nbci -- genbank
-        // TestData{"A/Anas platyrhynchos/Belgium/17330 2/2013",                          {}}, // to_compare_t{A, hst{"MALLARD"}, "BELGIUM", "17330 2", "2013", R, P, E}},
+        TestData{"A/Anas platyrhynchos/Belgium/17330 2/2013",                          {}}, // to_compare_t{A, hst{"MALLARD"}, "BELGIUM", "17330 2", "2013", R, P, E}},
         // // TestData{"A/mallard/Balkhash/6304_HA/2014",                                 {}}, //    to_compare_t{A, hst{"MALLARD"}, "BALKHASH", "6304", "2014"}, R, P, E}},
         // TestData{"A/mallard/Balkhash/6304_HA/2014",                                    {}}, // to_compare_t{A, hst{"MALLARD"}, "BALKHASH", "6304", "2014", R, P, E}}, // _HA is seqgment reference in ncbi
         // // TestData{"A/SWINE/NE/55024/2018",                                           {}}, //    to_compare_t{A, hst{"SWINE"},   "NE", "55024", "2018", R, P, E}},

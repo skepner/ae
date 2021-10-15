@@ -186,7 +186,7 @@ namespace ae::virus::name::inline v1
         {
             static constexpr auto whitespace = dsl::ascii::blank; // auto skip whitespaces
             static constexpr auto letters_only = dsl::ascii::alpha / letter_extra / dsl::lit_c<'_'> / dsl::hyphen / dsl::ascii::blank;
-            static constexpr auto mixed = letters_only / dsl::ascii::digit / dsl::colon;
+            static constexpr auto mixed = letters_only / dsl::ascii::digit / dsl::colon / dsl::period;
 
             static constexpr auto rule = dsl::peek(dsl::ascii::alpha / letter_extra) >>
                                          dsl::capture(dsl::while_(letters_only)) + dsl::opt(dsl::peek_not(dsl::lit_c<'/'>) >> dsl::capture(dsl::while_(mixed)));
@@ -201,7 +201,7 @@ namespace ae::virus::name::inline v1
         // chunk starting with a digit, followed by letters, digits, -, _, :, (BUT NO space)
         struct digits
         {
-            static constexpr auto mixed = dsl::digits<> / dsl::lit_c<'_'> / dsl::hyphen / dsl::ascii::digit / dsl::colon; // NO blank!!
+            static constexpr auto mixed = dsl::digits<> / dsl::lit_c<'_'> / dsl::hyphen / dsl::ascii::digit / dsl::colon / dsl::period; // NO blank!!
 
             static constexpr auto rule = dsl::peek(dsl::digit<>) >> dsl::capture(dsl::while_(dsl::digits<>)) + dsl::opt(dsl::peek(mixed) >> dsl::capture(dsl::while_(mixed)));
             static constexpr auto value = lexy::callback<part_t>([](auto lex1, auto lex2) {
@@ -438,8 +438,14 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
             result.year = fix_year(parts[4], source, result, settings, context);
         }
     }
-    // ??? reassortant at the end
+    // A/Zambia/13/174/2013
+    // A/Lyon/CHU18.54.48/2018
+    // reassortant at the end
+    // IVR-153 (A/CALIFORNIA/07/2009)
     // (H3N2) at the end
+    // A/swine/Chachoengsao/2003
+    // A/chicken/Iran221/2001
+    // A/chicken/Yunnan/Kunming/2007 -> A/chicken/Yunnan Kunming/?/2007
     // extra at the end
     else
         settings.messages().message(fmt::format("unhandled name: \"{}\"", parsing_result.value()), fmt::format("{} {}", source, context));
