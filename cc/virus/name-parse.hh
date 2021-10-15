@@ -1,5 +1,7 @@
 #pragma once
 
+#include <bitset>
+
 #include "ext/fmt.hh"
 #include "utils/messages.hh"
 
@@ -9,6 +11,18 @@ namespace ae::virus::name::inline v1
 {
     struct Parts
     {
+        enum class issue {
+            unrecognized_location,
+            invalid_year,
+            size_
+        };
+
+        struct issues_t : public std::bitset<static_cast<size_t>(issue::size_)>
+        {
+            void add(issue iss) { set(static_cast<size_t>(iss)); }
+        };
+
+        issues_t issues {};
         std::string subtype{};
         std::string host{};
         std::string location{};
@@ -38,7 +52,8 @@ namespace ae::virus::name::inline v1
         ae::Messages messages_;
     };
 
-    Parts parse(std::string_view source, parse_settings& settings);
+    // context is e.g. file:line referring to source fasta file
+    Parts parse(std::string_view source, parse_settings& settings, std::string_view context);
 }
 
 // ----------------------------------------------------------------------

@@ -2,10 +2,11 @@
 #include <vector>
 #include <cctype>
 #include <algorithm>
-#include <bitset>
 
 #include "virus/name-parse.hh"
 #include "ext/lexy.hh"
+#include "ext/date.hh"
+#include "ext/from_chars.hh"
 #include "locdb/locdb.hh"
 
 // ======================================================================
@@ -244,19 +245,44 @@ namespace ae::virus::name::inline v1
     // ----------------------------------------------------------------------
 
     // return source unchanged, if location not found but add message
-    inline std::string_view fix_location(const std::string& location, std::string_view source, parse_settings& settings)
+    inline std::string_view fix_location(const std::string& location, std::string_view source, Parts& parts, parse_settings& settings, std::string_view context)
     {
         if (const auto fixed = locationdb::get().find(location); !fixed.empty()) {
             return fixed;
         }
         else {
-            settings.messages().unrecognized_location(location, source);
+            parts.issues.add(Parts::issue::unrecognized_location);
+            settings.messages().unrecognized_location(location, fmt::format("{} {}", source, context));
             return location;
         }
     }
 
     // return source unchanged, if year is not valid but add message
-    inline std::string fix_year(std::string_view year, std::string_view source, parse_settings& settings) { return std::string{source}; }
+    inline std::string fix_year(const std::string& year, std::string_view source, Parts& parts, parse_settings& settings, std::string_view context)
+    {
+        try {
+            const size_t earlierst_year = 1900;
+            const auto today_year = date::today_year();
+            switch (year.size()) {
+                case 4:
+                    if (const auto year_i = ae::from_chars<size_t>(year); year_i < earlierst_year || year_i > today_year)
+                        throw std::invalid_argument{fmt::format("out of range {}..{}", earlierst_year, today_year)};
+                    return year;
+                case 2:
+                    if (const auto year_i = ae::from_chars<size_t>(year); year_i <= (today_year - 2000))
+                        return fmt::format("{}", year_i + 2000);
+                    else
+                        return fmt::format("{}", year_i + 1900);
+                default:
+                    parts.issues.add(Parts::issue::invalid_year);
+                    throw std::invalid_argument{"unsupported value length"};
+            }
+        }
+        catch (std::exception& err) {
+            settings.messages().message(fmt::format("invalid year: \"{}\": {}", year, err.what()), fmt::format("{} {}", source, context));
+        }
+        return year;
+    }
 
 } // namespace ae::virus::name::inline v1
 
@@ -341,24 +367,25 @@ std::string ae::virus::name::v1::Parts::name(mark_extra me) const
 
 // ----------------------------------------------------------------------
 
-ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, parse_settings& settings)
+ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, parse_settings& settings, std::string_view context)
 {
-    const auto fix_location = [source, &settings](const part_t& part) { return name::fix_location(part, source, settings); };
-    const auto fix_year = [source, &settings](const part_t& part) { return name::fix_year(part.head, source, settings); };
+    Parts result;
 
     if (settings.trace()) {
         fmt::print(">>> parsing \"{}\"\n", source);
         lexy::trace<grammar::parts>(stderr, lexy::string_input<lexy::utf8_encoding>{source});
     }
-    const auto result = lexy::parse<grammar::parts>(lexy::string_input<lexy::utf8_encoding>{source}, lexy_ext::report_error);
-    const auto parts = result.value();
+    const auto parsing_result = lexy::parse<grammar::parts>(lexy::string_input<lexy::utf8_encoding>{source}, lexy_ext::report_error);
+    const auto parts = parsing_result.value();
     if (types_match(parts, {part_type::subtype, part_type::letters_only, part_type::any, part_type::digits_only})) {
-        return {.subtype = parts[0], .location{fix_location(parts[1])}, .isolation = parts[2], .year = fix_year(parts[3])};
-        // fmt::print(">>> {}  A/LOC/ISO/YEAR  \"{}\" -> \"{}\"\n", source, parts[1].head, new_loc);
+        result.subtype = parts[0];
+        result.location = fix_location(parts[1], source, result, settings, context);
+        result.isolation = parts[2];
+        result.year = fix_year(parts[3], source, result, settings, context);
     }
     else
-        settings.messages().message(fmt::format("unhandled name: \"{}\"", result.value()), source);
-    return {};
+        settings.messages().message(fmt::format("unhandled name: \"{}\"", parsing_result.value()), fmt::format("{} {}", source, context));
+    return result;
 }
 
 // ----------------------------------------------------------------------

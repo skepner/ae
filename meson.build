@@ -32,7 +32,10 @@ subproject('simdjson')
 simdjson = dependency('simdjson')
 
 subproject('range_v3')
+range_v3 = dependency('range_v3')
+
 subproject('pybind11')
+pybind11 = dependency('pybind11')
 
 zlib = dependency('zlib', version : '>=1.2.8')
 xz = dependency('liblzma')
@@ -46,7 +49,7 @@ bzip2 = meson.get_compiler('cpp').find_library('bz2', required : false)
 
 test_basic = executable('test-basic', 'cc/test/basic.cc',
                  include_directories : include_directories('./cc'),
-                 dependencies : [fmt, dependency('xlnt'), simdjson, dependency('range-v3'), lexy],
+                 dependencies : [fmt, dependency('xlnt'), simdjson, range_v3, lexy],
                  install : true)
 
 test('ae test basic', test_basic)
@@ -56,7 +59,7 @@ test_virus_name = executable('test-virus-name', 'cc/test/virus-name.cc',
                              'cc/locdb/locdb.cc',
                              'cc/utils/file.cc', 'cc/utils/messages.cc',
                  include_directories : include_directories('./cc'),
-                 dependencies : [fmt, simdjson, bzip2, zlib, xz, lexy],
+                 dependencies : [fmt, simdjson, range_v3, bzip2, zlib, xz, lexy],
                  install : true)
 
 test('ae test virus name parsing', test_virus_name)
@@ -72,7 +75,7 @@ pyb_lib = python3.extension_module(
   'pyb',
   sources : ['cc/core/py.cc'],
   include_directories : include_directories('./cc'),
-  dependencies : [dependency('python3'), dependency('pybind11'), fmt, lexy],
+  dependencies : [dependency('python3'), pybind11, fmt, lexy],
   install : true)
 
 # https://gabmus.org/posts/python-unittest-meson/

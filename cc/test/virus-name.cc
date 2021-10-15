@@ -1,6 +1,7 @@
 #include <array>
 
 #include "ext/fmt.hh"
+#include "ext/range-v3.hh"
 #include "virus/name-parse.hh"
 
 static void virus_name_parsing_test();
@@ -109,10 +110,10 @@ void virus_name_parsing_test()
 
     // size_t errors = 0;
     ae::virus::name::parse_settings settings{};
-    for (const auto& entry : data) {
+    for (const auto [no, entry] : ranges::views::enumerate(data)) {
         try {
             // AD_DEBUG("{}", entry.raw_name);
-            const auto result = ae::virus::name::parse(entry.raw_name, settings);
+            const auto result = ae::virus::name::parse(entry.raw_name, settings, fmt::format("test:{}", no));
             fmt::print("{}\n", result);
             // if (result != entry.expected) {
             //     AD_ERROR("{} <-- \"{}\"  expected: \"{}\"", result, entry.raw_name, entry.expected);
