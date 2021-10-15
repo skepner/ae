@@ -383,6 +383,8 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
     const auto parsing_result = lexy::parse<grammar::parts>(lexy::string_input<lexy::utf8_encoding>{source}, lexy_ext::report_error);
     const auto parts = parsing_result.value();
     if (types_match(parts, {part_type::type_subtype, part_type::letters_only, part_type::any, part_type::digits_only})) {
+        // A(H3N2)/SINGAPORE/INFIMH-16-0019/2016
+        // A/SINGAPORE/INFIMH-16-0019/2016
         result.subtype = parts[0];
         result.location = fix_location(parts[1], source, result, settings, context);
         result.isolation = parts[2];
@@ -403,6 +405,42 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
         result.isolation = parts[3];
         result.year = fix_year(parts[4], source, result, settings, context);
     }
+    else if (types_match(parts, {part_type::type_subtype, part_type::letters_only, part_type::letters_only, part_type::any, part_type::digits_only})) {
+        const auto& locdb = locationdb::get();
+        if (const auto loc1 = locdb.find(parts[1].head), loc2 = locdb.find(parts[2].head); loc1.empty() && !loc2.empty()) {
+            // A(H3N2)/HUMAN/SINGAPORE/INFIMH-16-0019/2016
+            result.subtype = parts[0];
+            result.host = parts[1];
+            result.location = loc2;
+            result.isolation = parts[3];
+            result.year = fix_year(parts[4], source, result, settings, context);
+        }
+        else if (const auto loc12 = locdb.find(fmt::format("{} {}", parts[1].head, parts[2].head)); !loc12.empty()) {
+            // A(H3N2)/LYON/CHU/19/2016
+            result.subtype = parts[0];
+            result.location = loc12;
+            result.isolation = parts[3];
+            result.year = fix_year(parts[4], source, result, settings, context);
+        }
+        else if (!loc1.empty() && loc2.empty()) {
+            // A(H3N2)/LYON/XXX/19/2016
+            result.subtype = parts[0];
+            result.location = loc1;
+            result.isolation = fmt::format("{}-{}", parts[2].head, std::string{parts[3]});
+            result.year = fix_year(parts[4], source, result, settings, context);
+        }
+        else {                  // unrecognized_location
+            result.subtype = parts[0];
+            result.location = fmt::format("{}/{}", parts[1].head, parts[2].head);
+            result.issues.add(Parts::issue::unrecognized_location);
+            settings.messages().unrecognized_location(result.location, fmt::format("{} {}", source, context));
+            result.isolation = parts[3];
+            result.year = fix_year(parts[4], source, result, settings, context);
+        }
+    }
+    // ??? reassortant at the end
+    // (H3N2) at the end
+    // extra at the end
     else
         settings.messages().message(fmt::format("unhandled name: \"{}\"", parsing_result.value()), fmt::format("{} {}", source, context));
     return result;
