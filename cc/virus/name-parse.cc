@@ -76,6 +76,7 @@ namespace ae::virus::name::inline v1
                         set(tt);
                         set(part_type::any);
                         set(part_type::digit_first);
+                        set(part_type::digits_hyphens);
                         break;
                     case part_type::digit_first:
                         set(tt);
@@ -292,6 +293,12 @@ namespace ae::virus::name::inline v1
                         return fmt::format("{}", year_i + 2000);
                     else
                         return fmt::format("{}", year_i + 1900);
+                case 10:        // e.g. 2021-10-15
+                    if (year[4] != '-' && year[7] != '-')
+                        throw std::invalid_argument{fmt::format("not a date")};
+                    if (const auto year_i = ae::from_chars<size_t>(std::string_view(year.data(), 4)); year_i < earlierst_year || year_i > today_year)
+                        throw std::invalid_argument{fmt::format("out of range {}..{}", earlierst_year, today_year)};
+                    return year.substr(0, 4);
                 default:
                     throw std::invalid_argument{"unsupported value length"};
             }
@@ -403,7 +410,7 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
     const auto parsing_result = lexy::parse<grammar::parts>(lexy::string_input<lexy::utf8_encoding>{source}, lexy_ext::report_error);
     const auto parts = parsing_result.value();
     fmt::print("{}\n", parts);
-    if (types_match(parts, {part_type::type_subtype, part_type::letters_only, part_type::any, part_type::digits_only})) {
+    if (types_match(parts, {part_type::type_subtype, part_type::letters_only, part_type::any, part_type::digits_hyphens})) {
         // A(H3N2)/SINGAPORE/INFIMH-16-0019/2016
         // A/SINGAPORE/INFIMH-16-0019/2016
         result.subtype = parts[0];
@@ -411,7 +418,7 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
         result.isolation = parts[2];
         result.year = fix_year(parts[3], source, result, settings, context);
     }
-    else if (types_match(parts, {part_type::type_subtype, part_type::subtype, part_type::letters_only, part_type::any, part_type::digits_only})) {
+    else if (types_match(parts, {part_type::type_subtype, part_type::subtype, part_type::letters_only, part_type::any, part_type::digits_hyphens})) {
         if (parts[0].head.size() == 1) {
             // A/H3N2/SINGAPORE/INFIMH-16-0019/2016
             result.subtype = fmt::format("{}({})", parts[0].head, parts[1].head);
@@ -426,7 +433,7 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
         result.isolation = parts[3];
         result.year = fix_year(parts[4], source, result, settings, context);
     }
-    else if (types_match(parts, {part_type::type_subtype, part_type::letters_only, part_type::letters_only, part_type::any, part_type::digits_only})) {
+    else if (types_match(parts, {part_type::type_subtype, part_type::letters_only, part_type::letters_only, part_type::any, part_type::digits_hyphens})) {
         const auto& locdb = locationdb::get();
         if (const auto loc1 = locdb.find(parts[1].head), loc2 = locdb.find(parts[2].head); loc1.empty() && !loc2.empty()) {
             // A(H3N2)/HUMAN/SINGAPORE/INFIMH-16-0019/2016
