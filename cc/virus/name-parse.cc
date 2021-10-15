@@ -46,6 +46,7 @@ namespace ae::virus::name::inline v1
         letter_first, // first symbol is a letter or cjk
         digits_only,  // just decimal digits
         digit_first,  // first symbol is a decimal digit
+        digits_hyphens,  // e.g. 2021-10-15
         size_
     };
 
@@ -78,6 +79,11 @@ namespace ae::virus::name::inline v1
                         break;
                     case part_type::digit_first:
                         set(tt);
+                        set(part_type::any);
+                        break;
+                    case part_type::digits_hyphens:
+                        set(tt);
+                        set(part_type::digit_first);
                         set(part_type::any);
                         break;
                     case part_type::size_:
@@ -142,6 +148,7 @@ namespace ae::virus::name::inline v1
 
         struct subtype_a_hn
         {
+            static constexpr auto whitespace = dsl::ascii::blank; // auto skip whitespaces
             static constexpr auto H = dsl::lit_c<'H'> / dsl::lit_c<'h'>;
             static constexpr auto N = dsl::lit_c<'N'> / dsl::lit_c<'n'>;
 
@@ -157,6 +164,7 @@ namespace ae::virus::name::inline v1
 
         struct subtype_a
         {
+            static constexpr auto whitespace = dsl::ascii::blank; // auto skip whitespaces
             static constexpr auto A = dsl::lit_c<'A'> / dsl::lit_c<'a'>;
             static constexpr auto OPEN = dsl::lit_c<'('>;
             static constexpr auto CLOSE = dsl::lit_c<')'>;
@@ -173,6 +181,7 @@ namespace ae::virus::name::inline v1
 
         struct subtype_b
         {
+            static constexpr auto whitespace = dsl::ascii::blank; // auto skip whitespaces
             static constexpr auto B = dsl::lit_c<'B'> / dsl::lit_c<'b'>;
 
             static constexpr auto rule = B;
@@ -188,7 +197,7 @@ namespace ae::virus::name::inline v1
             static constexpr auto letters_only = dsl::ascii::alpha / letter_extra / dsl::lit_c<'_'> / dsl::hyphen / dsl::ascii::blank;
             static constexpr auto mixed = letters_only / dsl::ascii::digit / dsl::colon / dsl::period;
 
-            static constexpr auto rule = dsl::peek(dsl::ascii::alpha / letter_extra) >>
+            static constexpr auto rule = dsl::peek(dsl::while_(dsl::ascii::blank) + dsl::ascii::alpha / letter_extra) >>
                                          dsl::capture(dsl::while_(letters_only)) + dsl::opt(dsl::peek_not(dsl::lit_c<'/'>) >> dsl::capture(dsl::while_(mixed)));
             static constexpr auto value = lexy::callback<part_t>([](auto lex1, auto lex2) {
                 if constexpr (std::is_same_v<decltype(lex2), lexy::nullopt>)
@@ -201,12 +210,21 @@ namespace ae::virus::name::inline v1
         // chunk starting with a digit, followed by letters, digits, -, _, :, (BUT NO space)
         struct digits
         {
-            static constexpr auto mixed = dsl::digits<> / dsl::lit_c<'_'> / dsl::hyphen / dsl::ascii::digit / dsl::colon / dsl::period; // NO blank!!
+            static constexpr auto mixed = dsl::digits<> / dsl::ascii::alpha / letter_extra / dsl::lit_c<'_'> / dsl::hyphen / dsl::ascii::digit / dsl::colon / dsl::period; // NO blank!!
+            template <Lexeme L> static constexpr bool digits_hyphens(const L& lex) {
+                for (char cc : lex) {
+                    if (!std::isdigit(cc) && cc != '-')
+                        return false;
+                }
+                return true;
+            }
 
             static constexpr auto rule = dsl::peek(dsl::digit<>) >> dsl::capture(dsl::while_(dsl::digits<>)) + dsl::opt(dsl::peek(mixed) >> dsl::capture(dsl::while_(mixed)));
             static constexpr auto value = lexy::callback<part_t>([](auto lex1, auto lex2) {
                 if constexpr (std::is_same_v<decltype(lex2), lexy::nullopt>)
                     return part_t{lex1, part_type::digits_only};
+                else if (digits_hyphens(lex2))
+                    return part_t{lex1, lex2, part_type::digits_hyphens};
                 else
                     return part_t{lex1, lex2, part_type::digit_first};
             });
@@ -230,7 +248,6 @@ namespace ae::virus::name::inline v1
 
         struct parts
         {
-            static constexpr auto whitespace = dsl::ascii::blank; // auto skip whitespaces
             static constexpr auto rule = (dsl::p<subtype_a> | dsl::p<subtype_b>)+dsl::slash + dsl::p<slash_separated> + dsl::p<rest> + dsl::eof;
 
             static constexpr auto value = lexy::callback<parts_t>([](auto subtype, auto slash_separated, auto rest) {
@@ -329,6 +346,9 @@ template <> struct fmt::formatter<ae::virus::name::part_t::type_t> : fmt::format
                     case part_type::digit_first:
                         add("digit_first");
                         break;
+                    case part_type::digits_hyphens:
+                        add("digits_hyphens");
+                        break;
                     case part_type::size_:
                         break;
                 }
@@ -382,6 +402,7 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
     }
     const auto parsing_result = lexy::parse<grammar::parts>(lexy::string_input<lexy::utf8_encoding>{source}, lexy_ext::report_error);
     const auto parts = parsing_result.value();
+    fmt::print("{}\n", parts);
     if (types_match(parts, {part_type::type_subtype, part_type::letters_only, part_type::any, part_type::digits_only})) {
         // A(H3N2)/SINGAPORE/INFIMH-16-0019/2016
         // A/SINGAPORE/INFIMH-16-0019/2016
@@ -448,7 +469,7 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
     // A/chicken/Yunnan/Kunming/2007 -> A/chicken/Yunnan Kunming/?/2007
     // extra at the end
     else
-        settings.messages().message(fmt::format("unhandled name: \"{}\"", parsing_result.value()), fmt::format("{} {}", source, context));
+        settings.messages().message(fmt::format("unhandled name: \"{}\" {}", source, parts), fmt::format("{} {}", source, context));
     return result;
 }
 

@@ -63,6 +63,8 @@ void virus_name_parsing_test()
         // TestData{"A/Antananarivo/1067/2016 CBER-11B C1.3",                             {}}, // to_compare_t{A,              H,            "ANTANANARIVO", "1067", "2016", Reassortant{"CBER-11B"}, P, "C1.3"}}, // CDC
         // TestData{"A/Montana/50/2016 CBER-07 D2.3",                                     {}}, // to_compare_t{A,              H,            "MONTANA", "50", "2016", Reassortant{"CBER-07"}, P, "D2.3"}}, // CDC
         TestData{"A/duck/Guangdong/4.30 DGCPLB014-O/2017",                             {}}, // to_compare_t{A,              hst{"DUCK"},  "GUANGDONG", "4.30 DGCPLB014-O", "2017", R, P, E}},
+        TestData{"A/duck/Guangdong/4.30 DGCPLB014-O/2017 XXX",                             {}}, // to_compare_t{A,              hst{"DUCK"},  "GUANGDONG", "4.30 DGCPLB014-O", "2017", R, P, E}},
+        TestData{"A/duck/Guangdong/4.30.DGCPLB014-O/2017",                             {}}, // to_compare_t{A,              hst{"DUCK"},  "GUANGDONG", "4.30.DGCPLB014-O", "2017", R, P, E}},
         // TestData{"A/duck/Guangdong/02.11 DGQTXC195-P/2015(Mixed)",                     {}}, // to_compare_t{A,              hst{"DUCK"},  "GUANGDONG", "2.11 DGQTXC195-P", "2015", R, P, E}}, // (MIXED) removed
         // TestData{"A/duck/Guangdong/02.11 DGQTXC195-P/2015(H5N1)",                      {}}, // to_compare_t{typ{"A(H5N1)"}, hst{"DUCK"},  "GUANGDONG", "2.11 DGQTXC195-P", "2015", R, P, E}},
         // TestData{"A/swine/Chachoengsao/2003",                                          {}}, // to_compare_t{A,              hst{"SWINE"}, "CHACHOENGSAO", "UNKNOWN", "2003", R, P, E}},
