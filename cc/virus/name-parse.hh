@@ -14,6 +14,7 @@ namespace ae::virus::name::inline v1
         enum class issue {
             unrecognized_location,
             invalid_year,
+            invalid_subtype,
             size_
         };
 

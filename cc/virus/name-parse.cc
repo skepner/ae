@@ -39,7 +39,8 @@ namespace ae::virus::name::inline v1
     template <Lexeme Lex> inline std::string uppercase_strip(Lex&& lexeme) { return uppercase_strip(lexeme.begin(), lexeme.end()); }
 
     enum class part_type {
-        subtype, // A, B, A(H3N2)
+        type_subtype, // A, B, A(H3N2)
+        subtype, // H3N2
         any,
         letters_only, // letter, cjk, space, underscore, dash
         letter_first, // first symbol is a letter or cjk
@@ -56,6 +57,7 @@ namespace ae::virus::name::inline v1
             type_t(part_type tt)
             {
                 switch (tt) {
+                    case part_type::type_subtype:
                     case part_type::subtype:
                     case part_type::any:
                         set(tt);
@@ -138,35 +140,35 @@ namespace ae::virus::name::inline v1
 
         // ----------------------------------------------------------------------
 
+        struct subtype_a_hn
+        {
+            static constexpr auto H = dsl::lit_c<'H'> / dsl::lit_c<'h'>;
+            static constexpr auto N = dsl::lit_c<'N'> / dsl::lit_c<'n'>;
+
+            // H3N2 | H3
+            static constexpr auto rule = dsl::peek(H + dsl::digit<>) >> dsl::capture(H + dsl::digits<>) + dsl::opt(dsl::peek(N) >> dsl::capture(N + dsl::digits<>));
+            static constexpr auto value = lexy::callback<part_t>([](auto lex1, auto lex2) {
+                if constexpr (std::is_same_v<decltype(lex2), lexy::nullopt>)
+                    return part_t{uppercase_strip(lex1), part_type::subtype};
+                else
+                    return part_t{uppercase_strip(lex1.begin(), lex2.end()), part_type::subtype};
+            });
+        };
+
         struct subtype_a
         {
             static constexpr auto A = dsl::lit_c<'A'> / dsl::lit_c<'a'>;
-            static constexpr auto H = dsl::lit_c<'H'> / dsl::lit_c<'h'>;
-            static constexpr auto N = dsl::lit_c<'N'> / dsl::lit_c<'n'>;
             static constexpr auto OPEN = dsl::lit_c<'('>;
             static constexpr auto CLOSE = dsl::lit_c<')'>;
 
-            // H3N2 | H3
-            struct hn
-            {
-                static constexpr auto rule = dsl::peek(H) >> dsl::capture(H + dsl::digits<>) + dsl::opt(dsl::peek(N) >> dsl::capture(N + dsl::digits<>));
-                static constexpr auto value = lexy::callback<std::string>([](auto lex1, auto lex2) {
-                    if constexpr (std::is_same_v<decltype(lex2), lexy::nullopt>)
-                        return uppercase_strip(lex1);
-                    else
-                        return uppercase_strip(lex1.begin(), lex2.end());
-                });
-            };
-
             // A | AH3 | AH3N2 | A(H3N2) | A(H3)
-            static constexpr auto rule = A >> dsl::opt(dsl::p<hn> | OPEN >> dsl::p<hn> + CLOSE);
-            static constexpr auto value = lexy::callback<part_t>( //
-                [](lexy::nullopt) {
-                    return part_t{"A", part_type::subtype};
-                }, //
-                [](const std::string& a1) {
-                    return part_t{fmt::format("A({})", a1), part_type::subtype};
-                });
+            static constexpr auto rule = A >> dsl::opt(dsl::p<subtype_a_hn> | OPEN >> dsl::p<subtype_a_hn> + CLOSE);
+            static constexpr auto value = lexy::callback<part_t>([](auto lex) {
+                if constexpr (std::is_same_v<decltype(lex), lexy::nullopt>)
+                    return part_t{"A", part_type::type_subtype};
+                else
+                    return part_t{fmt::format("A({})", lex.head), part_type::type_subtype};
+            });
         };
 
         struct subtype_b
@@ -174,7 +176,7 @@ namespace ae::virus::name::inline v1
             static constexpr auto B = dsl::lit_c<'B'> / dsl::lit_c<'b'>;
 
             static constexpr auto rule = B;
-            static constexpr auto value = lexy::callback<part_t>([]() { return part_t{"B", part_type::subtype}; });
+            static constexpr auto value = lexy::callback<part_t>([]() { return part_t{"B", part_type::type_subtype}; });
         };
 
         // ----------------------------------------------------------------------
@@ -212,7 +214,7 @@ namespace ae::virus::name::inline v1
 
         struct slash_separated
         {
-            static constexpr auto rule = dsl::list(dsl::p<letters> | dsl::p<digits>, dsl::sep(dsl::slash));
+            static constexpr auto rule = dsl::list(dsl::p<subtype_a_hn> | dsl::p<letters> | dsl::p<digits>, dsl::sep(dsl::slash));
             static constexpr auto value = lexy::as_list<std::vector<part_t>>;
         };
 
@@ -274,11 +276,11 @@ namespace ae::virus::name::inline v1
                     else
                         return fmt::format("{}", year_i + 1900);
                 default:
-                    parts.issues.add(Parts::issue::invalid_year);
                     throw std::invalid_argument{"unsupported value length"};
             }
         }
         catch (std::exception& err) {
+            parts.issues.add(Parts::issue::invalid_year);
             settings.messages().message(fmt::format("invalid year: \"{}\": {}", year, err.what()), fmt::format("{} {}", source, context));
         }
         return year;
@@ -306,6 +308,9 @@ template <> struct fmt::formatter<ae::virus::name::part_t::type_t> : fmt::format
         {
             if (value[pt]) {
                 switch (static_cast<part_type>(pt)) {
+                    case part_type::type_subtype:
+                        add("type_subtype");
+                        break;
                     case part_type::subtype:
                         add("subtype");
                         break;
@@ -377,11 +382,26 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
     }
     const auto parsing_result = lexy::parse<grammar::parts>(lexy::string_input<lexy::utf8_encoding>{source}, lexy_ext::report_error);
     const auto parts = parsing_result.value();
-    if (types_match(parts, {part_type::subtype, part_type::letters_only, part_type::any, part_type::digits_only})) {
+    if (types_match(parts, {part_type::type_subtype, part_type::letters_only, part_type::any, part_type::digits_only})) {
         result.subtype = parts[0];
         result.location = fix_location(parts[1], source, result, settings, context);
         result.isolation = parts[2];
         result.year = fix_year(parts[3], source, result, settings, context);
+    }
+    else if (types_match(parts, {part_type::type_subtype, part_type::subtype, part_type::letters_only, part_type::any, part_type::digits_only})) {
+        if (parts[0].head.size() == 1) {
+            // A/H3N2/SINGAPORE/INFIMH-16-0019/2016
+            result.subtype = fmt::format("{}({})", parts[0].head, parts[1].head);
+        }
+        else {
+            // A(H3N2)/H3N2/SINGAPORE/INFIMH-16-0019/2016
+            result.subtype = fmt::format("{}+{}", parts[0].head, parts[1].head);
+            result.issues.add(Parts::issue::invalid_subtype);
+            settings.messages().message(fmt::format("invalid subtype: \"{}/{}\"", parts[0].head, parts[1].head), fmt::format("{} {}", source, context));
+        }
+        result.location = fix_location(parts[2], source, result, settings, context);
+        result.isolation = parts[3];
+        result.year = fix_year(parts[4], source, result, settings, context);
     }
     else
         settings.messages().message(fmt::format("unhandled name: \"{}\"", parsing_result.value()), fmt::format("{} {}", source, context));
