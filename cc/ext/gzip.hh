@@ -18,7 +18,12 @@ namespace ae::file
 
       // ----------------------------------------------------------------------
 
-    inline bool gzip_compressed(const char* input) { return std::memcmp(input, gzip_internal::sGzipSig, sizeof(gzip_internal::sGzipSig)) == 0; }
+    inline bool gzip_compressed(std::string_view input)
+    {
+        if (input.size() < sizeof(gzip_internal::sGzipSig))
+            return false;
+        return std::memcmp(input.data(), gzip_internal::sGzipSig, sizeof(gzip_internal::sGzipSig)) == 0;
+    }
     std::string gzip_compress(std::string_view input);
     std::string gzip_decompress(std::string_view input, size_t padding = 0); // padding to support simdjson
 

@@ -18,122 +18,135 @@
 
 // ----------------------------------------------------------------------
 
-ae::file::read_access::read_access(std::string_view aFilename, size_t padding) : padding_{padding}
+namespace ae::file::detail
 {
-    if (aFilename == "-") {
-        constexpr size_t chunk_size = 1024 * 100;
-        data_.reserve(chunk_size + padding_);
-        data_.resize(chunk_size);
-        ssize_t start = 0;
-        for (;;) {
-            if (const auto bytes_read = ::read(0, data_.data() + start, chunk_size); bytes_read > 0) {
-                start += bytes_read;
-                data_.reserve(static_cast<size_t>(start) + chunk_size + padding_);
-                data_.resize(static_cast<size_t>(start));
-            }
-            else
-                break;
-        }
-    }
-    else if (std::filesystem::exists(aFilename)) {
-        len_ = std::filesystem::file_size(aFilename);
-        fd = ::open(aFilename.data(), O_RDONLY);
-        if (fd >= 0) {
-            mapped_ = reinterpret_cast<char*>(mmap(nullptr, len_, PROT_READ, MAP_FILE | MAP_PRIVATE, fd, 0));
-            if (mapped_ == MAP_FAILED)
-                throw cannot_read{fmt::format("{}: {}", aFilename, strerror(errno))};
-        }
-        else {
-            throw not_opened{fmt::format("{}: {}", aFilename, strerror(errno))};
-        }
-    }
-    else {
-        throw not_found{std::string{aFilename}};
-    }
 
-} // ae::file::read_access
+    inline std::unique_ptr<Compressed> compressed_factory(std::string_view initial_bytes, std::string_view filename, size_t padding)
+    {
+        if ((!initial_bytes.empty() && xz_compressed(initial_bytes)) || (!filename.empty() && filename.ends_with(".xz")))
+            return std::make_unique<XZ_Compressed>(padding);
+        // else if ((!initial_bytes.empty() && bz2_compressed(initial_bytes)) || (!filename.empty() && filename.ends_with(".bz2")))
+        //     return std::make_unique<BZ2_compressed>(padding);
+        // else if ((!initial_bytes.empty() && gzip_compressed(initial_bytes)) || (!filename.empty() && filename.ends_with(".gz")))
+        //     return std::make_unique<GZIP_compressed>(padding);
+        else
+            return std::make_unique<NotCompressed>(padding);
+
+    } // ae::file::read_access::compressed_factory
+
+} // namespace ae::file::detail
 
 // ----------------------------------------------------------------------
 
-ae::file::read_access::read_access(read_access&& other) : fd{other.fd}, len_{other.len_}, mapped_{other.mapped_}, data_{other.data_}, padding_{other.padding_}
+// ----------------------------------------------------------------------
+
+ae::file::read_access::read_access(std::string_view filename, size_t padding) : filename_{filename}, padding_{padding}
 {
-    other.fd = -1;
-    other.len_ = 0;
-    other.mapped_ = nullptr;
-    other.data_.clear();
+    if (filename == "-") {
+        fd_ = 0;
+        decompressed_ = next_chunk(initial::yes);
+    }
+    else if (std::filesystem::exists(filename)) {
+        mapped_len_ = std::filesystem::file_size(filename);
+        fd_ = ::open(filename.data(), O_RDONLY);
+        if (fd_ >= 0) {
+            mapped_ = reinterpret_cast<char*>(mmap(nullptr, mapped_len_, PROT_READ, MAP_FILE | MAP_PRIVATE, fd_, 0));
+            if (mapped_ == MAP_FAILED)
+                throw cannot_read{fmt::format("{}: {}", filename, strerror(errno))};
+            decompressed_ = next_chunk(initial::yes);
+        }
+        else {
+            throw not_opened{fmt::format("{}: {}", filename, strerror(errno))};
+        }
+    }
+    else {
+        throw not_found{std::string{filename}};
+    }
 
 } // ae::file::read_access::read_access
 
 // ----------------------------------------------------------------------
 
+ae::file::read_access::read_access(int fd, size_t chunk_size, size_t padding) : chunk_size_{chunk_size}, fd_{fd}, padding_{padding}
+{
+    decompressed_ = next_chunk(initial::yes);
+}
+
+// ----------------------------------------------------------------------
+
 ae::file::read_access::~read_access()
 {
-    if (fd > 2) {
+    if (fd_ > 2) {
         if (mapped_)
-            munmap(mapped_, len_);
-        close(fd);
+            munmap(mapped_, mapped_len_);
+        close(fd_);
     }
 
 } // ae::file::read_access::~read_access
 
 // ----------------------------------------------------------------------
 
-ae::file::read_access& ae::file::read_access::operator=(read_access&& other)
+std::string_view ae::file::read_access::rest()
 {
-    fd = other.fd;
-    len_ = other.len_;
-    mapped_ = other.mapped_;
-    data_ = other.data_;
+    return decompressed_.substr(decompressed_offset_);
 
-    other.fd = -1;
-    other.len_ = 0;
-    other.mapped_ = nullptr;
-    other.data_.clear();
-
-    return *this;
-
-} // ae::file::read_access::operator=
+} // ae::file::read_access::rest
 
 // ----------------------------------------------------------------------
 
-std::string ae::file::decompress_if_necessary(std::string_view aSource, size_t padding)
+std::pair<std::string_view, bool> ae::file::read_access::line()
 {
-    if (xz_compressed(aSource.data()))
-        return xz_decompress(aSource, padding);
-    else if (bz2_compressed(aSource.data()))
-        return bz2_decompress(aSource, padding);
-    else if (gzip_compressed(aSource.data())) {
-        return gzip_decompress(aSource, padding);
+    if (const auto eol = decompressed_.find('\n', decompressed_offset_); eol == std::string_view::npos) {
+        const auto result = decompressed_.substr(decompressed_offset_);
+        decompressed_offset_ = decompressed_.size();
+        return {result, result.size() == 0};
     }
     else {
-        std::string res;
-        res.reserve(aSource.size() + padding);
-        res = aSource;
-        return res;
+        const auto result = decompressed_.substr(decompressed_offset_, eol - decompressed_offset_);
+        decompressed_offset_ = eol + 1;
+        return {result, false};
     }
 
-} // ae::file::decompress_if_necessary
+} // ae::file::read_access::line
 
 // ----------------------------------------------------------------------
 
-std::string ae::file::read_from_file_descriptor(int fd, size_t chunk_size)
+std::string_view ae::file::read_access::next_chunk(initial ini)
 {
-    std::string buffer;
-    std::string::size_type offset = 0;
-    for (;;) {
-        buffer.resize(buffer.size() + chunk_size, ' ');
-        const auto bytes_read = ::read(fd, (&*buffer.begin()) + offset, chunk_size);
-        if (bytes_read < 0)
-            throw std::runtime_error(std::string("Cannot read from file descriptor: ") + strerror(errno));
-        if (static_cast<size_t>(bytes_read) < chunk_size) {
-            buffer.resize(buffer.size() - chunk_size + static_cast<size_t>(bytes_read));
-            break;
-        }
-        offset += static_cast<size_t>(bytes_read);
+    if (mapped_) {
+        if (ini == initial::yes)
+            compressed_factory(std::string_view(mapped_, mapped_len_));
+        return compressed_->decompress(std::string_view(mapped_, mapped_len_), Compressed::first_chunk::yes);
     }
-    return decompress_if_necessary(std::string_view(buffer));
+    else {
+        data_.reserve(chunk_size_ + padding_);
+        data_.resize(chunk_size_);
+        ssize_t start = 0;
+        for (;;) {
+            if (const auto bytes_read = ::read(0, data_.data() + start, chunk_size_); bytes_read > 0) {
+                start += bytes_read;
+                data_.reserve(static_cast<size_t>(start) + chunk_size_ + padding_);
+                data_.resize(static_cast<size_t>(start));
+            }
+            else if (bytes_read < 0)
+                throw cannot_read{fmt::format("{}: {}", filename_, strerror(errno))};
+            else
+                break;
+        }
+        if (ini == initial::yes)
+            compressed_factory(data_);
+        return compressed_->decompress(data_, Compressed::first_chunk::yes);
+    }
 
-} // ae::file::read_from_file_descriptor
+} // ae::file::read_access::next_chunk
+
+// ----------------------------------------------------------------------
+
+void ae::file::read_access::compressed_factory(std::string_view initial_bytes)
+{
+    compressed_ = detail::compressed_factory(initial_bytes, {}, padding_);
+
+} // ae::file::read_access::compressed_factory
 
 // ----------------------------------------------------------------------
 
@@ -213,8 +226,9 @@ void ae::file::write(std::string_view aFilename, std::string_view aData, force_c
     }
     try {
         if (aForceCompression == force_compression::yes || (aFilename.size() > 3 && (aFilename.ends_with(".xz") || aFilename.ends_with(".gz")))) {
-            const auto compressed = aFilename.ends_with(".gz") ? gzip_compress(aData) : xz_compress(aData);
-            if (::write(f, compressed.data(), compressed.size()) < 0)
+            auto compressed = detail::compressed_factory({}, aFilename, 0);
+            const auto data = compressed->compress(aData);
+            if (::write(f, data.data(), data.size()) < 0)
                 throw std::runtime_error(fmt::format("Cannot write {}: {}", aFilename, strerror(errno)));
         }
         else {

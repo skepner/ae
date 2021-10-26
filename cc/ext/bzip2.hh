@@ -16,9 +16,11 @@ namespace ae::file
 
       // ----------------------------------------------------------------------
 
-    inline bool bz2_compressed(const char* input)
+    inline bool bz2_compressed(std::string_view input)
     {
-        return std::memcmp(input, bz2_internal::sBz2Sig, sizeof(bz2_internal::sBz2Sig)) == 0;
+        if (input.size() < sizeof(bz2_internal::sBz2Sig))
+            return false;
+        return std::memcmp(input.data(), bz2_internal::sBz2Sig, sizeof(bz2_internal::sBz2Sig)) == 0;
     }
 
       // ----------------------------------------------------------------------

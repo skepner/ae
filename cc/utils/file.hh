@@ -2,8 +2,10 @@
 
 #include <stdexcept>
 #include <string_view>
+#include <memory>
 
 #include "ext/fmt.hh"
+#include "ext/compressed.hh"
 
 #pragma GCC diagnostic push
 #ifdef __clang__
@@ -31,31 +33,46 @@ namespace ae::file
 
     class read_access
     {
-     public:
-        read_access() = default;
-        read_access(std::string_view aFilename, size_t padding = 0);
+      public:
+        // read_access() = default;
+        read_access(std::string_view filename, size_t padding = 0);
+        read_access(int fd, size_t chunk_size, size_t padding = 0);
         ~read_access();
         read_access(const read_access&) = delete;
-        read_access(read_access&&);
+        read_access(read_access&&) = delete;
         read_access& operator=(const read_access&) = delete;
-        read_access& operator=(read_access&&);
-        operator std::string() const { return mapped_ ? decompress_if_necessary({mapped_, len_}, padding_) : decompress_if_necessary(data_, padding_); }
-        size_t size() const { return mapped_ ? len_ : data_.size(); }
-        const char* data() const { return mapped_ ? mapped_ : data_.data(); }
-        bool valid() const { return mapped_ != nullptr || !data_.empty(); }
+        read_access& operator=(read_access&&) = delete;
 
-     private:
-        int fd = -1;
-        size_t len_ = 0;
-        char* mapped_ = nullptr;
-        std::string data_;
+        // operator std::string() const { return mapped_ ? decompress_if_necessary({mapped_, len_}, padding_) : decompress_if_necessary(data_, padding_); }
+        // bool valid() const { return mapped_ != nullptr || !data_.empty(); }
+
+        std::string_view rest();
+        operator std::string_view() { return rest(); }
+        operator std::string() { return std::string(rest()); }
+        std::pair<std::string_view, bool> line(); // line, end_of_file
+
+      private:
+        enum class initial { no, yes };
+
+        size_t chunk_size_{1024 * 1024 * 10};
+        std::unique_ptr<Compressed> compressed_{};
+        std::string filename_{};
+        int fd_{-1};
+        size_t mapped_len_{0};
+        char* mapped_{nullptr};
+        std::string data_{};
+        std::string_view decompressed_{};
+        size_t decompressed_offset_{0};
         size_t padding_{0}; // to support simdjson
+
+        void compressed_factory(std::string_view initial_bytes);
+        std::string_view next_chunk(initial ini = initial::no);
 
     }; // class read_access
 
     inline read_access read(std::string_view aFilename, size_t padding = 0) { return read_access{aFilename, padding}; }
-    std::string read_from_file_descriptor(int fd, size_t chunk_size = 1024);
-    inline std::string read_stdin() { return read_from_file_descriptor(0); }
+    inline read_access read_from_file_descriptor(int fd, size_t chunk_size = 1024) { return read_access(fd, chunk_size); }
+    inline read_access read_stdin() { return read_from_file_descriptor(0); }
     void write(std::string_view aFilename, std::string_view aData, force_compression aForceCompression = force_compression::no, backup_file aBackupFile = backup_file::yes);
 
     void backup(std::string_view to_backup, std::string_view backup_dir, backup_move bm = backup_move::no);
