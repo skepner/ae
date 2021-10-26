@@ -1,0 +1,27 @@
+#! /usr/bin/env python3
+"""
+Test importing and preprocessing fasta files
+"""
+
+import os, sys, argparse, traceback
+from pathlib import Path
+sys.path.insert(1, str(Path(os.environ["AE_ROOT"], "py")))
+import ae.directory_module
+
+# ----------------------------------------------------------------------
+
+def main(args: list):
+    for dir in args.dir:
+        dir_mod = ae.directory_module.load(dir)
+
+# ----------------------------------------------------------------------
+
+try:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("dir", nargs="+", type=Path)
+    args = parser.parse_args()
+    exit_code = main(args) or 0
+except Exception as err:
+    print(f"> {err}\n{traceback.format_exc()}", file=sys.stderr)
+    exit_code = 1
+exit(exit_code)
