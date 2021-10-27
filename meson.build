@@ -47,6 +47,11 @@ bzip2 = meson.get_compiler('cpp').find_library('bz2', required : false)
 
 # ----------------------------------------------------------------------
 
+sources_sequences = ['cc/sequences/fasta.cc']
+sources_utlis = ['cc/utils/file.cc', 'cc/utils/messages.cc']
+
+# ----------------------------------------------------------------------
+
 test_basic = executable('test-basic', 'cc/test/basic.cc',
                  include_directories : include_directories('./cc'),
                  dependencies : [fmt, dependency('xlnt'), simdjson, range_v3, lexy],
@@ -64,6 +69,7 @@ test_virus_name = executable('test-virus-name', 'cc/test/virus-name.cc',
 
 test('ae test virus name parsing', test_virus_name)
 
+
 # ----------------------------------------------------------------------
 # python module
 # https://github.com/mesonbuild/meson/issues/4677
@@ -71,11 +77,11 @@ test('ae test virus name parsing', test_virus_name)
 
 python3 = import('python').find_installation('python3')
 
-pyb_lib = python3.extension_module(
-  'pyb',
-  sources : ['cc/core/py.cc'],
+ae_lib = python3.extension_module(
+  'ae',
+  sources : ['cc/py/module.cc', 'cc/py/sequences.cc'] + sources_sequences + sources_utlis,
   include_directories : include_directories('./cc'),
-  dependencies : [dependency('python3'), pybind11, fmt, lexy],
+  dependencies : [dependency('python3'), pybind11, fmt, simdjson, range_v3, bzip2, zlib, xz, lexy],
   install : true)
 
 # https://gabmus.org/posts/python-unittest-meson/
@@ -83,10 +89,10 @@ pyb_lib = python3.extension_module(
 # python_paths = [join_paths(meson.current_build_dir(), '..')]
 # envdata.append('PYTHONPATH', python_paths)
 # envdata.append('TESTS_BUILDDIR', meson.current_build_dir())
-test('pyb test 1', python3,
-     args : ['-V'],
-     # args: ['-m', 'unittest', 'tests'],
-     # env: envdata
-    )
+# test('pyb test 1', python3,
+#      args : ['-V'],
+#      # args: ['-m', 'unittest', 'tests'],
+#      # env: envdata
+#     )
 
 # ----------------------------------------------------------------------

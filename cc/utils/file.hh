@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <string_view>
 #include <memory>
+#include <filesystem>
 
 #include "ext/fmt.hh"
 #include "ext/compressor.hh"
@@ -35,13 +36,13 @@ namespace ae::file
     {
       public:
         // read_access() = default;
-        read_access(std::string_view filename, size_t padding = 0);
+        read_access(const std::filesystem::path& filename, size_t padding = 0);
         read_access(int fd, size_t chunk_size, size_t padding = 0);
         ~read_access();
         read_access(const read_access&) = delete;
-        read_access(read_access&&) = delete;
+        read_access(read_access&&) = default;
         read_access& operator=(const read_access&) = delete;
-        read_access& operator=(read_access&&) = delete;
+        read_access& operator=(read_access&&) = default;
 
         // operator std::string() const { return mapped_ ? decompress_if_necessary({mapped_, len_}, padding_) : decompress_if_necessary(data_, padding_); }
         // bool valid() const { return mapped_ != nullptr || !data_.empty(); }
@@ -69,9 +70,9 @@ namespace ae::file
 
     }; // class read_access
 
-    inline read_access read(std::string_view aFilename, size_t padding = 0) { return read_access{aFilename, padding}; }
-    inline read_access read_from_file_descriptor(int fd, size_t chunk_size = 1024) { return read_access(fd, chunk_size); }
-    inline read_access read_stdin() { return read_from_file_descriptor(0); }
+    inline read_access read(const std::filesystem::path& filename, size_t padding = 0) { return read_access{filename, padding}; }
+    // inline read_access read_from_file_descriptor(int fd, size_t chunk_size = 1024) { return read_access(fd, chunk_size); }
+    // inline read_access read_stdin() { return read_from_file_descriptor(0); }
     void write(std::string_view aFilename, std::string_view aData, force_compression aForceCompression = force_compression::no, backup_file aBackupFile = backup_file::yes);
 
     void backup(std::string_view to_backup, std::string_view backup_dir, backup_move bm = backup_move::no);

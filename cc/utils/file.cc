@@ -40,7 +40,7 @@ namespace ae::file::detail
 
 // ----------------------------------------------------------------------
 
-ae::file::read_access::read_access(std::string_view filename, size_t padding) : filename_{filename}, padding_{padding}
+ae::file::read_access::read_access(const std::filesystem::path& filename, size_t padding) : filename_{filename}, padding_{padding}
 {
     if (filename == "-") {
         fd_ = 0;
@@ -48,15 +48,15 @@ ae::file::read_access::read_access(std::string_view filename, size_t padding) : 
     }
     else if (std::filesystem::exists(filename)) {
         mapped_len_ = std::filesystem::file_size(filename);
-        fd_ = ::open(filename.data(), O_RDONLY);
+        fd_ = ::open(filename.c_str(), O_RDONLY);
         if (fd_ >= 0) {
             mapped_ = reinterpret_cast<char*>(mmap(nullptr, mapped_len_, PROT_READ, MAP_FILE | MAP_PRIVATE, fd_, 0));
             if (mapped_ == MAP_FAILED)
-                throw cannot_read{fmt::format("{}: {}", filename, strerror(errno))};
+                throw cannot_read{fmt::format("{}: {}", filename.native(), strerror(errno))};
             decompressed_ = next_chunk(initial::yes);
         }
         else {
-            throw not_opened{fmt::format("{}: {}", filename, strerror(errno))};
+            throw not_opened{fmt::format("{}: {}", filename.native(), strerror(errno))};
         }
     }
     else {

@@ -1,4 +1,6 @@
-#include "ext/pybind11.hh"
+#include "py/module.hh"
+
+// ======================================================================
 
 class PybTest
 {
@@ -8,14 +10,16 @@ class PybTest
 
 // ======================================================================
 
-PYBIND11_MODULE(acmacs_e, mdl)
+PYBIND11_MODULE(ae, mdl)
 {
     using namespace pybind11::literals;
 
     mdl.doc() = "Acmacs E backend";
 
-    py::class_<PybTest>(mdl, "PybTest") //
-        .def(py::init()) //
+    ae::py::sequences(mdl);
+
+    pybind11::class_<PybTest>(mdl, "PybTest") //
+        .def(pybind11::init()) //
         .def_property_readonly("test", &PybTest::test) //
         ;
 }

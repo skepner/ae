@@ -1,0 +1,28 @@
+#! /usr/bin/env python3
+"""
+Test reading fasta files
+"""
+
+import os, sys, argparse, traceback
+from pathlib import Path
+sys.path[:0] = [str(Path(os.environ["AE_ROOT"], dir)) for dir in ["build", "py"]]
+import ae
+
+# ----------------------------------------------------------------------
+
+def main(args: list):
+    for filename in args.filename:
+        for en in ae.FastaReader(filename):
+            print(en.name) # , en.sequence)
+
+# ----------------------------------------------------------------------
+
+try:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("filename", nargs="+", type=Path)
+    args = parser.parse_args()
+    exit_code = main(args) or 0
+except Exception as err:
+    print(f"> {err}\n{traceback.format_exc()}", file=sys.stderr)
+    exit_code = 1
+exit(exit_code)
