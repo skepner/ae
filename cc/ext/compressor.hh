@@ -9,13 +9,13 @@ namespace ae::file
 {
     class compressor_failed : public std::runtime_error { public: using std::runtime_error::runtime_error; };
 
-    class Compressed
+    class Compressor
     {
       public:
         enum class first_chunk { no, yes };
 
-        Compressed(size_t padding) : padding_{padding} {}
-        virtual ~Compressed() = default;
+        Compressor(size_t padding) : padding_{padding} {}
+        virtual ~Compressor() = default;
 
         virtual std::string_view compress(std::string_view input) = 0;
         virtual std::string_view decompress(std::string_view input, first_chunk fc) = 0; // returns decompressed data and its allocated capacity
@@ -29,10 +29,10 @@ namespace ae::file
 
     // ----------------------------------------------------------------------
 
-    class NotCompressed : public Compressed
+    class NotCompressed : public Compressor
     {
       public:
-        using Compressed::Compressed;
+        using Compressor::Compressor;
         ~NotCompressed() override = default;
 
         std::string_view compress(std::string_view input) override

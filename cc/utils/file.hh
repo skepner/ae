@@ -5,7 +5,7 @@
 #include <memory>
 
 #include "ext/fmt.hh"
-#include "ext/compressed.hh"
+#include "ext/compressor.hh"
 
 #pragma GCC diagnostic push
 #ifdef __clang__
@@ -55,7 +55,7 @@ namespace ae::file
         enum class initial { no, yes };
 
         size_t chunk_size_{1024 * 1024 * 10};
-        std::unique_ptr<Compressed> compressed_{};
+        std::unique_ptr<Compressor> compressor_{};
         std::string filename_{};
         int fd_{-1};
         size_t mapped_len_{0};
@@ -65,7 +65,6 @@ namespace ae::file
         size_t decompressed_offset_{0};
         size_t padding_{0}; // to support simdjson
 
-        void compressed_factory(std::string_view initial_bytes);
         std::string_view next_chunk(initial ini = initial::no);
 
     }; // class read_access

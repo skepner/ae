@@ -19,7 +19,7 @@
 // #pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
 #endif
 
-#include "ext/compressed.hh"
+#include "ext/compressor.hh"
 
 // ----------------------------------------------------------------------
 
@@ -27,27 +27,27 @@ namespace ae::file
 {
     namespace xz_internal
     {
-        const unsigned char sXzSig[] = {0xFD, '7', 'z', 'X', 'Z', 0x00};
-        constexpr ssize_t sXzBufSize = 409600;
+        const unsigned char Signature[] = {0xFD, '7', 'z', 'X', 'Z', 0x00};
+        constexpr ssize_t BufSize = 409600;
     }
 
     // ----------------------------------------------------------------------
 
     inline bool xz_compressed(std::string_view input)
     {
-        if (input.size() < sizeof(xz_internal::sXzSig))
+        if (input.size() < sizeof(xz_internal::Signature))
             return false;
-        return std::memcmp(input.data(), xz_internal::sXzSig, sizeof(xz_internal::sXzSig)) == 0;
+        return std::memcmp(input.data(), xz_internal::Signature, sizeof(xz_internal::Signature)) == 0;
     }
 
     // ----------------------------------------------------------------------
 
-    class XZ_Compressed : public Compressed
+    class XZ_Compressor : public Compressor
     {
       public:
-        XZ_Compressed(size_t padding = 0) : Compressed(padding) { strm_ = LZMA_STREAM_INIT; }
+        XZ_Compressor(size_t padding = 0) : Compressor(padding) { strm_ = LZMA_STREAM_INIT; }
 
-        ~XZ_Compressed() override { lzma_end(&strm_); }
+        ~XZ_Compressor() override { lzma_end(&strm_); }
 
         std::string_view compress(std::string_view input) override
         {
@@ -73,22 +73,22 @@ namespace ae::file
         {
             strm_.next_in = reinterpret_cast<const uint8_t*>(input.data());
             strm_.avail_in = input.size();
-            data_.reserve(xz_internal::sXzBufSize + padding());
-            data_.resize(xz_internal::sXzBufSize);
+            data_.reserve(xz_internal::BufSize + padding());
+            data_.resize(xz_internal::BufSize);
             ssize_t offset = 0;
             for (;;) {
                 strm_.next_out = reinterpret_cast<uint8_t*>(&*(data_.begin() + offset));
-                strm_.avail_out = xz_internal::sXzBufSize;
+                strm_.avail_out = xz_internal::BufSize;
                 auto const r = lzma_code(&strm_, LZMA_FINISH);
                 if (r == LZMA_STREAM_END) {
-                    data_.resize(static_cast<size_t>(offset + xz_internal::sXzBufSize) - strm_.avail_out);
-                    data_.reserve(static_cast<size_t>(offset + xz_internal::sXzBufSize) - strm_.avail_out + padding());
+                    data_.resize(static_cast<size_t>(offset + xz_internal::BufSize) - strm_.avail_out);
+                    data_.reserve(static_cast<size_t>(offset + xz_internal::BufSize) - strm_.avail_out + padding());
                     break;
                 }
                 else if (r == LZMA_OK) {
-                    offset += xz_internal::sXzBufSize;
-                    data_.reserve(static_cast<size_t>(offset + xz_internal::sXzBufSize) + padding());
-                    data_.resize(static_cast<size_t>(offset + xz_internal::sXzBufSize));
+                    offset += xz_internal::BufSize;
+                    data_.reserve(static_cast<size_t>(offset + xz_internal::BufSize) + padding());
+                    data_.resize(static_cast<size_t>(offset + xz_internal::BufSize));
                 }
                 else {
                     throw compressor_failed("lzma decompression failed 2");

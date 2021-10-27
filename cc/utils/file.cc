@@ -21,18 +21,18 @@
 namespace ae::file::detail
 {
 
-    inline std::unique_ptr<Compressed> compressed_factory(std::string_view initial_bytes, std::string_view filename, size_t padding)
+    inline std::unique_ptr<Compressor> compressor_factory(std::string_view initial_bytes, std::string_view filename, size_t padding)
     {
         if ((!initial_bytes.empty() && xz_compressed(initial_bytes)) || (!filename.empty() && filename.ends_with(".xz")))
-            return std::make_unique<XZ_Compressed>(padding);
-        // else if ((!initial_bytes.empty() && bz2_compressed(initial_bytes)) || (!filename.empty() && filename.ends_with(".bz2")))
-        //     return std::make_unique<BZ2_compressed>(padding);
-        // else if ((!initial_bytes.empty() && gzip_compressed(initial_bytes)) || (!filename.empty() && filename.ends_with(".gz")))
-        //     return std::make_unique<GZIP_compressed>(padding);
+            return std::make_unique<XZ_Compressor>(padding);
+        else if ((!initial_bytes.empty() && bz2_compressed(initial_bytes)) || (!filename.empty() && filename.ends_with(".bz2")))
+            return std::make_unique<BZ2_Compressor>(padding);
+        else if ((!initial_bytes.empty() && gzip_compressed(initial_bytes)) || (!filename.empty() && filename.ends_with(".gz")))
+            return std::make_unique<GZIP_Compressor>(padding);
         else
             return std::make_unique<NotCompressed>(padding);
 
-    } // ae::file::read_access::compressed_factory
+    } // ae::file::read_access::compressor_factory
 
 } // namespace ae::file::detail
 
@@ -115,8 +115,8 @@ std::string_view ae::file::read_access::next_chunk(initial ini)
 {
     if (mapped_) {
         if (ini == initial::yes)
-            compressed_factory(std::string_view(mapped_, mapped_len_));
-        return compressed_->decompress(std::string_view(mapped_, mapped_len_), Compressed::first_chunk::yes);
+            compressor_ = detail::compressor_factory(std::string_view(mapped_, mapped_len_), {}, padding_);
+        return compressor_->decompress(std::string_view(mapped_, mapped_len_), Compressor::first_chunk::yes);
     }
     else {
         data_.reserve(chunk_size_ + padding_);
@@ -134,19 +134,11 @@ std::string_view ae::file::read_access::next_chunk(initial ini)
                 break;
         }
         if (ini == initial::yes)
-            compressed_factory(data_);
-        return compressed_->decompress(data_, Compressed::first_chunk::yes);
+            compressor_ = detail::compressor_factory(data_, {}, padding_);
+        return compressor_->decompress(data_, Compressor::first_chunk::yes);
     }
 
 } // ae::file::read_access::next_chunk
-
-// ----------------------------------------------------------------------
-
-void ae::file::read_access::compressed_factory(std::string_view initial_bytes)
-{
-    compressed_ = detail::compressed_factory(initial_bytes, {}, padding_);
-
-} // ae::file::read_access::compressed_factory
 
 // ----------------------------------------------------------------------
 
@@ -226,8 +218,8 @@ void ae::file::write(std::string_view aFilename, std::string_view aData, force_c
     }
     try {
         if (aForceCompression == force_compression::yes || (aFilename.size() > 3 && (aFilename.ends_with(".xz") || aFilename.ends_with(".gz")))) {
-            auto compressed = detail::compressed_factory({}, aFilename, 0);
-            const auto data = compressed->compress(aData);
+            auto compressor = detail::compressor_factory({}, aFilename, 0);
+            const auto data = compressor->compress(aData);
             if (::write(f, data.data(), data.size()) < 0)
                 throw std::runtime_error(fmt::format("Cannot write {}: {}", aFilename, strerror(errno)));
         }
