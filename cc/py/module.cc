@@ -10,11 +10,11 @@ class PybTest
 
 // ======================================================================
 
-PYBIND11_MODULE(ae, mdl)
+PYBIND11_MODULE(ae_backend, mdl)
 {
     using namespace pybind11::literals;
 
-    mdl.doc() = "Acmacs E backend";
+    mdl.doc() = "AE backend";
 
     ae::py::sequences(mdl);
 

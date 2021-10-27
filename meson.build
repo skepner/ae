@@ -49,6 +49,7 @@ bzip2 = meson.get_compiler('cpp').find_library('bz2', required : false)
 
 sources_sequences = ['cc/sequences/fasta.cc']
 sources_utlis = ['cc/utils/file.cc', 'cc/utils/messages.cc']
+sources_py = ['cc/py/module.cc', 'cc/py/sequences.cc']
 
 # ----------------------------------------------------------------------
 
@@ -78,8 +79,8 @@ test('ae test virus name parsing', test_virus_name)
 python3 = import('python').find_installation('python3')
 
 ae_lib = python3.extension_module(
-  'ae',
-  sources : ['cc/py/module.cc', 'cc/py/sequences.cc'] + sources_sequences + sources_utlis,
+  'ae_backend',
+  sources : sources_py + sources_sequences + sources_utlis,
   include_directories : include_directories('./cc'),
   dependencies : [dependency('python3'), pybind11, fmt, simdjson, range_v3, bzip2, zlib, xz, lexy],
   install : true)

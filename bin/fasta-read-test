@@ -6,14 +6,14 @@ Test reading fasta files
 import os, sys, argparse, traceback
 from pathlib import Path
 sys.path[:0] = [str(Path(os.environ["AE_ROOT"], dir)) for dir in ["build", "py"]]
-import ae
+import ae.sequences.source.fasta
 
 # ----------------------------------------------------------------------
 
 def main(args: list):
     for filename in args.filename:
-        for en in ae.FastaReader(filename):
-            print(en.name) # , en.sequence)
+        for en in ae.sequences.source.fasta.reader(filename):
+            print(en) # , en.sequence)
 
 # ----------------------------------------------------------------------
 
