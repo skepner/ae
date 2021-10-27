@@ -57,7 +57,7 @@ def gisaid_parse_subtype(subtype, messages):
 #     return lineage
 
 def parse_date(date, messages):
-    return date
+    return ae_backend.date_format(date)
 
 sGisaidFieldKeys = {
     "a": ["isolate_id",                    None],

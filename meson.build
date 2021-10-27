@@ -48,7 +48,7 @@ bzip2 = meson.get_compiler('cpp').find_library('bz2', required : false)
 # ----------------------------------------------------------------------
 
 sources_sequences = ['cc/sequences/fasta.cc']
-sources_utlis = ['cc/utils/file.cc', 'cc/utils/messages.cc']
+sources_utlis = ['cc/utils/file.cc', 'cc/utils/messages.cc', 'cc/ext/date.cc']
 sources_py = ['cc/py/module.cc', 'cc/py/sequences.cc']
 
 # ----------------------------------------------------------------------
