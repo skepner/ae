@@ -47,9 +47,11 @@ bzip2 = meson.get_compiler('cpp').find_library('bz2', required : false)
 
 # ----------------------------------------------------------------------
 
+sources_virus = ['cc/virus/name-parse.cc']
 sources_sequences = ['cc/sequences/fasta.cc']
+sources_locdb = ['cc/locdb/locdb.cc']
 sources_utlis = ['cc/utils/file.cc', 'cc/utils/messages.cc', 'cc/ext/date.cc']
-sources_py = ['cc/py/module.cc', 'cc/py/sequences.cc']
+sources_py = ['cc/py/module.cc', 'cc/py/virus.cc', 'cc/py/sequences.cc']
 
 # ----------------------------------------------------------------------
 
@@ -80,7 +82,7 @@ python3 = import('python').find_installation('python3')
 
 ae_lib = python3.extension_module(
   'ae_backend',
-  sources : sources_py + sources_sequences + sources_utlis,
+  sources : sources_py + sources_virus + sources_sequences + sources_locdb + sources_utlis,
   include_directories : include_directories('./cc'),
   dependencies : [dependency('python3'), pybind11, fmt, simdjson, range_v3, bzip2, zlib, xz, lexy],
   install : true)

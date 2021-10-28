@@ -42,7 +42,7 @@ namespace ae::virus::name::inline v1
       public:
         enum class tracing { no, yes };
 
-        parse_settings() = default;
+        parse_settings(tracing a_trace = tracing::no) : tracing_{a_trace} {}
 
         constexpr bool trace() const { return tracing_ == tracing::yes; }
         constexpr ae::Messages& messages() { return messages_; }

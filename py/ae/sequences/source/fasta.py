@@ -40,6 +40,22 @@ def regular_name_parser(name: str):
 
 # ----------------------------------------------------------------------
 
+def parse_name(name: str, metadata: dict, make_message: Callable):
+    return name
+
+# ----------------------------------------------------------------------
+
+def parse_date(date: str, metadata: dict, make_message: Callable):
+    try:
+        return ae_backend.date_format(date, throw_on_error=True)
+    except Exception as err:
+        make_message(str(err))
+        return date
+
+# ======================================================================
+# gisaid
+# ======================================================================
+
 def gisaid_name_parser(name: str, make_message: Callable) -> str:
     fields = name.split("_|_")
     if len(fields) == 1:
@@ -79,13 +95,6 @@ def gisaid_parse_subtype(subtype: str, metadata: dict, make_message: Callable):
 # def parse_lineage(lineage, metadata: dict, make_message: Callable):
 #     return lineage
 
-def parse_date(date: str, metadata: dict, make_message: Callable):
-    try:
-        return ae_backend.date_format(date, throw_on_error=True)
-    except Exception as err:
-        make_message(str(err))
-        return date
-
 def gisaid_parse_lab(lab: str, metadata: dict, make_message: Callable):
     return sGisaidLabs.get(lab.upper(), lab)
 
@@ -109,6 +118,7 @@ sGisaidFieldKeys = {
 }
 
 sGisaidFieldParsers = {
+    "name":                          parse_name,
     "type_subtype":                  gisaid_parse_subtype,
     # "lineage":                      parse_lineage,
     "date":                          parse_date,
