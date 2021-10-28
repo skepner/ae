@@ -23,7 +23,10 @@ def main(args: list):
         messages += reader.messages
     print(f"{num_seqs} sequences read")
     # print(f"Labs: {len(labs)}\n{pprint.pformat(labs)}")
-    print(f"Messages: {len(messages)}")
+    if messages:
+        print(f"Messages: {len(messages)}")
+        for msg in messages:
+            print(f"  {msg.field}[{msg.value}]: {msg.message} @@ {msg.filename}:{msg.line_no}")
 
 # ----------------------------------------------------------------------
 

@@ -1,3 +1,4 @@
+import pprint
 from pathlib import Path
 from dataclasses import dataclass
 from typing import Callable
@@ -14,6 +15,8 @@ class reader:
 
     @dataclass
     class Message:
+        field: str
+        value: str
         message: str
         filename: str
         line_no: int
@@ -26,11 +29,12 @@ class reader:
         for en in self.reader_:
             metadata = gisaid_name_parser(en.name, make_message=self.message_maker(filename=en.filename, line_no=en.line_no)) or regular_name_parser(en.name)
             # fix metadata["name"]
+            # pprint.pprint(self.messages)
             yield metadata, en.sequence
 
     def message_maker(self, filename: str, line_no: int):
-        def make_message(msg):
-            self.messages.append(Message(msg, filename=filename, line_no=line_no))
+        def make_message(field, value, message):
+            self.messages.append(self.Message(field=field, value=value, message=message, filename=filename, line_no=line_no))
         return make_message
 
 # ----------------------------------------------------------------------
@@ -41,7 +45,13 @@ def regular_name_parser(name: str):
 # ----------------------------------------------------------------------
 
 def parse_name(name: str, metadata: dict, make_message: Callable):
-    return name
+    result = ae_backend.virus_name_parse(name)
+    if result.good():
+        return result.parts.name()
+    else:
+        for message in result.messages:
+            make_message(field="name", value=name, message=message.message)
+        return name
 
 # ----------------------------------------------------------------------
 
@@ -49,7 +59,7 @@ def parse_date(date: str, metadata: dict, make_message: Callable):
     try:
         return ae_backend.date_format(date, throw_on_error=True)
     except Exception as err:
-        make_message(str(err))
+        make_message(field="date", value=date, message=str(err))
         return date
 
 # ======================================================================
@@ -89,7 +99,7 @@ def gisaid_parse_subtype(subtype: str, metadata: dict, make_message: Callable):
     elif len(subtype) > 0 and subtype[0] == "B":
         return "B"
     else:
-        make_message(f"[gisaid]: invalid subtype: {subtype}")
+        make_message(field="type_subtype", value=subtype, message=f"[gisaid]: invalid subtype")
         return ""
 
 # def parse_lineage(lineage, metadata: dict, make_message: Callable):

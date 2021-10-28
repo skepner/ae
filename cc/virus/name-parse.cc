@@ -409,7 +409,8 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
     }
     const auto parsing_result = lexy::parse<grammar::parts>(lexy::string_input<lexy::utf8_encoding>{source}, lexy_ext::report_error);
     const auto parts = parsing_result.value();
-    fmt::print("{}\n", parts);
+    if (settings.trace())
+        fmt::print(">>> parts: {}\n", parts);
     if (types_match(parts, {part_type::type_subtype, part_type::letters_only, part_type::any, part_type::digits_hyphens})) {
         // A(H3N2)/SINGAPORE/INFIMH-16-0019/2016
         // A/SINGAPORE/INFIMH-16-0019/2016

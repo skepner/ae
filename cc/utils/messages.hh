@@ -23,9 +23,13 @@ namespace ae
     {
       public:
         Messages() = default;
+        Messages(const Messages&) = default;
+        Messages(Messages&&) = default;
 
         std::string report() const;
         bool empty() const { return messages_.empty(); }
+        const auto& messages() const { return messages_; }
+        const auto& unrecognized_locations() const { return unrecognized_locations_; }
 
         void message(std::string_view msg, std::string_view context)
         {

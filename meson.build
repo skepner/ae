@@ -51,7 +51,7 @@ sources_virus = ['cc/virus/name-parse.cc']
 sources_sequences = ['cc/sequences/fasta.cc']
 sources_locdb = ['cc/locdb/locdb.cc']
 sources_utlis = ['cc/utils/file.cc', 'cc/utils/messages.cc', 'cc/ext/date.cc']
-sources_py = ['cc/py/module.cc', 'cc/py/virus.cc', 'cc/py/sequences.cc']
+sources_py = ['cc/py/module.cc', 'cc/py/virus.cc', 'cc/py/sequences.cc', 'cc/py/utils.cc']
 
 # ----------------------------------------------------------------------
 
