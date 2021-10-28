@@ -52,7 +52,7 @@ def gisaid_name_parser(name: str, make_message: Callable) -> str:
 
 # ----------------------------------------------------------------------
 
-def gisaid_extract_fields(fields, make_message: Callable):
+def gisaid_extract_fields(fields: list, make_message: Callable):
     metadata = {"name": fields[0]}
     for field in fields[1:-1]:
         key, value = field.split("=", maxsplit=1)
@@ -63,21 +63,31 @@ def gisaid_extract_fields(fields, make_message: Callable):
             metadata[field_name] = parser(field_value, metadata=metadata, make_message=make_message)
     return metadata
 
-def gisaid_parse_subtype(subtype, metadata: dict, make_message: Callable):
-    return subtype.upper()
+def gisaid_parse_subtype(subtype: str, metadata: dict, make_message: Callable):
+    subtype = subtype.upper()
+    if len(subtype) >= 8 and subtype[0] == "A":
+        if subtype[5] != "0" and subtype[7] == "0": # H3N0
+            return f"A({subtype[4:6]})"
+        else:
+            return f"A({subtype[4:]})"
+    elif len(subtype) > 0 and subtype[0] == "B":
+        return "B"
+    else:
+        make_message(f"[gisaid]: invalid subtype: {subtype}")
+        return ""
 
 # def parse_lineage(lineage, metadata: dict, make_message: Callable):
 #     return lineage
 
-def parse_date(date, metadata: dict, make_message: Callable):
+def parse_date(date: str, metadata: dict, make_message: Callable):
     try:
         return ae_backend.date_format(date, throw_on_error=True)
     except Exception as err:
         make_message(str(err))
         return date
 
-def gisaid_parse_lab(lab, metadata: dict, make_message: Callable):
-    return sGisaidLabs.get(lab, lab)
+def gisaid_parse_lab(lab: str, metadata: dict, make_message: Callable):
+    return sGisaidLabs.get(lab.upper(), lab)
 
 sGisaidFieldKeys = {
     "a": "isolate_id",
@@ -107,11 +117,14 @@ sGisaidFieldParsers = {
 }
 
 sGisaidLabs = {
-    "Centers for Disease Control and Prevention": "CDC",
-    "WHO Chinese National Influenza Center": "CNIC",
-    "Crick Worldwide Influenza Centre": "Crick",
-    "National Institute of Infectious Diseases (NIID)": "NIID",
-    "WHO Collaborating Centre for Reference and Research on Influenza": "VIDRL",
+    "CENTERS FOR DISEASE CONTROL AND PREVENTION": "CDC",
+    "WHO CHINESE NATIONAL INFLUENZA CENTER": "CNIC",
+    "CRICK WORLDWIDE INFLUENZA CENTRE": "CRICK",
+    "NATIONAL INSTITUTE FOR MEDICAL RESEARCH": "Crick",
+    "NATIONAL INSTITUTE OF INFECTIOUS DISEASES (NIID)": "NIID",
+    "WHO COLLABORATING CENTRE FOR REFERENCE AND RESEARCH ON INFLUENZA": "VIDRL",
+    "ERASMUS MEDICAL CENTER": "EMC",
+    "NATIONAL INSTITUTE FOR BIOLOGICAL STANDARDS AND CONTROL (NIBSC)": "NIBSC",
     }
 
 # ----------------------------------------------------------------------
