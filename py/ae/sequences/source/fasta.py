@@ -46,50 +46,72 @@ def gisaid_name_parser(name: str, make_message: Callable) -> str:
         return None             # not a gisaid
     elif len(fields) == 18 and fields[-1] == "":
         # print("  {}".format('\n  '.join(fields)))
-        return dict(gisaid_parse_fields(fields, make_message=make_message))
+        return gisaid_extract_fields(fields, make_message=make_message)
     else:
         raise Error(f"Invalid number of fields in the gisaid-like name: {len(fields)}: \"{name}\"")
 
 # ----------------------------------------------------------------------
 
-def gisaid_parse_fields(fields, make_message: Callable):
-    yield "name", fields[0]
+def gisaid_extract_fields(fields, make_message: Callable):
+    metadata = {"name": fields[0]}
     for field in fields[1:-1]:
         key, value = field.split("=", maxsplit=1)
-        value = value.strip()
         if value:
-            field_name, parser = sGisaidFieldKeys[key]
-            if parser:
-                yield field_name, parser(value, make_message=make_message)
-            else:
-                yield field_name, value
+            metadata[sGisaidFieldKeys[key]] = value.strip()
+    for field_name, parser in sGisaidFieldParsers.items():
+        if field_value := metadata.get(field_name):
+            metadata[field_name] = parser(field_value, metadata=metadata, make_message=make_message)
+    return metadata
 
-def gisaid_parse_subtype(subtype, make_message: Callable):
+def gisaid_parse_subtype(subtype, metadata: dict, make_message: Callable):
     return subtype.upper()
 
-# def parse_lineage(lineage, make_message: Callable):
+# def parse_lineage(lineage, metadata: dict, make_message: Callable):
 #     return lineage
 
-def parse_date(date, make_message: Callable):
-    return ae_backend.date_format(date)
+def parse_date(date, metadata: dict, make_message: Callable):
+    try:
+        return ae_backend.date_format(date, throw_on_error=True)
+    except Exception as err:
+        make_message(str(err))
+        return date
+
+def gisaid_parse_lab(lab, metadata: dict, make_message: Callable):
+    return sGisaidLabs.get(lab, lab)
 
 sGisaidFieldKeys = {
-    "a": ["isolate_id",                    None],
-    "b": ["type_subtype",                  gisaid_parse_subtype],
-    "c": ["passage",                       None],
-    "d": ["lineage",                       None], # parse_lineage],
-    "e": ["date",                          parse_date],
-    "f": ["submitter",                     None],
-    "g": ["sample_id_by_sample_provider",  None],
-    "h": ["lab_id",                        None],
-    "i": ["gisaid_last_modified",          parse_date],
-    "j": ["originating_lab",               None],
-    "k": ["lab",                           None],
-    "l": ["gisaid_segment",                None],
-    "m": ["gisaid_segment_number",         None],
-    "n": ["gisaid_identifier",             None],
-    "o": ["gisaid_dna_accession_no",       None],
-    "p": ["gisaid_dna_insdc",              None]
+    "a": "isolate_id",
+    "b": "type_subtype",
+    "c": "passage",
+    "d": "lineage",
+    "e": "date",
+    "f": "submitter",
+    "g": "sample_id_by_sample_provider",
+    "h": "lab_id",
+    "i": "gisaid_last_modified",
+    "j": "originating_lab",
+    "k": "lab",
+    "l": "gisaid_segment",
+    "m": "gisaid_segment_number",
+    "n": "gisaid_identifier",
+    "o": "gisaid_dna_accession_no",
+    "p": "gisaid_dna_insdc",
 }
+
+sGisaidFieldParsers = {
+    "type_subtype":                  gisaid_parse_subtype,
+    # "lineage":                      parse_lineage,
+    "date":                          parse_date,
+    "lab":                           gisaid_parse_lab,
+    "gisaid_last_modified":          parse_date,
+}
+
+sGisaidLabs = {
+    "Centers for Disease Control and Prevention": "CDC",
+    "WHO Chinese National Influenza Center": "CNIC",
+    "Crick Worldwide Influenza Centre": "Crick",
+    "National Institute of Infectious Diseases (NIID)": "NIID",
+    "WHO Collaborating Centre for Reference and Research on Influenza": "VIDRL",
+    }
 
 # ----------------------------------------------------------------------

@@ -3,7 +3,7 @@
 Test reading fasta files
 """
 
-import os, sys, argparse, traceback
+import os, sys, pprint, argparse, traceback
 from pathlib import Path
 sys.path[:0] = [str(Path(os.environ["AE_ROOT"], dir)) for dir in ["build", "py"]]
 import ae.sequences.source.fasta
@@ -13,13 +13,16 @@ import ae.sequences.source.fasta
 def main(args: list):
     num_seqs = 0
     messages = []
+    labs = set()
     for filename in args.filename:
         reader = ae.sequences.source.fasta.reader(filename)
-        for en in reader:
-            # print(en)
+        for metadata, sequence in reader:
+            if lab := metadata.get("lab"):
+                labs.add(lab)
             num_seqs += 1
         messages += reader.messages
     print(f"{num_seqs} sequences read")
+    # print(f"Labs: {len(labs)}\n{pprint.pformat(labs)}")
     print(f"Messages: {len(messages)}")
 
 # ----------------------------------------------------------------------
