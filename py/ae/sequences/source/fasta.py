@@ -1,4 +1,7 @@
 from pathlib import Path
+from dataclasses import dataclass
+from typing import Callable
+
 import ae_backend
 
 # ======================================================================
@@ -9,15 +12,26 @@ class Error (RuntimeError): pass
 
 class reader:
 
+    @dataclass
+    class Message:
+        message: str
+        filename: str
+        line_no: int
+
     def __init__(self, filename: Path):
         self.reader_ = ae_backend.FastaReader(filename)
-        self.messages_ = []
+        self.messages = []
 
     def __iter__(self):
         for en in self.reader_:
-            metadata = gisaid_name_parser(en.name, messages=self.messages_) or regular_name_parser(en.name)
+            metadata = gisaid_name_parser(en.name, make_message=self.message_maker(filename=en.filename, line_no=en.line_no)) or regular_name_parser(en.name)
             # fix metadata["name"]
             yield metadata, en.sequence
+
+    def message_maker(self, filename: str, line_no: int):
+        def make_message(msg):
+            self.messages.append(Message(msg, filename=filename, line_no=line_no))
+        return make_message
 
 # ----------------------------------------------------------------------
 
@@ -26,19 +40,19 @@ def regular_name_parser(name: str):
 
 # ----------------------------------------------------------------------
 
-def gisaid_name_parser(name: str, messages: list) -> str:
+def gisaid_name_parser(name: str, make_message: Callable) -> str:
     fields = name.split("_|_")
     if len(fields) == 1:
         return None             # not a gisaid
     elif len(fields) == 18 and fields[-1] == "":
         # print("  {}".format('\n  '.join(fields)))
-        return dict(gisaid_parse_fields(fields, messages=messages)) # {"name": fields[0], **{sGisaidFieldKeys[key]: value for key, value in (fn.split("=", maxsplit=1) for fn in fields[1:]) if value}}
+        return dict(gisaid_parse_fields(fields, make_message=make_message))
     else:
         raise Error(f"Invalid number of fields in the gisaid-like name: {len(fields)}: \"{name}\"")
 
 # ----------------------------------------------------------------------
 
-def gisaid_parse_fields(fields, messages):
+def gisaid_parse_fields(fields, make_message: Callable):
     yield "name", fields[0]
     for field in fields[1:-1]:
         key, value = field.split("=", maxsplit=1)
@@ -46,17 +60,17 @@ def gisaid_parse_fields(fields, messages):
         if value:
             field_name, parser = sGisaidFieldKeys[key]
             if parser:
-                yield field_name, parser(value, messages=messages)
+                yield field_name, parser(value, make_message=make_message)
             else:
                 yield field_name, value
 
-def gisaid_parse_subtype(subtype, messages):
+def gisaid_parse_subtype(subtype, make_message: Callable):
     return subtype.upper()
 
-# def parse_lineage(lineage, messages):
+# def parse_lineage(lineage, make_message: Callable):
 #     return lineage
 
-def parse_date(date, messages):
+def parse_date(date, make_message: Callable):
     return ae_backend.date_format(date)
 
 sGisaidFieldKeys = {

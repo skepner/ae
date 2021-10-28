@@ -7,9 +7,11 @@ void ae::py::sequences(pybind11::module_& mdl)
 {
     using namespace pybind11::literals;
 
-    pybind11::class_<ae::sequences::fasta::Reader::value_t>(mdl, "FastaReaderValue")                                                                           //
-        .def_readonly("name", &ae::sequences::fasta::Reader::value_t::name)
-        .def_readonly("sequence", &ae::sequences::fasta::Reader::value_t::sequence)
+    pybind11::class_<ae::sequences::fasta::Reader::value_t>(mdl, "FastaReaderValue") //
+        .def_readonly("name", &ae::sequences::fasta::Reader::value_t::name)          //
+        .def_readonly("sequence", &ae::sequences::fasta::Reader::value_t::sequence)  //
+        .def_readonly("filename", &ae::sequences::fasta::Reader::value_t::filename)  //
+        .def_readonly("line_no", &ae::sequences::fasta::Reader::value_t::line_no)    //
         ;
 
     pybind11::class_<ae::sequences::fasta::Reader>(mdl, "FastaReader")                                                                           //

@@ -10,7 +10,7 @@ ae::sequences::fasta::Reader::iterator& ae::sequences::fasta::Reader::iterator::
         ++line_no_;
     }
 
-    value_ = value_t{};
+    value_ = value_t{.filename = filename_};
     if (next_ == data_.end())
         return *this;
 
@@ -23,6 +23,7 @@ ae::sequences::fasta::Reader::iterator& ae::sequences::fasta::Reader::iterator::
         if (next_ == data_.end())
             throw std::runtime_error{fmt::format("invalid format at {}", line_no_)};
         value_.name = std::string_view(name_start, static_cast<size_t>(next_ - name_start));
+        value_.line_no = line_no_;
         if (value_.name.back() == '\r')
             value_.name.remove_suffix(1);
         ++next_;

@@ -11,9 +11,16 @@ import ae.sequences.source.fasta
 # ----------------------------------------------------------------------
 
 def main(args: list):
+    num_seqs = 0
+    messages = []
     for filename in args.filename:
-        for en in ae.sequences.source.fasta.reader(filename):
-            print(en) # , en.sequence)
+        reader = ae.sequences.source.fasta.reader(filename)
+        for en in reader:
+            # print(en)
+            num_seqs += 1
+        messages += reader.messages
+    print(f"{num_seqs} sequences read")
+    print(f"Messages: {len(messages)}")
 
 # ----------------------------------------------------------------------
 

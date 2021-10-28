@@ -19,6 +19,8 @@ namespace ae::sequences::fasta
         {
             std::string_view name{};
             std::string sequence{};
+            std::string_view filename{};
+            size_t line_no{0};
             friend auto operator<=>(const value_t&, const value_t&) = default;
         };
 
@@ -46,15 +48,16 @@ namespace ae::sequences::fasta
             value_type value_;
             std::string_view data_{};
             std::string_view::const_iterator next_;
-            size_t line_no_{0};
+            size_t line_no_{1};
+            std::string_view filename_;
 
-            iterator(std::string_view data) : data_{data}, next_{data_.begin()} { operator++(); }
+            iterator(std::string_view data, std::string_view filename) : data_{data}, next_{data_.begin()}, filename_{filename} { operator++(); }
 
             friend class Reader;
         };
 
-        iterator begin() { return iterator{data_}; }
-        iterator end() { return iterator{}; }
+        iterator begin() { return iterator{data_, filename_.native()}; }
+        iterator end() { return iterator{std::string_view{}, filename_.native()}; }
 
       private:
         std::filesystem::path filename_;
