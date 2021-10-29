@@ -312,13 +312,19 @@ namespace ae::virus::name::inline v1
 
         struct parts
         {
-            static constexpr auto rule = ((dsl::p<reassortant> >> OPEN + dsl::p<virus_name> + CLOSE) | (dsl::else_ >> dsl::p<virus_name> + dsl::p<rest>)) + dsl::eof;
+            static constexpr auto rule =
+                ((dsl::p<reassortant> >> OPEN + dsl::p<virus_name> + CLOSE)
+                 | (dsl::else_ >> dsl::p<virus_name> + dsl::opt(dsl::p<reassortant>) + dsl::p<rest>))
+                + dsl::eof;
             static constexpr auto value = lexy::callback<parts_t>(
-                [](const parts_t& virus_name, auto rest) {
-                    return virus_name + rest;
-                },
                 [](const part_t& reassortant, const parts_t& virus_name) {
                     return virus_name + reassortant; // move reassortant to the end
+                },
+                [](const parts_t& virus_name, lexy::nullopt, auto rest) {
+                    return virus_name + rest;
+                },
+                [](const parts_t& virus_name, const part_t& reassortant, auto rest) {
+                    return virus_name + reassortant + rest;
                 }
             );
         };
