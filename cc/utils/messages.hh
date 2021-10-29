@@ -20,11 +20,6 @@ namespace ae
     {
         enum message_type { unknown, unhandled_virus_name, invalid_subtype, unrecognized_location, invalid_year };
 
-        // Message() = default;
-        // template <typename A1, typename A2> Message(A1 a1, A2 a2) : message{a1}, context{a2} {}
-        // Message(const Message&) = default;
-        // Message(Message&&) = default;
-
         message_type type;
         std::string value{};
         std::string context{};

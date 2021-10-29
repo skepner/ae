@@ -469,6 +469,14 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
             result.isolation = fmt::format("{}-{}", parts[2].head, std::string{parts[3]});
             result.year = fix_year(parts[4], source, result, messages, message_location);
         }
+        else if (!loc2.empty() && parts[1].head == "TURKEY") {
+            // A/turkey/Poland/027/2020
+            result.subtype = parts[0];
+            result.host = parts[1];
+            result.location = loc2;
+            result.isolation = fix_isolation(parts[3], source, result, messages, message_location);
+            result.year = fix_year(parts[4], source, result, messages, message_location);
+        }
         else {                  // unrecognized_location
             result.subtype = parts[0];
             result.location = fmt::format("{}/{}", parts[1].head, parts[2].head);

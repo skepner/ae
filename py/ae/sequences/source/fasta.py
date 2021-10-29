@@ -34,6 +34,9 @@ class reader:
         def message(self, field, value, message):
             self.reader.messages.append(reader.Message(field=field, value=value, message=message, filename=self.filename, line_no=self.line_no))
 
+        def unrecognized_locations(self, unrecognized_locations: set):
+            self.reader.unrecognized_locations |= unrecognized_locations
+
         def preprocess_virus_name(self, name, metadata: dict):
             if (directory_module := ae.utils.directory_module.load(self.filename.parent)) and (preprocessor := getattr(directory_module, "preprocess_virus_name", None)):
                 return preprocessor(name, metadata)
@@ -45,7 +48,7 @@ class reader:
     def __init__(self, filename: Path):
         self.reader_ = ae_backend.FastaReader(filename)
         self.messages = []
-        # self.unrecognized_locations = set()
+        self.unrecognized_locations = set()
 
     def __iter__(self):
         for en in self.reader_:
@@ -71,7 +74,8 @@ def parse_name(name: str, metadata: dict, context: reader.Context):
     result = ae_backend.virus_name_parse(preprocessed_name)
     if result.good():
         new_name = result.parts.name()
-        # print(f"\"{new_name}\" <-- \"{name}\"")
+        # if "TURKEY" in new_name:
+        #     print(f"\"{new_name}\" <-- \"{name}\"")
         return new_name
     else:
         if preprocessed_name != name:
@@ -80,6 +84,7 @@ def parse_name(name: str, metadata: dict, context: reader.Context):
             value = name
         for message in result.messages:
             context.message(field="name", value=value, message=f"[{message.type}] {message.value} -- {message.context}")
+        context.unrecognized_locations(result.messages.unrecognized_locations())
         return name
 
 # ----------------------------------------------------------------------

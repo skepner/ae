@@ -16,6 +16,7 @@ import ae.sequences.source.fasta
 def main(args: list):
     num_seqs = 0
     messages = []
+    unrecognized_locations = set()
     labs = set()
     for filename in args.filename:
         reader = ae.sequences.source.fasta.reader(filename)
@@ -24,16 +25,17 @@ def main(args: list):
                 labs.add(lab)
             num_seqs += 1
         messages += reader.messages
+        unrecognized_locations |= reader.unrecognized_locations
     print(f"{num_seqs} sequences read")
     # print(f"Labs: {len(labs)}\n{pprint.pformat(labs)}")
     if messages:
         print(f"Messages: {len(messages)}")
         for msg in messages:
             print(f"  {msg.field}[{msg.value}]: {msg.message} @@ {msg.filename}:{msg.line_no}")
-        # if unrecognized_locations := messages.unrecognized_locations():
-        #     print(f"Unrecognized locations: {len(unrecognized_locations)}")
-        #     for loc in unrecognized_locations:
-        #         print(f"  {loc}")
+        if unrecognized_locations:
+            print(f"Unrecognized locations: {len(unrecognized_locations)}")
+            for loc in unrecognized_locations:
+                print(f"  {loc}")
 
 # ----------------------------------------------------------------------
 
