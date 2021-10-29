@@ -71,7 +71,7 @@ def parse_name(name: str, metadata: dict, context: reader.Context):
     result = ae_backend.virus_name_parse(preprocessed_name)
     if result.good():
         new_name = result.parts.name()
-        print(f"\"{new_name}\" <-- \"{name}\"")
+        # print(f"\"{new_name}\" <-- \"{name}\"")
         return new_name
     else:
         if preprocessed_name != name:
