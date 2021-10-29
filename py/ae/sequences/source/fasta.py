@@ -74,7 +74,7 @@ def parse_name(name: str, metadata: dict, context: reader.Context):
     result = ae_backend.virus_name_parse(preprocessed_name)
     if result.good():
         new_name = result.parts.name()
-        if "CNIC" in new_name:
+        if "CNIC" in new_name or "IVR" in new_name or "NYMC" in new_name:
             print(f"\"{new_name}\" <-- \"{name}\"")
         return new_name
     else:
@@ -118,7 +118,7 @@ def gisaid_extract_fields(fields: list, context: reader.Context):
         key, value = field.split("=", maxsplit=1)
         if value:
             metadata[sGisaidFieldKeys[key]] = value.strip()
-    for field_name, parser in sGisaidFieldParsers.items():
+    for field_name, parser in sGisaidFieldParsers:
         if field_value := metadata.get(field_name):
             metadata[field_name] = parser(field_value, metadata=metadata, context=context)
     return metadata
@@ -161,14 +161,15 @@ sGisaidFieldKeys = {
     "p": "gisaid_dna_insdc",
 }
 
-sGisaidFieldParsers = {
-    "name":                          parse_name,
-    "type_subtype":                  gisaid_parse_subtype,
-    # "lineage":                      parse_lineage,
-    "date":                          parse_date,
-    "lab":                           gisaid_parse_lab,
-    "gisaid_last_modified":          parse_date,
-}
+sGisaidFieldParsers = [
+    ["type_subtype",                  gisaid_parse_subtype],
+    #[ "lineage",                      parse_lineage],
+    ["date",                          parse_date],
+    ["lab",                           gisaid_parse_lab],
+    ["gisaid_last_modified",          parse_date],
+
+    ["name",                          parse_name] # name must be the last!
+]
 
 sGisaidLabs = {
     "CENTERS FOR DISEASE CONTROL AND PREVENTION": "CDC",
