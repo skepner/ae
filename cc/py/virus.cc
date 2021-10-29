@@ -1,5 +1,6 @@
 #include "py/module.hh"
 #include "virus/name-parse.hh"
+#include "utils/messages.hh"
 
 // ----------------------------------------------------------------------
 
@@ -8,8 +9,9 @@ namespace ae::py
     struct VirusNameParsingResult
     {
         ae::virus::name::Parts parts;
-        // std::string messages;
         ae::Messages messages;
+
+        VirusNameParsingResult(ae::virus::name::Parts&& a_parts, ae::Messages&& a_messages) : parts{std::move(a_parts)}, messages{std::move(a_messages)} {}
         bool good() const { return messages.empty(); }
     };
 } // namespace ae::py
@@ -24,9 +26,9 @@ void ae::py::virus(pybind11::module_& mdl)
         "virus_name_parse",
         [](pybind11::object source, pybind11::object context) {
             ae::virus::name::parse_settings settings;
-            auto parts = ae::virus::name::parse(std::string{pybind11::str(source)}, settings, std::string{pybind11::str(context)});
-            return VirusNameParsingResult{std::move(parts), std::move(settings.messages())};
-            // return VirusNameParsingResult{ae::virus::name::Parts{}, settings.messages().report()};
+            ae::Messages messages;
+            auto parts = ae::virus::name::parse(std::string{pybind11::str(source)}, settings, messages, std::string{pybind11::str(context)});
+            return VirusNameParsingResult{std::move(parts), std::move(messages)};
         },
         "source"_a, "context"_a = "");
 

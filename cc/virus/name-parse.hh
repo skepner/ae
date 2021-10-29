@@ -3,9 +3,13 @@
 #include <bitset>
 
 #include "ext/fmt.hh"
-#include "utils/messages.hh"
 
 // ======================================================================
+
+namespace ae
+{
+    class Messages;
+}
 
 namespace ae::virus::name::inline v1
 {
@@ -45,16 +49,13 @@ namespace ae::virus::name::inline v1
         parse_settings(tracing a_trace = tracing::no) : tracing_{a_trace} {}
 
         constexpr bool trace() const { return tracing_ == tracing::yes; }
-        constexpr ae::Messages& messages() { return messages_; }
-        constexpr const ae::Messages& messages() const { return messages_; }
 
       private:
         tracing tracing_{tracing::no};
-        ae::Messages messages_;
     };
 
     // context is e.g. file:line referring to source fasta file
-    Parts parse(std::string_view source, parse_settings& settings, std::string_view context);
+    Parts parse(std::string_view source, parse_settings& settings, Messages& messages, std::string_view context);
 }
 
 // ----------------------------------------------------------------------

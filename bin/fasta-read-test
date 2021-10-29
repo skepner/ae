@@ -5,7 +5,7 @@ Test reading fasta files
 
 import os, sys, pprint, argparse, traceback
 from pathlib import Path
-sys.path[:0] = [str(Path(os.environ["AE_ROOT"], dir)) for dir in ["build", "py"]]
+sys.path[:0] = [str(Path(os.environ["AE_ROOT"], dir)) for dir in ["build.debug", "py"]]
 import ae.sequences.source.fasta
 
 # ----------------------------------------------------------------------
@@ -27,6 +27,10 @@ def main(args: list):
         print(f"Messages: {len(messages)}")
         for msg in messages:
             print(f"  {msg.field}[{msg.value}]: {msg.message} @@ {msg.filename}:{msg.line_no}")
+        # if unrecognized_locations := messages.unrecognized_locations():
+        #     print(f"Unrecognized locations: {len(unrecognized_locations)}")
+        #     for loc in unrecognized_locations:
+        #         print(f"  {loc}")
 
 # ----------------------------------------------------------------------
 

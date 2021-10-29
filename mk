@@ -35,10 +35,14 @@ build_default()
 build_debug()
 {
     # run python using
-    # env DYLD_INSERT_LIBRARIES=/usr/local/opt/llvm/lib/clang/13.0.0/lib/darwin/libclang_rt.asan_osx_dynamic.dylib /usr/local/Cellar/python@3.9/3.9.7_1/Frameworks/Python.framework/Versions/3.9/Resources/Python.app/Contents/MacOS/Python
+    # env DYLD_INSERT_LIBRARIES=/usr/local/opt/llvm/lib/clang/13.0.0/lib/darwin/libclang_rt.asan_osx_dynamic.dylib /usr/local/Cellar/python@3.9/3.9.7_1/Frameworks/Python.framework/Versions/Current/Resources/Python.app/Contents/MacOS/Python
+    # env DYLD_INSERT_LIBRARIES=/usr/local/opt/llvm/lib/clang/13.0.0/lib/darwin/libclang_rt.asan_osx_dynamic.dylib /usr/local/Cellar/python@3.10/3.10.0_2/Frameworks/Python.framework/Versions/Current/Resources/Python.app/Contents/MacOS/Python
     BUILD_DIR="${BUILD_DEBUG_DIR}"
-    # -Db_lundef=false see: https://github.com/mesonbuild/meson/issues/764
-    SETUP_ARGS="-Doptimization=g -Db_sanitize=address -Db_lundef=false"
+    SETUP_ARGS="-Doptimization=g -Db_sanitize=address"
+    if [[ $(uname) == "Darwin" ]]; then
+        # -Db_lundef=false see: https://github.com/mesonbuild/meson/issues/764
+        SETUP_ARGS="${SETUP_ARGS} -Db_lundef=false"
+    fi
     export CPPFLAGS=-fno-omit-frame-pointer
     build
 }

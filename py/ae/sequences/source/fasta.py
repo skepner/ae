@@ -24,6 +24,7 @@ class reader:
     def __init__(self, filename: Path):
         self.reader_ = ae_backend.FastaReader(filename)
         self.messages = []
+        # self.unrecognized_locations = set()
 
     def __iter__(self):
         for en in self.reader_:
@@ -49,7 +50,7 @@ def parse_name(name: str, metadata: dict, make_message: Callable):
     if result.good():
         return result.parts.name()
     else:
-        for message in result.messages:
+        for message in result.messages.messages():
             make_message(field="name", value=name, message=message.message)
         return name
 
