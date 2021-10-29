@@ -68,10 +68,11 @@ def regular_name_parser(name: str, context: reader.Context):
 
 def parse_name(name: str, metadata: dict, context: reader.Context):
     preprocessed_name = context.preprocess_virus_name(name, metadata)
-    # name preprocess
     result = ae_backend.virus_name_parse(preprocessed_name)
     if result.good():
-        return result.parts.name()
+        new_name = result.parts.name()
+        print(f"\"{new_name}\" <-- \"{name}\"")
+        return new_name
     else:
         if preprocessed_name != name:
             value = f"{preprocessed_name} (original: {name})"
