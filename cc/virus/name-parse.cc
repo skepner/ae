@@ -266,20 +266,20 @@ namespace ae::virus::name::inline v1
     // ----------------------------------------------------------------------
 
     // return source unchanged, if location not found but add message
-    inline std::string_view fix_location(const std::string& location, std::string_view source, Parts& parts, Messages& messages, std::string_view context)
+    inline std::string_view fix_location(const std::string& location, std::string_view source, Parts& parts, Messages& messages, const MessageLocation& message_location)
     {
         if (const auto fixed = locationdb::get().find(location); !fixed.empty()) {
             return fixed;
         }
         else {
             parts.issues.add(Parts::issue::unrecognized_location);
-            messages.unrecognized_location(location, fmt::format("{} {}", source, context));
+            messages.add(Message::unrecognized_location, location, source, message_location);
             return location;
         }
     }
 
     // return source unchanged, if year is not valid but add message
-    inline std::string fix_year(const std::string& year, std::string_view source, Parts& parts, Messages& messages, std::string_view context)
+    inline std::string fix_year(const std::string& year, std::string_view source, Parts& parts, Messages& messages, const MessageLocation& message_location)
     {
         try {
             const size_t earlierst_year = 1900;
@@ -304,9 +304,9 @@ namespace ae::virus::name::inline v1
                     throw std::invalid_argument{"unsupported value length"};
             }
         }
-        catch (std::exception& err) {
+        catch (std::exception&) {
             parts.issues.add(Parts::issue::invalid_year);
-            messages.message(fmt::format("invalid year: \"{}\": {}", year, err.what()), fmt::format("{} {}", source, context));
+            messages.add(Message::invalid_year, year, source, message_location);
         }
         return year;
     }
@@ -400,7 +400,7 @@ std::string ae::virus::name::v1::Parts::name(mark_extra me) const
 
 // ----------------------------------------------------------------------
 
-ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, parse_settings& settings, Messages& messages, std::string_view context)
+ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, parse_settings& settings, Messages& messages, const MessageLocation& message_location)
 {
     Parts result;
 
@@ -416,9 +416,9 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
         // A(H3N2)/SINGAPORE/INFIMH-16-0019/2016
         // A/SINGAPORE/INFIMH-16-0019/2016
         result.subtype = parts[0];
-        result.location = fix_location(parts[1], source, result, messages, context);
+        result.location = fix_location(parts[1], source, result, messages, message_location);
         result.isolation = parts[2];
-        result.year = fix_year(parts[3], source, result, messages, context);
+        result.year = fix_year(parts[3], source, result, messages, message_location);
     }
     else if (types_match(parts, {part_type::type_subtype, part_type::subtype, part_type::letters_only, part_type::any, part_type::digits_hyphens})) {
         if (parts[0].head.size() == 1) {
@@ -429,11 +429,11 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
             // A(H3N2)/H3N2/SINGAPORE/INFIMH-16-0019/2016
             result.subtype = fmt::format("{}+{}", parts[0].head, parts[1].head);
             result.issues.add(Parts::issue::invalid_subtype);
-            messages.message(fmt::format("invalid subtype: \"{}/{}\"", parts[0].head, parts[1].head), fmt::format("{} {}", source, context));
+            messages.add(Message::invalid_subtype, fmt::format("{}/{}", parts[0].head, parts[1].head), source, message_location);
         }
-        result.location = fix_location(parts[2], source, result, messages, context);
+        result.location = fix_location(parts[2], source, result, messages, message_location);
         result.isolation = parts[3];
-        result.year = fix_year(parts[4], source, result, messages, context);
+        result.year = fix_year(parts[4], source, result, messages, message_location);
     }
     else if (types_match(parts, {part_type::type_subtype, part_type::letters_only, part_type::letters_only, part_type::any, part_type::digits_hyphens})) {
         const auto& locdb = locationdb::get();
@@ -443,29 +443,29 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
             result.host = parts[1];
             result.location = loc2;
             result.isolation = parts[3];
-            result.year = fix_year(parts[4], source, result, messages, context);
+            result.year = fix_year(parts[4], source, result, messages, message_location);
         }
         else if (const auto loc12 = locdb.find(fmt::format("{} {}", parts[1].head, parts[2].head)); !loc12.empty()) {
             // A(H3N2)/LYON/CHU/19/2016
             result.subtype = parts[0];
             result.location = loc12;
             result.isolation = parts[3];
-            result.year = fix_year(parts[4], source, result, messages, context);
+            result.year = fix_year(parts[4], source, result, messages, message_location);
         }
         else if (!loc1.empty() && loc2.empty()) {
             // A(H3N2)/LYON/XXX/19/2016
             result.subtype = parts[0];
             result.location = loc1;
             result.isolation = fmt::format("{}-{}", parts[2].head, std::string{parts[3]});
-            result.year = fix_year(parts[4], source, result, messages, context);
+            result.year = fix_year(parts[4], source, result, messages, message_location);
         }
         else {                  // unrecognized_location
             result.subtype = parts[0];
             result.location = fmt::format("{}/{}", parts[1].head, parts[2].head);
             result.issues.add(Parts::issue::unrecognized_location);
-            messages.unrecognized_location(result.location, fmt::format("{} {}", source, context));
+            messages.add(Message::unrecognized_location, result.location, source, message_location);
             result.isolation = parts[3];
-            result.year = fix_year(parts[4], source, result, messages, context);
+            result.year = fix_year(parts[4], source, result, messages, message_location);
         }
     }
     // A/Zambia/13/174/2013
@@ -478,7 +478,7 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
     // A/chicken/Yunnan/Kunming/2007 -> A/chicken/Yunnan Kunming/?/2007
     // extra at the end
     else
-        messages.message(fmt::format("unhandled name: \"{}\" {}", source, parts), fmt::format("{} {}", source, context));
+        messages.add(Message::unhandled_virus_name, fmt::format("{}", parts), source, message_location);
     return result;
 }
 

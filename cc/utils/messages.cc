@@ -13,7 +13,7 @@ std::string ae::Messages::report() const
     if (!messages_.empty()) {
         fmt::format_to(std::back_inserter(out), ">> Messages ({}):\n", messages_.size());
         for (const auto& msg : messages_)
-            fmt::format_to(std::back_inserter(out), "    {} : {}\n", msg.message, msg.context);
+            fmt::format_to(std::back_inserter(out), "    [{}] {} -- {} @@ {}:{}\n", msg.type, msg.value, msg.context, msg.location.filename, msg.location.line_no);
     }
     return fmt::to_string(out);
 

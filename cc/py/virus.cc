@@ -24,13 +24,13 @@ void ae::py::virus(pybind11::module_& mdl)
 
     mdl.def(
         "virus_name_parse",
-        [](pybind11::object source, pybind11::object context) {
+        [](pybind11::object source, pybind11::object filename, size_t line_no) {
             ae::virus::name::parse_settings settings;
             ae::Messages messages;
-            auto parts = ae::virus::name::parse(std::string{pybind11::str(source)}, settings, messages, std::string{pybind11::str(context)});
+            auto parts = ae::virus::name::parse(std::string{pybind11::str(source)}, settings, messages, ae::MessageLocation{std::string{pybind11::str(filename)}, line_no});
             return VirusNameParsingResult{std::move(parts), std::move(messages)};
         },
-        "source"_a, "context"_a = "");
+        "source"_a, "filename"_a = "", "line_no"_a = 0);
 
     pybind11::class_<VirusNameParsingResult>(mdl, "VirusNameParsingResult") //
         .def("good", &VirusNameParsingResult::good)                         //

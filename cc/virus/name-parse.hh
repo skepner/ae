@@ -9,6 +9,7 @@
 namespace ae
 {
     class Messages;
+    struct MessageLocation;
 }
 
 namespace ae::virus::name::inline v1
@@ -55,7 +56,7 @@ namespace ae::virus::name::inline v1
     };
 
     // context is e.g. file:line referring to source fasta file
-    Parts parse(std::string_view source, parse_settings& settings, Messages& messages, std::string_view context);
+    Parts parse(std::string_view source, parse_settings& settings, Messages& messages, const MessageLocation& location);
 }
 
 // ----------------------------------------------------------------------

@@ -117,7 +117,7 @@ void virus_name_parsing_test()
     for (const auto [no, entry] : ranges::views::enumerate(data)) {
         try {
             // AD_DEBUG("{}", entry.raw_name);
-            const auto result = ae::virus::name::parse(entry.raw_name, settings, messages, fmt::format("test:{}", no));
+            const auto result = ae::virus::name::parse(entry.raw_name, settings, messages, ae::MessageLocation{"test", no});
             fmt::print("{}         <-- {}\n", result, entry.raw_name);
             // if (result != entry.expected) {
             //     AD_ERROR("{} <-- \"{}\"  expected: \"{}\"", result, entry.raw_name, entry.expected);

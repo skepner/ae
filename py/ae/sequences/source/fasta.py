@@ -50,8 +50,8 @@ def parse_name(name: str, metadata: dict, make_message: Callable):
     if result.good():
         return result.parts.name()
     else:
-        for message in result.messages.messages():
-            make_message(field="name", value=name, message=message.message)
+        for message in result.messages:
+            make_message(field="name", value=name, message=f"[{message.type}] {message.value} -- {message.context}")
         return name
 
 # ----------------------------------------------------------------------
