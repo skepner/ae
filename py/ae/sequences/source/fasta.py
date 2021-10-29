@@ -74,8 +74,8 @@ def parse_name(name: str, metadata: dict, context: reader.Context):
     result = ae_backend.virus_name_parse(preprocessed_name)
     if result.good():
         new_name = result.parts.name()
-        if "CNIC" in new_name or "IVR" in new_name or "NYMC" in new_name:
-            print(f"\"{new_name}\" <-- \"{name}\"")
+        # if "CNIC" in new_name or "IVR" in new_name or "NYMC" in new_name:
+        #     print(f"\"{new_name}\" <-- \"{name}\"")
         return new_name
     else:
         if preprocessed_name != name:
@@ -101,7 +101,7 @@ def parse_date(date: str, metadata: dict, context: reader.Context):
 # ======================================================================
 
 def gisaid_name_parser(name: str, context: reader.Context) -> str:
-    fields = name.split("_|_")
+    fields = [en.strip() for en in name.split("_|_")]
     if len(fields) == 1:
         return None             # not a gisaid
     elif len(fields) == 18 and fields[-1] == "":
