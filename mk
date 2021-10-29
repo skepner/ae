@@ -34,9 +34,7 @@ build_default()
 
 build_debug()
 {
-    # run python using
-    # env DYLD_INSERT_LIBRARIES=/usr/local/opt/llvm/lib/clang/13.0.0/lib/darwin/libclang_rt.asan_osx_dynamic.dylib /usr/local/Cellar/python@3.9/3.9.7_1/Frameworks/Python.framework/Versions/Current/Resources/Python.app/Contents/MacOS/Python
-    # env DYLD_INSERT_LIBRARIES=/usr/local/opt/llvm/lib/clang/13.0.0/lib/darwin/libclang_rt.asan_osx_dynamic.dylib /usr/local/Cellar/python@3.10/3.10.0_2/Frameworks/Python.framework/Versions/Current/Resources/Python.app/Contents/MacOS/Python
+    # run python using ~/bin/python-address-sanitizer
     BUILD_DIR="${BUILD_DEBUG_DIR}"
     SETUP_ARGS="-Doptimization=g -Db_sanitize=address"
     if [[ $(uname) == "Darwin" ]]; then
@@ -96,6 +94,11 @@ find_mk_time()
 clean()
 {
     remove "${BUILD_DEFAULT_DIR}" "${BUILD_DEBUG_DIR}"
+}
+
+cleanclean()
+{
+    clean
     for fn in $(cat subprojects/.gitignore); do
         remove subprojects/${fn}
     done
@@ -125,6 +128,9 @@ for arg in "$@"; do
     case "${arg}" in
         clean)
             clean
+            ;;
+        cleanclean)
+            cleanclean
             ;;
         debug)
             build_debug
