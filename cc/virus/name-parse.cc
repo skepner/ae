@@ -301,7 +301,7 @@ namespace ae::virus::name::inline v1
 
         struct virus_name
         {
-            static constexpr auto rule = (dsl::p<subtype_a> | dsl::p<subtype_b>) + dsl::slash + dsl::p<slash_separated>;
+            static constexpr auto rule = (dsl::p<subtype_a> | dsl::p<subtype_b>) + dsl::slash + dsl::p<slash_separated> + dsl::while_(dsl::ascii::blank);
             static constexpr auto value = lexy::callback<parts_t>([](auto subtype, auto slash_separated) {
                 parts_t parts{subtype};
                 std::move(std::begin(slash_separated), std::end(slash_separated), std::next(std::begin(parts)));
