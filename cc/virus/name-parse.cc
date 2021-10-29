@@ -135,6 +135,8 @@ namespace ae::virus::name::inline v1
                std::all_of(std::next(parts.begin(), types.size()), parts.end(), [](const auto& part) { return part.type.none(); });
     }
 
+    inline bool type_match(const part_t& part, part_type type) { return part.type[static_cast<size_t>(type)]; }
+
     // ======================================================================
 
     namespace grammar
@@ -381,6 +383,11 @@ namespace ae::virus::name::inline v1
         return year;
     }
 
+    inline std::string_view fix_reassortant(const std::string& reassortant, std::string_view /*source*/, Parts& /*parts*/, Messages& /*messages*/, const MessageLocation& /*message_location*/)
+    {
+        return reassortant;
+    }
+
 } // namespace ae::virus::name::inline v1
 
 // ----------------------------------------------------------------------
@@ -485,13 +492,18 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
     const auto parts = parsing_result.value();
     if (settings.trace())
         fmt::print(">>> parts: {}\n", parts);
-    if (types_match(parts, {part_type::type_subtype, part_type::letters_only, part_type::any, part_type::digits_hyphens})) {
+    if (types_match(parts, {part_type::type_subtype, part_type::letters_only, part_type::any, part_type::digits_hyphens})
+       || types_match(parts, {part_type::type_subtype, part_type::letters_only, part_type::any, part_type::digits_hyphens, part_type::reassortant})) {
         // A(H3N2)/SINGAPORE/INFIMH-16-0019/2016
         // A/SINGAPORE/INFIMH-16-0019/2016
+        // A/Pennsylvania/1025/2019  IVR-213
+        // IVR-213(A/Pennsylvania/1025/2019)
         result.subtype = parts[0];
         result.location = fix_location(parts[1], source, result, messages, message_location);
         result.isolation = fix_isolation(parts[2], source, result, messages, message_location);
         result.year = fix_year(parts[3], source, result, messages, message_location);
+        if (type_match(parts[4], part_type::reassortant))
+            result.reassortant = fix_reassortant(parts[4], source, result, messages, message_location);
     }
     else if (types_match(parts, {part_type::type_subtype, part_type::subtype, part_type::letters_only, part_type::any, part_type::digits_hyphens})) {
         if (parts[0].head.size() == 1) {
