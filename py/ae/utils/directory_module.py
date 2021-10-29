@@ -12,14 +12,19 @@ sLoaded = {}
 # ======================================================================
 
 def load(dir: Path):
-    if mod := sLoaded.get(dir):
-        return mod
-    spec = importlib.util.spec_from_file_location("ae", dir.joinpath("ae.py"))
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    if init := getattr(mod, "init"):
-        init()
-    sLoaded[dir] = mod
-    return mod
+    try:
+        return sLoaded[dir]
+    except KeyError:
+        mod_filename = dir.joinpath("ae.py")
+        if mod_filename.exists():
+            spec = importlib.util.spec_from_file_location("ae", mod_filename)
+            mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(mod)
+            sLoaded[dir] = mod
+            return mod
+        else:
+            print(f">> no {mod_filename}")
+            sLoaded[dir] = None
+            return None
 
 # ======================================================================

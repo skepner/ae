@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Callable
 
 import ae_backend
+import ae.utils.directory_module
 
 # ======================================================================
 
@@ -18,8 +19,28 @@ class reader:
         field: str
         value: str
         message: str
-        filename: str
+        filename: Path
         line_no: int
+
+    # ----------------------------------------------------------------------
+
+    class Context:
+
+        def __init__(self, reader, filename: Path, line_no: int):
+            self.reader = reader
+            self.filename = filename
+            self.line_no = line_no
+
+        def message(self, field, value, message):
+            self.reader.messages.append(reader.Message(field=field, value=value, message=message, filename=self.filename, line_no=self.line_no))
+
+        def preprocess_virus_name(self, name, metadata: dict):
+            if (directory_module := ae.utils.directory_module.load(self.filename.parent)) and (preprocessor := getattr(directory_module, "preprocess_virus_name", None)):
+                return preprocessor(name, metadata)
+            else:
+                return name
+
+    # ----------------------------------------------------------------------
 
     def __init__(self, filename: Path):
         self.reader_ = ae_backend.FastaReader(filename)
@@ -28,58 +49,64 @@ class reader:
 
     def __iter__(self):
         for en in self.reader_:
-            metadata = gisaid_name_parser(en.name, make_message=self.message_maker(filename=en.filename, line_no=en.line_no)) or regular_name_parser(en.name)
-            # fix metadata["name"]
-            # pprint.pprint(self.messages)
+            context = self.Context(self, filename=Path(en.filename), line_no=en.line_no)
+            metadata = gisaid_name_parser(en.name, context=context) \
+                or regular_name_parser(en.name, context=context)
             yield metadata, en.sequence
 
-    def message_maker(self, filename: str, line_no: int):
-        def make_message(field, value, message):
-            self.messages.append(self.Message(field=field, value=value, message=message, filename=filename, line_no=line_no))
-        return make_message
+    # def message_maker(self, filename: str, line_no: int):
+    #     def make_message(field, value, message):
+    #         self.messages.append(self.Message(field=field, value=value, message=message, filename=filename, line_no=line_no))
+    #     return make_message
 
 # ----------------------------------------------------------------------
 
-def regular_name_parser(name: str):
+def regular_name_parser(name: str, context: reader.Context):
     return {"name": name}
 
 # ----------------------------------------------------------------------
 
-def parse_name(name: str, metadata: dict, make_message: Callable):
-    result = ae_backend.virus_name_parse(name)
+def parse_name(name: str, metadata: dict, context: reader.Context):
+    preprocessed_name = context.preprocess_virus_name(name, metadata)
+    # name preprocess
+    result = ae_backend.virus_name_parse(preprocessed_name)
     if result.good():
         return result.parts.name()
     else:
+        if preprocessed_name != name:
+            value = f"{preprocessed_name} (original: {name})"
+        else:
+            value = name
         for message in result.messages:
-            make_message(field="name", value=name, message=f"[{message.type}] {message.value} -- {message.context}")
+            context.message(field="name", value=value, message=f"[{message.type}] {message.value} -- {message.context}")
         return name
 
 # ----------------------------------------------------------------------
 
-def parse_date(date: str, metadata: dict, make_message: Callable):
+def parse_date(date: str, metadata: dict, context: reader.Context):
     try:
-        return ae_backend.date_format(date, throw_on_error=True)
+        return ae_backend.date_format(date, throw_on_error=True, month_first=metadata.get("lab") == "CDC")
     except Exception as err:
-        make_message(field="date", value=date, message=str(err))
+        context.message(field="date", value=date, message=str(err))
         return date
 
 # ======================================================================
 # gisaid
 # ======================================================================
 
-def gisaid_name_parser(name: str, make_message: Callable) -> str:
+def gisaid_name_parser(name: str, context: reader.Context) -> str:
     fields = name.split("_|_")
     if len(fields) == 1:
         return None             # not a gisaid
     elif len(fields) == 18 and fields[-1] == "":
         # print("  {}".format('\n  '.join(fields)))
-        return gisaid_extract_fields(fields, make_message=make_message)
+        return gisaid_extract_fields(fields, context=context)
     else:
         raise Error(f"Invalid number of fields in the gisaid-like name: {len(fields)}: \"{name}\"")
 
 # ----------------------------------------------------------------------
 
-def gisaid_extract_fields(fields: list, make_message: Callable):
+def gisaid_extract_fields(fields: list, context: reader.Context):
     metadata = {"name": fields[0]}
     for field in fields[1:-1]:
         key, value = field.split("=", maxsplit=1)
@@ -87,10 +114,10 @@ def gisaid_extract_fields(fields: list, make_message: Callable):
             metadata[sGisaidFieldKeys[key]] = value.strip()
     for field_name, parser in sGisaidFieldParsers.items():
         if field_value := metadata.get(field_name):
-            metadata[field_name] = parser(field_value, metadata=metadata, make_message=make_message)
+            metadata[field_name] = parser(field_value, metadata=metadata, context=context)
     return metadata
 
-def gisaid_parse_subtype(subtype: str, metadata: dict, make_message: Callable):
+def gisaid_parse_subtype(subtype: str, metadata: dict, context: reader.Context):
     subtype = subtype.upper()
     if len(subtype) >= 8 and subtype[0] == "A":
         if subtype[5] != "0" and subtype[7] == "0": # H3N0
@@ -100,13 +127,13 @@ def gisaid_parse_subtype(subtype: str, metadata: dict, make_message: Callable):
     elif len(subtype) > 0 and subtype[0] == "B":
         return "B"
     else:
-        make_message(field="type_subtype", value=subtype, message=f"[gisaid]: invalid subtype")
+        context.message(field="type_subtype", value=subtype, message=f"[gisaid]: invalid subtype")
         return ""
 
-# def parse_lineage(lineage, metadata: dict, make_message: Callable):
+# def parse_lineage(lineage, metadata: dict, context: reader.Context):
 #     return lineage
 
-def gisaid_parse_lab(lab: str, metadata: dict, make_message: Callable):
+def gisaid_parse_lab(lab: str, metadata: dict, context: reader.Context):
     return sGisaidLabs.get(lab.upper(), lab)
 
 sGisaidFieldKeys = {

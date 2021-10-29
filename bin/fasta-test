@@ -6,7 +6,7 @@ Test importing and preprocessing fasta files
 import os, sys, argparse, traceback
 from pathlib import Path
 sys.path.insert(1, str(Path(os.environ["AE_ROOT"], "py")))
-import ae.directory_module
+import ae.utils.directory_module
 
 # ----------------------------------------------------------------------
 
