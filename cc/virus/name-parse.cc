@@ -196,7 +196,7 @@ namespace ae::virus::name::inline v1
         struct letters
         {
             static constexpr auto whitespace = dsl::ascii::blank; // auto skip whitespaces
-            static constexpr auto letters_only = dsl::ascii::alpha / letter_extra / dsl::lit_c<'_'> / dsl::hyphen / dsl::ascii::blank;
+            static constexpr auto letters_only = dsl::ascii::alpha / letter_extra / dsl::lit_c<'_'> / dsl::hyphen / dsl::ascii::blank / dsl::period;
             static constexpr auto mixed = letters_only / dsl::ascii::digit / dsl::colon / dsl::period;
 
             static constexpr auto rule = dsl::peek(dsl::while_(dsl::ascii::blank) + dsl::ascii::alpha / letter_extra) >>
@@ -234,7 +234,7 @@ namespace ae::virus::name::inline v1
 
         struct slash_separated
         {
-            static constexpr auto rule = dsl::list(dsl::p<subtype_a_hn> | dsl::p<letters> | dsl::p<digits>, dsl::sep(dsl::slash));
+            static constexpr auto rule = dsl::list(dsl::p<letters> | dsl::p<digits>, dsl::sep(dsl::slash));
             static constexpr auto value = lexy::as_list<std::vector<part_t>>;
         };
 
