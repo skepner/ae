@@ -42,6 +42,7 @@ namespace ae::virus::name::inline v1
     enum class part_type {
         type_subtype, // A, B, A(H3N2)
         subtype, // H3N2
+        reassortant,            // IVR-ddd
         any,
         letters_only, // letter, cjk, space, underscore, dash
         letter_first, // first symbol is a letter or cjk
@@ -61,6 +62,7 @@ namespace ae::virus::name::inline v1
                 switch (tt) {
                     case part_type::type_subtype:
                     case part_type::subtype:
+                    case part_type::reassortant:
                     case part_type::any:
                         set(tt);
                         break;
@@ -116,6 +118,16 @@ namespace ae::virus::name::inline v1
 
     using parts_t = std::array<part_t, 8>;
 
+    inline parts_t operator+(const parts_t& parts, const part_t& to_append)
+    {
+        if (to_append.empty())
+            return parts;
+        parts_t res{parts};
+        if (const auto end = std::find_if(std::begin(res), std::end(res), [](const part_t& part) { return part.type.none(); }); end != std::end(res))
+            *end = to_append;
+        return res;
+    }
+
     inline bool types_match(const parts_t& parts, std::initializer_list<part_type> types)
     {
         // types is no longer than parts
@@ -146,13 +158,41 @@ namespace ae::virus::name::inline v1
 
         static constexpr auto letter_extra = dsl::code_point.if_<letter_extra_predicate>();
 
+        static constexpr auto A = dsl::lit_c<'A'> / dsl::lit_c<'a'>;
+        static constexpr auto B = dsl::lit_c<'B'> / dsl::lit_c<'b'>;
+        static constexpr auto C = dsl::lit_c<'C'> / dsl::lit_c<'c'>;
+        // static constexpr auto D = dsl::lit_c<'D'> / dsl::lit_c<'d'>;
+        // static constexpr auto E = dsl::lit_c<'E'> / dsl::lit_c<'e'>;
+        // static constexpr auto F = dsl::lit_c<'F'> / dsl::lit_c<'f'>;
+        // static constexpr auto G = dsl::lit_c<'G'> / dsl::lit_c<'g'>;
+        static constexpr auto H = dsl::lit_c<'H'> / dsl::lit_c<'h'>;
+        static constexpr auto I = dsl::lit_c<'I'> / dsl::lit_c<'i'>;
+        // static constexpr auto J = dsl::lit_c<'J'> / dsl::lit_c<'j'>;
+        // static constexpr auto K = dsl::lit_c<'K'> / dsl::lit_c<'k'>;
+        // static constexpr auto L = dsl::lit_c<'L'> / dsl::lit_c<'l'>;
+        static constexpr auto M = dsl::lit_c<'M'> / dsl::lit_c<'m'>;
+        static constexpr auto N = dsl::lit_c<'N'> / dsl::lit_c<'n'>;
+        // static constexpr auto O = dsl::lit_c<'O'> / dsl::lit_c<'o'>;
+        // static constexpr auto P = dsl::lit_c<'P'> / dsl::lit_c<'p'>;
+        // static constexpr auto Q = dsl::lit_c<'Q'> / dsl::lit_c<'q'>;
+        static constexpr auto R = dsl::lit_c<'R'> / dsl::lit_c<'r'>;
+        // static constexpr auto S = dsl::lit_c<'S'> / dsl::lit_c<'s'>;
+        // static constexpr auto T = dsl::lit_c<'T'> / dsl::lit_c<'t'>;
+        // static constexpr auto U = dsl::lit_c<'U'> / dsl::lit_c<'u'>;
+        static constexpr auto V = dsl::lit_c<'V'> / dsl::lit_c<'v'>;
+        // static constexpr auto W = dsl::lit_c<'W'> / dsl::lit_c<'w'>;
+        static constexpr auto X = dsl::lit_c<'X'> / dsl::lit_c<'x'>;
+        static constexpr auto Y = dsl::lit_c<'Y'> / dsl::lit_c<'y'>;
+        // static constexpr auto Z = dsl::lit_c<'Z'> / dsl::lit_c<'z'>;
+
+        static constexpr auto OPEN = dsl::lit_c<'('>;
+        static constexpr auto CLOSE = dsl::lit_c<')'>;
+
         // ----------------------------------------------------------------------
 
         struct subtype_a_hn
         {
             static constexpr auto whitespace = dsl::ascii::blank; // auto skip whitespaces
-            static constexpr auto H = dsl::lit_c<'H'> / dsl::lit_c<'h'>;
-            static constexpr auto N = dsl::lit_c<'N'> / dsl::lit_c<'n'>;
 
             // H3N2 | H3
             static constexpr auto rule = dsl::peek(H + dsl::digit<>) >> dsl::capture(H + dsl::digits<>) + dsl::opt(dsl::peek(N) >> dsl::capture(N + dsl::digits<>));
@@ -167,9 +207,6 @@ namespace ae::virus::name::inline v1
         struct subtype_a
         {
             static constexpr auto whitespace = dsl::ascii::blank; // auto skip whitespaces
-            static constexpr auto A = dsl::lit_c<'A'> / dsl::lit_c<'a'>;
-            static constexpr auto OPEN = dsl::lit_c<'('>;
-            static constexpr auto CLOSE = dsl::lit_c<')'>;
 
             // A | AH3 | AH3N2 | A(H3N2) | A(H3)
             static constexpr auto rule = A >> dsl::opt(dsl::p<subtype_a_hn> | OPEN >> dsl::p<subtype_a_hn> + CLOSE);
@@ -184,10 +221,21 @@ namespace ae::virus::name::inline v1
         struct subtype_b
         {
             static constexpr auto whitespace = dsl::ascii::blank; // auto skip whitespaces
-            static constexpr auto B = dsl::lit_c<'B'> / dsl::lit_c<'b'>;
 
             static constexpr auto rule = B;
             static constexpr auto value = lexy::callback<part_t>([]() { return part_t{"B", part_type::type_subtype}; });
+        };
+
+        struct reassortant
+        {
+            static constexpr auto whitespace = dsl::ascii::blank; // auto skip whitespaces
+            static constexpr auto IVR = I + V + R;
+            static constexpr auto CNIC = C + N + I + C;
+            static constexpr auto NYMC = N + Y + M + C;
+            static constexpr auto prefix = dsl::peek(IVR + dsl::hyphen) | dsl::peek(CNIC + dsl::hyphen) | dsl::peek(NYMC + dsl::hyphen) | dsl::peek(X + dsl::hyphen);
+
+            static constexpr auto rule = prefix >> dsl::capture(dsl::while_(dsl::ascii::alpha) + dsl::hyphen + dsl::while_(dsl::digit<> / dsl::ascii::alpha));
+            static constexpr auto value = lexy::callback<part_t>([](auto lex) { return part_t{lex, part_type::reassortant}; });
         };
 
         // ----------------------------------------------------------------------
@@ -213,7 +261,8 @@ namespace ae::virus::name::inline v1
         struct digits
         {
             static constexpr auto mixed = dsl::digits<> / dsl::ascii::alpha / letter_extra / dsl::lit_c<'_'> / dsl::hyphen / dsl::ascii::digit / dsl::colon / dsl::period; // NO blank!!
-            template <Lexeme L> static constexpr bool digits_hyphens(const L& lex) {
+            template <Lexeme L> static constexpr bool digits_hyphens(const L& lex)
+            {
                 for (char cc : lex) {
                     if (!std::isdigit(cc) && cc != '-')
                         return false;
@@ -248,17 +297,28 @@ namespace ae::virus::name::inline v1
 
         // ----------------------------------------------------------------------
 
-        struct parts
+        struct virus_name
         {
-            static constexpr auto rule = (dsl::p<subtype_a> | dsl::p<subtype_b>)+dsl::slash + dsl::p<slash_separated> + dsl::p<rest> + dsl::eof;
-
-            static constexpr auto value = lexy::callback<parts_t>([](auto subtype, auto slash_separated, auto rest) {
+            static constexpr auto rule = (dsl::p<subtype_a> | dsl::p<subtype_b>) + dsl::slash + dsl::p<slash_separated>;
+            static constexpr auto value = lexy::callback<parts_t>([](auto subtype, auto slash_separated) {
                 parts_t parts{subtype};
-                const auto last_output = std::move(std::begin(slash_separated), std::end(slash_separated), std::next(std::begin(parts)));
-                if (!rest.empty())
-                    *last_output = rest;
+                std::move(std::begin(slash_separated), std::end(slash_separated), std::next(std::begin(parts)));
                 return parts;
             });
+
+        };
+
+        struct parts
+        {
+            static constexpr auto rule = ((dsl::p<reassortant> >> OPEN + dsl::p<virus_name> + CLOSE) | (dsl::else_ >> dsl::p<virus_name> + dsl::p<rest>)) + dsl::eof;
+            static constexpr auto value = lexy::callback<parts_t>(
+                [](const parts_t& virus_name, auto rest) {
+                    return virus_name + rest;
+                },
+                [](const part_t& reassortant, const parts_t& virus_name) {
+                    return virus_name + reassortant; // move reassortant to the end
+                }
+            );
         };
 
     } // namespace grammar
@@ -348,6 +408,9 @@ template <> struct fmt::formatter<ae::virus::name::part_t::type_t> : fmt::format
                         break;
                     case part_type::subtype:
                         add("subtype");
+                        break;
+                    case part_type::reassortant:
+                        add("reassortant");
                         break;
                     case part_type::any:
                         add("any");
