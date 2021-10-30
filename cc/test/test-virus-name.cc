@@ -48,6 +48,7 @@ void virus_name_parsing_test(bool verbose)
         TD{"A/ SINGAPORE/INFIMH-16-0019/16", CT{.subtype = "A", .location = "SINGAPORE", .isolation = "INFIMH-16-0019", .year = "2016"}},
         TD{"A/SINGAPORE /INFIMH-16-0019/16", CT{.subtype = "A", .location = "SINGAPORE", .isolation = "INFIMH-16-0019", .year = "2016"}},
 
+        // TODO 2021-10-30: NYMC variants parsing
         TD{"A/SINGAPORE/INFIMH-16-0019/2016 NYMC-307A", CT{.subtype = "A", .location = "SINGAPORE", .isolation = "INFIMH-16-0019", .year = "2016", .reassortant = "NYMC-307A"}},
         TD{"A/SINGAPORE/INFIMH-16-0019/2016 X-307A", CT{.subtype = "A", .location = "SINGAPORE", .isolation = "INFIMH-16-0019", .year = "2016", .reassortant = "NYMC-307A"}},
         TD{"A/SINGAPORE/INFIMH-16-0019/2016 NYMC-X-307A", CT{.subtype = "A", .location = "SINGAPORE", .isolation = "INFIMH-16-0019", .year = "2016", .reassortant = "NYMC-307A"}},
