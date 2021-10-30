@@ -62,13 +62,12 @@ test_basic = executable('test-basic', 'cc/test/basic.cc',
 
 test('ae test basic', test_basic)
 
-test_virus_name = executable('test-virus-name', 'cc/test/virus-name.cc',
-                             'cc/virus/name-parse.cc',
-                             'cc/locdb/locdb.cc',
-                             'cc/utils/file.cc', 'cc/utils/messages.cc',
-                 include_directories : include_directories('./cc'),
-                 dependencies : [fmt, simdjson, range_v3, bzip2, zlib, xz, lexy],
-                 install : true)
+test_virus_name = executable(
+  'test-virus-name',
+  ['cc/test/test-virus-name.cc'] + sources_virus + sources_locdb + sources_utlis,
+  include_directories : include_directories('./cc'),
+  dependencies : [fmt, simdjson, range_v3, bzip2, zlib, xz, lexy],
+  install : true)
 
 test('ae test virus name parsing', test_virus_name)
 

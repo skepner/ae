@@ -40,6 +40,7 @@ namespace ae::virus::name::inline v1
         enum class mark_extra { no, yes };
 
         std::string name(mark_extra me = mark_extra::no) const;
+        bool operator==(const Parts&) const = default;
     };
 
     class parse_settings
