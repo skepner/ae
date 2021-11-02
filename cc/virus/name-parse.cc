@@ -307,7 +307,7 @@ namespace ae::virus::name::inline v1
         // chunk starting with a digit, followed by letters, digits, -, _, :,
         struct digits
         {
-            static constexpr auto mixed = dsl::digits<> / dsl::ascii::alpha / letter_extra / dsl::lit_c<'_'> / dsl::hyphen / dsl::ascii::digit / dsl::colon / dsl::period / dsl::ascii::blank;
+            static constexpr auto mixed = dsl::digits<> / dsl::ascii::alpha / letter_extra / dsl::lit_c<'_'> / dsl::hyphen / dsl::ascii::digit / dsl::hash_sign / dsl::colon / dsl::period / dsl::ascii::blank;
 
             template <Lexeme L> static constexpr bool spaces_only(const L& lex)
             {
@@ -319,9 +319,9 @@ namespace ae::virus::name::inline v1
             }
 
             static constexpr auto
-                rule = dsl::peek(OPT_SPACES + dsl::digit<>) //
+                rule = dsl::peek(OPT_SPACES + dsl::digit<> / dsl::hash_sign) //
                        >> OPT_SPACES +
-                              dsl::capture(dsl::while_(dsl::digits<>)) + dsl::opt(dsl::peek(mixed) >> dsl::capture(dsl::while_(mixed))) + dsl::opt(dsl::peek(OPT_SPACES + dsl::slash) >> OPT_SPACES);
+                              dsl::capture(dsl::while_(dsl::digit<>)) + dsl::opt(dsl::peek(mixed) >> dsl::capture(dsl::while_(mixed))) + dsl::opt(dsl::peek(OPT_SPACES + dsl::slash) >> OPT_SPACES);
 
             static constexpr auto value12 = [](auto lex1, auto lex2) {
                 if constexpr (std::is_same_v<decltype(lex2), lexy::nullopt>)

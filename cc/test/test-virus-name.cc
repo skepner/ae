@@ -59,12 +59,12 @@ void virus_name_parsing_test(bool verbose)
         TD{"NYMC-307A (A/SINGAPORE/INFIMH-16-0019/2016)", CT{.subtype = "A", .location = "SINGAPORE", .isolation = "INFIMH-16-0019", .year = "2016", .reassortant = "NYMC-307A"}},
         TD{"BVR-25(B/Victoria/2110/2019)", CT{.subtype = "B", .location = "VICTORIA", .isolation = "2110", .year = "2019", .reassortant = "CBER-25"}},
 
-        // TD{"A/SINGAPORE/INFIMH-16-0019/2016 CL2  X-307A", CT{.subtype = "A", .location = "SINGAPORE", .isolation = "INFIMH-16-0019", .year = "2016", .reassortant = "NYMC-307A", .extra = "CL2"}},
-        // TD{"A/SINGAPORE/INFIMH-16-0019/2016-06-14", CT{.subtype = "A", .location = "SINGAPORE", .isolation = "INFIMH-16-0019", .year = "2016"}},
-        // TD{"A/SINGAPORE/INFIMH-16-0019/2016 NEW CL2  X-307A", CT{.subtype = "A", .location = "SINGAPORE", .isolation = "INFIMH-16-0019", .year = "2016", .reassortant = "NYMC-307A", .extra =
-        // "CL2"}}, TD{"A/SINGAPORE/INFIMH-16-0019/2016 CL2 NEW X-307A", CT{.subtype = "A", .location = "SINGAPORE", .isolation = "INFIMH-16-0019", .year = "2016", .reassortant = "NYMC-307A", .extra =
-        // "CL2"}}, TD{"A/SINGAPORE/INFIMH-16-0019/2016 CL2  X-307A NEW", CT{.subtype = "A", .location = "SINGAPORE", .isolation = "INFIMH-16-0019", .year = "2016", .reassortant = "NYMC-307A", .extra
-        // = "CL2"}},
+        // TD{"A/SINGAPORE/INFIMH-16-0019/2016 CL2  X-307A", CT{.subtype = "A", .location = "SINGAPORE", .isolation = "INFIMH-16-0019", .year = "2016", .reassortant = "NYMC-307A", .extra =
+        // "CL2"}}, TD{"A/SINGAPORE/INFIMH-16-0019/2016-06-14", CT{.subtype = "A", .location = "SINGAPORE", .isolation = "INFIMH-16-0019", .year = "2016"}}, TD{"A/SINGAPORE/INFIMH-16-0019/2016 NEW
+        // CL2  X-307A", CT{.subtype = "A", .location = "SINGAPORE", .isolation = "INFIMH-16-0019", .year = "2016", .reassortant = "NYMC-307A", .extra = "CL2"}},
+        // TD{"A/SINGAPORE/INFIMH-16-0019/2016 CL2 NEW X-307A", CT{.subtype = "A", .location = "SINGAPORE", .isolation = "INFIMH-16-0019", .year = "2016", .reassortant = "NYMC-307A", .extra =
+        // "CL2"}}, TD{"A/SINGAPORE/INFIMH-16-0019/2016 CL2  X-307A NEW", CT{.subtype = "A", .location = "SINGAPORE", .isolation = "INFIMH-16-0019", .year = "2016", .reassortant = "NYMC-307A",
+        // .extra = "CL2"}},
 
         // TD{"AH3N2/SINGAPORE/INFIMH-16-0019/2016 MDCK1", CT{}},
 
@@ -79,25 +79,27 @@ void virus_name_parsing_test(bool verbose)
         TD{"A / SOUTH AFRICA / 19 /16", CT{.subtype = "A", .location = "SOUTH AFRICA", .isolation = "19", .year = "2016"}},
         TD{"A/AINWAZEIN/19/16", CT{.subtype = "A", .location = "AIN W ZAIN", .isolation = "19", .year = "2016"}},
         TD{"A/广西南宁/19/16", CT{.subtype = "A", .location = "GUANGXI NANNING", .isolation = "19", .year = "2016"}},
-        // TD{"A/BRISBANE/01/2018  NYMC-X-311 (18/160)",                            CT{}}, // CT{A,              H,            "BRISBANE", "1", "2018", Reassortant{"NYMC-311"}, P, E}}, // "(18/160)"
-        // removed by check_nibsc_extra TD{"A/Snowy Sheathbill/Antarctica/2899/2014",                            CT{}}, // CT{A,              hst{"SNOWY SHEATHBILL"}, "ANTARCTICA", "2899", "2014", R,
-        // P, E}}, TD{"A/wigeon/Italy/6127-23/2007",                                        CT{}}, // CT{A,              hst{"WIGEON"}, "ITALY", "6127-23", "2007", R, P, E}}, TD{"B/Via?A Del
-        // Mar/73490/2017",                                         CT{}}, // CT{B,              H,            "VINA DEL MAR", "73490", "2017", R, P, E}}, TD{"B/Cameroon11V-12080 GVFI/2011", CT{}}, //
-        // CT{B,              H,            "CAMEROON", "11V-12080 GVFI", "2011", R, P, E}}, TD{"A/Mali 071 Ci/2015",                                                 CT{}}, // CT{A,              H,
-        // "MALI", "71 CI", "2015", R, P, E}}, TD{"A/Zambia/13/174/2013",                                               CT{}}, // CT{A,              H,            "ZAMBIA", "13-174", "2013", R, P,
-        // E}}, TD{"A/Lyon/CHU18.54.48/2018",                                            CT{}}, // CT{A,              H,            "LYON CHU", "18.54.48", "2018", R, P, E}},
+        // TD{"A/BRISBANE/01/2018  NYMC-X-311 (18/160)",                            CT{}}, // CT{A,              H,            "BRISBANE", "1", "2018", Reassortant{"NYMC-311"}, P, E}}, //
+        // "(18/160)" removed by check_nibsc_extra TD{"A/Snowy Sheathbill/Antarctica/2899/2014",                            CT{}}, // CT{A,              hst{"SNOWY SHEATHBILL"}, "ANTARCTICA",
+        // "2899", "2014", R, P, E}}, TD{"A/wigeon/Italy/6127-23/2007",                                        CT{}}, // CT{A,              hst{"WIGEON"}, "ITALY", "6127-23", "2007", R, P, E}},
+        // TD{"B/Via?A Del Mar/73490/2017",                                         CT{}}, // CT{B,              H,            "VINA DEL MAR", "73490", "2017", R, P, E}}, TD{"B/Cameroon11V-12080
+        // GVFI/2011", CT{}}, // CT{B,              H,            "CAMEROON", "11V-12080 GVFI", "2011", R, P, E}}, TD{"A/Mali 071 Ci/2015",                                                 CT{}},
+        // // CT{A,              H, "MALI", "71 CI", "2015", R, P, E}}, TD{"A/Zambia/13/174/2013",                                               CT{}}, // CT{A,              H, "ZAMBIA", "13-174",
+        // "2013", R, P, E}}, TD{"A/Lyon/CHU18.54.48/2018",                                            CT{}}, // CT{A,              H,            "LYON CHU", "18.54.48", "2018", R, P, E}},
         TD{"A/Lyon/CHU/R18.54.48/2018", CT{.subtype = "A", .location = "LYON CHU", .isolation = "R18.54.48", .year = "2018"}},
         // TD{"A/Algeria/G0281/16/2016",                                            CT{}}, // CT{A,              H,            "ALGERIA", "G0281-16", "2016", R, P, E}},
         // TD{"A/chicken/Ghana/7/2015",                                             CT{}}, // CT{A,              hst{"CHICKEN"}, "GHANA", "7", "2015", R, P, E}},
         // TD{"IVR-153 (A/CALIFORNIA/07/2009)",                                     CT{}}, // CT{A,              H,            "CALIFORNIA", "7", "2009", Reassortant{"IVR-153"}, P, E}},
-        // TD{"A/Antananarivo/1067/2016 CBER-11B C1.3",                             CT{}}, // CT{A,              H,            "ANTANANARIVO", "1067", "2016", Reassortant{"CBER-11B"}, P, "C1.3"}}, //
-        // CDC TD{"A/Montana/50/2016 CBER-07 D2.3",                                     CT{}}, // CT{A,              H,            "MONTANA", "50", "2016", Reassortant{"CBER-07"}, P, "D2.3"}}, // CDC
+        // TD{"A/Antananarivo/1067/2016 CBER-11B C1.3",                             CT{}}, // CT{A,              H,            "ANTANANARIVO", "1067", "2016", Reassortant{"CBER-11B"}, P, "C1.3"}},
+        // // CDC TD{"A/Montana/50/2016 CBER-07 D2.3",                                     CT{}}, // CT{A,              H,            "MONTANA", "50", "2016", Reassortant{"CBER-07"}, P, "D2.3"}},
+        // // CDC
         TD{"A/duck/Guangdong/4.30 DGCPLB014-O/2017", CT{.subtype = "A", .host = "DUCK", .location = "GUANGDONG", .isolation = "4.30 DGCPLB014-O", .year = "2017"}},
         TD{"A/duck/Guangdong/4.30 DGCPLB014-O/2017 XXX", CT{.subtype = "A", .host = "DUCK", .location = "GUANGDONG", .isolation = "4.30 DGCPLB014-O", .year = "2017", .extra = "XXX"}},
         TD{"A/duck/Guangdong/4.30.DGCPLB014-O/2017", CT{.subtype = "A", .host = "DUCK", .location = "GUANGDONG", .isolation = "4.30.DGCPLB014-O", .year = "2017"}},
-        // TD{"A/duck/Guangdong/02.11 DGQTXC195-P/2015(Mixed)",                     CT{}}, // CT{A,              hst{"DUCK"},  "GUANGDONG", "2.11 DGQTXC195-P", "2015", R, P, E}}, // (MIXED) removed
-        // TD{"A/duck/Guangdong/02.11 DGQTXC195-P/2015(H5N1)",                      CT{}}, // CT{typ{"A(H5N1)"}, hst{"DUCK"},  "GUANGDONG", "2.11 DGQTXC195-P", "2015", R, P, E}},
+        // TD{"A/duck/Guangdong/02.11 DGQTXC195-P/2015(Mixed)",                     CT{}}, // CT{A,              hst{"DUCK"},  "GUANGDONG", "2.11 DGQTXC195-P", "2015", R, P, E}}, // (MIXED)
+        // removed TD{"A/duck/Guangdong/02.11 DGQTXC195-P/2015(H5N1)",                      CT{}}, // CT{typ{"A(H5N1)"}, hst{"DUCK"},  "GUANGDONG", "2.11 DGQTXC195-P", "2015", R, P, E}},
         // TD{"A/swine/Chachoengsao/2003",                                          CT{}}, // CT{A,              hst{"SWINE"}, "CHACHOENGSAO", "UNKNOWN", "2003", R, P, E}},
+        TD{"A/duck/BODENSEE/#500/2019", CT{.subtype = "A", .host = "DUCK", .location = "BODENSEE", .isolation="#500", .year="2019"}},
 
         // // nbci -- genbank
         TD{"A/Anas platyrhynchos/Belgium/17330 2/2013", CT{.subtype = "A", .host = "ANAS PLATYRHYNCHOS", .location = "BELGIUM", .isolation = "17330 2", .year = "2013"}},
@@ -120,9 +122,9 @@ void virus_name_parsing_test(bool verbose)
         // TD{"A/Anas platyrhynchos/bonn/7/03(H2N?)",                               CT{}}, // CT{typ{"A(H2)"},    hst{"MALLARD"}, "BONN", "7", "2003", R, P, E}},
         // TD{"A/California/7/2004 (cell-passaged)(H3)",                            CT{}}, // CT{typ{"A(H3)"},    H, "CALIFORNIA", "7", "2004", R, Passage{"MDCK?"}, E}},
         // TD{"A/California/7/2004 (egg-passaged)(H3)",                             CT{}}, // CT{typ{"A(H3)"},    H, "CALIFORNIA", "7", "2004", R, Passage{"E?"}, E}},
-        // TD{"A/QUAIL/some unknown location/0025/2016(H5N1)",                      CT{}}, // CT{typ{"A(H5N1)"},  hst{"QUAIL"}, "SOME UNKNOWN LOCATION", "25", "2016", R, P, E}}, // DELISERDANG is
-        // unknown location TD{"A/Medellin/FLU8292/2007(H3)",                                        CT{}}, // CT{typ{"A(H3)"},    H, "MEDELLIN", "FLU8292", "2007", R, P, E}}, // Medellin is unknown
-        // location TD{"A/turkey/Italy12rs206-2/1999(H7N1)",                                 CT{}}, // CT{typ{"A(H7N1)"},  hst{"TURKEY"}, "ITALY", "12RS206-2", "1999", R, P, E}},
+        // TD{"A/QUAIL/some unknown location/0025/2016(H5N1)",                      CT{}}, // CT{typ{"A(H5N1)"},  hst{"QUAIL"}, "SOME UNKNOWN LOCATION", "25", "2016", R, P, E}}, // DELISERDANG
+        // is unknown location TD{"A/Medellin/FLU8292/2007(H3)",                                        CT{}}, // CT{typ{"A(H3)"},    H, "MEDELLIN", "FLU8292", "2007", R, P, E}}, // Medellin
+        // is unknown location TD{"A/turkey/Italy12rs206-2/1999(H7N1)",                                 CT{}}, // CT{typ{"A(H7N1)"},  hst{"TURKEY"}, "ITALY", "12RS206-2", "1999", R, P, E}},
         // TD{"A/Michigan/382/2018(H1N2v)",                                         CT{}}, // CT{typ{"A(H1N2V)"}, H, "MICHIGAN", "382", "2018", R, P, E}},
         // TD{"A/mallard/Washington/454202-15/2006(H5N2?)",                         CT{}}, // CT{A,               hst{"MALLARD"}, "WASHINGTON", "454202-15", "2006", R, P, E}},
         // TD{"A/quail/Bangladesh/32270/2017(mixed,H9)",                            CT{}}, // CT{A,               hst{"QUAIL"}, "BANGLADESH", "32270", "2017", R, P, E}},
