@@ -273,7 +273,8 @@ namespace ae::virus::name::inline v1
             static constexpr auto IVR = I + V + R;
             static constexpr auto CNIC = C + N + I + C;
             static constexpr auto SAN = S + A + N;
-            static constexpr auto prefix = dsl::peek(IVR + dsl::hyphen) | dsl::peek(CNIC + dsl::hyphen) | dsl::peek(SAN + dsl::hyphen);
+            static constexpr auto NIB = N + I + B;
+            static constexpr auto prefix = dsl::peek(IVR + dsl::hyphen) | dsl::peek(CNIC + dsl::hyphen) | dsl::peek(SAN + dsl::hyphen) | dsl::peek(NIB + dsl::hyphen);
 
             static constexpr auto rule = (nymc_x_bx::peek >> dsl::p<nymc_x_bx>) //
                                          | (cber::peek >> dsl::p<cber>)         //
@@ -374,7 +375,7 @@ namespace ae::virus::name::inline v1
         struct parts
         {
             static constexpr auto rule =
-                ((dsl::p<reassortant> >> OPT_SPACES + OPEN + dsl::p<virus_name> + CLOSE)
+                ((dsl::p<reassortant> >> OPT_SPACES + OPEN + dsl::p<virus_name> + dsl::if_(CLOSE))
                  | (dsl::else_ >> dsl::p<virus_name> + dsl::opt(dsl::p<reassortant>) + dsl::p<rest>))
                 + dsl::eof;
             static constexpr auto value = lexy::callback<parts_t>(
