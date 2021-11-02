@@ -632,6 +632,7 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
     }
     else if (types_match(parts, {part_type::type_subtype, part_type::letters_only, part_type::any, part_type::digits_hyphens}) ||
              types_match(parts, {part_type::type_subtype, part_type::letters_only, part_type::any, part_type::digits_hyphens, part_type::reassortant}) ||
+             types_match(parts, {part_type::type_subtype, part_type::letters_only, part_type::any, part_type::digits_hyphens, part_type::reassortant, part_type::any}) ||
              types_match(parts, {part_type::type_subtype, part_type::letters_only, part_type::any, part_type::digits_hyphens, part_type::any})) {
         // A(H3N2)/SINGAPORE/INFIMH-16-0019/2016
         // A/SINGAPORE/INFIMH-16-0019/2016
@@ -641,8 +642,11 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
         result.location = fix_location(parts[1], source, result, messages, message_location);
         result.isolation = fix_isolation(parts[2], source, result, messages, message_location);
         result.year = fix_year(parts[3], source, result, messages, message_location);
-        if (type_match(parts[4], part_type::reassortant))
+        if (type_match(parts[4], part_type::reassortant)) {
             result.reassortant = fix_reassortant(parts[4], source, result, messages, message_location);
+            if (type_match(parts[5], part_type::any))
+                result.extra = parts[5];
+        }
         else if (type_match(parts[4], part_type::any))
             result.extra = parts[4];
     }
