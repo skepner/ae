@@ -164,7 +164,7 @@ namespace ae::virus::name::inline v1
         static constexpr auto B = dsl::lit_c<'B'> / dsl::lit_c<'b'>;
         static constexpr auto C = dsl::lit_c<'C'> / dsl::lit_c<'c'>;
         // static constexpr auto D = dsl::lit_c<'D'> / dsl::lit_c<'d'>;
-        // static constexpr auto E = dsl::lit_c<'E'> / dsl::lit_c<'e'>;
+        static constexpr auto E = dsl::lit_c<'E'> / dsl::lit_c<'e'>;
         // static constexpr auto F = dsl::lit_c<'F'> / dsl::lit_c<'f'>;
         // static constexpr auto G = dsl::lit_c<'G'> / dsl::lit_c<'g'>;
         static constexpr auto H = dsl::lit_c<'H'> / dsl::lit_c<'h'>;
@@ -231,6 +231,17 @@ namespace ae::virus::name::inline v1
 
         // ----------------------------------------------------------------------
 
+        struct cber
+        {
+            // BVR-11A, CBER-11A
+            static constexpr auto peek_bvr = dsl::peek(B + V + R + dsl::hyphen / dsl::ascii::blank / dsl::digit<>);
+            static constexpr auto peek_cber = dsl::peek(C + B + E + R + dsl::hyphen / dsl::ascii::blank / dsl::digit<>);
+            static constexpr auto peek = peek_bvr | peek_cber;
+
+            static constexpr auto rule = peek >> dsl::while_(dsl::ascii::alpha) + dsl::while_(dsl::hyphen / dsl::ascii::blank) + dsl::capture(dsl::while_(dsl::digit<> / dsl::ascii::alpha));
+            static constexpr auto value = lexy::callback<part_t>([](auto lex) { return part_t{"CBER-" + uppercase_strip(lex), part_type::reassortant}; });
+        };
+
         struct nymc_x_bx
         {
             // NYMC-307A, X-307A, BX-11, NYMC-X-307A, NYMC-X307A, NYMC X-307A,
@@ -264,6 +275,7 @@ namespace ae::virus::name::inline v1
             static constexpr auto prefix = dsl::peek(IVR + dsl::hyphen) | dsl::peek(CNIC + dsl::hyphen) | dsl::peek(SAN + dsl::hyphen);
 
             static constexpr auto rule = (nymc_x_bx::peek >> dsl::p<nymc_x_bx>) //
+                                         | (cber::peek >> dsl::p<cber>)         //
                                          | (prefix >> dsl::capture(dsl::while_(dsl::ascii::alpha) + dsl::hyphen + dsl::while_(dsl::digit<> / dsl::ascii::alpha)));
             static constexpr auto value = lexy::callback<part_t>( //
                 [](const part_t& part) { return part; },          //

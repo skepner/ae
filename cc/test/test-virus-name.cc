@@ -57,6 +57,7 @@ void virus_name_parsing_test(bool verbose)
         TD{"A/SINGAPORE/INFIMH-16-0019/2016 NYMC X307A-CL", CT{.subtype = "A", .location = "SINGAPORE", .isolation = "INFIMH-16-0019", .year = "2016", .reassortant = "NYMC-307A-CL"}},
         TD{"NYMC-307A(A/SINGAPORE/INFIMH-16-0019/2016)", CT{.subtype = "A", .location = "SINGAPORE", .isolation = "INFIMH-16-0019", .year = "2016", .reassortant = "NYMC-307A"}},
         TD{"NYMC-307A (A/SINGAPORE/INFIMH-16-0019/2016)", CT{.subtype = "A", .location = "SINGAPORE", .isolation = "INFIMH-16-0019", .year = "2016", .reassortant = "NYMC-307A"}},
+        TD{"BVR-25(B/Victoria/2110/2019)", CT{.subtype = "B", .location = "VICTORIA", .isolation = "2110", .year = "2019", .reassortant = "CBER-25"}},
 
         // TD{"A/SINGAPORE/INFIMH-16-0019/2016 CL2  X-307A", CT{.subtype = "A", .location = "SINGAPORE", .isolation = "INFIMH-16-0019", .year = "2016", .reassortant = "NYMC-307A", .extra = "CL2"}},
         // TD{"A/SINGAPORE/INFIMH-16-0019/2016-06-14", CT{.subtype = "A", .location = "SINGAPORE", .isolation = "INFIMH-16-0019", .year = "2016"}},
@@ -99,7 +100,7 @@ void virus_name_parsing_test(bool verbose)
         // TD{"A/swine/Chachoengsao/2003",                                          CT{}}, // CT{A,              hst{"SWINE"}, "CHACHOENGSAO", "UNKNOWN", "2003", R, P, E}},
 
         // // nbci -- genbank
-        TD{"A/Anas platyrhynchos/Belgium/17330 2/2013", CT{.subtype = "A", .host = "ANAS PLATYRHYNCHOS", .location="BELGIUM", .isolation="17330 2", .year="2013"}},
+        TD{"A/Anas platyrhynchos/Belgium/17330 2/2013", CT{.subtype = "A", .host = "ANAS PLATYRHYNCHOS", .location = "BELGIUM", .isolation = "17330 2", .year = "2013"}},
         // // TD{"A/mallard/Balkhash/6304_HA/2014",                                 CT{}}, //    CT{A, hst{"MALLARD"}, "BALKHASH", "6304", "2014"}, R, P, E}},
         // TD{"A/mallard/Balkhash/6304_HA/2014",                                    CT{}}, // CT{A, hst{"MALLARD"}, "BALKHASH", "6304", "2014", R, P, E}}, // _HA is seqgment reference in ncbi
         // // TD{"A/SWINE/NE/55024/2018",                                           CT{}}, //    CT{A, hst{"SWINE"},   "NE", "55024", "2018", R, P, E}},
