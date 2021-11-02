@@ -189,6 +189,7 @@ namespace ae::virus::name::inline v1
 
         static constexpr auto OPEN = dsl::lit_c<'('>;
         static constexpr auto CLOSE = dsl::lit_c<')'>;
+        static constexpr auto PLUS = dsl::lit_c<'+'>;
         static constexpr auto OPT_SPACES = dsl::while_(dsl::ascii::blank);
 
         // ----------------------------------------------------------------------
@@ -255,7 +256,7 @@ namespace ae::virus::name::inline v1
                 + dsl::opt(dsl::peek(X / B) >> dsl::while_(dsl::ascii::alpha) + dsl::while_(dsl::hyphen / dsl::ascii::blank));
             static constexpr auto xbx = (peek_x | peek_bx) >> dsl::while_(dsl::ascii::alpha) + dsl::hyphen / dsl::ascii::blank;
 
-            static constexpr auto rule = (nymc | xbx) + dsl::capture(dsl::while_(dsl::digit<> / dsl::ascii::alpha/ dsl::hyphen));
+            static constexpr auto rule = (nymc | xbx) + dsl::capture(dsl::while_(dsl::digit<> / dsl::ascii::alpha/ dsl::hyphen / PLUS));
             static constexpr auto value = lexy::callback<part_t>( //
                 [](lexy::nullopt, auto lex) {
                     return part_t{"NYMC-" + uppercase_strip(lex), part_type::reassortant};
