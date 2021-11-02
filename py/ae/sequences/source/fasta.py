@@ -43,6 +43,12 @@ class reader:
             else:
                 return name
 
+        def preprocess_date(self, date, metadata: dict):
+            if (directory_module := ae.utils.directory_module.load(self.filename.parent)) and (preprocessor := getattr(directory_module, "preprocess_date", None)):
+                return preprocessor(date, metadata)
+            else:
+                return date
+
     # ----------------------------------------------------------------------
 
     def __init__(self, filename: Path):
@@ -90,10 +96,15 @@ def parse_name(name: str, metadata: dict, context: reader.Context):
 # ----------------------------------------------------------------------
 
 def parse_date(date: str, metadata: dict, context: reader.Context):
+    preprocessed_date = context.preprocess_date(date, metadata)
     try:
-        return ae_backend.date_format(date, throw_on_error=True, month_first=metadata.get("lab") == "CDC")
+        return ae_backend.date_format(preprocessed_date, throw_on_error=True, month_first=metadata.get("lab") == "CDC")
     except Exception as err:
-        context.message(field="date", value=date, message=str(err))
+        if date != preprocessed_date:
+            value = f"{preprocessed_date} (original: {date})"
+        else:
+            value = date
+        context.message(field="date", value=value, message=str(err))
         return date
 
 # ======================================================================
