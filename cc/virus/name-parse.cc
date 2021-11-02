@@ -228,16 +228,45 @@ namespace ae::virus::name::inline v1
             static constexpr auto value = lexy::callback<part_t>([]() { return part_t{"B", part_type::type_subtype}; });
         };
 
+        // ----------------------------------------------------------------------
+
+        struct nymc_x_bx
+        {
+            // NYMC-307A, X-307A, BX-11, NYMC-X-307A, NYMC X-307A,
+            static constexpr auto peek_nymc = dsl::peek(N + Y + M + C);             //
+            static constexpr auto peek_xbx = dsl::peek(X / B);                      //
+            static constexpr auto nymc = peek_nymc                                  //
+                                         >> dsl::while_(dsl::ascii::alpha)          //
+                                                + (dsl::hyphen / dsl::ascii::blank) //
+                                                + dsl::opt(dsl::peek(X / B) >> dsl::while_(dsl::ascii::alpha) + dsl::hyphen / dsl::ascii::blank);
+            static constexpr auto xbx = peek_xbx >> dsl::while_(dsl::ascii::alpha) + dsl::hyphen / dsl::ascii::blank;
+
+            static constexpr auto rule = (nymc | xbx) + dsl::capture(dsl::while_(dsl::digit<> / dsl::ascii::alpha));
+            static constexpr auto value = lexy::callback<part_t>( //
+                [](lexy::nullopt, auto lex) {
+                    return part_t{"NYMC-" + uppercase_strip(lex), part_type::reassortant};
+                },
+                [](auto lex) {
+                    return part_t{"NYMC-" + uppercase_strip(lex), part_type::reassortant};
+                } //
+            );
+        };
+
         struct reassortant
         {
             static constexpr auto whitespace = dsl::ascii::blank; // auto skip whitespaces
             static constexpr auto IVR = I + V + R;
             static constexpr auto CNIC = C + N + I + C;
-            static constexpr auto NYMC = N + Y + M + C;
-            static constexpr auto prefix = dsl::peek(IVR + dsl::hyphen) | dsl::peek(CNIC + dsl::hyphen) | dsl::peek(NYMC + dsl::hyphen) | dsl::peek(X + dsl::hyphen);
+            static constexpr auto prefix = dsl::peek(IVR + dsl::hyphen) | dsl::peek(CNIC + dsl::hyphen);
 
-            static constexpr auto rule = prefix >> dsl::capture(dsl::while_(dsl::ascii::alpha) + dsl::hyphen + dsl::while_(dsl::digit<> / dsl::ascii::alpha));
-            static constexpr auto value = lexy::callback<part_t>([](auto lex) { return part_t{lex, part_type::reassortant}; });
+            static constexpr auto rule = ((nymc_x_bx::peek_nymc | nymc_x_bx::peek_xbx) >> dsl::p<nymc_x_bx>) //
+                                         | (prefix >> dsl::capture(dsl::while_(dsl::ascii::alpha) + dsl::hyphen + dsl::while_(dsl::digit<> / dsl::ascii::alpha)));
+            static constexpr auto value = lexy::callback<part_t>( //
+                [](const part_t& part) { return part; }, //
+                [](auto lex) {
+                    return part_t{uppercase_strip(lex), part_type::reassortant};
+                } //
+            );
         };
 
         // ----------------------------------------------------------------------
