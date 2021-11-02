@@ -293,7 +293,7 @@ namespace ae::virus::name::inline v1
         struct letters
         {
             static constexpr auto whitespace = dsl::ascii::blank; // auto skip whitespaces
-            static constexpr auto letters_only = dsl::ascii::alpha / letter_extra / dsl::lit_c<'_'> / dsl::hyphen / dsl::ascii::blank / dsl::period / dsl::apostrophe;
+            static constexpr auto letters_only = dsl::ascii::alpha / letter_extra / dsl::lit_c<'_'> / dsl::lit_c<'?'> / dsl::hyphen / dsl::ascii::blank / dsl::period / dsl::apostrophe;
             static constexpr auto mixed = letters_only / dsl::ascii::digit / dsl::colon / dsl::period;
 
             static constexpr auto rule = dsl::peek(OPT_SPACES + dsl::ascii::alpha / letter_extra) //
