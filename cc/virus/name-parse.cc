@@ -234,13 +234,15 @@ namespace ae::virus::name::inline v1
         struct nymc_x_bx
         {
             // NYMC-307A, X-307A, BX-11, NYMC-X-307A, NYMC X-307A,
-            static constexpr auto peek_nymc = dsl::peek(N + Y + M + C);             //
-            static constexpr auto peek_xbx = dsl::peek(X / B);                      //
+            static constexpr auto peek_nymc = dsl::peek(N + Y + M + C + dsl::hyphen / dsl::ascii::blank / dsl::digit<>);
+            static constexpr auto peek_bx = dsl::peek(B + X + dsl::hyphen / dsl::ascii::blank / dsl::digit<>);
+            static constexpr auto peek_x = dsl::peek(X + dsl::hyphen / dsl::ascii::blank / dsl::digit<>);
+            static constexpr auto peek = peek_nymc | peek_bx | peek_x;
             static constexpr auto nymc = peek_nymc                                  //
                                          >> dsl::while_(dsl::ascii::alpha)          //
                                                 + (dsl::hyphen / dsl::ascii::blank) //
                                                 + dsl::opt(dsl::peek(X / B) >> dsl::while_(dsl::ascii::alpha) + dsl::hyphen / dsl::ascii::blank);
-            static constexpr auto xbx = peek_xbx >> dsl::while_(dsl::ascii::alpha) + dsl::hyphen / dsl::ascii::blank;
+            static constexpr auto xbx = (peek_x | peek_bx) >> dsl::while_(dsl::ascii::alpha) + dsl::hyphen / dsl::ascii::blank;
 
             static constexpr auto rule = (nymc | xbx) + dsl::capture(dsl::while_(dsl::digit<> / dsl::ascii::alpha));
             static constexpr auto value = lexy::callback<part_t>( //
@@ -260,10 +262,10 @@ namespace ae::virus::name::inline v1
             static constexpr auto CNIC = C + N + I + C;
             static constexpr auto prefix = dsl::peek(IVR + dsl::hyphen) | dsl::peek(CNIC + dsl::hyphen);
 
-            static constexpr auto rule = ((nymc_x_bx::peek_nymc | nymc_x_bx::peek_xbx) >> dsl::p<nymc_x_bx>) //
+            static constexpr auto rule = (nymc_x_bx::peek >> dsl::p<nymc_x_bx>) //
                                          | (prefix >> dsl::capture(dsl::while_(dsl::ascii::alpha) + dsl::hyphen + dsl::while_(dsl::digit<> / dsl::ascii::alpha)));
             static constexpr auto value = lexy::callback<part_t>( //
-                [](const part_t& part) { return part; }, //
+                [](const part_t& part) { return part; },          //
                 [](auto lex) {
                     return part_t{uppercase_strip(lex), part_type::reassortant};
                 } //
@@ -289,34 +291,48 @@ namespace ae::virus::name::inline v1
             });
         };
 
-        // chunk starting with a digit, followed by letters, digits, -, _, :, (BUT NO space)
+        // chunk starting with a digit, followed by letters, digits, -, _, :,
         struct digits
         {
-            static constexpr auto mixed = dsl::digits<> / dsl::ascii::alpha / letter_extra / dsl::lit_c<'_'> / dsl::hyphen / dsl::ascii::digit / dsl::colon / dsl::period; // NO blank!!
-            template <Lexeme L> static constexpr bool digits_hyphens(const L& lex)
+            static constexpr auto mixed = dsl::digits<> / dsl::ascii::alpha / letter_extra / dsl::lit_c<'_'> / dsl::hyphen / dsl::ascii::digit / dsl::colon / dsl::period / dsl::ascii::blank;
+
+            template <Lexeme L> static constexpr bool spaces_only(const L& lex)
             {
                 for (char cc : lex) {
-                    if (!std::isdigit(cc) && cc != '-')
+                    if (!std::isspace(cc))
                         return false;
                 }
                 return true;
             }
 
-            static constexpr auto rule = dsl::peek(OPT_SPACES + dsl::digit<>) //
-                >> OPT_SPACES + dsl::capture(dsl::while_(dsl::digits<>)) + dsl::opt(dsl::peek(mixed) >> dsl::capture(dsl::while_(mixed))) + OPT_SPACES;
-            static constexpr auto value = lexy::callback<part_t>([](auto lex1, auto lex2) {
+            static constexpr auto
+                rule = dsl::peek(OPT_SPACES + dsl::digit<>) //
+                       >> OPT_SPACES +
+                              dsl::capture(dsl::while_(dsl::digits<>)) + dsl::opt(dsl::peek(mixed) >> dsl::capture(dsl::while_(mixed))) + dsl::opt(dsl::peek(OPT_SPACES + dsl::slash) >> OPT_SPACES);
+
+            static constexpr auto value12 = [](auto lex1, auto lex2) {
                 if constexpr (std::is_same_v<decltype(lex2), lexy::nullopt>)
                     return part_t{lex1, part_type::digits_only};
-                else if (digits_hyphens(lex2))
-                    return part_t{lex1, lex2, part_type::digits_hyphens};
+                else if (spaces_only(lex2))
+                    return part_t{lex1, part_type::digits_only};
                 else
-                    return part_t{lex1, lex2, part_type::digit_first};
-            });
+                    return part_t{std::string(lex1.begin(), lex1.end()) + std::string(lex2.begin(), lex2.end()), part_type::digit_first}; // no strip!
+            };
+            static constexpr auto value = lexy::callback<part_t>([](auto lex1, auto lex2) { return value12(lex1, lex2); }, [](auto lex1, auto lex2, lexy::nullopt) { return value12(lex1, lex2); });
+        };
+
+        template <size_t N> struct year_followed_by_space
+        {
+            static constexpr auto rule = dsl::peek(OPT_SPACES + dsl::n_digits<N> + dsl::ascii::blank) >> (OPT_SPACES + dsl::capture(dsl::while_(dsl::digits<>)) + OPT_SPACES);
+            static constexpr auto value = lexy::callback<part_t>( //
+                [](auto lex) {
+                    return part_t{lex, part_type::digits_only};
+                });
         };
 
         struct slash_separated
         {
-            static constexpr auto rule = dsl::list(dsl::p<letters> | dsl::p<digits>, dsl::sep(dsl::slash));
+            static constexpr auto rule = dsl::list(dsl::p<letters> | dsl::p<year_followed_by_space<2>> | dsl::p<year_followed_by_space<4>> | dsl::p<digits>, dsl::sep(dsl::slash));
             static constexpr auto value = lexy::as_list<std::vector<part_t>>;
         };
 
@@ -557,7 +573,9 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
         result.isolation = fix_isolation(parts[3], source, result, messages, message_location);
         result.year = fix_year(parts[4], source, result, messages, message_location);
     }
-    else if (types_match(parts, {part_type::type_subtype, part_type::letters_only, part_type::letters_only, part_type::any, part_type::digits_hyphens})) {
+    else if (types_match(parts, {part_type::type_subtype, part_type::letters_only, part_type::letters_only, part_type::any, part_type::digits_hyphens})
+             || types_match(parts, {part_type::type_subtype, part_type::letters_only, part_type::letters_only, part_type::any, part_type::digits_hyphens, part_type::any})) {
+        // with host or double location
         const auto& locdb = locationdb::get();
         if (const auto loc1 = locdb.find(parts[1].head), loc2 = locdb.find(parts[2].head); loc1.empty() && !loc2.empty()) {
             // A(H3N2)/HUMAN/SINGAPORE/INFIMH-16-0019/2016
@@ -597,8 +615,9 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
             result.isolation = fix_isolation(parts[3], source, result, messages, message_location);
             result.year = fix_year(parts[4], source, result, messages, message_location);
         }
+        if (!parts[5].empty())
+            result.extra = parts[5];
     }
-    // reassortant at the end
     // IVR-153 (A/CALIFORNIA/07/2009)
     // (H3N2) at the end
     // A/swine/Chachoengsao/2003

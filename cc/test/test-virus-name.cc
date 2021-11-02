@@ -48,8 +48,8 @@ void virus_name_parsing_test(bool verbose)
         TD{"A/ SINGAPORE/INFIMH-16-0019/16", CT{.subtype = "A", .location = "SINGAPORE", .isolation = "INFIMH-16-0019", .year = "2016"}},
         TD{"A/SINGAPORE /INFIMH-16-0019/16", CT{.subtype = "A", .location = "SINGAPORE", .isolation = "INFIMH-16-0019", .year = "2016"}},
 
-        TD{"A/SINGAPORE/INFIMH-16-0019/2016 NYMC-307A",   CT{.subtype = "A", .location = "SINGAPORE", .isolation = "INFIMH-16-0019", .year = "2016", .reassortant = "NYMC-307A"}},
-        TD{"A/SINGAPORE/INFIMH-16-0019/2016 X-307A",      CT{.subtype = "A", .location = "SINGAPORE", .isolation = "INFIMH-16-0019", .year = "2016", .reassortant = "NYMC-307A"}},
+        TD{"A/SINGAPORE/INFIMH-16-0019/2016 NYMC-307A", CT{.subtype = "A", .location = "SINGAPORE", .isolation = "INFIMH-16-0019", .year = "2016", .reassortant = "NYMC-307A"}},
+        TD{"A/SINGAPORE/INFIMH-16-0019/2016 X-307A", CT{.subtype = "A", .location = "SINGAPORE", .isolation = "INFIMH-16-0019", .year = "2016", .reassortant = "NYMC-307A"}},
         TD{"A/SINGAPORE/INFIMH-16-0019/2016 NYMC-X-307A", CT{.subtype = "A", .location = "SINGAPORE", .isolation = "INFIMH-16-0019", .year = "2016", .reassortant = "NYMC-307A"}},
         TD{"A/SINGAPORE/INFIMH-16-0019/2016 NYMC X-307A", CT{.subtype = "A", .location = "SINGAPORE", .isolation = "INFIMH-16-0019", .year = "2016", .reassortant = "NYMC-307A"}},
 
@@ -86,15 +86,15 @@ void virus_name_parsing_test(bool verbose)
         // TD{"IVR-153 (A/CALIFORNIA/07/2009)",                                     CT{}}, // CT{A,              H,            "CALIFORNIA", "7", "2009", Reassortant{"IVR-153"}, P, E}},
         // TD{"A/Antananarivo/1067/2016 CBER-11B C1.3",                             CT{}}, // CT{A,              H,            "ANTANANARIVO", "1067", "2016", Reassortant{"CBER-11B"}, P, "C1.3"}}, //
         // CDC TD{"A/Montana/50/2016 CBER-07 D2.3",                                     CT{}}, // CT{A,              H,            "MONTANA", "50", "2016", Reassortant{"CBER-07"}, P, "D2.3"}}, // CDC
-        TD{"A/duck/Guangdong/4.30 DGCPLB014-O/2017", CT{}},     // CT{A,              hst{"DUCK"},  "GUANGDONG", "4.30 DGCPLB014-O", "2017", R, P, E}},
-        TD{"A/duck/Guangdong/4.30 DGCPLB014-O/2017 XXX", CT{}}, // CT{A,              hst{"DUCK"},  "GUANGDONG", "4.30 DGCPLB014-O", "2017", R, P, E}},
-        TD{"A/duck/Guangdong/4.30.DGCPLB014-O/2017", CT{}},     // CT{A,              hst{"DUCK"},  "GUANGDONG", "4.30.DGCPLB014-O", "2017", R, P, E}},
+        TD{"A/duck/Guangdong/4.30 DGCPLB014-O/2017", CT{.subtype = "A", .host = "DUCK", .location = "GUANGDONG", .isolation = "4.30 DGCPLB014-O", .year = "2017"}},
+        TD{"A/duck/Guangdong/4.30 DGCPLB014-O/2017 XXX", CT{.subtype = "A", .host = "DUCK", .location = "GUANGDONG", .isolation = "4.30 DGCPLB014-O", .year = "2017", .extra = "XXX"}},
+        TD{"A/duck/Guangdong/4.30.DGCPLB014-O/2017", CT{.subtype = "A", .host = "DUCK", .location = "GUANGDONG", .isolation = "4.30.DGCPLB014-O", .year = "2017"}},
         // TD{"A/duck/Guangdong/02.11 DGQTXC195-P/2015(Mixed)",                     CT{}}, // CT{A,              hst{"DUCK"},  "GUANGDONG", "2.11 DGQTXC195-P", "2015", R, P, E}}, // (MIXED) removed
         // TD{"A/duck/Guangdong/02.11 DGQTXC195-P/2015(H5N1)",                      CT{}}, // CT{typ{"A(H5N1)"}, hst{"DUCK"},  "GUANGDONG", "2.11 DGQTXC195-P", "2015", R, P, E}},
         // TD{"A/swine/Chachoengsao/2003",                                          CT{}}, // CT{A,              hst{"SWINE"}, "CHACHOENGSAO", "UNKNOWN", "2003", R, P, E}},
 
         // // nbci -- genbank
-        TD{"A/Anas platyrhynchos/Belgium/17330 2/2013", CT{}}, // CT{A, hst{"MALLARD"}, "BELGIUM", "17330 2", "2013", R, P, E}},
+        TD{"A/Anas platyrhynchos/Belgium/17330 2/2013", CT{.subtype = "A", .host = "ANAS PLATYRHYNCHOS", .location="BELGIUM", .isolation="17330 2", .year="2013"}},
         // // TD{"A/mallard/Balkhash/6304_HA/2014",                                 CT{}}, //    CT{A, hst{"MALLARD"}, "BALKHASH", "6304", "2014"}, R, P, E}},
         // TD{"A/mallard/Balkhash/6304_HA/2014",                                    CT{}}, // CT{A, hst{"MALLARD"}, "BALKHASH", "6304", "2014", R, P, E}}, // _HA is seqgment reference in ncbi
         // // TD{"A/SWINE/NE/55024/2018",                                           CT{}}, //    CT{A, hst{"SWINE"},   "NE", "55024", "2018", R, P, E}},
