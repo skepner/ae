@@ -178,7 +178,7 @@ namespace ae::virus::name::inline v1
         // static constexpr auto P = dsl::lit_c<'P'> / dsl::lit_c<'p'>;
         // static constexpr auto Q = dsl::lit_c<'Q'> / dsl::lit_c<'q'>;
         static constexpr auto R = dsl::lit_c<'R'> / dsl::lit_c<'r'>;
-        // static constexpr auto S = dsl::lit_c<'S'> / dsl::lit_c<'s'>;
+        static constexpr auto S = dsl::lit_c<'S'> / dsl::lit_c<'s'>;
         // static constexpr auto T = dsl::lit_c<'T'> / dsl::lit_c<'t'>;
         // static constexpr auto U = dsl::lit_c<'U'> / dsl::lit_c<'u'>;
         static constexpr auto V = dsl::lit_c<'V'> / dsl::lit_c<'v'>;
@@ -233,7 +233,7 @@ namespace ae::virus::name::inline v1
 
         struct nymc_x_bx
         {
-            // NYMC-307A, X-307A, BX-11, NYMC-X-307A, NYMC X-307A,
+            // NYMC-307A, X-307A, BX-11, NYMC-X-307A, NYMC-X307A, NYMC X-307A,
             static constexpr auto peek_nymc = dsl::peek(N + Y + M + C + dsl::hyphen / dsl::ascii::blank / dsl::digit<>);
             static constexpr auto peek_bx = dsl::peek(B + X + dsl::hyphen / dsl::ascii::blank / dsl::digit<>);
             static constexpr auto peek_x = dsl::peek(X + dsl::hyphen / dsl::ascii::blank / dsl::digit<>);
@@ -241,10 +241,10 @@ namespace ae::virus::name::inline v1
             static constexpr auto nymc = peek_nymc                                  //
                                          >> dsl::while_(dsl::ascii::alpha)          //
                                                 + (dsl::hyphen / dsl::ascii::blank) //
-                                                + dsl::opt(dsl::peek(X / B) >> dsl::while_(dsl::ascii::alpha) + dsl::hyphen / dsl::ascii::blank);
+                + dsl::opt(dsl::peek(X / B) >> dsl::while_(dsl::ascii::alpha) + dsl::while_(dsl::hyphen / dsl::ascii::blank));
             static constexpr auto xbx = (peek_x | peek_bx) >> dsl::while_(dsl::ascii::alpha) + dsl::hyphen / dsl::ascii::blank;
 
-            static constexpr auto rule = (nymc | xbx) + dsl::capture(dsl::while_(dsl::digit<> / dsl::ascii::alpha));
+            static constexpr auto rule = (nymc | xbx) + dsl::capture(dsl::while_(dsl::digit<> / dsl::ascii::alpha/ dsl::hyphen));
             static constexpr auto value = lexy::callback<part_t>( //
                 [](lexy::nullopt, auto lex) {
                     return part_t{"NYMC-" + uppercase_strip(lex), part_type::reassortant};
@@ -260,7 +260,8 @@ namespace ae::virus::name::inline v1
             static constexpr auto whitespace = dsl::ascii::blank; // auto skip whitespaces
             static constexpr auto IVR = I + V + R;
             static constexpr auto CNIC = C + N + I + C;
-            static constexpr auto prefix = dsl::peek(IVR + dsl::hyphen) | dsl::peek(CNIC + dsl::hyphen);
+            static constexpr auto SAN = S + A + N;
+            static constexpr auto prefix = dsl::peek(IVR + dsl::hyphen) | dsl::peek(CNIC + dsl::hyphen) | dsl::peek(SAN + dsl::hyphen);
 
             static constexpr auto rule = (nymc_x_bx::peek >> dsl::p<nymc_x_bx>) //
                                          | (prefix >> dsl::capture(dsl::while_(dsl::ascii::alpha) + dsl::hyphen + dsl::while_(dsl::digit<> / dsl::ascii::alpha)));
@@ -360,7 +361,7 @@ namespace ae::virus::name::inline v1
         struct parts
         {
             static constexpr auto rule =
-                ((dsl::p<reassortant> >> OPEN + dsl::p<virus_name> + CLOSE)
+                ((dsl::p<reassortant> >> OPT_SPACES + OPEN + dsl::p<virus_name> + CLOSE)
                  | (dsl::else_ >> dsl::p<virus_name> + dsl::opt(dsl::p<reassortant>) + dsl::p<rest>))
                 + dsl::eof;
             static constexpr auto value = lexy::callback<parts_t>(

@@ -52,6 +52,11 @@ void virus_name_parsing_test(bool verbose)
         TD{"A/SINGAPORE/INFIMH-16-0019/2016 X-307A", CT{.subtype = "A", .location = "SINGAPORE", .isolation = "INFIMH-16-0019", .year = "2016", .reassortant = "NYMC-307A"}},
         TD{"A/SINGAPORE/INFIMH-16-0019/2016 NYMC-X-307A", CT{.subtype = "A", .location = "SINGAPORE", .isolation = "INFIMH-16-0019", .year = "2016", .reassortant = "NYMC-307A"}},
         TD{"A/SINGAPORE/INFIMH-16-0019/2016 NYMC X-307A", CT{.subtype = "A", .location = "SINGAPORE", .isolation = "INFIMH-16-0019", .year = "2016", .reassortant = "NYMC-307A"}},
+        TD{"A/SINGAPORE/INFIMH-16-0019/2016 NYMC-X307A", CT{.subtype = "A", .location = "SINGAPORE", .isolation = "INFIMH-16-0019", .year = "2016", .reassortant = "NYMC-307A"}},
+        TD{"A/SINGAPORE/INFIMH-16-0019/2016 NYMC X307A", CT{.subtype = "A", .location = "SINGAPORE", .isolation = "INFIMH-16-0019", .year = "2016", .reassortant = "NYMC-307A"}},
+        TD{"A/SINGAPORE/INFIMH-16-0019/2016 NYMC X307A-CL", CT{.subtype = "A", .location = "SINGAPORE", .isolation = "INFIMH-16-0019", .year = "2016", .reassortant = "NYMC-307A-CL"}},
+        TD{"NYMC-307A(A/SINGAPORE/INFIMH-16-0019/2016)", CT{.subtype = "A", .location = "SINGAPORE", .isolation = "INFIMH-16-0019", .year = "2016", .reassortant = "NYMC-307A"}},
+        TD{"NYMC-307A (A/SINGAPORE/INFIMH-16-0019/2016)", CT{.subtype = "A", .location = "SINGAPORE", .isolation = "INFIMH-16-0019", .year = "2016", .reassortant = "NYMC-307A"}},
 
         // TD{"A/SINGAPORE/INFIMH-16-0019/2016 CL2  X-307A", CT{.subtype = "A", .location = "SINGAPORE", .isolation = "INFIMH-16-0019", .year = "2016", .reassortant = "NYMC-307A", .extra = "CL2"}},
         // TD{"A/SINGAPORE/INFIMH-16-0019/2016-06-14", CT{.subtype = "A", .location = "SINGAPORE", .isolation = "INFIMH-16-0019", .year = "2016"}},
