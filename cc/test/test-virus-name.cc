@@ -99,7 +99,9 @@ void virus_name_parsing_test(bool verbose)
         // TD{"A/duck/Guangdong/02.11 DGQTXC195-P/2015(Mixed)",                     CT{}}, // CT{A,              hst{"DUCK"},  "GUANGDONG", "2.11 DGQTXC195-P", "2015", R, P, E}}, // (MIXED)
         // removed TD{"A/duck/Guangdong/02.11 DGQTXC195-P/2015(H5N1)",                      CT{}}, // CT{typ{"A(H5N1)"}, hst{"DUCK"},  "GUANGDONG", "2.11 DGQTXC195-P", "2015", R, P, E}},
         // TD{"A/swine/Chachoengsao/2003",                                          CT{}}, // CT{A,              hst{"SWINE"}, "CHACHOENGSAO", "UNKNOWN", "2003", R, P, E}},
-        TD{"A/duck/BODENSEE/#500/2019", CT{.subtype = "A", .host = "DUCK", .location = "BODENSEE", .isolation="#500", .year="2019"}},
+        TD{"A/duck/BODENSEE/#500/2019", CT{.subtype = "A", .host = "DUCK", .location = "BODENSEE", .isolation = "#500", .year = "2019"}},
+
+        TD{"A/HAWAII/66/2019 CDC-LV30A", CT{.subtype = "A", .location="HAWAII", .isolation="66", .year="2019", .extra="CDC-LV30A"}},
 
         // // nbci -- genbank
         TD{"A/Anas platyrhynchos/Belgium/17330 2/2013", CT{.subtype = "A", .host = "ANAS PLATYRHYNCHOS", .location = "BELGIUM", .isolation = "17330 2", .year = "2013"}},
