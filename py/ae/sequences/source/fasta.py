@@ -61,7 +61,7 @@ class reader:
             context = self.Context(self, filename=Path(en.filename), line_no=en.line_no)
             metadata = gisaid_name_parser(en.name, context=context) \
                 or regular_name_parser(en.name, context=context)
-            yield metadata, en.sequence
+            yield metadata, en.sequence # metadata may contain "excluded" key to manually exclude the sequence
 
     # def message_maker(self, filename: str, line_no: int):
     #     def make_message(field, value, message):
@@ -118,6 +118,9 @@ def gisaid_name_parser(name: str, context: reader.Context) -> str:
     elif len(fields) == 18 and fields[-1] == "":
         # print("  {}".format('\n  '.join(fields)))
         return gisaid_extract_fields(fields, context=context)
+    elif len(fields) == 19 and fields[-1] == "" and fields[-2].startswith("x="):
+        # manually excluded
+        return {"excluded": fields[-2][2:], **gisaid_extract_fields(fields[:-2] + [""], context=context)}
     else:
         raise Error(f"Invalid number of fields in the gisaid-like name: {len(fields)}: \"{name}\"")
 

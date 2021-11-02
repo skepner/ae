@@ -23,6 +23,8 @@ def main(args: list):
         for metadata, sequence in reader:
             if lab := metadata.get("lab"):
                 labs.add(lab)
+            if excluded := metadata.get("excluded"):
+                print(f">> excluded: {metadata}")
             num_seqs += 1
         messages += reader.messages
         unrecognized_locations |= reader.unrecognized_locations
