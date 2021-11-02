@@ -375,20 +375,15 @@ namespace ae::virus::name::inline v1
         struct parts
         {
             static constexpr auto rule =
-                ((dsl::p<reassortant> >> OPT_SPACES + OPEN + dsl::p<virus_name> + dsl::if_(CLOSE))
+                ((dsl::p<reassortant> >> dsl::opt(dsl::peek(OPT_SPACES + OPEN) >> OPT_SPACES + OPEN + dsl::p<virus_name> + dsl::if_(CLOSE)))
                  | (dsl::else_ >> dsl::p<virus_name> + dsl::opt(dsl::p<reassortant>) + dsl::p<rest>))
                 + dsl::eof;
             static constexpr auto value = lexy::callback<parts_t>(
                 [](const part_t& reassortant, const parts_t& virus_name) {
                     return virus_name + reassortant; // move reassortant to the end
                 },
-                [](const parts_t& virus_name, lexy::nullopt, auto rest) {
-                    return virus_name + rest;
-                },
-                [](const parts_t& virus_name, const part_t& reassortant, auto rest) {
-                    return virus_name + reassortant + rest;
-                }
-            );
+                [](const part_t& reassortant, lexy::nullopt) { return parts_t{reassortant}; }, [](const parts_t& virus_name, lexy::nullopt, auto rest) { return virus_name + rest; },
+                [](const parts_t& virus_name, const part_t& reassortant, auto rest) { return virus_name + reassortant + rest; });
         };
 
     } // namespace grammar
@@ -535,12 +530,17 @@ std::string ae::virus::name::v1::Parts::name(mark_extra me) const
         else if (!alt.empty())
             fmt::format_to(std::back_inserter(out), "{}{}", sep, alt);
     };
-    format_or(subtype, question, nothing);
-    format_or(host, nothing, slash);
-    format_or(location, question, slash);
-    format_or(isolation, question, slash);
-    format_or(year, question, slash);
-    format_or(reassortant, nothing, space);
+    if (!reassortant.empty() && subtype.empty() && location.empty() && isolation.empty() && year.empty()) {
+        fmt::format_to(std::back_inserter(out), "{}", reassortant);
+    }
+    else {
+        format_or(subtype, question, nothing);
+        format_or(host, nothing, slash);
+        format_or(location, question, slash);
+        format_or(isolation, question, slash);
+        format_or(year, question, slash);
+        format_or(reassortant, nothing, space);
+    }
     format_or(extra, nothing, me == mark_extra::yes ? std::string_view{" * "} : space);
     return fmt::to_string(out);
 
@@ -561,7 +561,10 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
     if (settings.trace())
         fmt::print(">>> parts: {}\n", parts);
     // order of if's important, do not change!
-    if (types_match(parts, {part_type::type_subtype, part_type::subtype, part_type::letters_only, part_type::any, part_type::digits_hyphens}) ||
+    if (types_match(parts, {part_type::reassortant})) {
+        result.reassortant = fix_reassortant(parts[0], source, result, messages, message_location);
+    }
+    else if (types_match(parts, {part_type::type_subtype, part_type::subtype, part_type::letters_only, part_type::any, part_type::digits_hyphens}) ||
         types_match(parts, {part_type::type_subtype, part_type::subtype, part_type::letters_only, part_type::any, part_type::digits_hyphens, part_type::reassortant}) ||
         types_match(parts, {part_type::type_subtype, part_type::subtype, part_type::letters_only, part_type::any, part_type::digits_hyphens, part_type::any})) {
         if (parts[0].head.size() == 1) {

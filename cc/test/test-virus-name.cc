@@ -59,6 +59,7 @@ void virus_name_parsing_test(bool verbose)
         TD{"NYMC-307A (A/SINGAPORE/INFIMH-16-0019/2016)", CT{.subtype = "A", .location = "SINGAPORE", .isolation = "INFIMH-16-0019", .year = "2016", .reassortant = "NYMC-307A"}},
         TD{"BVR-25(B/Victoria/2110/2019)", CT{.subtype = "B", .location = "VICTORIA", .isolation = "2110", .year = "2019", .reassortant = "CBER-25"}},
         TD{"NIB-121 (A/Hong Kong/2671/2019", CT{.subtype = "A", .location = "HONG KONG", .isolation = "2671", .year = "2019", .reassortant = "NIB-121"}},
+        TD{"NYMC X-181", CT{.reassortant = "NYMC-181"}},
 
         // TD{"A/SINGAPORE/INFIMH-16-0019/2016 CL2  X-307A", CT{.subtype = "A", .location = "SINGAPORE", .isolation = "INFIMH-16-0019", .year = "2016", .reassortant = "NYMC-307A", .extra =
         // "CL2"}}, TD{"A/SINGAPORE/INFIMH-16-0019/2016-06-14", CT{.subtype = "A", .location = "SINGAPORE", .isolation = "INFIMH-16-0019", .year = "2016"}}, TD{"A/SINGAPORE/INFIMH-16-0019/2016 NEW
