@@ -189,6 +189,7 @@ namespace ae::virus::name::inline v1
 
         static constexpr auto OPEN = dsl::lit_c<'('>;
         static constexpr auto CLOSE = dsl::lit_c<')'>;
+        static constexpr auto OPT_SPACES = dsl::while_(dsl::ascii::blank);
 
         // ----------------------------------------------------------------------
 
@@ -278,8 +279,8 @@ namespace ae::virus::name::inline v1
             static constexpr auto letters_only = dsl::ascii::alpha / letter_extra / dsl::lit_c<'_'> / dsl::hyphen / dsl::ascii::blank / dsl::period / dsl::apostrophe;
             static constexpr auto mixed = letters_only / dsl::ascii::digit / dsl::colon / dsl::period;
 
-            static constexpr auto rule = dsl::peek(dsl::while_(dsl::ascii::blank) + dsl::ascii::alpha / letter_extra) >>
-                                         dsl::capture(dsl::while_(letters_only)) + dsl::opt(dsl::peek_not(dsl::lit_c<'/'>) >> dsl::capture(dsl::while_(mixed)));
+            static constexpr auto rule = dsl::peek(OPT_SPACES + dsl::ascii::alpha / letter_extra) //
+                                         >> dsl::capture(dsl::while_(letters_only)) + dsl::opt(dsl::peek_not(dsl::lit_c<'/'>) >> dsl::capture(dsl::while_(mixed)));
             static constexpr auto value = lexy::callback<part_t>([](auto lex1, auto lex2) {
                 if constexpr (std::is_same_v<decltype(lex2), lexy::nullopt>)
                     return part_t{lex1, part_type::letters_only};
@@ -301,7 +302,8 @@ namespace ae::virus::name::inline v1
                 return true;
             }
 
-            static constexpr auto rule = dsl::peek(dsl::digit<>) >> dsl::capture(dsl::while_(dsl::digits<>)) + dsl::opt(dsl::peek(mixed) >> dsl::capture(dsl::while_(mixed)));
+            static constexpr auto rule = dsl::peek(OPT_SPACES + dsl::digit<>) //
+                >> OPT_SPACES + dsl::capture(dsl::while_(dsl::digits<>)) + dsl::opt(dsl::peek(mixed) >> dsl::capture(dsl::while_(mixed))) + OPT_SPACES;
             static constexpr auto value = lexy::callback<part_t>([](auto lex1, auto lex2) {
                 if constexpr (std::is_same_v<decltype(lex2), lexy::nullopt>)
                     return part_t{lex1, part_type::digits_only};
@@ -330,7 +332,7 @@ namespace ae::virus::name::inline v1
 
         struct virus_name
         {
-            static constexpr auto rule = (dsl::p<subtype_a> | dsl::p<subtype_b>) + dsl::slash + dsl::p<slash_separated> + dsl::while_(dsl::ascii::blank);
+            static constexpr auto rule = (dsl::p<subtype_a> | dsl::p<subtype_b>) + dsl::slash + dsl::p<slash_separated> + OPT_SPACES;
             static constexpr auto value = lexy::callback<parts_t>([](auto subtype, auto slash_separated) {
                 parts_t parts{subtype};
                 std::move(std::begin(slash_separated), std::end(slash_separated), std::next(std::begin(parts)));
