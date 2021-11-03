@@ -60,7 +60,8 @@ class reader:
     def __iter__(self):
         for en in self.reader_:
             context = self.Context(self, filename=Path(en.filename), line_no=en.line_no)
-            metadata = gisaid_name_parser(en.name, context=context) \
+            metadata = \
+                gisaid_name_parser(en.name, context=context) \
                 or regular_name_parser(en.name, context=context)
             yield metadata, en.sequence # metadata may contain "excluded" key to manually exclude the sequence
 
@@ -78,21 +79,24 @@ def regular_name_parser(name: str, context: reader.Context):
 
 def parse_name(name: str, metadata: dict, context: reader.Context):
     preprocessed_name = context.preprocess_virus_name(name, metadata)
-    result = ae_backend.virus_name_parse(preprocessed_name)
-    if result.good():
-        new_name = result.parts.name()
-        # if "CNIC" in new_name or "IVR" in new_name or "NYMC" in new_name:
-        #     print(f"\"{new_name}\" <-- \"{name}\"")
-        return new_name
+    if preprocessed_name[:10] == "<no-parse>":
+        return preprocessed_name[10:]
     else:
-        if preprocessed_name != name:
-            value = f"{preprocessed_name} (original: {name})"
+        result = ae_backend.virus_name_parse(preprocessed_name)
+        if result.good():
+            new_name = result.parts.name()
+            # if "CNIC" in new_name or "IVR" in new_name or "NYMC" in new_name:
+            #     print(f"\"{new_name}\" <-- \"{name}\"")
+            return new_name
         else:
-            value = name
-        for message in result.messages:
-            context.message(field="name", value=value, message=f"[{message.type}] {message.value} -- {message.context}", message_raw=message)
-        context.unrecognized_locations(result.messages.unrecognized_locations())
-        return name
+            if preprocessed_name != name:
+                value = f"{preprocessed_name} (original: {name})"
+            else:
+                value = name
+            for message in result.messages:
+                context.message(field="name", value=value, message=f"[{message.type}] {message.value} -- {message.context}", message_raw=message)
+            context.unrecognized_locations(result.messages.unrecognized_locations())
+            return name
 
 # ----------------------------------------------------------------------
 

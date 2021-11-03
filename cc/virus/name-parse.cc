@@ -14,7 +14,6 @@
 
 namespace ae::virus::name::inline v1
 {
-
     template <class T>
     concept Lexeme = requires(T a)
     {
@@ -118,13 +117,105 @@ namespace ae::virus::name::inline v1
 
     using parts_t = std::array<part_t, 8>;
 
+}
+
+// ======================================================================
+
+template <> struct fmt::formatter<ae::virus::name::part_t::type_t> : fmt::formatter<eu::fmt_helper::default_formatter> {
+    template <typename FormatCtx> auto format(const ae::virus::name::part_t::type_t& value, FormatCtx& ctx)
+    {
+        using namespace ae::virus::name;
+
+        bool empty = true;
+        const auto add = [&empty, &ctx](const char* text) {
+            if (!empty)
+                format_to(ctx.out(), "{}", '|');
+            else
+                empty = false;
+            format_to(ctx.out(), "{}", text);
+        };
+
+        for (size_t pt = 0; pt < value.size(); ++pt)
+        {
+            if (value[pt]) {
+                switch (static_cast<part_type>(pt)) {
+                    case part_type::type_subtype:
+                        add("type_subtype");
+                        break;
+                    case part_type::subtype:
+                        add("subtype");
+                        break;
+                    case part_type::reassortant:
+                        add("reassortant");
+                        break;
+                    case part_type::any:
+                        add("any");
+                        break;
+                    case part_type::letters_only:
+                        add("letters_only");
+                        break;
+                    case part_type::letter_first:
+                        add("letter_first");
+                        break;
+                    case part_type::digits_only:
+                        add("digits_only");
+                        break;
+                    case part_type::digit_first:
+                        add("digit_first");
+                        break;
+                    case part_type::digits_hyphens:
+                        add("digits_hyphens");
+                        break;
+                    case part_type::size_:
+                        break;
+                }
+            }
+        }
+        return ctx.out();
+    }
+};
+
+template <> struct fmt::formatter<ae::virus::name::part_t> : fmt::formatter<eu::fmt_helper::default_formatter> {
+    template <typename FormatCtx> auto format(const ae::virus::name::part_t& value, FormatCtx& ctx)
+    {
+        if (value.type.any())
+            format_to(ctx.out(), "<{}>\"{}{}\"", value.type, value.head, value.tail);
+        return ctx.out();
+    }
+};
+
+// ======================================================================
+
+namespace ae::virus::name::inline v1
+{
+    inline auto end_of_parts(parts_t& parts)
+    {
+        return std::find_if(std::begin(parts), std::end(parts), [](const part_t& part) { return part.type.none(); });
+    }
+
+    inline auto end_of_parts(const parts_t& parts)
+    {
+        return std::find_if(std::begin(parts), std::end(parts), [](const part_t& part) { return part.type.none(); });
+    }
+
     inline parts_t operator+(const parts_t& parts, const part_t& to_append)
     {
         if (to_append.empty())
             return parts;
         parts_t res{parts};
-        if (const auto end = std::find_if(std::begin(res), std::end(res), [](const part_t& part) { return part.type.none(); }); end != std::end(res))
+        if (const auto end = end_of_parts(res); end != std::end(res))
             *end = to_append;
+        return res;
+    }
+
+    inline parts_t operator+(const parts_t& parts, const parts_t& to_append)
+    {
+        if (to_append.empty())
+            return parts;
+        // fmt::print(">> parts+parts {} {}\n", parts, to_append);
+        parts_t res{parts};
+        if (const auto end = end_of_parts(res); end != std::end(res))
+            std::copy(std::begin(to_append), end_of_parts(to_append), end);
         return res;
     }
 
@@ -171,7 +262,7 @@ namespace ae::virus::name::inline v1
         static constexpr auto I = dsl::lit_c<'I'> / dsl::lit_c<'i'>;
         // static constexpr auto J = dsl::lit_c<'J'> / dsl::lit_c<'j'>;
         // static constexpr auto K = dsl::lit_c<'K'> / dsl::lit_c<'k'>;
-        // static constexpr auto L = dsl::lit_c<'L'> / dsl::lit_c<'l'>;
+        static constexpr auto L = dsl::lit_c<'L'> / dsl::lit_c<'l'>;
         static constexpr auto M = dsl::lit_c<'M'> / dsl::lit_c<'m'>;
         static constexpr auto N = dsl::lit_c<'N'> / dsl::lit_c<'n'>;
         // static constexpr auto O = dsl::lit_c<'O'> / dsl::lit_c<'o'>;
@@ -240,7 +331,7 @@ namespace ae::virus::name::inline v1
             static constexpr auto peek = peek_bvr | peek_cber;
 
             static constexpr auto rule = peek >> dsl::while_(dsl::ascii::alpha) + dsl::while_(dsl::hyphen / dsl::ascii::blank) + dsl::capture(dsl::while_(dsl::digit<> / dsl::ascii::alpha));
-            static constexpr auto value = lexy::callback<part_t>([](auto lex) { return part_t{"CBER-" + uppercase_strip(lex), part_type::reassortant}; });
+            static constexpr auto value = lexy::callback<parts_t>([](auto lex) { return parts_t{part_t{"CBER-" + uppercase_strip(lex), part_type::reassortant}}; });
         };
 
         struct nymc_x_bx
@@ -256,13 +347,27 @@ namespace ae::virus::name::inline v1
                 + dsl::opt(dsl::peek(X / B) >> dsl::while_(dsl::ascii::alpha) + dsl::while_(dsl::hyphen / dsl::ascii::blank));
             static constexpr auto xbx = (peek_x | peek_bx) >> dsl::while_(dsl::ascii::alpha) + dsl::hyphen / dsl::ascii::blank;
 
-            static constexpr auto rule = (nymc | xbx) + dsl::capture(dsl::while_(dsl::digit<> / dsl::ascii::alpha/ dsl::hyphen / PLUS));
-            static constexpr auto value = lexy::callback<part_t>( //
-                [](lexy::nullopt, auto lex) {
-                    return part_t{"NYMC-" + uppercase_strip(lex), part_type::reassortant};
+            static constexpr auto rule = (nymc | xbx) + dsl::capture(dsl::while_(dsl::digit<> / dsl::ascii::alpha/ dsl::hyphen / PLUS)) //
+                + dsl::whitespace(dsl::ascii::blank) //
+                + dsl::opt(dsl::peek(C + L + dsl::hyphen) >> dsl::capture(C + L + dsl::hyphen + dsl::digits<>));
+            static constexpr auto value = lexy::callback<parts_t>( //
+                [](lexy::nullopt, auto lex, lexy::nullopt) {
+                    return parts_t{part_t{"NYMC-" + uppercase_strip(lex), part_type::reassortant}};
                 },
-                [](auto lex) {
-                    return part_t{"NYMC-" + uppercase_strip(lex), part_type::reassortant};
+                [](lexy::nullopt, auto lex, auto extra) {
+                    if (!extra.empty())
+                        return parts_t{part_t{"NYMC-" + uppercase_strip(lex), part_type::reassortant}, part_t{uppercase_strip(extra), part_type::any}};
+                    else
+                        return parts_t{part_t{"NYMC-" + uppercase_strip(lex), part_type::reassortant}};
+                },
+                [](auto lex, lexy::nullopt) {
+                    return parts_t{part_t{"NYMC-" + uppercase_strip(lex), part_type::reassortant}};
+                }, //
+                [](auto lex, auto extra) {
+                    if (!extra.empty())
+                        return parts_t{part_t{"NYMC-" + uppercase_strip(lex), part_type::reassortant}, part_t{uppercase_strip(extra), part_type::any}};
+                    else
+                        return parts_t{part_t{"NYMC-" + uppercase_strip(lex), part_type::reassortant}};
                 } //
             );
         };
@@ -280,10 +385,10 @@ namespace ae::virus::name::inline v1
             static constexpr auto rule = (nymc_x_bx::peek >> dsl::p<nymc_x_bx>) //
                                          | (cber::peek >> dsl::p<cber>)         //
                                          | (prefix >> dsl::capture(dsl::while_(dsl::ascii::alpha)) + hy_space + dsl::capture(dsl::while_(dsl::digit<> / dsl::ascii::alpha)));
-            static constexpr auto value = lexy::callback<part_t>( //
-                [](const part_t& part) { return part; },          //
+            static constexpr auto value = lexy::callback<parts_t>( //
+                [](const parts_t& parts) { return parts; },        //
                 [](auto lex1, auto lex2) {
-                    return part_t{uppercase_strip(lex1) + "-" + uppercase_strip(lex2), part_type::reassortant};
+                    return parts_t{part_t{uppercase_strip(lex1) + "-" + uppercase_strip(lex2), part_type::reassortant}};
                 } //
             );
         };
@@ -385,11 +490,12 @@ namespace ae::virus::name::inline v1
                  | (dsl::else_ >> dsl::p<virus_name> + dsl::opt(dsl::p<reassortant>) + dsl::p<rest>))
                 + dsl::eof;
             static constexpr auto value = lexy::callback<parts_t>(
-                [](const part_t& reassortant, const parts_t& virus_name) {
+                [](const parts_t& reassortant, const parts_t& virus_name) {
                     return virus_name + reassortant; // move reassortant to the end
                 },
-                [](const part_t& reassortant, lexy::nullopt) { return parts_t{reassortant}; }, [](const parts_t& virus_name, lexy::nullopt, auto rest) { return virus_name + rest; },
-                [](const parts_t& virus_name, const part_t& reassortant, auto rest) { return virus_name + reassortant + rest; });
+                [](const parts_t& reassortant, lexy::nullopt) { return reassortant; }, //
+                [](const parts_t& virus_name, lexy::nullopt, auto rest) { return virus_name + rest; },
+                [](const parts_t& virus_name, const parts_t& reassortant, auto rest) { return virus_name + reassortant + rest; });
         };
 
     } // namespace grammar
@@ -461,69 +567,6 @@ namespace ae::virus::name::inline v1
 
 // ----------------------------------------------------------------------
 
-template <> struct fmt::formatter<ae::virus::name::part_t::type_t> : fmt::formatter<eu::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(const ae::virus::name::part_t::type_t& value, FormatCtx& ctx)
-    {
-        using namespace ae::virus::name;
-
-        bool empty = true;
-        const auto add = [&empty, &ctx](const char* text) {
-            if (!empty)
-                format_to(ctx.out(), "{}", '|');
-            else
-                empty = false;
-            format_to(ctx.out(), "{}", text);
-        };
-
-        for (size_t pt = 0; pt < value.size(); ++pt)
-        {
-            if (value[pt]) {
-                switch (static_cast<part_type>(pt)) {
-                    case part_type::type_subtype:
-                        add("type_subtype");
-                        break;
-                    case part_type::subtype:
-                        add("subtype");
-                        break;
-                    case part_type::reassortant:
-                        add("reassortant");
-                        break;
-                    case part_type::any:
-                        add("any");
-                        break;
-                    case part_type::letters_only:
-                        add("letters_only");
-                        break;
-                    case part_type::letter_first:
-                        add("letter_first");
-                        break;
-                    case part_type::digits_only:
-                        add("digits_only");
-                        break;
-                    case part_type::digit_first:
-                        add("digit_first");
-                        break;
-                    case part_type::digits_hyphens:
-                        add("digits_hyphens");
-                        break;
-                    case part_type::size_:
-                        break;
-                }
-            }
-        }
-        return ctx.out();
-    }
-};
-
-template <> struct fmt::formatter<ae::virus::name::part_t> : fmt::formatter<eu::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(const ae::virus::name::part_t& value, FormatCtx& ctx)
-    {
-        if (value.type.any())
-            format_to(ctx.out(), "<{}>\"{}{}\"", value.type, value.head, value.tail);
-        return ctx.out();
-    }
-};
-
 // ======================================================================
 
 std::string ae::virus::name::v1::Parts::name(mark_extra me) const
@@ -567,8 +610,10 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
     if (settings.trace())
         fmt::print(">>> parts: {}\n", parts);
     // order of if's important, do not change!
-    if (types_match(parts, {part_type::reassortant})) {
+    if (types_match(parts, {part_type::reassortant}) || types_match(parts, {part_type::reassortant, part_type::any})) {
         result.reassortant = fix_reassortant(parts[0], source, result, messages, message_location);
+        if (type_match(parts[1], part_type::any))
+            result.extra = parts[1];
     }
     else if (types_match(parts, {part_type::type_subtype, part_type::subtype, part_type::letters_only, part_type::any, part_type::digits_hyphens}) ||
         types_match(parts, {part_type::type_subtype, part_type::subtype, part_type::letters_only, part_type::any, part_type::digits_hyphens, part_type::reassortant}) ||
