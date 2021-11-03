@@ -338,9 +338,14 @@ namespace ae::virus::name::inline v1
 
         template <size_t N> struct year_followed_by_space
         {
-            static constexpr auto rule = dsl::peek(OPT_SPACES + dsl::n_digits<N> + dsl::ascii::blank) >> (OPT_SPACES + dsl::capture(dsl::while_(dsl::digits<>)) + OPT_SPACES);
+            // year is the last in the name. do NOT match if year (sequences of N digits) follwed by slash not enclosed in paretheses)
+            static constexpr auto rule = dsl::peek(OPT_SPACES + dsl::n_digits<N> + dsl::ascii::blank                            // year and space
+                                                   + ((dsl::lookahead(dsl::slash, OPEN) >> dsl::error<lexy::lookahead_failure>) // fail (backtrack) if folloed by / before (
+                                                      | dsl::else_ >> dsl::any))                                                // otherwise matches
+                                         >> (OPT_SPACES + dsl::capture(dsl::while_(dsl::digits<>)) + OPT_SPACES); // consume year and spaces around it
             static constexpr auto value = lexy::callback<part_t>( //
                 [](auto lex) {
+                    // fmt::print(">>>> year_followed_by_space<{}> \"{}\"\n", N, std::string(lex.begin(), lex.end()));
                     return part_t{lex, part_type::digits_only};
                 });
         };

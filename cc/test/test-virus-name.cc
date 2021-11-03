@@ -60,7 +60,7 @@ void virus_name_parsing_test(bool verbose)
         TD{"BVR-25(B/Victoria/2110/2019)", CT{.subtype = "B", .location = "VICTORIA", .isolation = "2110", .year = "2019", .reassortant = "CBER-25"}},
         TD{"NIB-121 (A/Hong Kong/2671/2019", CT{.subtype = "A", .location = "HONG KONG", .isolation = "2671", .year = "2019", .reassortant = "NIB-121"}},
         TD{"NYMC X-181", CT{.reassortant = "NYMC-181"}},
-        TD{"A/Kansas/14/2017 CBER-22B CDC19A", CT{.subtype = "A", .location = "KANSAS", .isolation="14", .year="2017", .reassortant="CBER-22B", .extra="CDC19A"}},
+        TD{"A/Kansas/14/2017 CBER-22B CDC19A", CT{.subtype = "A", .location = "KANSAS", .isolation = "14", .year = "2017", .reassortant = "CBER-22B", .extra = "CDC19A"}},
 
         // TD{"A/SINGAPORE/INFIMH-16-0019/2016 CL2  X-307A", CT{.subtype = "A", .location = "SINGAPORE", .isolation = "INFIMH-16-0019", .year = "2016", .reassortant = "NYMC-307A", .extra =
         // "CL2"}}, TD{"A/SINGAPORE/INFIMH-16-0019/2016-06-14", CT{.subtype = "A", .location = "SINGAPORE", .isolation = "INFIMH-16-0019", .year = "2016"}}, TD{"A/SINGAPORE/INFIMH-16-0019/2016
@@ -102,6 +102,7 @@ void virus_name_parsing_test(bool verbose)
         TD{"A/duck/Guangdong/4.30 DGCPLB014-O/2017", CT{.subtype = "A", .host = "DUCK", .location = "GUANGDONG", .isolation = "4.30 DGCPLB014-O", .year = "2017"}},
         TD{"A/duck/Guangdong/4.30 DGCPLB014-O/2017 XXX", CT{.subtype = "A", .host = "DUCK", .location = "GUANGDONG", .isolation = "4.30 DGCPLB014-O", .year = "2017", .extra = "XXX"}},
         TD{"A/duck/Guangdong/4.30.DGCPLB014-O/2017", CT{.subtype = "A", .host = "DUCK", .location = "GUANGDONG", .isolation = "4.30.DGCPLB014-O", .year = "2017"}},
+        TD{"B/Mali/01 CS/2015", CT{.subtype = "B", .location = "MALI", .isolation = "1 CS", .year = "2015"}},
         // TD{"A/duck/Guangdong/02.11 DGQTXC195-P/2015(Mixed)",                     CT{}}, // CT{A,              hst{"DUCK"},  "GUANGDONG", "2.11 DGQTXC195-P", "2015", R, P, E}}, // (MIXED)
         // removed TD{"A/duck/Guangdong/02.11 DGQTXC195-P/2015(H5N1)",                      CT{}}, // CT{typ{"A(H5N1)"}, hst{"DUCK"},  "GUANGDONG", "2.11 DGQTXC195-P", "2015", R, P, E}},
         // TD{"A/swine/Chachoengsao/2003",                                          CT{}}, // CT{A,              hst{"SWINE"}, "CHACHOENGSAO", "UNKNOWN", "2003", R, P, E}},
