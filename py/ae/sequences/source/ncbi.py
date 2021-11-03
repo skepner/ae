@@ -15,15 +15,20 @@ class reader:
     def __init__(self, ncbi_dir: Path):
         self.messages = []
         self.unrecognized_locations = set()
-        na_dat = self.read_influenza_na_dat(ncbi_dir.joinpath("influenza_na.dat.xz"))
+        self.na_dat = self.read_influenza_na_dat(ncbi_dir.joinpath("influenza_na.dat.xz"))
+        self.fna_filename = ncbi_dir.joinpath("influenza.fna.xz")
+        self.reader_ = ae_backend.FastaReader(self.fna_filename)
 
     def __iter__(self):
         for en in self.reader_:
-            metadata = \
-                gisaid_name_parser(en.name, context=context) \
-                or naomi_name_parser(en.name, context=context) \
-                or regular_name_parser(en.name, lab_hint=self.lab_hint, context=context)
+            context = Context(self, filename=self.fna_filename, line_no=en.line_no)
+            metadata = self.read_fna_name(en.name, context=context)
             yield metadata, en.sequence # metadata may contain "excluded" key to manually exclude the sequence
+
+    # ----------------------------------------------------------------------
+
+    def read_fna_name(self, name: str, context: Context):
+        return {"name": name}
 
     # ----------------------------------------------------------------------
 
