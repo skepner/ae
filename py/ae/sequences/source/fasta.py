@@ -74,8 +74,10 @@ class reader:
 # ----------------------------------------------------------------------
 
 def regular_name_parser(name: str, context: reader.Context):
-    print(f">>> regular_name_parser \"{name}\"")
-    return {"name": name}
+    # print(f">>> regular_name_parser \"{name}\"")
+    metadata = {"name": name}
+    metadata["name"] = parse_name(name, metadata=metadata, context=context)
+    return metadata
 
 # ----------------------------------------------------------------------
 
