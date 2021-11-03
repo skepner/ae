@@ -1,5 +1,6 @@
 #include "py/module.hh"
 #include "utils/messages.hh"
+#include "utils/file.hh"
 
 // ======================================================================
 
@@ -23,6 +24,9 @@ void ae::py::utils(pybind11::module_& mdl)
         .def(
             "__iter__", [](const ae::Messages& messages) { return pybind11::make_iterator(messages.messages().begin(), messages.messages().end()); }, pybind11::keep_alive<0, 1>()) //
         ;
+
+    mdl.def(
+        "read_file", [](pybind11::object filename) { return ae::file::read(std::string{pybind11::str(filename)}); }, "filename"_a);
 }
 
 // ======================================================================

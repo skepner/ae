@@ -94,20 +94,20 @@ std::string ae::file::read_access::rest()
 
 // ----------------------------------------------------------------------
 
-std::pair<std::string_view, bool> ae::file::read_access::line()
-{
-    if (const auto eol = decompressed_.find('\n', decompressed_offset_); eol == std::string_view::npos) {
-        const auto result = decompressed_.substr(decompressed_offset_);
-        decompressed_offset_ = decompressed_.size();
-        return {result, result.size() == 0};
-    }
-    else {
-        const auto result = decompressed_.substr(decompressed_offset_, eol - decompressed_offset_);
-        decompressed_offset_ = eol + 1;
-        return {result, false};
-    }
+// std::pair<std::string_view, bool> ae::file::read_access::line()
+// {
+//     if (const auto eol = decompressed_.find('\n', decompressed_offset_); eol == std::string_view::npos) {
+//         const auto result = decompressed_.substr(decompressed_offset_);
+//         decompressed_offset_ = decompressed_.size();
+//         return {result, result.size() == 0};
+//     }
+//     else {
+//         const auto result = decompressed_.substr(decompressed_offset_, eol - decompressed_offset_);
+//         decompressed_offset_ = eol + 1;
+//         return {result, false};
+//     }
 
-} // ae::file::read_access::line
+// } // ae::file::read_access::line
 
 // ----------------------------------------------------------------------
 

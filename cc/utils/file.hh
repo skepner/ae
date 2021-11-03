@@ -50,7 +50,7 @@ namespace ae::file
         std::string rest();
         // operator std::string_view() { return rest(); }
         operator std::string() { return rest(); }
-        std::pair<std::string_view, bool> line(); // line, end_of_file
+        // std::pair<std::string_view, bool> line(); // line, end_of_file
 
       private:
         enum class initial { no, yes };
@@ -70,7 +70,7 @@ namespace ae::file
 
     }; // class read_access
 
-    inline read_access read(const std::filesystem::path& filename, size_t padding = 0) { return read_access{filename, padding}; }
+    inline std::string read(const std::filesystem::path& filename, size_t padding = 0) { return read_access{filename, padding}.rest(); }
     // inline read_access read_from_file_descriptor(int fd, size_t chunk_size = 1024) { return read_access(fd, chunk_size); }
     // inline read_access read_stdin() { return read_from_file_descriptor(0); }
     void write(std::string_view aFilename, std::string_view aData, force_compression aForceCompression = force_compression::no, backup_file aBackupFile = backup_file::yes);
