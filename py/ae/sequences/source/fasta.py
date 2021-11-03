@@ -2,7 +2,7 @@ import sys, re, pprint
 from pathlib import Path
 
 import ae_backend
-from .context import Context
+from .parse import Context, parse_name, parse_date
 
 # ======================================================================
 
@@ -50,44 +50,6 @@ def regular_name_parser(name: str, lab_hint: str, context: Context):
             name = mm.group(1)
     metadata["name"] = parse_name(name, metadata=metadata, context=context)
     return metadata
-
-# ----------------------------------------------------------------------
-
-def parse_name(name: str, metadata: dict, context: Context):
-    preprocessed_name = context.preprocess_virus_name(name, metadata)
-    if preprocessed_name[:10] == "<no-parse>":
-        return preprocessed_name[10:]
-    else:
-        # print(f">>>> {preprocessed_name}", file=sys.stderr)
-        result = ae_backend.virus_name_parse(preprocessed_name)
-        if result.good():
-            new_name = result.parts.name()
-            # if "CNIC" in new_name or "IVR" in new_name or "NYMC" in new_name:
-            #     print(f"\"{new_name}\" <-- \"{name}\"")
-            return new_name
-        else:
-            if preprocessed_name != name:
-                value = f"{preprocessed_name} (original: {name})"
-            else:
-                value = name
-            for message in result.messages:
-                context.message(field="name", value=value, message=f"[{message.type}] {message.value} -- {message.context}", message_raw=message)
-            context.unrecognized_locations(result.messages.unrecognized_locations())
-            return name
-
-# ----------------------------------------------------------------------
-
-def parse_date(date: str, metadata: dict, context: Context):
-    preprocessed_date = context.preprocess_date(date, metadata)
-    try:
-        return ae_backend.date_format(preprocessed_date, throw_on_error=True, month_first=metadata.get("lab") == "CDC")
-    except Exception as err:
-        if date != preprocessed_date:
-            value = f"{preprocessed_date} (original: {date})"
-        else:
-            value = date
-        context.message(field="date", value=value, message=str(err))
-        return date
 
 # ======================================================================
 # gisaid
