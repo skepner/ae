@@ -110,7 +110,7 @@ void virus_name_parsing_test(bool verbose)
 
         TD{"A/HAWAII/66/2019 CDC-LV30A", CT{.subtype = "A", .location = "HAWAII", .isolation = "66", .year = "2019", .extra = "CDC-LV30A"}},
 
-        // // nbci -- genbank
+        // nbci -- genbank
         TD{"A/Anas platyrhynchos/Belgium/17330 2/2013", CT{.subtype = "A", .host = "ANAS PLATYRHYNCHOS", .location = "BELGIUM", .isolation = "17330 2", .year = "2013"}},
         // // TD{"A/mallard/Balkhash/6304_HA/2014",                                 CT{}}, //    CT{A, hst{"MALLARD"}, "BALKHASH", "6304", "2014"}, R, P, E}},
         // TD{"A/mallard/Balkhash/6304_HA/2014",                                    CT{}}, // CT{A, hst{"MALLARD"}, "BALKHASH", "6304", "2014", R, P, E}}, // _HA is seqgment reference in ncbi
@@ -119,7 +119,10 @@ void virus_name_parsing_test(bool verbose)
         // TD{"A/BiliranTB5/0423/2015",                                             CT{}}, // CT{A, H,                 "BILIRAN",  "TB5-0423", "2015", R, P, E}},
         // TD{"A/chicken/Yunnan/Kunming/2007",                                      CT{}}, // CT{A, hst{"CHICKEN"}, "YUNNAN KUNMING", "UNKNOWN", "2007", R, P, E}},
 
-        // // gisaid
+        // gisaid
+        TD{"A/Lisboa/SU17+/2010", CT{.subtype = "A", .location="LISBOA", .isolation="SU17+", .year="2010"}},
+        TD{"A/India/LKO_TAH398(a)/2015", CT{.subtype = "A", .location="INDIA", .isolation="LKO_TAH398(A)", .year="2015"}},
+
         // TD{"A/Flu-Bangkok/24/19",                                                CT{}}, // CT{A,               H, "BANGKOK", "24", "2019", R, P, E}},
         // TD{"A(H1)//ARGENTINA/FLE0116/2009",                                      CT{}}, // CT{typ{"A(H1)"},    H, "ARGENTINA", "FLE0116", "2009", R, P, E}},
         // TD{"A/FriuliVeneziaGiuliaPN/230/2019",                                   CT{}}, // CT{A,               H, "FRIULI-VENEZIA GIULIA PN", "230", "2019", R, P, E}},

@@ -294,7 +294,7 @@ namespace ae::virus::name::inline v1
         {
             static constexpr auto whitespace = dsl::ascii::blank; // auto skip whitespaces
             static constexpr auto letters_only = dsl::ascii::alpha / letter_extra / dsl::lit_c<'_'> / dsl::lit_c<'?'> / dsl::hyphen / dsl::ascii::blank / dsl::period / dsl::apostrophe;
-            static constexpr auto mixed = letters_only / dsl::ascii::digit / dsl::colon / dsl::period;
+            static constexpr auto mixed = letters_only / dsl::ascii::digit / dsl::colon / dsl::period / PLUS / OPEN / CLOSE;
 
             static constexpr auto rule = dsl::peek(OPT_SPACES + dsl::ascii::alpha / letter_extra) //
                                          >> dsl::capture(dsl::while_(letters_only)) + dsl::opt(dsl::peek_not(dsl::lit_c<'/'>) >> dsl::capture(dsl::while_(mixed)));
@@ -309,7 +309,7 @@ namespace ae::virus::name::inline v1
         // chunk starting with a digit, followed by letters, digits, -, _, :,
         struct digits
         {
-            static constexpr auto mixed = dsl::digits<> / dsl::ascii::alpha / letter_extra / dsl::lit_c<'_'> / dsl::hyphen / dsl::ascii::digit / dsl::hash_sign / dsl::colon / dsl::period / dsl::ascii::blank;
+            static constexpr auto mixed = dsl::digits<> / dsl::ascii::alpha / letter_extra / dsl::lit_c<'_'> / dsl::hyphen / dsl::ascii::digit / dsl::hash_sign / dsl::colon / dsl::period / PLUS / dsl::ascii::blank;
 
             template <Lexeme L> static constexpr bool spaces_only(const L& lex)
             {
