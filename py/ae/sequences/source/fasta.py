@@ -19,6 +19,7 @@ class reader:
         field: str
         value: str
         message: str
+        message_raw: ae_backend.Message
         filename: Path
         line_no: int
 
@@ -31,8 +32,8 @@ class reader:
             self.filename = filename
             self.line_no = line_no
 
-        def message(self, field, value, message):
-            self.reader.messages.append(reader.Message(field=field, value=value, message=message, filename=self.filename, line_no=self.line_no))
+        def message(self, field, value, message, message_raw=None):
+            self.reader.messages.append(reader.Message(field=field, value=value, message=message, message_raw=message_raw, filename=self.filename, line_no=self.line_no))
 
         def unrecognized_locations(self, unrecognized_locations: set):
             self.reader.unrecognized_locations |= unrecognized_locations
@@ -89,7 +90,7 @@ def parse_name(name: str, metadata: dict, context: reader.Context):
         else:
             value = name
         for message in result.messages:
-            context.message(field="name", value=value, message=f"[{message.type}] {message.value} -- {message.context}")
+            context.message(field="name", value=value, message=f"[{message.type}] {message.value} -- {message.context}", message_raw=message)
         context.unrecognized_locations(result.messages.unrecognized_locations())
         return name
 

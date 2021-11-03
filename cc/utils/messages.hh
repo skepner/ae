@@ -24,6 +24,40 @@ namespace ae
         std::string value{};
         std::string context{};
         MessageLocation location;
+
+        static inline std::string_view format_short(message_type type)
+        {
+            switch (type) {
+                case unknown:
+                    return "U";
+                case unrecognized_location:
+                    return "L";
+                case invalid_subtype:
+                    return "S";
+                case invalid_year:
+                    return "Y";
+                case unhandled_virus_name:
+                    return "-";
+            }
+            return "U";
+        }
+
+        static inline std::string_view format_long(message_type type)
+        {
+            switch (type) {
+                case unknown:
+                    return "unknown";
+                case unrecognized_location:
+                    return "unrecognized location";
+                case invalid_subtype:
+                    return "invalid subtype";
+                case invalid_year:
+                    return "invalid year";
+                case unhandled_virus_name:
+                    return "unhandled virus name";
+            }
+            return "unknown";
+        }
     };
 
     class Messages
@@ -61,30 +95,9 @@ namespace ae
 
 // ----------------------------------------------------------------------
 
-template <> struct fmt::formatter<ae::Message::message_type> : fmt::formatter<eu::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(ae::Message::message_type type, FormatCtx& ctx)
-    {
-        using namespace ae;
-
-        switch (type) {
-            case Message::unknown:
-                format_to(ctx.out(), "unknown");
-                break;
-            case Message::unrecognized_location:
-                format_to(ctx.out(), "unrecognized location");
-                break;
-            case Message::invalid_subtype:
-                format_to(ctx.out(), "invalid subtype");
-                break;
-            case Message::invalid_year:
-                format_to(ctx.out(), "invalid year");
-                break;
-            case Message::unhandled_virus_name:
-                format_to(ctx.out(), "unhandled virus name");
-                break;
-        }
-        return ctx.out();
-    }
+template <> struct fmt::formatter<ae::Message::message_type> : fmt::formatter<eu::fmt_helper::default_formatter>
+{
+    template <typename FormatCtx> auto format(ae::Message::message_type type, FormatCtx& ctx) { return format_to(ctx.out(), "{}", ae::Message::format_long(type)); }
 };
 
 // ----------------------------------------------------------------------

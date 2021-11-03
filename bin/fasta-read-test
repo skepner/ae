@@ -33,7 +33,7 @@ def main(args: list):
     if messages:
         print(f"Messages: {len(messages)}")
         for msg in messages:
-            print(f"  {msg.field}[{msg.value}]: {msg.message} @@ {msg.filename}:{msg.line_no}")
+            print(f"  {msg.message_raw.type_short() if msg.message_raw else ' '} {msg.field}[{msg.value}]: {msg.message} @@ {msg.filename}:{msg.line_no}")
         if unrecognized_locations:
             print(f"Unrecognized locations: {len(unrecognized_locations)}")
             for loc in unrecognized_locations:
