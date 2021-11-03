@@ -1,10 +1,8 @@
 import sys, re, pprint
 from pathlib import Path
-from dataclasses import dataclass
-from typing import Callable
 
 import ae_backend
-import ae.utils.directory_module
+from .context import Context
 
 # ======================================================================
 
@@ -13,44 +11,6 @@ class Error (RuntimeError): pass
 # ----------------------------------------------------------------------
 
 class reader:
-
-    @dataclass
-    class Message:
-        field: str
-        value: str
-        message: str
-        message_raw: ae_backend.Message
-        filename: Path
-        line_no: int
-
-    # ----------------------------------------------------------------------
-
-    class Context:
-
-        def __init__(self, reader, filename: Path, line_no: int):
-            self.reader = reader
-            self.filename = filename
-            self.line_no = line_no
-
-        def message(self, field, value, message, message_raw=None):
-            self.reader.messages.append(reader.Message(field=field, value=value, message=message, message_raw=message_raw, filename=self.filename, line_no=self.line_no))
-
-        def unrecognized_locations(self, unrecognized_locations: set):
-            self.reader.unrecognized_locations |= unrecognized_locations
-
-        def preprocess_virus_name(self, name, metadata: dict):
-            if (directory_module := ae.utils.directory_module.load(self.filename.parent)) and (preprocessor := getattr(directory_module, "preprocess_virus_name", None)):
-                return preprocessor(name, metadata)
-            else:
-                return name
-
-        def preprocess_date(self, date, metadata: dict):
-            if (directory_module := ae.utils.directory_module.load(self.filename.parent)) and (preprocessor := getattr(directory_module, "preprocess_date", None)):
-                return preprocessor(date, metadata)
-            else:
-                return date
-
-    # ----------------------------------------------------------------------
 
     def __init__(self, filename: Path):
         self.reader_ = ae_backend.FastaReader(filename)
@@ -63,23 +23,18 @@ class reader:
 
     def __iter__(self):
         for en in self.reader_:
-            context = self.Context(self, filename=Path(en.filename), line_no=en.line_no)
+            context = Context(self, filename=Path(en.filename), line_no=en.line_no)
             metadata = \
                 gisaid_name_parser(en.name, context=context) \
                 or naomi_name_parser(en.name, context=context) \
                 or regular_name_parser(en.name, lab_hint=self.lab_hint, context=context)
             yield metadata, en.sequence # metadata may contain "excluded" key to manually exclude the sequence
 
-    # def message_maker(self, filename: str, line_no: int):
-    #     def make_message(field, value, message):
-    #         self.messages.append(self.Message(field=field, value=value, message=message, filename=filename, line_no=line_no))
-    #     return make_message
-
 # ----------------------------------------------------------------------
 
 sRePassageAtEnd = re.compile(r"^(.+)_(E|EGG|CELL|SIAT|MDCK|OR)$", re.I)
 
-def regular_name_parser(name: str, lab_hint: str, context: reader.Context):
+def regular_name_parser(name: str, lab_hint: str, context: Context):
     # print(f">>> regular_name_parser \"{name}\"")
     metadata = {"name": name}
     if lab_hint:
@@ -98,7 +53,7 @@ def regular_name_parser(name: str, lab_hint: str, context: reader.Context):
 
 # ----------------------------------------------------------------------
 
-def parse_name(name: str, metadata: dict, context: reader.Context):
+def parse_name(name: str, metadata: dict, context: Context):
     preprocessed_name = context.preprocess_virus_name(name, metadata)
     if preprocessed_name[:10] == "<no-parse>":
         return preprocessed_name[10:]
@@ -122,7 +77,7 @@ def parse_name(name: str, metadata: dict, context: reader.Context):
 
 # ----------------------------------------------------------------------
 
-def parse_date(date: str, metadata: dict, context: reader.Context):
+def parse_date(date: str, metadata: dict, context: Context):
     preprocessed_date = context.preprocess_date(date, metadata)
     try:
         return ae_backend.date_format(preprocessed_date, throw_on_error=True, month_first=metadata.get("lab") == "CDC")
@@ -138,7 +93,7 @@ def parse_date(date: str, metadata: dict, context: reader.Context):
 # gisaid
 # ======================================================================
 
-def gisaid_name_parser(name: str, context: reader.Context) -> str:
+def gisaid_name_parser(name: str, context: Context) -> str:
     fields = [en.strip() for en in name.split("_|_")]
     if len(fields) == 1:
         return None             # not a gisaid
@@ -153,7 +108,7 @@ def gisaid_name_parser(name: str, context: reader.Context) -> str:
 
 # ----------------------------------------------------------------------
 
-def gisaid_extract_fields(fields: list, context: reader.Context):
+def gisaid_extract_fields(fields: list, context: Context):
     metadata = {"name": fields[0]}
     for field in fields[1:-1]:
         key, value = field.split("=", maxsplit=1)
@@ -164,7 +119,7 @@ def gisaid_extract_fields(fields: list, context: reader.Context):
             metadata[field_name] = parser(field_value, metadata=metadata, context=context)
     return metadata
 
-def gisaid_parse_subtype(subtype: str, metadata: dict, context: reader.Context):
+def gisaid_parse_subtype(subtype: str, metadata: dict, context: Context):
     subtype = subtype.upper()
     if len(subtype) >= 8 and subtype[0] == "A":
         if subtype[5] != "0" and subtype[7] == "0": # H3N0
@@ -177,10 +132,10 @@ def gisaid_parse_subtype(subtype: str, metadata: dict, context: reader.Context):
         context.message(field="type_subtype", value=subtype, message=f"[gisaid]: invalid subtype")
         return ""
 
-# def parse_lineage(lineage, metadata: dict, context: reader.Context):
+# def parse_lineage(lineage, metadata: dict, context: Context):
 #     return lineage
 
-def gisaid_parse_lab(lab: str, metadata: dict, context: reader.Context):
+def gisaid_parse_lab(lab: str, metadata: dict, context: Context):
     return sGisaidLabs.get(lab.upper(), lab)
 
 sGisaidFieldKeys = {
@@ -227,7 +182,7 @@ sGisaidLabs = {
 # naomi
 # ======================================================================
 
-def naomi_name_parser(name: str, context: reader.Context) -> str:
+def naomi_name_parser(name: str, context: Context) -> str:
     fields = [en.strip() for en in name.split(" | ")]
     if len(fields) == 1:
         return None             # not a naomi
@@ -238,7 +193,7 @@ def naomi_name_parser(name: str, context: reader.Context) -> str:
 
 # ----------------------------------------------------------------------
 
-def naomi_extract_fields(fields: list, context: reader.Context):
+def naomi_extract_fields(fields: list, context: Context):
     metadata = {
         "name": fields[0].strip(),
         "date": fields[1].strip(),
