@@ -115,7 +115,7 @@ namespace ae::virus::name::inline v1
         operator std::string() const { return fmt::format("{}{}", head, tail); }
     };
 
-    using parts_t = std::array<part_t, 8>;
+    using parts_t = std::array<part_t, 16>; // many slashes in names like A/reassortant/IDCDC-RG18(Texas/05/2009 x New York/18/2009 x Puerto Rico/8/1934)
 
 }
 
