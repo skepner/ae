@@ -1,4 +1,4 @@
-import pprint
+import sys, pprint
 from pathlib import Path
 from dataclasses import dataclass
 from typing import Callable
@@ -82,6 +82,7 @@ def parse_name(name: str, metadata: dict, context: reader.Context):
     if preprocessed_name[:10] == "<no-parse>":
         return preprocessed_name[10:]
     else:
+        # print(f">>>> {preprocessed_name}", file=sys.stderr)
         result = ae_backend.virus_name_parse(preprocessed_name)
         if result.good():
             new_name = result.parts.name()
