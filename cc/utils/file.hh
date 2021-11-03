@@ -47,9 +47,9 @@ namespace ae::file
         // operator std::string() const { return mapped_ ? decompress_if_necessary({mapped_, len_}, padding_) : decompress_if_necessary(data_, padding_); }
         // bool valid() const { return mapped_ != nullptr || !data_.empty(); }
 
-        std::string_view rest();
-        operator std::string_view() { return rest(); }
-        operator std::string() { return std::string(rest()); }
+        std::string rest();
+        // operator std::string_view() { return rest(); }
+        operator std::string() { return rest(); }
         std::pair<std::string_view, bool> line(); // line, end_of_file
 
       private:

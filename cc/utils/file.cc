@@ -86,9 +86,9 @@ ae::file::read_access::~read_access()
 
 // ----------------------------------------------------------------------
 
-std::string_view ae::file::read_access::rest()
+std::string ae::file::read_access::rest()
 {
-    return decompressed_.substr(decompressed_offset_);
+    return std::string{decompressed_.substr(decompressed_offset_)};
 
 } // ae::file::read_access::rest
 
