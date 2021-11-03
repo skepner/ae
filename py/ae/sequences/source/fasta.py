@@ -62,6 +62,7 @@ class reader:
             context = self.Context(self, filename=Path(en.filename), line_no=en.line_no)
             metadata = \
                 gisaid_name_parser(en.name, context=context) \
+                or naomi_name_parser(en.name, context=context) \
                 or regular_name_parser(en.name, context=context)
             yield metadata, en.sequence # metadata may contain "excluded" key to manually exclude the sequence
 
@@ -73,6 +74,7 @@ class reader:
 # ----------------------------------------------------------------------
 
 def regular_name_parser(name: str, context: reader.Context):
+    print(f">>> regular_name_parser \"{name}\"")
     return {"name": name}
 
 # ----------------------------------------------------------------------
@@ -201,5 +203,35 @@ sGisaidLabs = {
     "ERASMUS MEDICAL CENTER": "EMC",
     "NATIONAL INSTITUTE FOR BIOLOGICAL STANDARDS AND CONTROL (NIBSC)": "NIBSC",
     }
+
+# ======================================================================
+# naomi
+# ======================================================================
+
+def naomi_name_parser(name: str, context: reader.Context) -> str:
+    fields = [en.strip() for en in name.split(" | ")]
+    if len(fields) == 1:
+        return None             # not a naomi
+    elif len(fields) == 7: # name, date, passage, <unknown>, lab, subtype, pdm09
+        return naomi_extract_fields(fields, context=context)
+    else:
+        raise Error(f"Invalid number of fields in the gisaid-like name: {len(fields)}: \"{name}\"")
+
+# ----------------------------------------------------------------------
+
+def naomi_extract_fields(fields: list, context: reader.Context):
+    metadata = {
+        "name": fields[0].strip(),
+        "date": fields[1].strip(),
+        "passage": fields[2].strip(),
+        # unknown (lineage?)
+        "lab": fields[4].strip(),
+        "type_subtype": fields[5].strip(),
+        # pdm09
+    }
+    for field_name, parser in sGisaidFieldParsers:
+        if field_value := metadata.get(field_name):
+            metadata[field_name] = parser(field_value, metadata=metadata, context=context)
+    return metadata
 
 # ----------------------------------------------------------------------
