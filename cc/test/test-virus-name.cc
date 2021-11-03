@@ -60,6 +60,7 @@ void virus_name_parsing_test(bool verbose)
         TD{"BVR-25(B/Victoria/2110/2019)", CT{.subtype = "B", .location = "VICTORIA", .isolation = "2110", .year = "2019", .reassortant = "CBER-25"}},
         TD{"NIB-121 (A/Hong Kong/2671/2019", CT{.subtype = "A", .location = "HONG KONG", .isolation = "2671", .year = "2019", .reassortant = "NIB-121"}},
         TD{"NYMC X-181", CT{.reassortant = "NYMC-181"}},
+        TD{"NIB 79 (A/VICTORIA/361/2011", CT{.subtype = "A", .location = "VICTORIA", .isolation = "361", .year = "2011", .reassortant = "NIB-79"}},
         TD{"A/Kansas/14/2017 CBER-22B CDC19A", CT{.subtype = "A", .location = "KANSAS", .isolation = "14", .year = "2017", .reassortant = "CBER-22B", .extra = "CDC19A"}},
 
         // TD{"A/SINGAPORE/INFIMH-16-0019/2016 CL2  X-307A", CT{.subtype = "A", .location = "SINGAPORE", .isolation = "INFIMH-16-0019", .year = "2016", .reassortant = "NYMC-307A", .extra =
@@ -155,7 +156,7 @@ void virus_name_parsing_test(bool verbose)
     };
 
     size_t errors = 0;
-    ae::virus::name::parse_settings settings;
+    ae::virus::name::parse_settings settings{ae::virus::name::parse_settings::tracing::no};
     for (const auto [no, entry] : ranges::views::enumerate(data)) {
         try {
             ae::Messages messages;

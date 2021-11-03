@@ -269,20 +269,21 @@ namespace ae::virus::name::inline v1
 
         struct reassortant
         {
-            static constexpr auto whitespace = dsl::ascii::blank; // auto skip whitespaces
+            // static constexpr auto ws = dsl::whitespace(dsl::ascii::blank);
+            static constexpr auto hy_space = dsl::hyphen / dsl::ascii::blank;
             static constexpr auto IVR = I + V + R;
             static constexpr auto CNIC = C + N + I + C;
             static constexpr auto SAN = S + A + N;
             static constexpr auto NIB = N + I + B;
-            static constexpr auto prefix = dsl::peek(IVR + dsl::hyphen) | dsl::peek(CNIC + dsl::hyphen) | dsl::peek(SAN + dsl::hyphen) | dsl::peek(NIB + dsl::hyphen);
+            static constexpr auto prefix = dsl::peek(IVR + hy_space) | dsl::peek(CNIC + hy_space) | dsl::peek(SAN + hy_space) | dsl::peek(NIB + hy_space);
 
             static constexpr auto rule = (nymc_x_bx::peek >> dsl::p<nymc_x_bx>) //
                                          | (cber::peek >> dsl::p<cber>)         //
-                                         | (prefix >> dsl::capture(dsl::while_(dsl::ascii::alpha) + dsl::hyphen + dsl::while_(dsl::digit<> / dsl::ascii::alpha)));
+                                         | (prefix >> dsl::capture(dsl::while_(dsl::ascii::alpha)) + hy_space + dsl::capture(dsl::while_(dsl::digit<> / dsl::ascii::alpha)));
             static constexpr auto value = lexy::callback<part_t>( //
                 [](const part_t& part) { return part; },          //
-                [](auto lex) {
-                    return part_t{uppercase_strip(lex), part_type::reassortant};
+                [](auto lex1, auto lex2) {
+                    return part_t{uppercase_strip(lex1) + "-" + uppercase_strip(lex2), part_type::reassortant};
                 } //
             );
         };
