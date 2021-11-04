@@ -1,3 +1,4 @@
+import sys
 from pathlib import Path
 from dataclasses import dataclass
 
@@ -70,14 +71,17 @@ def parse_name(name: str, metadata: dict, context: Context):
 
 def parse_date(date: str, metadata: dict, context: Context):
     preprocessed_date = context.preprocess_date(date, metadata)
+    if not preprocessed_date:
+        return preprocessed_date
     try:
-        return ae_backend.date_format(preprocessed_date, throw_on_error=True, month_first=metadata.get("lab") == "CDC")
+        return ae_backend.date_format(preprocessed_date, allow_incomplete=True, throw_on_error=True, month_first=metadata.get("lab") == "CDC")
     except Exception as err:
         if date != preprocessed_date:
             value = f"{preprocessed_date} (original: {date})"
         else:
             value = date
         context.message(field="date", value=value, message=str(err))
+        print(f">> date not parsed: {value}", file=sys.stderr)
         return date
 
 # ======================================================================

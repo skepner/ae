@@ -51,7 +51,7 @@ class reader:
             return None
         if len(fields) == 11 and fields[2] == "4" and (name := self.extract_name(fields[7])): # interested in segment 4 (HA) only
             # genbank_accession, host, segment_no, subtype, country, date, sequence_length, virus_name, age, gender, completeness
-            print(f">>>> fields {fields}")
+            # print(f">>>> fields {fields}")
             metadata = {
                 "sample_id_by_sample_provider": fields[0],
                 # "host": fields[1],
@@ -67,8 +67,9 @@ class reader:
                 "line_no": line_no,
             }
             metadata["name"] = parse_name(name, metadata=metadata, context=context)
-            metadata["date"] = parse_date(fields[5], metadata=metadata, context=context)
-            print(f">>>> metadata {metadata}")
+            if date := parse_date(fields[5], metadata=metadata, context=context):
+                metadata["date"] = date
+            # print(f">>>> metadata {metadata}")
             return metadata
         else:
             return None
