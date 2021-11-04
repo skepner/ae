@@ -36,9 +36,8 @@ class reader:
 
     def read_influenza_na_dat(self, filename: Path):
         raw_data = ae_backend.read_file(filename)
-        with timeit(f"{filename}"):
-            metadata = [entry for no, entry in enumerate(self.read_influenza_na_dat_entry(filename=filename, line_no=line_no, line=line) for line_no, line in enumerate(io.StringIO(raw_data), start=1)) if no < 100 and entry]
-            print(f">>> {len(metadata)} rows read from {filename}")
+        metadata = [entry for entry in (self.read_influenza_na_dat_entry(filename=filename, line_no=line_no, line=line) for line_no, line in enumerate(io.StringIO(raw_data), start=1)) if entry]
+        # print(f">>> {len(metadata)} rows read from {filename}")
         return metadata
 
         # print(f"{filename}: {len(data)}")

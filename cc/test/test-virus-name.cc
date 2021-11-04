@@ -59,8 +59,7 @@ size_t virus_name_parsing_test(bool verbose)
         TD{"NYMC-307A (A/SINGAPORE/INFIMH-16-0019/2016)", CT{.subtype = "A", .location = "SINGAPORE", .isolation = "INFIMH-16-0019", .year = "2016", .reassortant = "NYMC-307A"}},
         TD{"BVR-25(B/Victoria/2110/2019)", CT{.subtype = "B", .location = "VICTORIA", .isolation = "2110", .year = "2019", .reassortant = "CBER-25"}},
         TD{"NIB-121 (A/Hong Kong/2671/2019", CT{.subtype = "A", .location = "HONG KONG", .isolation = "2671", .year = "2019", .reassortant = "NIB-121"}},
-        TD{"NYMC X-181", CT{.reassortant = "NYMC-181"}},
-        TD{"NYMC X-157 CL-3", CT{.reassortant = "NYMC-157", .extra = "CL-3"}},
+        TD{"NYMC X-181", CT{.reassortant = "NYMC-181"}}, TD{"NYMC X-157 CL-3", CT{.reassortant = "NYMC-157", .extra = "CL-3"}},
         TD{"NIB 79 (A/VICTORIA/361/2011", CT{.subtype = "A", .location = "VICTORIA", .isolation = "361", .year = "2011", .reassortant = "NIB-79"}},
         TD{"A/Kansas/14/2017 CBER-22B CDC19A", CT{.subtype = "A", .location = "KANSAS", .isolation = "14", .year = "2017", .reassortant = "CBER-22B", .extra = "CDC19A"}},
 
@@ -114,6 +113,7 @@ size_t virus_name_parsing_test(bool verbose)
 
         // nbci -- genbank
         TD{"A/Anas platyrhynchos/Belgium/17330 2/2013", CT{.subtype = "A", .host = "ANAS PLATYRHYNCHOS", .location = "BELGIUM", .isolation = "17330 2", .year = "2013"}},
+        TD{"A(H9N2)/ostrich/Beijing/712/2013", CT{.subtype = "A(H9N2)", .host = "OSTRICH", .location = "BEIJING", .isolation = "712", .year = "2013"}},
         // // TD{"A/mallard/Balkhash/6304_HA/2014",                                 CT{}}, //    CT{A, hst{"MALLARD"}, "BALKHASH", "6304", "2014"}, R, P, E}},
         // TD{"A/mallard/Balkhash/6304_HA/2014",                                    CT{}}, // CT{A, hst{"MALLARD"}, "BALKHASH", "6304", "2014", R, P, E}}, // _HA is seqgment reference in ncbi
         // // TD{"A/SWINE/NE/55024/2018",                                           CT{}}, //    CT{A, hst{"SWINE"},   "NE", "55024", "2018", R, P, E}},
@@ -122,8 +122,8 @@ size_t virus_name_parsing_test(bool verbose)
         // TD{"A/chicken/Yunnan/Kunming/2007",                                      CT{}}, // CT{A, hst{"CHICKEN"}, "YUNNAN KUNMING", "UNKNOWN", "2007", R, P, E}},
 
         // gisaid
-        TD{"A/Lisboa/SU17+/2010", CT{.subtype = "A", .location="LISBOA", .isolation="SU17+", .year="2010"}},
-        TD{"A/India/LKO_TAH398(a)/2015", CT{.subtype = "A", .location="INDIA", .isolation="LKO_TAH398(A)", .year="2015"}},
+        TD{"A/Lisboa/SU17+/2010", CT{.subtype = "A", .location = "LISBOA", .isolation = "SU17+", .year = "2010"}},
+        TD{"A/India/LKO_TAH398(a)/2015", CT{.subtype = "A", .location = "INDIA", .isolation = "LKO_TAH398(A)", .year = "2015"}},
 
         // TD{"A/Flu-Bangkok/24/19",                                                CT{}}, // CT{A,               H, "BANGKOK", "24", "2019", R, P, E}},
         // TD{"A(H1)//ARGENTINA/FLE0116/2009",                                      CT{}}, // CT{typ{"A(H1)"},    H, "ARGENTINA", "FLE0116", "2009", R, P, E}},
