@@ -12,13 +12,11 @@ namespace ae::file
     class Compressor
     {
       public:
-        enum class first_chunk { no, yes };
-
         Compressor(size_t padding) : padding_{padding} {}
         virtual ~Compressor() = default;
 
-        virtual std::string_view compress(std::string_view input) = 0;
-        virtual std::string_view decompress(std::string_view input, first_chunk fc) = 0; // returns decompressed data and its allocated capacity
+        virtual std::string compress(std::string_view input) = 0;
+        virtual std::string decompress(std::string_view input) = 0;
 
       protected:
         size_t padding() const { return padding_; }
@@ -29,19 +27,16 @@ namespace ae::file
 
     // ----------------------------------------------------------------------
 
-    class NotCompressed : public Compressor
-    {
-      public:
-        using Compressor::Compressor;
-        ~NotCompressed() override = default;
+    // class NotCompressed : public Compressor
+    // {
+    //   public:
+    //     using Compressor::Compressor;
+    //     ~NotCompressed() override = default;
 
-        std::string_view compress(std::string_view input) override
-        {
-            return input;
-        }
+    //     std::string compress(std::string_view input) override { return input; }
 
-        std::string_view decompress(std::string_view input, first_chunk) override { return input; }
-    };
+    //     std::string decompress(std::string_view input) override { return input; }
+    // };
 
 } // namespace ae::file
 

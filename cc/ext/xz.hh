@@ -28,7 +28,7 @@ namespace ae::file
     namespace xz_internal
     {
         const unsigned char Signature[] = {0xFD, '7', 'z', 'X', 'Z', 0x00};
-        constexpr ssize_t BufSize = 409600;
+        constexpr size_t BufSize = 409600;
     }
 
     // ----------------------------------------------------------------------
@@ -49,52 +49,53 @@ namespace ae::file
 
         ~XZ_Compressor() override { lzma_end(&strm_); }
 
-        std::string_view compress(std::string_view input) override
+        std::string compress(std::string_view input) override
         {
             if (lzma_easy_encoder(&strm_, 9 | LZMA_PRESET_EXTREME, LZMA_CHECK_CRC64) != LZMA_OK) {
                 throw compressor_failed("lzma compression failed 1");
             }
-            return process(input);
+            return process(input, 0, xz_internal::BufSize);
         }
 
-        std::string_view decompress(std::string_view input, first_chunk /*fc*/) override
+        std::string decompress(std::string_view input) override
         {
             if (lzma_stream_decoder(&strm_, UINT64_MAX, LZMA_TELL_UNSUPPORTED_CHECK | LZMA_CONCATENATED) != LZMA_OK) {
                 throw compressor_failed("lzma decompression failed 1");
             }
-            return process(input);
+            const size_t buf_size = input.size() < xz_internal::BufSize ? xz_internal::BufSize : input.size() * 100;
+            return process(input, padding(), buf_size);
         }
 
       private:
         lzma_stream strm_;
-        std::string data_;
 
-        std::string_view process(std::string_view input)
+        std::string process(std::string_view input, size_t padding, size_t buf_size)
         {
             strm_.next_in = reinterpret_cast<const uint8_t*>(input.data());
             strm_.avail_in = input.size();
-            data_.reserve(xz_internal::BufSize + padding());
-            data_.resize(xz_internal::BufSize);
+            std::string output;
+            output.reserve(buf_size + padding);
+            output.resize(buf_size);
             ssize_t offset = 0;
             for (;;) {
-                strm_.next_out = reinterpret_cast<uint8_t*>(&*(data_.begin() + offset));
-                strm_.avail_out = xz_internal::BufSize;
+                strm_.next_out = reinterpret_cast<uint8_t*>(&*(output.begin() + offset));
+                strm_.avail_out = buf_size;
                 auto const r = lzma_code(&strm_, LZMA_FINISH);
                 if (r == LZMA_STREAM_END) {
-                    data_.resize(static_cast<size_t>(offset + xz_internal::BufSize) - strm_.avail_out);
-                    data_.reserve(static_cast<size_t>(offset + xz_internal::BufSize) - strm_.avail_out + padding());
+                    output.resize(static_cast<size_t>(offset + buf_size) - strm_.avail_out);
+                    output.reserve(static_cast<size_t>(offset + buf_size) - strm_.avail_out + padding);
                     break;
                 }
                 else if (r == LZMA_OK) {
-                    offset += xz_internal::BufSize;
-                    data_.reserve(static_cast<size_t>(offset + xz_internal::BufSize) + padding());
-                    data_.resize(static_cast<size_t>(offset + xz_internal::BufSize));
+                    offset += buf_size;
+                    output.reserve(static_cast<size_t>(offset + buf_size) + padding);
+                    output.resize(static_cast<size_t>(offset + buf_size));
                 }
                 else {
                     throw compressor_failed("lzma decompression failed 2");
                 }
             }
-            return data_;
+            return output;
         }
     };
 

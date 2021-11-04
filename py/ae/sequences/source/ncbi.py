@@ -21,7 +21,7 @@ class reader:
 
     def __iter__(self):
         self.reader_ = ae_backend.FastaReader(self.fna_filename)
-        self.na_dat = self.read_influenza_na_dat(ncbi_dir.joinpath("influenza_na.dat.xz"))
+        self.na_dat = self.read_influenza_na_dat(self.na_dat_filename)
         for en in self.reader_:
             context = Context(self, filename=self.fna_filename, line_no=en.line_no)
             metadata = self.read_fna_name(en.name, context=context)
@@ -37,7 +37,7 @@ class reader:
     def read_influenza_na_dat(self, filename: Path):
         raw_data = ae_backend.read_file(filename)
         with timeit(f"{filename}"):
-            metadata = [entry for entry in (self.read_influenza_na_dat_entry(filename=filename, line_no=line_no, line=line) for line_no, line in enumerate(io.StringIO(raw_data), start=1)) if entry]
+            metadata = [entry for no, entry in enumerate(self.read_influenza_na_dat_entry(filename=filename, line_no=line_no, line=line) for line_no, line in enumerate(io.StringIO(raw_data), start=1)) if no < 100 and entry]
             print(f">>> {len(metadata)} rows read from {filename}")
         return metadata
 
@@ -51,6 +51,7 @@ class reader:
             return None
         if len(fields) == 11 and fields[2] == "4" and (name := self.extract_name(fields[7])): # interested in segment 4 (HA) only
             # genbank_accession, host, segment_no, subtype, country, date, sequence_length, virus_name, age, gender, completeness
+            print(f">>>> fields {fields}")
             metadata = {
                 "sample_id_by_sample_provider": fields[0],
                 # "host": fields[1],
@@ -67,6 +68,7 @@ class reader:
             }
             metadata["name"] = parse_name(name, metadata=metadata, context=context)
             metadata["date"] = parse_date(fields[5], metadata=metadata, context=context)
+            print(f">>>> metadata {metadata}")
             return metadata
         else:
             return None

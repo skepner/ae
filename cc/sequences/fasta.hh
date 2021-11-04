@@ -13,7 +13,7 @@ namespace ae::sequences::fasta
     class Reader
     {
       public:
-        Reader(const std::filesystem::path& filename) : filename_{filename}, data_{ae::file::read_access{filename}} {}
+        Reader(const std::filesystem::path& filename) : filename_{filename}, data_{ae::file::read(filename)} {}
 
         struct value_t
         {

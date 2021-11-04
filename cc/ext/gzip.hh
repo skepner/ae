@@ -40,14 +40,15 @@ namespace ae::file
 
         ~GZIP_Compressor() override {}
 
-        std::string_view compress(std::string_view input) override
+        std::string compress(std::string_view input) override
         {
             ssize_t offset = 0;
+            std::string output;
 
-            auto advance = [this, &offset]() {
+            auto advance = [this, &output, &offset]() {
                 offset += gzip_internal::BufSize;
-                data_.resize(static_cast<size_t>(offset + gzip_internal::BufSize));
-                strm_.next_out = reinterpret_cast<decltype(strm_.next_out)>(data_.data() + offset);
+                output.resize(static_cast<size_t>(offset + gzip_internal::BufSize));
+                strm_.next_out = reinterpret_cast<decltype(strm_.next_out)>(output.data() + offset);
                 strm_.avail_out = gzip_internal::BufSize;
             };
 
@@ -57,8 +58,8 @@ namespace ae::file
                 throw compressor_failed("gzip compression failed during initialization");
 
             try {
-                data_.resize(gzip_internal::BufSize, ' ');
-                strm_.next_out = reinterpret_cast<decltype(strm_.next_out)>(data_.data() + offset);
+                output.resize(gzip_internal::BufSize, ' ');
+                strm_.next_out = reinterpret_cast<decltype(strm_.next_out)>(output.data() + offset);
                 strm_.avail_out = gzip_internal::BufSize;
                 while (strm_.avail_in != 0) {
                     if (int res = deflate(&strm_, Z_NO_FLUSH); res != Z_OK)
@@ -75,10 +76,10 @@ namespace ae::file
                 }
                 if (deflate_res != Z_STREAM_END)
                     throw compressor_failed("gzip compression failed, code: " + std::to_string(deflate_res));
-                data_.resize(static_cast<size_t>(offset + gzip_internal::BufSize) - strm_.avail_out);
+                output.resize(static_cast<size_t>(offset + gzip_internal::BufSize) - strm_.avail_out);
 
                 deflateEnd(&strm_);
-                return data_;
+                return output;
             }
             catch (std::exception&) {
                 deflateEnd(&strm_);
@@ -86,7 +87,7 @@ namespace ae::file
             }
         }
 
-        std::string_view decompress(std::string_view input, first_chunk /*fc*/) override
+        std::string decompress(std::string_view input) override
         {
             strm_.next_in = reinterpret_cast<decltype(strm_.next_in)>(const_cast<char*>(input.data()));
             strm_.total_in = strm_.avail_in = static_cast<decltype(strm_.avail_in)>(input.size());
@@ -95,23 +96,24 @@ namespace ae::file
                 throw compressor_failed("gzip decompression failed during initialization");
 
             try {
-                data_.reserve(gzip_internal::BufSize + padding());
-                data_.resize(gzip_internal::BufSize);
+                std::string output;
+                output.reserve(gzip_internal::BufSize + padding());
+                output.resize(gzip_internal::BufSize);
                 ssize_t offset = 0;
                 for (;;) {
-                    strm_.next_out = reinterpret_cast<decltype(strm_.next_out)>(data_.data() + offset);
+                    strm_.next_out = reinterpret_cast<decltype(strm_.next_out)>(output.data() + offset);
                     strm_.avail_out = gzip_internal::BufSize;
                     auto const r = inflate(&strm_, Z_NO_FLUSH);
                     if (r == Z_OK) {
                         if (strm_.avail_out > 0)
                             throw compressor_failed("gzip decompression failed: unexpected end of input");
                         offset += gzip_internal::BufSize;
-                        data_.reserve(static_cast<size_t>(offset + gzip_internal::BufSize) + padding());
-                        data_.resize(static_cast<size_t>(offset + gzip_internal::BufSize));
+                        output.reserve(static_cast<size_t>(offset + gzip_internal::BufSize) + padding());
+                        output.resize(static_cast<size_t>(offset + gzip_internal::BufSize));
                     }
                     else if (r == Z_STREAM_END) {
-                        data_.resize(static_cast<size_t>(offset + gzip_internal::BufSize) - strm_.avail_out);
-                        data_.reserve(static_cast<size_t>(offset + gzip_internal::BufSize) - strm_.avail_out + padding());
+                        output.resize(static_cast<size_t>(offset + gzip_internal::BufSize) - strm_.avail_out);
+                        output.reserve(static_cast<size_t>(offset + gzip_internal::BufSize) - strm_.avail_out + padding());
                         break;
                     }
                     else {
@@ -119,7 +121,7 @@ namespace ae::file
                     }
                 }
                 inflateEnd(&strm_);
-                return data_;
+                return output;
             }
             catch (std::exception&) {
                 inflateEnd(&strm_);
@@ -129,7 +131,6 @@ namespace ae::file
 
       private:
         z_stream strm_;
-        std::string data_;
     };
 
 } // namespace ae::file
