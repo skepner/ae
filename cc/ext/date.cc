@@ -16,10 +16,10 @@
 
 static const auto current_year = ae::date::today_year();
 
-static const std::array<std::string_view, 14> month_not_first_complete{"%Y-%m-%d", "%Y%m%d", "%d/%m/%Y", "%m/%d/%Y", "%Y/%m/%d", "%B%n %d%n %Y", "%B %d,%n %Y", "%b%n %d%n %Y", "%b %d,%n %Y"};
-static const std::array<std::string_view, 14> month_not_first_incomplete{"%Y-%m-%d", "%Y%m%d", "%d/%m/%Y", "%m/%d/%Y", "%Y/%m/%d", "%B%n %d%n %Y", "%B %d,%n %Y", "%b%n %d%n %Y", "%b %d,%n %Y", "%Y-00-00", "%Y-%m-00", "%Y-%m", "%Y%m", "%Y"};
-static const std::array<std::string_view, 14> month_first_complete{"%Y-%m-%d", "%Y%m%d", "%m/%d/%Y", "%d/%m/%Y", "%Y/%m/%d", "%B%n %d%n %Y", "%B %d,%n %Y", "%b%n %d%n %Y", "%b %d,%n %Y"};
-static const std::array<std::string_view, 14> month_first_incomplete{"%Y-%m-%d", "%Y%m%d", "%m/%d/%Y", "%d/%m/%Y", "%Y/%m/%d", "%B%n %d%n %Y", "%B %d,%n %Y", "%b%n %d%n %Y", "%b %d,%n %Y", "%Y-00-00", "%Y-%m-00", "%Y-%m", "%Y%m", "%Y"};
+static const std::array<std::string_view, 15> month_not_first_complete{"%Y-%m-%d", "%Y%m%d", "%d/%m/%Y", "%m/%d/%Y", "%Y/%m/%d", "%B%n %d%n %Y", "%B %d,%n %Y", "%b%n %d%n %Y", "%b %d,%n %Y"};
+static const std::array<std::string_view, 15> month_not_first_incomplete{"%Y-%m-%d", "%Y%m%d", "%d/%m/%Y", "%m/%d/%Y", "%Y/%m/%d", "%B%n %d%n %Y", "%B %d,%n %Y", "%b%n %d%n %Y", "%b %d,%n %Y", "%Y-00-00", "%Y-%m-00", "%Y-%m", "%Y%m", "%Y/%m", "%Y"};
+static const std::array<std::string_view, 15> month_first_complete{"%Y-%m-%d", "%Y%m%d", "%m/%d/%Y", "%d/%m/%Y", "%Y/%m/%d", "%B%n %d%n %Y", "%B %d,%n %Y", "%b%n %d%n %Y", "%b %d,%n %Y"};
+static const std::array<std::string_view, 15> month_first_incomplete{"%Y-%m-%d", "%Y%m%d", "%m/%d/%Y", "%d/%m/%Y", "%Y/%m/%d", "%B%n %d%n %Y", "%B %d,%n %Y", "%b%n %d%n %Y", "%b %d,%n %Y", "%Y-00-00", "%Y-%m-00", "%Y-%m", "%Y%m", "%Y/%m", "%Y"};
 
 #pragma GCC diagnostic pop
 
@@ -94,7 +94,8 @@ std::chrono::year_month_day ae::date::from_string(std::string_view source, allow
     };
 
     for (const auto fmt : fmt_order()) {
-        // if (const auto result = from_string(std::forward<S>(source), fmt); result.ok())
+        if (fmt.empty())
+            break;
         if (const auto result = from_string(source, fmt, throw_on_error::no); result.ok() /* && year_ok(result) */) {
             // fmt::print(">>> \"{}\" ({}) -> {}\n", source, fmt, result);
             return result;

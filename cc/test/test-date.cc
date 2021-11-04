@@ -48,6 +48,7 @@ size_t date_parsing_test(bool verbose)
         TD{"4/11/2021", "2021-11-04"},
         TD{"4/11/2021", "2021-04-11", ae::date::month_first::yes},
         TD{"4/13/2021", "2021-04-13"},
+        TD{"2007/03", "2007-03-01"},
     };
 
     size_t errors = 0;
