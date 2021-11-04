@@ -69,7 +69,15 @@ test_virus_name = executable(
   dependencies : [fmt, simdjson, range_v3, bzip2, zlib, xz, lexy],
   install : true)
 
+test_date = executable(
+  'test-date',
+  ['cc/test/test-date.cc', 'cc/ext/date.cc'],
+  include_directories : include_directories('./cc'),
+  dependencies : [fmt],
+  install : true)
+
 test('ae test virus name parsing', test_virus_name)
+test('ae test date parsing', test_date)
 
 
 # ----------------------------------------------------------------------

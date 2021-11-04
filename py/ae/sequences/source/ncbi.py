@@ -3,6 +3,7 @@ from pathlib import Path
 
 import ae_backend
 from .parse import Context, parse_name, parse_date
+from ...utils.timeit import timeit
 
 # ======================================================================
 
@@ -15,11 +16,12 @@ class reader:
     def __init__(self, ncbi_dir: Path):
         self.messages = []
         self.unrecognized_locations = set()
-        self.na_dat = self.read_influenza_na_dat(ncbi_dir.joinpath("influenza_na.dat.xz"))
+        self.na_dat_filename = ncbi_dir.joinpath("influenza_na.dat.xz")
         self.fna_filename = ncbi_dir.joinpath("influenza.fna.xz")
-        self.reader_ = ae_backend.FastaReader(self.fna_filename)
 
     def __iter__(self):
+        self.reader_ = ae_backend.FastaReader(self.fna_filename)
+        self.na_dat = self.read_influenza_na_dat(ncbi_dir.joinpath("influenza_na.dat.xz"))
         for en in self.reader_:
             context = Context(self, filename=self.fna_filename, line_no=en.line_no)
             metadata = self.read_fna_name(en.name, context=context)
@@ -34,7 +36,10 @@ class reader:
 
     def read_influenza_na_dat(self, filename: Path):
         raw_data = ae_backend.read_file(filename)
-        metadata = [entry for entry in (self.read_influenza_na_dat_entry(filename=filename, line_no=line_no, line=line) for line_no, line in enumerate(io.StringIO(raw_data), start=1)) if entry]
+        with timeit(f"{filename}"):
+            metadata = [entry for entry in (self.read_influenza_na_dat_entry(filename=filename, line_no=line_no, line=line) for line_no, line in enumerate(io.StringIO(raw_data), start=1)) if entry]
+            print(f">>> {len(metadata)} rows read from {filename}")
+        return metadata
 
         # print(f"{filename}: {len(data)}")
 

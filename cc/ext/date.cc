@@ -1,9 +1,27 @@
 // #include <sstream>
-#include <vector>
+// #include <vector>
+#include <array>
 #include <ctime>
 #include <string_view>
 
 #include "ext/date.hh"
+
+// ----------------------------------------------------------------------
+
+#pragma GCC diagnostic push
+#ifdef __clang__
+#pragma GCC diagnostic ignored "-Wglobal-constructors"
+// #pragma GCC diagnostic ignored "-Wexit-time-destructors"
+#endif
+
+static const auto current_year = ae::date::today_year();
+
+static const std::array<std::string_view, 14> month_not_first_complete{"%Y-%m-%d", "%Y%m%d", "%d/%m/%Y", "%m/%d/%Y", "%Y/%m/%d", "%B%n %d%n %Y", "%B %d,%n %Y", "%b%n %d%n %Y", "%b %d,%n %Y"};
+static const std::array<std::string_view, 14> month_not_first_incomplete{"%Y-%m-%d", "%Y%m%d", "%d/%m/%Y", "%m/%d/%Y", "%Y/%m/%d", "%B%n %d%n %Y", "%B %d,%n %Y", "%b%n %d%n %Y", "%b %d,%n %Y", "%Y-00-00", "%Y-%m-00", "%Y-%m", "%Y%m", "%Y"};
+static const std::array<std::string_view, 14> month_first_complete{"%Y-%m-%d", "%Y%m%d", "%m/%d/%Y", "%d/%m/%Y", "%Y/%m/%d", "%B%n %d%n %Y", "%B %d,%n %Y", "%b%n %d%n %Y", "%b %d,%n %Y"};
+static const std::array<std::string_view, 14> month_first_incomplete{"%Y-%m-%d", "%Y%m%d", "%m/%d/%Y", "%d/%m/%Y", "%Y/%m/%d", "%B%n %d%n %Y", "%B %d,%n %Y", "%b%n %d%n %Y", "%b %d,%n %Y", "%Y-00-00", "%Y-%m-00", "%Y-%m", "%Y%m", "%Y"};
+
+#pragma GCC diagnostic pop
 
 // ----------------------------------------------------------------------
 
@@ -16,12 +34,20 @@ std::chrono::year_month_day ae::date::from_string(std::string_view source, std::
         else
             return invalid_date;
     }
-    std::chrono::year_month_day date{floor<std::chrono::days>(std::chrono::system_clock::from_time_t(std::mktime(&tm)))};
-    if (date.year() < std::chrono::year{30})
-        date += std::chrono::years(2000);
-    else if (date.year() < std::chrono::year{100})
-        date += std::chrono::years(1900);
-    return date;
+
+    const auto make_year = [](int tm_year) {
+        if (const auto year = 1900 + tm_year; year < (static_cast<int>(current_year) - 2000))
+            return year + 2000;
+        else if (year < 100)
+            return year + 1900;
+        else
+            return year;
+    };
+
+    const auto make_day = [](int tm_mday) { return tm_mday ? tm_mday : (tm_mday + 1); };
+    // fmt::print(">>>> strptime \"{}\" -> {}-{}-{}\n", source, tm.tm_year, tm.tm_mon, tm.tm_mday);
+
+    return std::chrono::year{make_year(tm.tm_year)} / (tm.tm_mon + 1) / make_day(tm.tm_mday);
 
     // std::chrono::from_stream is not yet implemented in clang13
 
@@ -52,41 +78,33 @@ std::chrono::year_month_day ae::date::from_string(std::string_view source, allow
         return invalid_date;
     }
 
-    using fmt_order_t = std::vector<std::string_view>;
-    const auto fmt_order = [mf]() -> fmt_order_t {
-        const auto month_first_no = [] { return fmt_order_t{"%Y-%m-%d", "%Y%m%d", "%d/%m/%Y", "%m/%d/%Y", "%Y/%m/%d", "%B%n %d%n %Y", "%B %d,%n %Y", "%b%n %d%n %Y", "%b %d,%n %Y"}; };
-        const auto month_first_yes = [] { return fmt_order_t{"%Y-%m-%d", "%Y%m%d", "%m/%d/%Y", "%d/%m/%Y", "%Y/%m/%d", "%B%n %d%n %Y", "%B %d,%n %Y", "%b%n %d%n %Y", "%b %d,%n %Y"}; };
-        switch (mf) {
-            case month_first::no:
-                return month_first_no();
-            case month_first::yes:
-                return month_first_yes();
+    const auto fmt_order = [allow, mf]() {
+        if (allow == allow_incomplete::yes) {
+            if (mf == month_first::no)
+                return month_not_first_incomplete;
+            else
+                return month_first_incomplete;
         }
-        return month_first_no(); // hey g++-10
+        else {
+            if (mf == month_first::no)
+                return month_not_first_complete;
+            else
+                return month_first_complete;
+        }
     };
 
     for (const auto fmt : fmt_order()) {
         // if (const auto result = from_string(std::forward<S>(source), fmt); result.ok())
-        if (const auto result = from_string(source, fmt, toe); result.ok() /* && year_ok(result) */)
+        if (const auto result = from_string(source, fmt, throw_on_error::no); result.ok() /* && year_ok(result) */) {
+            // fmt::print(">>> \"{}\" ({}) -> {}\n", source, fmt, result);
             return result;
-    }
-    if (allow == allow_incomplete::yes) {
-        for (const char* fmt : {"%Y-00-00", "%Y-%m-00", "%Y-%m", "%Y%m", "%Y"}) {
-            // date lib cannot parse incomplete date
-            constexpr int invalid = 99999;
-            struct tm tm;
-            tm.tm_mon = tm.tm_mday = invalid;
-            if (strptime(source.data(), fmt, &tm) == &*source.end()) {
-                if (tm.tm_mon == invalid)
-                    return std::chrono::year{tm.tm_year + 1900} / 0 / 0;
-                else
-                    return std::chrono::year{tm.tm_year + 1900} / std::chrono::month{static_cast<unsigned>(tm.tm_mon) + 1} / 0;
-            }
         }
+        // else
+        //     fmt::print(">> \"{}\" ({}) -> {}\n", source, fmt, result);
     }
     if (toe == throw_on_error::yes)
         throw parse_error(fmt::format("cannot parse date from \"{}\" (allow_incomplete: {})", source, allow == allow_incomplete::yes));
     return invalid_date;
 }
 
-// ----------------------------------------------------------------------
+    // ----------------------------------------------------------------------

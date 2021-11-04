@@ -5,7 +5,7 @@
 #include "virus/name-parse.hh"
 #include "utils/messages.hh"
 
-static void virus_name_parsing_test(bool verbose);
+static size_t virus_name_parsing_test(bool verbose);
 
 // ----------------------------------------------------------------------
 
@@ -13,12 +13,12 @@ int main(int argc, const char* const* argv)
 {
     const bool verbose{argc > 1 && std::string_view{argv[1]} == "-v"};
     try {
-        virus_name_parsing_test(verbose);
+        return static_cast<int>(virus_name_parsing_test(verbose));
     }
     catch (std::exception& err) {
         fmt::print("> {}\n", err.what());
+        return 1967;
     }
-    return 0;
 }
 
 // ----------------------------------------------------------------------
@@ -31,7 +31,7 @@ struct TestData
     CT expected;
 };
 
-void virus_name_parsing_test(bool verbose)
+size_t virus_name_parsing_test(bool verbose)
 {
     using TD = TestData;
 
@@ -182,7 +182,8 @@ void virus_name_parsing_test(bool verbose)
     }
     // fmt::print("{}\n", messages.report());
     if (errors)
-        throw std::runtime_error{fmt::format("{} errors found", errors)};
+        fmt::print("> {} errors found", errors);
+    return errors;
 }
 
 // ----------------------------------------------------------------------
