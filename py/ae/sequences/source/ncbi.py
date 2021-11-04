@@ -24,7 +24,7 @@ class reader:
         self.na_dat = self.read_influenza_na_dat(self.na_dat_filename)
         for en in self.reader_:
             context = Context(self, filename=self.fna_filename, line_no=en.line_no)
-            if metadata := self.read_fna_name(en.name, context=context):
+            if metadata := self.read_fna_name(en.raw_name, context=context):
                 yield metadata, en.sequence # metadata may contain "excluded" key to manually exclude the sequence
 
     # ----------------------------------------------------------------------

@@ -25,9 +25,9 @@ class reader:
         for en in self.reader_:
             context = Context(self, filename=Path(en.filename), line_no=en.line_no)
             metadata = \
-                gisaid_name_parser(en.name, context=context) \
-                or naomi_name_parser(en.name, context=context) \
-                or regular_name_parser(en.name, lab_hint=self.lab_hint, context=context)
+                gisaid_name_parser(en.raw_name, context=context) \
+                or naomi_name_parser(en.raw_name, context=context) \
+                or regular_name_parser(en.raw_name, lab_hint=self.lab_hint, context=context)
             yield metadata, en.sequence # metadata may contain "excluded" key to manually exclude the sequence
 
 # ----------------------------------------------------------------------

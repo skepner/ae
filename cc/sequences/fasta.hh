@@ -10,6 +10,14 @@
 
 namespace ae::sequences::fasta
 {
+    struct RawSequence
+    {
+        std::string_view raw_name{};
+        std::string sequence{};
+
+        RawSequence(std::string_view rn) : raw_name{rn} {}
+    };
+
     class Reader
     {
       public:
@@ -17,11 +25,10 @@ namespace ae::sequences::fasta
 
         struct value_t
         {
-            std::string_view name{};
-            std::string sequence{};
+            std::shared_ptr<RawSequence> sequence; // shared_ptr for accessing via pybind11
             std::string_view filename{};
             size_t line_no{0};
-            friend auto operator<=>(const value_t&, const value_t&) = default;
+            friend bool operator==(const value_t&, const value_t&) = default;
         };
 
         class iterator
@@ -45,7 +52,7 @@ namespace ae::sequences::fasta
             bool operator==(const iterator& rh) const { return value_ == rh.value_; }
 
           private:
-            value_type value_;
+            value_type value_{};
             std::string_view data_{};
             std::string_view::const_iterator next_;
             size_t line_no_{1};
