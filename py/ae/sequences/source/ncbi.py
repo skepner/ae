@@ -62,7 +62,7 @@ class reader:
                 "sample_id_by_sample_provider": fields[0],
                 # "host": fields[1],
                 # "gisaid_segment_number": fields[2],
-                "subtype": self.parse_subtype(fields[3]),
+                "type_subtype": self.parse_subtype(fields[3]),
                 "country": self.parse_country(fields[4]),
                 # "date": fields[5],
                 # "sequence_length": fields[6],
