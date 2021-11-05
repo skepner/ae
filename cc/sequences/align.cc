@@ -1,13 +1,13 @@
-#pragma once
+
+
+#include "sequences/align.hh"
+#include "sequences/raw-sequence.hh"
 
 // ======================================================================
 
-namespace ae::sequences
+bool ae::sequences::align(RawSequence& sequence)
 {
-    struct RawSequence;
-
-    // returns if sequence was translated
-    bool translate(RawSequence& sequence);
+    return true;
 }
 
 // ======================================================================

@@ -1,6 +1,7 @@
 #include "py/module.hh"
 #include "sequences/fasta.hh"
 #include "sequences/translate.hh"
+#include "sequences/align.hh"
 
 // ======================================================================
 
@@ -42,6 +43,7 @@ void ae::py::sequences(pybind11::module_& mdl)
         ;
 
     raw_sequence_submodule.def("translate", &translate, "sequence"_a);
+    raw_sequence_submodule.def("align", &align, "sequence"_a);
 
     // ----------------------------------------------------------------------
 

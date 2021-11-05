@@ -4,10 +4,12 @@
 #include "utils/string.hh"
 
 #include "sequences/translate.hh"
+#include "sequences/raw-sequence.hh"
 
 // ----------------------------------------------------------------------
 
 static std::string translate_nucleotides_to_amino_acids(std::string_view nucleotides, size_t offset);
+static void aa_trim_absent(ae::sequences::RawSequence& sequence);
 
 // ----------------------------------------------------------------------
 
@@ -56,10 +58,10 @@ bool ae::sequences::translate(RawSequence& sequence)
     if (sequence.aa.empty())
         sequence.issues.set(issue::not_translated);
 
-    fmt::print("raw: {}\nnuc: {}\naa:  {}\n\n", sequence.raw_sequence, *sequence.nuc, *sequence.aa);
-    // aa_trim_absent();
+    // fmt::print("raw: {}\nnuc: {}\naa:  {}\n\n", sequence.raw_sequence, *sequence.nuc, *sequence.aa);
+    aa_trim_absent(sequence);
 
-    return true;
+    return !sequence.aa.empty();
 
 } // ae::sequences::translate
 
@@ -107,6 +109,27 @@ std::string translate_nucleotides_to_amino_acids(std::string_view nucleotides, s
 } // translate_nucleotides_to_amino_acids
 
 // ----------------------------------------------------------------------
+
+void aa_trim_absent(ae::sequences::RawSequence& sequence)
+{
+    if (!sequence.aa.empty()) {
+        // remove trailing X and - in aa
+        if (const auto found = sequence.aa->find_last_not_of("X-"); found != std::string::npos) {
+            sequence.aa.get().erase(found + 1);
+            sequence.nuc.get().erase((found + 1) * 3);
+        }
+        else
+            fmt::print(stderr, ">> just X and - in AA sequence for {} ::: {}\n", sequence.name, *sequence.aa);
+
+        // remove leading X and -
+        if (const auto found = sequence.aa->find_first_not_of("X-"); found > 0 && found != std::string::npos) {
+            // fmt::print(stderr, "leading X: {} ::: {}\n", full_name(), sequence.aa);
+            sequence.aa.get().erase(0, found);
+            sequence.nuc.get().erase(0, found * 3);
+        }
+    }
+
+} // aa_trim_absent
 
 
 // ----------------------------------------------------------------------
