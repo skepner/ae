@@ -18,7 +18,6 @@ void ae::py::sequences(pybind11::module_& mdl)
         .def_readwrite("name", &RawSequence::name)
         .def_readwrite("date", &RawSequence::date)
         .def_readwrite("accession_number", &RawSequence::accession_number)
-        .def_readwrite("type_subtype", &RawSequence::type_subtype)
         .def_readwrite("lab", &RawSequence::lab)
         .def_readwrite("lab_id", &RawSequence::lab_id)
         .def_readwrite("lineage", &RawSequence::lineage)
@@ -27,16 +26,20 @@ void ae::py::sequences(pybind11::module_& mdl)
         .def_readwrite("gisaid_dna_insdc", &RawSequence::gisaid_dna_insdc)
         .def_readwrite("gisaid_identifier", &RawSequence::gisaid_identifier)
         .def_readwrite("gisaid_last_modified", &RawSequence::gisaid_last_modified)
+        .def_property(
+            "type_subtype",                                                                                                      //
+            [](const RawSequence& seq) { return *seq.type_subtype; },                                                            //
+            [](RawSequence& seq, std::string_view type_subtype) { seq.type_subtype = ae::virus::type_subtype_t{type_subtype}; }) //
         ;
 
-    pybind11::class_<fasta::Reader::value_t>(raw_sequence_submodule, "ReaderValue")                                                   //
+    pybind11::class_<fasta::Reader::value_t>(raw_sequence_submodule, "ReaderValue")                                      //
         .def_property_readonly("raw_name", [](const fasta::Reader::value_t& value) { return value.sequence->raw_name; }) //
         .def_property_readonly("sequence", [](const fasta::Reader::value_t& value) { return value.sequence; })           //
         .def_readonly("filename", &fasta::Reader::value_t::filename)                                                     //
         .def_readonly("line_no", &fasta::Reader::value_t::line_no)                                                       //
         ;
 
-    pybind11::class_<fasta::Reader>(raw_sequence_submodule, "FastaReader")                                                                           //
+    pybind11::class_<fasta::Reader>(raw_sequence_submodule, "FastaReader")                                                        //
         .def(pybind11::init([](pybind11::object path) { return fasta::Reader(std::string{pybind11::str(path)}); }), "filename"_a) //
         .def(
             "__iter__", [](fasta::Reader& reader) { return pybind11::make_iterator(reader.begin(), reader.end()); }, pybind11::keep_alive<0, 1>()) //
@@ -46,7 +49,6 @@ void ae::py::sequences(pybind11::module_& mdl)
     raw_sequence_submodule.def("align", &align, "sequence"_a);
 
     // ----------------------------------------------------------------------
-
 }
 
 // ======================================================================

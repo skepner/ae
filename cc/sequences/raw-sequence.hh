@@ -3,6 +3,7 @@
 #include <string_view>
 #include <bitset>
 
+#include "virus/type-subtype.hh"
 #include "sequences/sequence.hh"
 
 // ======================================================================
@@ -32,7 +33,7 @@ namespace ae::sequences
         std::string name;       // parsed or raw_name if parsing failed
         std::string date;
         std::string accession_number; // gisaid isolate_id, ncbi sample_id_by_sample_provider
-        std::string type_subtype;
+        virus::type_subtype_t type_subtype;
         std::string lab;
         std::string lab_id;     // cdcid
         std::string lineage;
