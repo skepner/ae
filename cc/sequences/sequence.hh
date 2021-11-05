@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include <utils/named-type.hh>
+#include "sequences/pos.hh"
 
 // ======================================================================
 
