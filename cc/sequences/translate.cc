@@ -58,7 +58,7 @@ bool ae::sequences::translate(RawSequence& sequence)
     if (sequence.aa.empty())
         sequence.issues.set(issue::not_translated);
 
-    // fmt::print("raw: {}\nnuc: {}\naa:  {}\n\n", sequence.raw_sequence, *sequence.nuc, *sequence.aa);
+    // fmt::print("raw: {}\nnuc: {}\naa:  {}\n\n", sequence.raw_sequence, sequence.nuc, sequence.aa);
     aa_trim_absent(sequence);
 
     return !sequence.aa.empty();
@@ -119,7 +119,7 @@ void aa_trim_absent(ae::sequences::RawSequence& sequence)
             sequence.nuc.get().erase((found + 1) * 3);
         }
         else
-            fmt::print(stderr, ">> just X and - in AA sequence for {} ::: {}\n", sequence.name, *sequence.aa);
+            fmt::print(stderr, ">> just X and - in AA sequence for {} ::: {}\n", sequence.name, sequence.aa);
 
         // remove leading X and -
         if (const auto found = sequence.aa->find_first_not_of("X-"); found > 0 && found != std::string::npos) {

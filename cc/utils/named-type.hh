@@ -111,8 +111,9 @@ namespace ae
 //     template <typename FormatCtx> auto format(const ae::named_t<T, Tag>& nt, FormatCtx& ctx) const { return fmt::formatter<T>::format(nt.get(), ctx); }
 // };
 
-// template <typename T, typename Tag> struct fmt::formatter<ae::named_string_t<T, Tag>> : fmt::formatter<std::string> {
-//     template <typename FormatCtx> auto format(const ae::named_string_t<T, Tag>& nt, FormatCtx& ctx) const { return fmt::formatter<std::string>::format(nt.get(), ctx); }
-// };
+template <typename T, typename Tag> struct fmt::formatter<ae::named_string_t<T, Tag>> : fmt::formatter<std::string_view>
+{
+    template <typename FormatCtx> auto format(const ae::named_string_t<T, Tag>& nt, FormatCtx& ctx) const { return fmt::formatter<std::string_view>::format(static_cast<std::string_view>(nt), ctx); }
+};
 
 // ----------------------------------------------------------------------

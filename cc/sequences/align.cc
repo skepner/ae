@@ -90,7 +90,7 @@ bool ae::sequences::align(RawSequence& sequence)
             sequence.aa.remove_prefix(aligned_data->aa_shift);
             sequence.nuc.remove_prefix(aligned_data->aa_shift * 3);
         }
-        fmt::print("{} \"{}\"\n{}\n{}\n\n", sequence.type_subtype, sequence.name, *sequence.aa, *sequence.nuc);
+        fmt::print("{} \"{}\"\n{}\n{}\n\n", sequence.type_subtype, sequence.name, sequence.aa, sequence.nuc);
         return true;
     }
     else
