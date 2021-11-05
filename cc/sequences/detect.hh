@@ -156,7 +156,7 @@ namespace ae::sequences::detect
                 return std::nullopt;
         }
 
-        inline std::optional<aligned_data_t> hx1(std::string_view not_aligned_aa)
+        inline std::optional<aligned_data_t> second_stage(std::string_view not_aligned_aa)
         {
             return h2_MTIT(not_aligned_aa)                                                                                     //
                    | h4_MLS(not_aligned_aa)                                                                                    //
@@ -174,6 +174,28 @@ namespace ae::sequences::detect
                    | find_in_sequence_infix(not_aligned_aa, 100, {"QNYT"sv}, 0, "A(H4)"sv, 11, "GHHA"sv)                       //
                    | find_in_sequence(not_aligned_aa, 50, {"DEICIGYL"sv}, 0, "A(H11)"sv)                                       // H11 (DEICIGYL is specific)
                    | find_in_sequence(not_aligned_aa, 100, {"KSDKICLGHHA"sv}, 2, "A(H15)"sv)                                   //
+                ;
+        }
+
+        inline std::optional<aligned_data_t> third_stage(std::string_view not_aligned_aa)
+        {
+            return find_in_sequence(not_aligned_aa, 100, {"GVKPLIL"sv, "GVRPLIL"sv}, -45, "A(H5)"sv)       //
+                   | find_in_sequence(not_aligned_aa, 100, {"GWLLGNPMCDE"sv}, -58, "A(H5)"sv)              //
+                   | find_in_sequence(not_aligned_aa, 150, {"NHFE"sv}, -108, "A(H5)"sv)                    // specific at first 150
+                   | find_in_sequence(not_aligned_aa, 100, {"QKEER"sv}, -35, "A(H6)"sv)                    // QKEER is H6 specific
+                   | find_in_sequence(not_aligned_aa, 150, {"EELKA"sv}, -98, "A(H6)"sv)                    // EELKA is H6 specific
+                   | find_in_sequence(not_aligned_aa, 100, {"GQCGL"sv}, -51, "A(H7)"sv)                    //
+                   | find_in_sequence(not_aligned_aa, 200, {"FYRSINWL"sv}, -141, "A(H8)"sv)                //
+                   | find_in_sequence(not_aligned_aa, 50, {"QSTN"sv}, -7, "A(H9)"sv)                       // QSTN is H9 specific
+                   | find_in_sequence(not_aligned_aa, 150, {"CDLLLGG"sv, "CDLLLEG"sv}, -66, "A(H9)"sv)     // CDLLLGG, CDLLLEG are H9 specific
+                   | find_in_sequence(not_aligned_aa, 150, {"LEELRS"sv}, -97, "A(H9)"sv)                   // LEELRS is H9 specific
+                   | find_in_sequence(not_aligned_aa, 150, {"SARSYQ"sv}, -106, "A(H9)"sv)                  // SARSYQ is H9 specific
+                   | find_in_sequence(not_aligned_aa, 150, {"SSYQRIQ"sv}, -108, "A(H9)"sv)                 // SSYQRIQ is H9 specific
+                   | find_in_sequence(not_aligned_aa, 50, {"NGTIVKTLTNE"sv}, -11, "A(H10)"sv)              //
+                   | find_in_sequence(not_aligned_aa, 150, {"QKIMESG"sv}, -99, "A(H10)"sv)                 //
+                   | find_in_sequence(not_aligned_aa, 100, {"SSVEL"sv}, -27, "A(H11)"sv)                   // H11 (SSVEL is specific)
+                   | find_in_sequence(not_aligned_aa, 50, {"VGYLSTN"sv}, -4, "A(H13)"sv)                   // H13 (specific)
+                   | find_in_sequence(not_aligned_aa, 70, {"DTLTENGVP"sv, "DTLIENGVP"sv}, -16, "A(H16)"sv) // H16 (specific)
                 ;
         }
 
