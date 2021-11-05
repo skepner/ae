@@ -178,22 +178,22 @@ def add_metadata_to_sequence(metadata: dict, sequence: ae_backend.raw_sequence.S
     if date := metadata.get("date"):
         sequence.date = date
     if type_subtype := metadata.get("type_subtype"):
-        sequence.type_subtype = date
+        sequence.type_subtype = type_subtype
     if lab := metadata.get("lab"):
-        sequence.lab = date
+        sequence.lab = lab
     if lab_id := metadata.get("lab_id"):
-        sequence.lab_id = date
+        sequence.lab_id = lab_id
     if lineage := metadata.get("lineage"):
-        sequence.lineage = date
+        sequence.lineage = lineage
     if passage := metadata.get("passage"):
-        sequence.passage = date
+        sequence.passage = passage
     if gisaid_dna_accession_no := metadata.get("gisaid_dna_accession_no"):
-        sequence.gisaid_dna_accession_no = date
+        sequence.gisaid_dna_accession_no = gisaid_dna_accession_no
     if gisaid_dna_insdc := metadata.get("gisaid_dna_insdc"):
-        sequence.gisaid_dna_insdc = date
+        sequence.gisaid_dna_insdc = gisaid_dna_insdc
     if gisaid_identifier := metadata.get("gisaid_identifier"):
-        sequence.gisaid_identifier = date
+        sequence.gisaid_identifier = gisaid_identifier
     if gisaid_last_modified := metadata.get("gisaid_last_modified"):
-        sequence.gisaid_last_modified = date
+        sequence.gisaid_last_modified = gisaid_last_modified
 
 # ======================================================================
