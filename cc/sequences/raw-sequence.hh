@@ -12,6 +12,7 @@ namespace ae::sequences
 {
     enum class issue {
         not_translated, //
+        not_aligned,    //
         size_
     };
 
