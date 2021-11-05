@@ -230,13 +230,3 @@ namespace ae::sequences::detect
 } // namespace ae::sequences::detect
 
 // ======================================================================
-
-// constexpr std::optional<ae::sequences::detect::aligned_data_t>&& operator|(std::optional<ae::sequences::detect::aligned_data_t>&& lhs, std::optional<ae::sequences::detect::aligned_data_t>&& rhs)
-// {
-//     if (lhs.has_value())
-//         return std::move(lhs);
-//     else
-//         return std::move(rhs);
-// }
-
-// ======================================================================

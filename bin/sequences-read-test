@@ -31,7 +31,10 @@ def main(args: list):
             if not (excluded := metadata.get("excluded")):
                 fasta.add_metadata_to_sequence(metadata, sequence)
                 ae_backend.raw_sequence.translate(sequence)
-                ae_backend.raw_sequence.align(sequence)
+                try:
+                    ae_backend.raw_sequence.align(sequence)
+                except Exception as err:
+                    print(f"> align: {err}: {sequence.name}", file=sys.stderr)
             elif args.print_messages:
                 print(f">> excluded: {metadata}")
             num_seqs += 1
