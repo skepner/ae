@@ -54,7 +54,25 @@ inline std::string::size_type find_in_sequence(std::string_view sequence, size_t
     return std::string::npos;
 }
 
+inline bool has_infix(std::string_view source, size_t pos, std::string_view match)
+{
+    return source.substr(pos, match.size()) == match;
+}
+
 using namespace std::string_view_literals;
+
+namespace ae::sequences::detect::h1
+{
+    inline std::optional<aligned_data_t> mkv(std::string_view not_aligned_aa)
+    {
+        if (const auto pos = find_in_sequence(not_aligned_aa, 20, {"MKV"sv, "MKA"sv, "MEA"sv, "MEV"sv});
+            pos != std::string::npos && (has_infix(not_aligned_aa, pos + 17, "DTLC"sv) || has_infix(not_aligned_aa, pos + 17, "DTIC"sv)))
+            return aligned_data_t{pos, 17, "A(H1)"sv};
+        else
+            return std::nullopt;
+    }
+
+} // namespace ae::sequences::detect::h1
 
 namespace ae::sequences::detect::h3
 {
@@ -76,6 +94,7 @@ bool ae::sequences::align(RawSequence& sequence)
     const std::string_view not_aligned_aa{sequence.aa};
     std::optional<aligned_data_t> aligned_data =                   //
         detect::h3::mktii(not_aligned_aa) //
+        | detect::h1::mkv(not_aligned_aa) //
         | check_signal_peptide(sequence) //
         | check_specific_part(sequence)  //
         ;
@@ -90,7 +109,8 @@ bool ae::sequences::align(RawSequence& sequence)
             sequence.aa.remove_prefix(aligned_data->aa_shift);
             sequence.nuc.remove_prefix(aligned_data->aa_shift * 3);
         }
-        fmt::print("{} \"{}\"\n{}\n{}\n\n", sequence.type_subtype, sequence.name, sequence.aa, sequence.nuc);
+        if (aligned_data->type_subtype == ae::virus::type_subtype_t{"A(H1)"})
+            fmt::print("{} \"{}\"\n{}\n{}\n\n", sequence.type_subtype, sequence.name, sequence.aa, sequence.nuc);
         return true;
     }
     else
