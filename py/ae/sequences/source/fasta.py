@@ -13,7 +13,7 @@ class Error (RuntimeError): pass
 class reader:
 
     def __init__(self, filename: Path):
-        self.reader_ = ae_backend.FastaReader(filename)
+        self.reader_ = ae_backend.raw_sequence.FastaReader(filename)
         self.messages = []
         self.unrecognized_locations = set()
         if filename.name[:5] == "niid-":
@@ -170,4 +170,30 @@ def naomi_extract_fields(fields: list, context: Context):
             metadata[field_name] = parser(field_value, metadata=metadata, context=context)
     return metadata
 
-# ----------------------------------------------------------------------
+# ======================================================================
+
+def add_metadata_to_sequence(metadata: dict, sequence: ae_backend.raw_sequence.Sequence):
+    sequence.name = metadata["name"]
+    sequence.accession_number = metadata.get("isolate_id") or metadata.get("sample_id_by_sample_provider")
+    if date := metadata.get("date"):
+        sequence.date = date
+    if type_subtype := metadata.get("type_subtype"):
+        sequence.type_subtype = date
+    if lab := metadata.get("lab"):
+        sequence.lab = date
+    if lab_id := metadata.get("lab_id"):
+        sequence.lab_id = date
+    if lineage := metadata.get("lineage"):
+        sequence.lineage = date
+    if passage := metadata.get("passage"):
+        sequence.passage = date
+    if gisaid_dna_accession_no := metadata.get("gisaid_dna_accession_no"):
+        sequence.gisaid_dna_accession_no = date
+    if gisaid_dna_insdc := metadata.get("gisaid_dna_insdc"):
+        sequence.gisaid_dna_insdc = date
+    if gisaid_identifier := metadata.get("gisaid_identifier"):
+        sequence.gisaid_identifier = date
+    if gisaid_last_modified := metadata.get("gisaid_last_modified"):
+        sequence.gisaid_last_modified = date
+
+# ======================================================================

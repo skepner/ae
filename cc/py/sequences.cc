@@ -1,14 +1,19 @@
 #include "py/module.hh"
 #include "sequences/fasta.hh"
+#include "sequences/translate.hh"
 
 // ======================================================================
 
 void ae::py::sequences(pybind11::module_& mdl)
 {
     using namespace pybind11::literals;
-    using namespace ae::sequences::fasta;
+    using namespace ae::sequences;
 
-    pybind11::class_<RawSequence, std::shared_ptr<RawSequence>>(mdl, "Fasta_RawSequence") //
+    // ----------------------------------------------------------------------
+
+    auto raw_sequence_submodule = mdl.def_submodule("raw_sequence", "creating and processing raw sequences");
+
+    pybind11::class_<RawSequence, std::shared_ptr<RawSequence>>(raw_sequence_submodule, "Sequence") //
         .def_readwrite("name", &RawSequence::name)
         .def_readwrite("date", &RawSequence::date)
         .def_readwrite("accession_number", &RawSequence::accession_number)
@@ -23,18 +28,23 @@ void ae::py::sequences(pybind11::module_& mdl)
         .def_readwrite("gisaid_last_modified", &RawSequence::gisaid_last_modified)
         ;
 
-    pybind11::class_<Reader::value_t>(mdl, "Fasta_ReaderValue")                                                   //
-        .def_property_readonly("raw_name", [](const Reader::value_t& value) { return value.sequence->raw_name; }) //
-        .def_property_readonly("sequence", [](const Reader::value_t& value) { return value.sequence; })           //
-        .def_readonly("filename", &Reader::value_t::filename)                                                     //
-        .def_readonly("line_no", &Reader::value_t::line_no)                                                       //
+    pybind11::class_<fasta::Reader::value_t>(raw_sequence_submodule, "ReaderValue")                                                   //
+        .def_property_readonly("raw_name", [](const fasta::Reader::value_t& value) { return value.sequence->raw_name; }) //
+        .def_property_readonly("sequence", [](const fasta::Reader::value_t& value) { return value.sequence; })           //
+        .def_readonly("filename", &fasta::Reader::value_t::filename)                                                     //
+        .def_readonly("line_no", &fasta::Reader::value_t::line_no)                                                       //
         ;
 
-    pybind11::class_<Reader>(mdl, "FastaReader")                                                                           //
-        .def(pybind11::init([](pybind11::object path) { return Reader(std::string{pybind11::str(path)}); }), "filename"_a) //
+    pybind11::class_<fasta::Reader>(raw_sequence_submodule, "FastaReader")                                                                           //
+        .def(pybind11::init([](pybind11::object path) { return fasta::Reader(std::string{pybind11::str(path)}); }), "filename"_a) //
         .def(
-            "__iter__", [](Reader& reader) { return pybind11::make_iterator(reader.begin(), reader.end()); }, pybind11::keep_alive<0, 1>()) //
+            "__iter__", [](fasta::Reader& reader) { return pybind11::make_iterator(reader.begin(), reader.end()); }, pybind11::keep_alive<0, 1>()) //
         ;
+
+    raw_sequence_submodule.def("translate", &translate, "sequence"_a);
+
+    // ----------------------------------------------------------------------
+
 }
 
 // ======================================================================

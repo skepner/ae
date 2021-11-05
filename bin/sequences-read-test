@@ -10,6 +10,7 @@ if os.environ.get("DYLD_INSERT_LIBRARIES"):
 else:
     sys.path[:0] = [str(Path(os.environ["AE_ROOT"], dir)) for dir in ["build", "py"]]
 from ae.sequences.source import fasta, ncbi
+import ae_backend
 
 # ----------------------------------------------------------------------
 
@@ -28,8 +29,8 @@ def main(args: list):
 
         for metadata, sequence in reader:
             if not (excluded := metadata.get("excluded")):
-                sequence.name = metadata["name"]
-                sequence.accession_number = metadata.get("isolate_id") or metadata.get("sample_id_by_sample_provider")
+                fasta.add_metadata_to_sequence(metadata, sequence)
+                ae_backend.raw_sequence.translate(sequence)
             elif args.print_messages:
                 print(f">> excluded: {metadata}")
             num_seqs += 1
@@ -37,25 +38,6 @@ def main(args: list):
         unrecognized_locations |= reader.unrecognized_locations
 
     print(f">>> {num_seqs} sequences read")
-# country
-# date
-# gisaid_dna_accession_no
-# gisaid_dna_insdc
-# gisaid_identifier
-# gisaid_last_modified
-# gisaid_segment
-# gisaid_segment_number
-# isolate_id -> accession_number
-# lab
-# lab_id
-# line_no
-# lineage
-# name
-# originating_lab
-# passage
-# sample_id_by_sample_provider -> accession_number
-# submitter
-# type_subtype
 
     # print(f"Labs: {len(labs)}\n{pprint.pformat(labs)}")
     print(f"Messages: {len(messages)}")

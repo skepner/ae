@@ -1,4 +1,5 @@
 #include "utils/file.hh"
+#include "utils/string.hh"
 #include "sequences/fasta.hh"
 
 // ======================================================================
@@ -37,13 +38,14 @@ ae::sequences::fasta::Reader::iterator& ae::sequences::fasta::Reader::iterator::
             const auto line_start = next_;
             next_ = std::find(next_, data_.end(), '\n');
             if (next_ != data_.end()) {
-                value_.sequence->sequence.append(line_start, *std::prev(next_) == '\r' ? std::prev(next_) : next_);
+                value_.sequence->raw_sequence.append(line_start, *std::prev(next_) == '\r' ? std::prev(next_) : next_);
                 ++next_;
                 ++line_no_;
             }
         }
-        if (value_.sequence->sequence.empty())
+        if (value_.sequence->raw_sequence.empty())
             throw std::runtime_error{fmt::format("invalid format at {}", line_no_)};
+        ae::string::uppercase_in_place(value_.sequence->raw_sequence);
     }
     else
         throw std::runtime_error{fmt::format("invalid format at {}", line_no_)};

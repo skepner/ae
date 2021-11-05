@@ -6,30 +6,12 @@
 #include "ext/string.hh"
 #include "utils/file.hh"
 
+#include "sequences/raw-sequence.hh"
+
 // ======================================================================
 
 namespace ae::sequences::fasta
 {
-    struct RawSequence
-    {
-        std::string name;       // parsed or raw_name if parsing failed
-        std::string sequence;
-        std::string date;
-        std::string accession_number; // gisaid isolate_id, ncbi sample_id_by_sample_provider
-        std::string type_subtype;
-        std::string lab;
-        std::string lab_id;     // cdcid
-        std::string lineage;
-        std::string passage;
-        std::string gisaid_dna_accession_no;
-        std::string gisaid_dna_insdc;
-        std::string gisaid_identifier;
-        std::string gisaid_last_modified;
-        std::string_view raw_name{};
-
-        RawSequence(std::string_view rn) : raw_name{rn} {}
-    };
-
     class Reader
     {
       public:
