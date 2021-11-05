@@ -27,6 +27,7 @@ bool ae::sequences::align(RawSequence& sequence)
         | detect::b::b(not_aligned_aa) //
         | detect::hx::hx1(not_aligned_aa) //
         | detect::h3::third_stage(not_aligned_aa) //
+        | detect::h1::third_stage(not_aligned_aa) //
         ;
 
     if (aligned_data.has_value()) {

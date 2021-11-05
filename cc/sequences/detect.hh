@@ -47,6 +47,18 @@ namespace ae::sequences::detect
             else
                 return std::nullopt;
         }
+
+        inline std::optional<aligned_data_t> third_stage(std::string_view not_aligned_aa)
+        {
+            const std::string_view H1{"A(H1)"};
+            return find_in_sequence(not_aligned_aa, 50, {"VLEKN"sv}, -18, H1)                 // VLEKN is H1 specific (whole AA sequence)
+                   | find_in_sequence(not_aligned_aa, 150, {"SSWSYI"sv, "ESWSYI"sv}, -73, H1) // SSWSYI and ESWSYI are H1 specific (whole AA sequence)
+                   | find_in_sequence(not_aligned_aa, 150, {"FERFEI"sv}, -110, H1)            //
+                   | find_in_sequence(not_aligned_aa, 200, {"IWLVKKG"sv}, -148, H1)           //
+                   | find_in_sequence(not_aligned_aa, 200, {"SSVSSF"sv}, -105, H1)            //
+                ;
+        }
+
     } // namespace h1
 
     // ----------------------------------------------------------------------
