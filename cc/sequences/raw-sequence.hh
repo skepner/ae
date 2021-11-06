@@ -13,6 +13,7 @@ namespace ae::sequences
     enum class issue {
         not_translated, //
         not_aligned,    //
+        prefix_x, //
         size_
     };
 
@@ -20,6 +21,7 @@ namespace ae::sequences
     {
         issues_t() = default;
         void set(issue iss) { std::bitset<static_cast<size_t>(issue::size_)>::set(static_cast<size_t>(iss)); }
+        bool is_set(issue iss) { return std::bitset<static_cast<size_t>(issue::size_)>::operator[](static_cast<size_t>(iss)); }
     };
 
     // ----------------------------------------------------------------------

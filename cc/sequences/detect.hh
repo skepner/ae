@@ -25,8 +25,9 @@ namespace ae::sequences::detect
     {
         int aa_shift{0};
         ae::virus::type_subtype_t type_subtype;
+        std::string_view detector;
 
-        aligned_data_t(size_t offset, int add, std::string_view subtype) : aa_shift{static_cast<int>(offset) + add}, type_subtype{subtype} {}
+        aligned_data_t(size_t offset, int add, std::string_view subtype, std::string_view detectr) : aa_shift{static_cast<int>(offset) + add}, type_subtype{subtype}, detector{detectr} {}
     };
 
     std::optional<aligned_data_t> find_in_sequence(std::string_view sequence, size_t limit, std::initializer_list<std::string_view> look_for, int add, std::string_view subtype);
@@ -43,7 +44,7 @@ namespace ae::sequences::detect
         {
             if (const auto pos = find_in_sequence(not_aligned_aa, 20, {"MKV"sv, "MKA"sv, "MEA"sv, "MEV"sv});
                 pos != std::string::npos && (has_infix(not_aligned_aa, pos + 17, "DTLC"sv) || has_infix(not_aligned_aa, pos + 17, "DTIC"sv)))
-                return aligned_data_t{pos, 17, "A(H1)"sv};
+                return aligned_data_t{pos, 17, "A(H1)"sv, "MKV"sv};
             else
                 return std::nullopt;
         }
@@ -71,7 +72,7 @@ namespace ae::sequences::detect
         {
             if (const auto pos = find_in_sequence(not_aligned_aa, 20, {"MKTII"sv}); pos != std::string::npos && (not_aligned_aa[pos + 16] == 'Q' || not_aligned_aa[pos + 15] == 'A'))
                 // not_aligned_aa.substr(pos + 15, 2) != "DR") { // DR[ISV]C - start of the B sequence (signal peptide is 15 aas!)
-                return aligned_data_t{pos, 16, "A(H3)"sv};
+                return aligned_data_t{pos, 16, "A(H3)"sv, "MKTII"sv};
             else
                 return std::nullopt;
         }
@@ -116,8 +117,8 @@ namespace ae::sequences::detect
     {
         inline std::optional<aligned_data_t> h2_MTIT(std::string_view not_aligned_aa)
         {
-            if (const auto pos = find_in_sequence(not_aligned_aa, 20, {"MTIT", "MAII"sv}); pos != std::string::npos && has_infix(not_aligned_aa, pos + 14, "GDQIC"sv))
-                return aligned_data_t{pos, 15, "A(H2)"sv};
+            if (const auto pos = find_in_sequence(not_aligned_aa, 20, {"MTIT"sv, "MAII"sv}); pos != std::string::npos && has_infix(not_aligned_aa, pos + 14, "GDQIC"sv))
+                return aligned_data_t{pos, 15, "A(H2)"sv, "MTIT"sv};
             else
                 return std::nullopt;
         }
@@ -125,7 +126,7 @@ namespace ae::sequences::detect
         inline std::optional<aligned_data_t> h4_MLS(std::string_view not_aligned_aa)
         {
             if (const auto pos = find_in_sequence(not_aligned_aa, 20, {"MLS"sv}); pos != std::string::npos && (not_aligned_aa[pos + 16] == 'Q' || has_infix(not_aligned_aa, pos + 16, "SQNY"sv)))
-                return aligned_data_t{pos, 16, "A(H4)"sv};
+                return aligned_data_t{pos, 16, "A(H4)"sv, "MLS"sv};
             else
                 return std::nullopt;
         }
@@ -134,7 +135,7 @@ namespace ae::sequences::detect
         {
             if (const auto pos = find_in_sequence(not_aligned_aa, 20, {"MNIQ"sv, "MNNQ"sv, "MNTQ"sv});
                 pos != std::string::npos && not_aligned_aa[pos + 17] != 'S' && has_infix(not_aligned_aa, pos + 18, "DKIC"sv)) // SDKIC is H15 most probably
-                return aligned_data_t{pos, 18, "A(H4)"sv};
+                return aligned_data_t{pos, 18, "A(H7)"sv, "MNIQ"sv};
             else
                 return std::nullopt;
         }
@@ -143,7 +144,7 @@ namespace ae::sequences::detect
         {
             if (const auto pos = find_in_sequence(not_aligned_aa, 20, {"MEKFIA"sv});
                 pos != std::string::npos && not_aligned_aa[pos + 17] == 'D')
-                return aligned_data_t{pos, 17, "A(H8)"sv};
+                return aligned_data_t{pos, 17, "A(H8)"sv, "MEKFIA"sv};
             else
                 return std::nullopt;
         }
@@ -151,7 +152,7 @@ namespace ae::sequences::detect
         inline std::optional<aligned_data_t> find_in_sequence_infix(std::string_view sequence, size_t limit, std::initializer_list<std::string_view> look_for, int add, std::string_view subtype, size_t infix_offset, std::string_view infix)
         {
             if (const auto pos = find_in_sequence(sequence, limit, look_for); pos != std::string::npos && has_infix(sequence, pos + infix_offset, infix))
-                return aligned_data_t{pos, add, subtype};
+                return aligned_data_t{pos, add, subtype, *look_for.begin()};
             else
                 return std::nullopt;
         }
@@ -222,7 +223,7 @@ namespace ae::sequences::detect
     inline std::optional<aligned_data_t> find_in_sequence(std::string_view sequence, size_t limit, std::initializer_list<std::string_view> look_for, int add, std::string_view subtype)
     {
         if (const auto pos = find_in_sequence(sequence, limit, look_for); pos != std::string::npos)
-            return aligned_data_t{pos, add, subtype};
+            return aligned_data_t{pos, add, subtype, *look_for.begin()};
         else
             return std::nullopt;
     }
