@@ -32,6 +32,16 @@ namespace ae::string
 
 namespace ae::string
 {
+    inline bool endswith(std::string_view source, std::string_view suffix) { return source.size() >= suffix.size() && source.substr(source.size() - suffix.size()) == suffix; }
+
+    inline bool startswith(std::string_view source, std::string_view prefix) { return source.size() >= prefix.size() && source.substr(0, prefix.size()) == prefix; }
+
+} // namespace ae::string
+
+// ======================================================================
+
+namespace ae::string
+{
     enum class split_emtpy { remove, keep, strip_remove, strip_keep };
 
     // ----------------------------------------------------------------------

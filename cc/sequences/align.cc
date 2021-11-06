@@ -20,25 +20,25 @@ inline void update_type_subtype(ae::sequences::RawSequence& sequence, const ae::
 
 bool ae::sequences::align(RawSequence& sequence)
 {
-    // if (sequence.name == "A/NINGBO/9/2021")
-    //     fmt::print("{} {}\n{}\n", sequence.type_subtype, sequence.name, sequence.aa);
-
     const std::string_view not_aligned_aa{sequence.aa};
-    auto aligned_data =                   //
-        detect::h3::mktii(not_aligned_aa) //
-        | detect::h1::mkv(not_aligned_aa) //
-        | detect::b::b(not_aligned_aa) //
+    auto aligned_data =                            //
+        detect::h3::mktii(not_aligned_aa)          //
+        | detect::h1::mkv(not_aligned_aa)          //
+        | detect::b::b(not_aligned_aa)             //
         | detect::hx::second_stage(not_aligned_aa) //
-        | detect::h3::third_stage(not_aligned_aa) //
-        | detect::h1::third_stage(not_aligned_aa) //
-        | detect::hx::third_stage(not_aligned_aa) //
+        | detect::h3::third_stage(not_aligned_aa)  //
+        | detect::h1::third_stage(not_aligned_aa)  //
+        | detect::hx::third_stage(not_aligned_aa)  //
+        | detect::h1::end_ici(not_aligned_aa)      //
+        | detect::h3::end_ici(not_aligned_aa)      //
+        | detect::b::end_icl(not_aligned_aa)      //
         ;
 
     if (aligned_data.has_value()) {
         update_type_subtype(sequence, *aligned_data);
         if (aligned_data->aa_shift < 0) {
-            sequence.aa.add_prefix(- aligned_data->aa_shift);
-            sequence.nuc.add_prefix(- aligned_data->aa_shift * 3);
+            sequence.aa.add_prefix(-aligned_data->aa_shift);
+            sequence.nuc.add_prefix(-aligned_data->aa_shift * 3);
             sequence.issues.set(issue::prefix_x);
         }
         else {

@@ -3,6 +3,7 @@
 #include <string_view>
 #include <optional>
 
+#include "utils/string.hh"
 #include "virus/type-subtype.hh"
 
 // ======================================================================
@@ -35,6 +36,16 @@ namespace ae::sequences::detect
     bool has_infix(std::string_view source, size_t pos, std::string_view match);
 
     // ----------------------------------------------------------------------
+
+    constexpr const std::string_view H1{"A(H1)"};
+    constexpr const std::string_view H3{"A(H3)"};
+    constexpr const std::string_view B{"B"};
+
+    constexpr int H1_sequence_aa_size = 549;
+    constexpr int H3_sequence_aa_size = 550;
+    constexpr int B_sequence_aa_size = 570;
+
+    // ----------------------------------------------------------------------
     // H1
     // ----------------------------------------------------------------------
 
@@ -44,20 +55,28 @@ namespace ae::sequences::detect
         {
             if (const auto pos = find_in_sequence(not_aligned_aa, 20, {"MKV"sv, "MKA"sv, "MEA"sv, "MEV"sv});
                 pos != std::string::npos && (has_infix(not_aligned_aa, pos + 17, "DTLC"sv) || has_infix(not_aligned_aa, pos + 17, "DTIC"sv)))
-                return aligned_data_t{pos, 17, "A(H1)"sv, "MKV"sv};
+                return aligned_data_t{pos, 17, H1, "MKV"sv};
             else
                 return std::nullopt;
         }
 
         inline std::optional<aligned_data_t> third_stage(std::string_view not_aligned_aa)
         {
-            const std::string_view H1{"A(H1)"};
             return find_in_sequence(not_aligned_aa, 50, {"VLEKN"sv}, -18, H1)                 // VLEKN is H1 specific (whole AA sequence)
                    | find_in_sequence(not_aligned_aa, 150, {"SSWSYI"sv, "ESWSYI"sv}, -73, H1) // SSWSYI and ESWSYI are H1 specific (whole AA sequence)
                    | find_in_sequence(not_aligned_aa, 150, {"FERFEI"sv}, -110, H1)            //
                    | find_in_sequence(not_aligned_aa, 200, {"IWLVKKG"sv}, -148, H1)           //
                    | find_in_sequence(not_aligned_aa, 200, {"SSVSSF"sv}, -105, H1)            //
                 ;
+        }
+
+        inline std::optional<aligned_data_t> end_ici(std::string_view not_aligned_aa)
+        {
+            const std::string_view LQCRICI{"LQCRICI"};
+            if (ae::string::endswith(not_aligned_aa, LQCRICI))
+                return aligned_data_t{not_aligned_aa.size(), -H1_sequence_aa_size, H1, LQCRICI};
+            else
+                return std::nullopt;
         }
 
     } // namespace h1
@@ -72,19 +91,27 @@ namespace ae::sequences::detect
         {
             if (const auto pos = find_in_sequence(not_aligned_aa, 20, {"MKTII"sv}); pos != std::string::npos && (not_aligned_aa[pos + 16] == 'Q' || not_aligned_aa[pos + 15] == 'A'))
                 // not_aligned_aa.substr(pos + 15, 2) != "DR") { // DR[ISV]C - start of the B sequence (signal peptide is 15 aas!)
-                return aligned_data_t{pos, 16, "A(H3)"sv, "MKTII"sv};
+                return aligned_data_t{pos, 16, H3, "MKTII"sv};
             else
                 return std::nullopt;
         }
 
         inline std::optional<aligned_data_t> third_stage(std::string_view not_aligned_aa)
         {
-            const std::string_view H3{"A(H3)"};
             return find_in_sequence(not_aligned_aa, 150, {"CTLID"sv, "CTLMDALL"sv, "CTLVD"sv}, -63, H3) // Only H3 (and H0N0) has CTLID in the whole AA sequence
                    | find_in_sequence(not_aligned_aa, 100, {"PNGTIVKTI"sv}, -20, H3)                    // Only H3 (and H0N0) has PNGTIVKTI in the whole AA sequence
                    | find_in_sequence(not_aligned_aa, 200, {"DKLYIWG"sv}, -174, H3)                     // Only H3 (and H0N0) has DKLYIWG in the whole AA sequence
                    | find_in_sequence(not_aligned_aa, 150, {"SNCYPYDV"sv}, -94, H3)                     //
                 ;
+        }
+
+        inline std::optional<aligned_data_t> end_ici(std::string_view not_aligned_aa)
+        {
+            const std::string_view IRCNICI{"IRCNICI"};
+            if (ae::string::endswith(not_aligned_aa, IRCNICI))
+                return aligned_data_t{not_aligned_aa.size(), -H3_sequence_aa_size, H3, IRCNICI};
+            else
+                return std::nullopt;
         }
 
     } // namespace h3
@@ -97,7 +124,6 @@ namespace ae::sequences::detect
     {
         inline std::optional<aligned_data_t> b(std::string_view not_aligned_aa)
         {
-            const std::string_view B { "B" };
             return find_in_sequence(not_aligned_aa, 100, {"CTDL"sv}, -59, B) // Only B has CTDL at first 100 AAs
                 | find_in_sequence(not_aligned_aa, 100, {"NSPHVV"sv}, -10, B)        // Only B has NSPHVV at first 100 AAs
                 | find_in_sequence(not_aligned_aa, 150, {"EHIRL"sv}, -114, B)
@@ -106,6 +132,15 @@ namespace ae::sequences::detect
                 | find_in_sequence(not_aligned_aa, 150, {"NVTNG"sv}, -144, B) // VICTORIA?
                 ;
        }
+
+        inline std::optional<aligned_data_t> end_icl(std::string_view not_aligned_aa)
+        {
+            const std::string_view SCSICL{"SCSICL"};
+            if (ae::string::endswith(not_aligned_aa, SCSICL))
+                return aligned_data_t{not_aligned_aa.size(), -B_sequence_aa_size, B, SCSICL};
+            else
+                return std::nullopt;
+        }
 
     } // namespace b
 
