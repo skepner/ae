@@ -55,7 +55,7 @@ namespace ae::sequences::detect
         {
             if (const auto pos = find_in_sequence(not_aligned_aa, 20, {"MKV"sv, "MKA"sv, "MEA"sv, "MEV"sv});
                 pos != std::string::npos && (has_infix(not_aligned_aa, pos + 17, "DTLC"sv) || has_infix(not_aligned_aa, pos + 17, "DTIC"sv)))
-                return aligned_data_t{pos, 17, H1, "MKV"sv};
+                return aligned_data_t{pos, 17, H1, "MKV-MKA-MEA-MEV"sv};
             else
                 return std::nullopt;
         }

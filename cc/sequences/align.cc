@@ -10,9 +10,9 @@ inline void update_type_subtype(ae::sequences::RawSequence& sequence, const ae::
     if (sequence.type_subtype.empty())
         sequence.type_subtype = aligned_data.type_subtype;
     else if (sequence.type_subtype.h_or_b() != aligned_data.type_subtype.h_or_b()) {
-        if (sequence.type_subtype == ae::virus::type_subtype_t{"A(H0N0)"})
+        if (ae::string::startswith(sequence.type_subtype, "A(H0"))
             sequence.type_subtype = aligned_data.type_subtype;
-        else
+        else // TODO: if h1 vs. h3 compare with master sequences, issue: "A/IRELAND/80604/2019" gisaid:A(H3) detected:A(H1)
             fmt::print(">> type_subtype detection issue: gisaid:{} detected:{} for \"{}\" detector:{}\n{}\n", sequence.type_subtype, aligned_data.type_subtype, sequence.name, aligned_data.detector,
                        sequence.aa);
     }
