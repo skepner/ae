@@ -51,8 +51,8 @@ bool ae::sequences::align(RawSequence& sequence)
     }
     else {
         sequence.issues.set(issue::not_aligned);
-        if (!sequence.issues.is_set(issue::not_translated))
-            fmt::print(">> not aligned {} {}\n{}\n", sequence.type_subtype, sequence.name, sequence.aa);
+        // if (!sequence.issues.is_set(issue::not_translated))
+        //     fmt::print(">> not aligned {} {}\n{}\n", sequence.type_subtype, sequence.name, sequence.aa);
         return false;
     }
 }

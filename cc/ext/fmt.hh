@@ -77,6 +77,17 @@ template <> struct fmt::formatter<eu::fmt_helper::default_formatter>
 //     std::string format_;
 // };
 
+// ----------------------------------------------------------------------
+
+// template <> struct fmt::formatter<###> : fmt::formatter<eu::fmt_helper::default_formatter> {
+//     template <typename FormatCtx> auto format(const ###& value, FormatCtx& ctx)
+//     {
+//         format_to(ctx.out(), "{} {}", );
+//         return format_to(ctx.out(), "{} {}", );
+//         return ctx.out();
+//     }
+// };
+
 
 // ----------------------------------------------------------------------
 /// Local Variables:

@@ -21,7 +21,7 @@ namespace ae::sequences
     {
         issues_t() = default;
         void set(issue iss) { std::bitset<static_cast<size_t>(issue::size_)>::set(static_cast<size_t>(iss)); }
-        bool is_set(issue iss) { return std::bitset<static_cast<size_t>(issue::size_)>::operator[](static_cast<size_t>(iss)); }
+        bool is_set(issue iss) const { return std::bitset<static_cast<size_t>(issue::size_)>::operator[](static_cast<size_t>(iss)); }
     };
 
     // ----------------------------------------------------------------------
@@ -50,5 +50,28 @@ namespace ae::sequences
         RawSequence(std::string_view rn) : raw_name{rn} {}
     };
 }
+
+// ======================================================================
+
+template <> struct fmt::formatter<ae::sequences::issue> : fmt::formatter<eu::fmt_helper::default_formatter> {
+    template <typename FormatCtx> auto format(ae::sequences::issue issue, FormatCtx& ctx)
+    {
+        using namespace ae::sequences;
+        switch (issue) {
+            case issue::not_translated:
+                format_to(ctx.out(), "{}", "not_translated");
+                break;
+            case issue::not_aligned:
+                format_to(ctx.out(), "{}", "not_aligned");
+                break;
+            case issue::prefix_x:
+                format_to(ctx.out(), "{}", "prefix_x");
+                break;
+            case issue::size_:
+                break;
+        }
+        return ctx.out();
+    }
+};
 
 // ======================================================================
