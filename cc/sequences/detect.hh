@@ -73,7 +73,7 @@ namespace ae::sequences::detect
         inline std::optional<aligned_data_t> end_ici(std::string_view not_aligned_aa)
         {
             const std::string_view LQCRICI{"LQCRICI"};
-            if (ae::string::endswith(not_aligned_aa, LQCRICI))
+            if (ae::string::endswith(not_aligned_aa, LQCRICI) && (not_aligned_aa.size() < H1_sequence_aa_size || not_aligned_aa.substr(not_aligned_aa.size() - H1_sequence_aa_size, 2) == "DT"sv))
                 return aligned_data_t{not_aligned_aa.size(), -H1_sequence_aa_size, H1, LQCRICI};
             else
                 return std::nullopt;

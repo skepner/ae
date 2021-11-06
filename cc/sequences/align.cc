@@ -12,9 +12,11 @@ inline void update_type_subtype(ae::sequences::RawSequence& sequence, const ae::
     else if (sequence.type_subtype.h_or_b() != aligned_data.type_subtype.h_or_b()) {
         if (ae::string::startswith(sequence.type_subtype, "A(H0"))
             sequence.type_subtype = aligned_data.type_subtype;
-        else // TODO: if h1 vs. h3 compare with master sequences, issue: "A/IRELAND/80604/2019" gisaid:A(H3) detected:A(H1)
-            fmt::print(">> type_subtype detection issue: gisaid:{} detected:{} for \"{}\" detector:{}\n{}\n", sequence.type_subtype, aligned_data.type_subtype, sequence.name, aligned_data.detector,
-                       sequence.aa);
+        else {
+            // TODO: if h1 vs. h3 compare with master sequences, issue: "A/IRELAND/80604/2019" gisaid:A(H3) detected:A(H1)
+            fmt::print(">> type_subtype detection issue: gisaid:{} detected:{} size:{} for \"{}\" detector:{}\n{}\n", sequence.type_subtype, aligned_data.type_subtype, sequence.aa.size(),
+                       sequence.name, aligned_data.detector, sequence.aa);
+        }
     }
 }
 
