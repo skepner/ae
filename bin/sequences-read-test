@@ -3,7 +3,7 @@
 Test reading ncbi files
 """
 
-import os, sys, pprint, argparse, traceback
+import os, sys, re, pprint, argparse, traceback
 from pathlib import Path
 if os.environ.get("DYLD_INSERT_LIBRARIES"):
     sys.path[:0] = [str(Path(os.environ["AE_ROOT"], dir)) for dir in ["build.debug", "py"]]
@@ -32,7 +32,7 @@ def main(args: list):
                 fasta.add_metadata_to_sequence(metadata, sequence)
                 ae_backend.raw_sequence.translate(sequence)
                 ae_backend.raw_sequence.align(sequence)
-                if sequence.is_translated_not_aligned():
+                if sequence.is_translated_not_aligned() and re.match(r"(A\(H[13]N|B)", sequence.type_subtype):
                     print(f">> not aligned {sequence.name} ({sequence.type_subtype})\n{sequence.aa}")
             elif args.print_messages:
                 print(f">> excluded: {metadata}")

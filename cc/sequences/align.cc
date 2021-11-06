@@ -10,9 +10,11 @@ inline void update_type_subtype(ae::sequences::RawSequence& sequence, const ae::
     if (sequence.type_subtype.empty())
         sequence.type_subtype = aligned_data.type_subtype;
     else if (sequence.type_subtype.h_or_b() != aligned_data.type_subtype.h_or_b()) {
-        if (sequence.type_subtype != ae::virus::type_subtype_t{"A(H0N0)"})
-            fmt::print(">> updating type_subtype for \"{}\": {} ({} \"{}\") <- {}\n{}\n", sequence.name, aligned_data.type_subtype, aligned_data.aa_shift, aligned_data.detector, sequence.type_subtype, sequence.aa);
-        sequence.type_subtype = aligned_data.type_subtype;
+        if (sequence.type_subtype == ae::virus::type_subtype_t{"A(H0N0)"})
+            sequence.type_subtype = aligned_data.type_subtype;
+        else
+            fmt::print(">> type_subtype detection issue: gisaid:{} detected:{} for \"{}\" detector:{}\n{}\n", sequence.type_subtype, aligned_data.type_subtype, sequence.name, aligned_data.detector,
+                       sequence.aa);
     }
 }
 

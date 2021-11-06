@@ -152,7 +152,7 @@ namespace ae::sequences::detect
     {
         inline std::optional<aligned_data_t> h2_MTIT(std::string_view not_aligned_aa)
         {
-            if (const auto pos = find_in_sequence(not_aligned_aa, 20, {"MTIT"sv, "MAII"sv}); pos != std::string::npos && has_infix(not_aligned_aa, pos + 14, "GDQIC"sv))
+            if (const auto pos = find_in_sequence(not_aligned_aa, 20, {"MTIT"sv, "MAII"sv, "MTII"sv}); pos != std::string::npos && has_infix(not_aligned_aa, pos + 14, "GDQIC"sv))
                 return aligned_data_t{pos, 15, "A(H2)"sv, "MTIT"sv};
             else
                 return std::nullopt;
