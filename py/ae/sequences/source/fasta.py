@@ -174,7 +174,8 @@ def naomi_extract_fields(fields: list, context: Context):
 
 def add_metadata_to_sequence(metadata: dict, sequence: ae_backend.raw_sequence.Sequence):
     sequence.name = metadata["name"]
-    sequence.accession_number = metadata.get("isolate_id") or metadata.get("sample_id_by_sample_provider")
+    if accession_number := (metadata.get("isolate_id") or metadata.get("sample_id_by_sample_provider")):
+        sequence.accession_number = accession_number
     if date := metadata.get("date"):
         sequence.date = date
     if type_subtype := metadata.get("type_subtype"):

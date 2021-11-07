@@ -32,9 +32,9 @@ def main(args: list):
                 fasta.add_metadata_to_sequence(metadata, sequence)
                 ae_backend.raw_sequence.translate(sequence)
                 ae_backend.raw_sequence.align(sequence)
-                if sequence.is_translated_not_aligned() and re.match(r"(A\(H[13]N|B)", sequence.type_subtype):
+                if sequence.is_translated_not_aligned() and args.report_not_aligned and re.match(r"(A\(H[13]N|B)", sequence.type_subtype):
                     print(f">> not aligned {sequence.name} ({sequence.type_subtype})\n{sequence.aa}")
-            elif args.print_messages:
+            elif args.print_messages and args.report_excluded:
                 print(f">> excluded: {metadata}")
             num_seqs += 1
         messages += reader.messages
@@ -58,6 +58,8 @@ try:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("filename", nargs="+", type=Path)
     parser.add_argument("-m", dest="print_messages", action='store_true', default=False)
+    parser.add_argument("--report-not-aligned", dest="report_not_aligned", action='store_true', default=False)
+    parser.add_argument("--report-excluded", dest="report_excluded", action='store_true', default=False)
     args = parser.parse_args()
     exit_code = main(args) or 0
 except Exception as err:

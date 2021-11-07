@@ -2,6 +2,11 @@
 #include "sequences/align.hh"
 #include "sequences/raw-sequence.hh"
 #include "sequences/detect.hh"
+#include "sequences/master.hh"
+
+// ======================================================================
+
+constexpr size_t hamming_distance_report_threshold{100};
 
 // ======================================================================
 
@@ -10,12 +15,21 @@ inline void update_type_subtype(ae::sequences::RawSequence& sequence, const ae::
     if (sequence.type_subtype.empty())
         sequence.type_subtype = aligned_data.type_subtype;
     else if (sequence.type_subtype.h_or_b() != aligned_data.type_subtype.h_or_b()) {
-        if (ae::string::startswith(sequence.type_subtype, "A(H0"))
+        const auto [subtype, hamming] = ae::sequences::closest_subtype_by_min_hamming_distance_to_master(sequence.aa);
+        if (hamming < hamming_distance_report_threshold && subtype.h_or_b() != aligned_data.type_subtype.h_or_b())
+            fmt::print(">> detected subtype {} does not correspond to the closest by hamming distance to master subtype {} {} for \"{}\"\n", aligned_data.type_subtype, subtype, hamming,
+                       sequence.name);
+        if (sequence.type_subtype.empty() || sequence.type_subtype.h_or_b() == "H0") {
             sequence.type_subtype = aligned_data.type_subtype;
+        }
+        else if (subtype.h_or_b() == aligned_data.type_subtype.h_or_b()) {
+            fmt::print(">>> detected subtype {} is used (gisaid: {}), confirmed by closest hamming distance subtype {} {}, for \"{}\"\n", aligned_data.type_subtype, sequence.type_subtype, subtype,
+                       hamming, sequence.name);
+            sequence.type_subtype = aligned_data.type_subtype;
+        }
         else {
-            // TODO: if h1 vs. h3 compare with master sequences, issue: "A/IRELAND/80604/2019" gisaid:A(H3) detected:A(H1)
-            fmt::print(">> type_subtype detection issue: gisaid:{} detected:{} size:{} for \"{}\" detector:{}\n{}\n", sequence.type_subtype, aligned_data.type_subtype, sequence.aa.size(),
-                       sequence.name, aligned_data.detector, sequence.aa);
+            fmt::print(">>> gisaid subtype {} is used (detected: {}), confirmed by closest hamming distance subtype {} {}, for \"{}\"\n", sequence.type_subtype, aligned_data.type_subtype, subtype,
+                       hamming, sequence.name);
         }
     }
 }

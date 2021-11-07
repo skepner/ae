@@ -20,7 +20,7 @@ class reader:
         self.fna_filename = ncbi_dir.joinpath("influenza.fna.xz")
 
     def __iter__(self):
-        self.reader_ = ae_backend.FastaReader(self.fna_filename)
+        self.reader_ = ae_backend.raw_sequence.FastaReader(self.fna_filename)
         self.na_dat = self.read_influenza_na_dat(self.na_dat_filename)
         for en in self.reader_:
             context = Context(self, filename=self.fna_filename, line_no=en.line_no)
@@ -81,6 +81,17 @@ class reader:
             return None
 
     def parse_subtype(self, subtype):
+        subtype = subtype.upper()
+        if subtype[:1] == "H":
+            subtype = f"A({subtype})"
+        elif subtype[:7] in ["MIXED,H", "MIXED.H"]:
+            subtype = f"A({subtype[6:]})"
+        elif subtype[:8] == "MIXED, H":
+            subtype = f"A({subtype[7:]})"
+        elif ",MIXED" in subtype:
+            subtype = subtype.replace(",MIXED", "")
+        elif subtype == "MIXED" or subtype[:1] == "N":
+            subtype = ""
         return subtype
 
     def parse_country(self, country):
