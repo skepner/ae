@@ -98,6 +98,18 @@ inline bool is_victoria_3del(const deletions_insertions_t& deletions)
 
 // ----------------------------------------------------------------------
 
+inline bool N_deletions_at(const deletions_insertions_t& deletions, size_t num_deletions, ae::sequences::pos1_t pos_min, ae::sequences::pos1_t pos_max)
+{
+    return !deletions.deletions.empty() && deletions.deletions.front().pos >= pos_min && deletions.deletions.front().pos <= pos_max && deletions.deletions.front().num == num_deletions;
+}
+
+inline bool N_deletions_at(const deletions_insertions_t& deletions, size_t num_deletions, ae::sequences::pos1_t pos)
+{
+    return !deletions.deletions.empty() && deletions.deletions.front().pos == pos && deletions.deletions.front().num == num_deletions;
+}
+
+// ----------------------------------------------------------------------
+
 struct find_head_t
 {
     size_t head = 0;
@@ -233,11 +245,21 @@ inline deletions_insertions_t find_deletions_insertions(const ae::sequences::Raw
     if (deletions.deletions.size() == 1 && deletions.insertions.empty()) {
         // fmt::print("{} {} {} pos-get={} num==1:{} p0-162=>{} {}\n", deletions.deletions[0], deletions.deletions[0].pos == pos1_t{162}, deletions.deletions[0].pos, deletions.deletions[0].pos.get(),
         //            deletions.deletions[0].num == 1, pos0_t{162},  sequence_aa.substr(159, 5));
-        if ((deletions.deletions[0] == deletions_insertions_t::pos_num_t{pos1_t{162}, 1} && sequence.aa.substr(pos1_t{160}, 2) == "VP") //
+        if ((deletions.deletions[0] == deletions_insertions_t::pos_num_t{pos1_t{162}, 1} && sequence.aa.substr(pos1_t{160}, 2) == "VP")     //
             || (deletions.deletions[0] == deletions_insertions_t::pos_num_t{pos1_t{164}, 1} && sequence.aa.substr(pos1_t{160}, 3) == "VPK") //
             || (deletions.deletions[0] == deletions_insertions_t::pos_num_t{pos1_t{159}, 1} && sequence.aa.substr(pos1_t{158}, 3) == "WVS") //
-           )
+        ) {
             deletions.deletions[0].pos = pos1_t{163};
+        }
+        else if (N_deletions_at(deletions, 3, pos1_t{162}, pos1_t{164})) {
+            deletions.deletions[0].pos = pos1_t{162}; // victoria 3del
+        }
+        else if (N_deletions_at(deletions, 2, pos1_t{164}) && sequence.aa.substr(pos1_t{160}, 6) == "VPKNNK") {
+            // B/GANSU_ANDING/1194/2021 etc.
+            // Vic 3del with insertion at 165: "VPKNNK" -> "VP---NNK"
+            deletions.deletions[0].pos = pos1_t{162};
+            deletions.insertions.push_back(deletions_insertions_t::pos_num_t{pos1_t{165}, 1});
+        }
     }
 
     return deletions;
@@ -275,6 +297,11 @@ void ae::sequences::find_deletions_insertions_set_lineage(RawSequence& sequence)
         fmt::format_to(std::back_inserter(nuc), "{}", source_nuc.substr(*pos * 3));
         sequence.aa = fmt::to_string(aa);
         sequence.nuc = fmt::to_string(nuc);
+
+        for (const auto& en : deletions.insertions) {
+            sequence.aa.get().erase(en.pos.get0(), en.num);
+        }
+
     };
 
     const auto apply_deletions_lineage = [&sequence, apply_deletions](const deletions_insertions_t& deletions, std::string_view lineage) {
@@ -295,6 +322,9 @@ void ae::sequences::find_deletions_insertions_set_lineage(RawSequence& sequence)
         }
         else if (is_victoria_2del(deletions) || is_victoria_3del(deletions)) {
             apply_deletions_lineage(deletions, "VICTORIA");
+        }
+        else if (N_deletions_at(deletions, 2, pos1_t{169})) {
+            // 12 sequences from TAIWAN 2010 have deletions 169:2
         }
         else if (!deletions.empty()) {
             apply_deletions(deletions);
