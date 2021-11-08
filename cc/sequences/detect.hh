@@ -194,22 +194,23 @@ namespace ae::sequences::detect
 
         inline std::optional<aligned_data_t> second_stage(std::string_view not_aligned_aa)
         {
-            return h2_MTIT(not_aligned_aa)                                                                                     //
-                   | h4_MLS(not_aligned_aa)                                                                                    //
-                   | find_in_sequence(not_aligned_aa, 20, {"MEKIV", "MERIV"sv}, 16, "A(H5)"sv)                                 //
-                   | find_in_sequence(not_aligned_aa, 20, {"MIAIIV"sv, "MIAIII"sv}, 16, "A(H6)"sv) | h7_MNIQ(not_aligned_aa)   //
-                   | h8_MEKFIA(not_aligned_aa)                                                                                 //
-                   | find_in_sequence_infix(not_aligned_aa, 20, {"METIS"sv, "MEIIS"sv, "MEV"sv}, 18, "A(H9)"sv, 17, "ADKIC"sv) //
-                   | find_in_sequence(not_aligned_aa, 20, {"MYK"sv}, 17, "A(H10)"sv)                                           //
-                   | find_in_sequence_infix(not_aligned_aa, 20, {"MK"sv}, 16, "A(H11)"sv, 16, "DEIC"sv)                        //
-                   | find_in_sequence_infix(not_aligned_aa, 20, {"MEK"sv}, 17, "A(H12)"sv, 15, "AYDKIC"sv)                     //
-                   | find_in_sequence_infix(not_aligned_aa, 20, {"MDI"sv, "MAL"sv, "MEV"sv}, 18, "A(H13)"sv, 17, "ADRIC"sv)    //
-                   | find_in_sequence_infix(not_aligned_aa, 20, {"MIA"sv}, 17, "A(H14)"sv, 14, "AYSQITN"sv)                    //
-                   | find_in_sequence_infix(not_aligned_aa, 20, {"MMVK"sv, "MMIK"sv}, 19, "A(H16)"sv, 19, "DKIC"sv)            //
-                   | find_in_sequence_infix(not_aligned_aa, 20, {"MEL"sv}, 18, "A(H17)"sv, 17, "GDRICI"sv)                     //
-                   | find_in_sequence_infix(not_aligned_aa, 100, {"QNYT"sv}, 0, "A(H4)"sv, 11, "GHHA"sv)                       //
-                   | find_in_sequence(not_aligned_aa, 50, {"DEICIGYL"sv}, 0, "A(H11)"sv)                                       // H11 (DEICIGYL is specific)
-                   | find_in_sequence(not_aligned_aa, 100, {"KSDKICLGHHA"sv}, 2, "A(H15)"sv)                                   //
+            return h2_MTIT(not_aligned_aa)                                                                                   //
+                   | h4_MLS(not_aligned_aa)                                                                                  //
+                   | find_in_sequence(not_aligned_aa, 20, {"MEKIV", "MERIV"sv, "MKKIV"sv}, 16, "A(H5)"sv)                    //
+                   | find_in_sequence(not_aligned_aa, 20, {"MIAIIV"sv, "MIAIII"sv}, 16, "A(H6)"sv)                           //
+                   | h7_MNIQ(not_aligned_aa)                                                                                 //
+                   | h8_MEKFIA(not_aligned_aa)                                                                               //
+                   | find_in_sequence_infix(not_aligned_aa, 20, {"MET"sv, "MEIIS"sv, "MEV"sv}, 18, "A(H9)"sv, 17, "ADKIC"sv) //
+                   | find_in_sequence(not_aligned_aa, 20, {"MYK"sv}, 17, "A(H10)"sv)                                         //
+                   | find_in_sequence_infix(not_aligned_aa, 20, {"MK"sv, "MEKTLL"sv}, 16, "A(H11)"sv, 16, "DEIC"sv)          //
+                   | find_in_sequence_infix(not_aligned_aa, 20, {"MEKFIIL"sv}, 17, "A(H12)"sv, 15, "AYDKIC"sv)               //
+                   | find_in_sequence_infix(not_aligned_aa, 20, {"MDI"sv, "MAL"sv, "MEV"sv}, 18, "A(H13)"sv, 17, "ADRIC"sv)  //
+                   | find_in_sequence_infix(not_aligned_aa, 20, {"MIA"sv}, 17, "A(H14)"sv, 14, "AYSQITN"sv)                  //
+                   | find_in_sequence_infix(not_aligned_aa, 20, {"MMVK"sv, "MMIK"sv}, 19, "A(H16)"sv, 19, "DKIC"sv)          //
+                   | find_in_sequence_infix(not_aligned_aa, 20, {"MEL"sv}, 18, "A(H17)"sv, 17, "GDRICI"sv)                   //
+                   | find_in_sequence_infix(not_aligned_aa, 100, {"QNYT"sv}, 0, "A(H4)"sv, 11, "GHHA"sv)                     //
+                   | find_in_sequence(not_aligned_aa, 50, {"DEICIGYL"sv}, 0, "A(H11)"sv)                                     // H11 (DEICIGYL is specific)
+                   | find_in_sequence(not_aligned_aa, 100, {"KSDKICLGHHA"sv}, 2, "A(H15)"sv)                                 //
                 ;
         }
 

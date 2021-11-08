@@ -80,14 +80,14 @@ class reader:
         else:
             return None
 
+    sReSubtypeFixMixedH = re.compile(r"^\s*mixed\s*[\.,]\s*H", re.I)
+
     def parse_subtype(self, subtype):
         subtype = subtype.upper()
         if subtype[:1] == "H":
             subtype = f"A({subtype})"
-        elif subtype[:7] in ["MIXED,H", "MIXED.H"]:
-            subtype = f"A({subtype[6:]})"
-        elif subtype[:8] == "MIXED, H":
-            subtype = f"A({subtype[7:]})"
+        elif mm_mixed_h := self.sReSubtypeFixMixedH.match(subtype):
+            subtype = f"A(H{mm_mixed_h.end()})"
         elif ",MIXED" in subtype:
             subtype = subtype.replace(",MIXED", "")
         elif subtype == "MIXED" or subtype[:1] == "N":
