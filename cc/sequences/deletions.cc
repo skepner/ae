@@ -27,9 +27,11 @@ struct deletions_insertions_t
     // returns {pos deleted, adjusted pos}
     std::pair<bool, ae::sequences::pos0_t> aa_apply_deletions(ae::sequences::pos0_t pos) const
     {
+        using namespace ae::sequences;
+
         for (const auto& pos_num : deletions) {
-            if (pos_num.pos <= pos) {
-                if ((pos_num.pos + pos_num.num) > pos)
+            if (*pos0_t{pos_num.pos} <= *pos0_t{pos}) {
+                if (*pos0_t{pos_num.pos + pos_num.num} > *pos0_t{pos})
                     return {true, pos};
                 else
                     pos -= pos_num.num;
@@ -75,7 +77,23 @@ template <> struct fmt::formatter<deletions_insertions_t> : fmt::formatter<eu::f
 
 inline bool is_yamagata(const deletions_insertions_t& deletions)
 {
-    return deletions.insertions.empty() && deletions.deletions.size() == 1 && ae::sequences::pos1_t{deletions.deletions[0].pos} == ae::sequences::pos1_t{163} && deletions.deletions[0].num == 1;
+    using namespace ae::sequences;
+    using pos_num_t = deletions_insertions_t::pos_num_t;
+    return deletions.insertions.empty() && deletions.deletions.size() == 1 && deletions.deletions[0] == pos_num_t{pos1_t{163}, 1};
+}
+
+inline bool is_victoria_2del(const deletions_insertions_t& deletions)
+{
+    using namespace ae::sequences;
+    using pos_num_t = deletions_insertions_t::pos_num_t;
+    return deletions.insertions.empty() && deletions.deletions.size() == 1 && deletions.deletions[0] == pos_num_t{pos1_t{162}, 2};
+}
+
+inline bool is_victoria_3del(const deletions_insertions_t& deletions)
+{
+    using namespace ae::sequences;
+    using pos_num_t = deletions_insertions_t::pos_num_t;
+    return deletions.insertions.empty() && deletions.deletions.size() == 1 && deletions.deletions[0] == pos_num_t{pos1_t{162}, 3};
 }
 
 // ----------------------------------------------------------------------
@@ -213,8 +231,12 @@ inline deletions_insertions_t find_deletions_insertions(const ae::sequences::Raw
     }
 
     if (deletions.deletions.size() == 1 && deletions.insertions.empty()) {
-        fmt::print("{} {} {} {}\n", deletions.deletions[0], deletions.deletions[0].pos == pos1_t{162}, deletions.deletions[0].num == 1, sequence_aa.substr(159, 5));
-        if (deletions.deletions[0] == deletions_insertions_t::pos_num_t{pos0_t{161}, 1} && sequence_aa.substr(159, 2) == "VP")
+        // fmt::print("{} {} {} pos-get={} num==1:{} p0-162=>{} {}\n", deletions.deletions[0], deletions.deletions[0].pos == pos1_t{162}, deletions.deletions[0].pos, deletions.deletions[0].pos.get(),
+        //            deletions.deletions[0].num == 1, pos0_t{162},  sequence_aa.substr(159, 5));
+        if ((deletions.deletions[0] == deletions_insertions_t::pos_num_t{pos1_t{162}, 1} && sequence.aa.substr(pos1_t{160}, 2) == "VP") //
+            || (deletions.deletions[0] == deletions_insertions_t::pos_num_t{pos1_t{164}, 1} && sequence.aa.substr(pos1_t{160}, 3) == "VPK") //
+            || (deletions.deletions[0] == deletions_insertions_t::pos_num_t{pos1_t{159}, 1} && sequence.aa.substr(pos1_t{158}, 3) == "WVS") //
+           )
             deletions.deletions[0].pos = pos1_t{163};
     }
 
@@ -255,17 +277,24 @@ void ae::sequences::find_deletions_insertions_set_lineage(RawSequence& sequence)
         sequence.nuc = fmt::to_string(nuc);
     };
 
+    const auto apply_deletions_lineage = [&sequence, apply_deletions](const deletions_insertions_t& deletions, std::string_view lineage) {
+        apply_deletions(deletions);
+        if (sequence.lineage.empty() || sequence.lineage == "UNKNOWN")
+            sequence.lineage = lineage;
+        else if (sequence.lineage != lineage) {
+            fmt::print(">> lineage difference \"{}\" provided:{} detected:{} deletions:{}\n", sequence.name, sequence.lineage, lineage, deletions);
+            sequence.lineage = lineage;
+        }
+    };
+
     using namespace std::string_view_literals;
     if (sequence.type_subtype == "B"sv) {
         // if (const auto deletions = find_deletions_insertions(sequence);
         if (const auto deletions = find_deletions_insertions(sequence); is_yamagata(deletions)) {
-            apply_deletions(deletions);
-            if (sequence.lineage.empty())
-                sequence.lineage = "YAMAGATA";
-            else if (sequence.lineage != "YAMAGATA") {
-                fmt::print(">> lineage difference \"{}\" provided:{} detected:YAMAGATA deletions:{}\n", sequence.name, sequence.lineage, deletions);
-                sequence.lineage = "YAMAGATA";
-            }
+            apply_deletions_lineage(deletions, "YAMAGATA");
+        }
+        else if (is_victoria_2del(deletions) || is_victoria_3del(deletions)) {
+            apply_deletions_lineage(deletions, "VICTORIA");
         }
         else if (!deletions.empty()) {
             apply_deletions(deletions);

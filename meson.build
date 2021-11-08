@@ -76,6 +76,13 @@ test_date = executable(
   dependencies : [fmt],
   install : true)
 
+test_pos = executable(
+  'test-pos',
+  ['cc/test/test-pos.cc'],
+  include_directories : include_directories('./cc'),
+  dependencies : [fmt],
+  install : true)
+
 test('ae test virus name parsing', test_virus_name)
 test('ae test date parsing', test_date)
 
