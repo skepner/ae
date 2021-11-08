@@ -3,6 +3,7 @@
 #include <string>
 #include <string_view>
 #include <vector>
+#include <algorithm>
 
 #include "sequences/pos.hh"
 
@@ -21,6 +22,9 @@ namespace ae::sequences
 
         /*constexpr*/ char operator[](pos0_t pos0) const noexcept { return *pos0 < this->size() ? this->get().operator[](*pos0) : ' '; }
         /*constexpr*/ std::string_view substr(pos0_t pos0, size_t size) const { return std::string_view{this->get()}.substr(pos0.get(), size); }
+
+        size_t number_of_x() const { return std::count(std::begin(this->get()), std::end(this->get()), 'X'); }
+        size_t number_of_deletions() const { return std::count(std::begin(this->get()), std::end(this->get()), '-'); }
     };
 
     // class sequence_nuc_t : public basic_sequence_t<struct sequence_nuc_t_tag>

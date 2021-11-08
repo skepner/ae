@@ -7,7 +7,7 @@
 
 constexpr const ssize_t common_threshold = 3; // assume the chunk is common after that number of consecutive common positions
 constexpr const size_t max_deletions_insertions = 200; // give up if this number of deletions/insertions does not help
-constexpr double verify_threshold = 0.6;              // if number of common is less than this fraction of non-X in shortest of to_align and master sequences, verification fails
+// constexpr double verify_threshold = 0.6;              // if number of common is less than this fraction of non-X in shortest of to_align and master sequences, verification fails
 
 // ----------------------------------------------------------------------
 
@@ -79,21 +79,21 @@ inline bool is_yamagata(const deletions_insertions_t& deletions)
 {
     using namespace ae::sequences;
     using pos_num_t = deletions_insertions_t::pos_num_t;
-    return deletions.insertions.empty() && deletions.deletions.size() == 1 && deletions.deletions[0] == pos_num_t{pos1_t{163}, 1};
+    return deletions.deletions.size() == 1 && deletions.deletions[0] == pos_num_t{pos1_t{163}, 1};
 }
 
 inline bool is_victoria_2del(const deletions_insertions_t& deletions)
 {
     using namespace ae::sequences;
     using pos_num_t = deletions_insertions_t::pos_num_t;
-    return deletions.insertions.empty() && deletions.deletions.size() == 1 && deletions.deletions[0] == pos_num_t{pos1_t{162}, 2};
+    return deletions.deletions.size() == 1 && deletions.deletions[0] == pos_num_t{pos1_t{162}, 2};
 }
 
 inline bool is_victoria_3del(const deletions_insertions_t& deletions)
 {
     using namespace ae::sequences;
     using pos_num_t = deletions_insertions_t::pos_num_t;
-    return deletions.insertions.empty() && deletions.deletions.size() == 1 && deletions.deletions[0] == pos_num_t{pos1_t{162}, 3};
+    return deletions.deletions.size() == 1 && deletions.deletions[0] == pos_num_t{pos1_t{162}, 3};
 }
 
 // ----------------------------------------------------------------------
@@ -222,12 +222,12 @@ inline deletions_insertions_t find_deletions_insertions(const ae::sequences::Raw
         offset2 += head;
     };
 
-    size_t common = initial_head.common;
+    // size_t common = initial_head.common;
     while (!master_tail.empty() && !to_align_tail.empty()) {
         const auto tail_deletions = deletions_insertions_at_start(master_tail, to_align_tail);
         number_of_common(master_tail.substr(tail_deletions.deletions, tail_deletions.head.head), to_align_tail.substr(tail_deletions.insertions, tail_deletions.head.head));
         if (tail_deletions.head.head == 0) {                        // < local::common_threshold) {
-            common += number_of_common(master_tail, to_align_tail); // to avoid common diff warning below in case tail contains common aas
+            // common += number_of_common(master_tail, to_align_tail); // to avoid common diff warning below in case tail contains common aas
             break;                                                  // tails are different, insertions/deletions do not help
         }
         if (tail_deletions.deletions) {
@@ -239,7 +239,7 @@ inline deletions_insertions_t find_deletions_insertions(const ae::sequences::Raw
                 deletions.insertions.push_back({pos0_t{master_offset}, tail_deletions.insertions});
             update_both(tail_deletions.insertions, tail_deletions.head.head, to_align_tail, master_tail, to_align_offset, master_offset);
         }
-        common += tail_deletions.head.common;
+        // common += tail_deletions.head.common;
     }
 
     if (deletions.deletions.size() == 1 && deletions.insertions.empty()) {
@@ -253,6 +253,10 @@ inline deletions_insertions_t find_deletions_insertions(const ae::sequences::Raw
         }
         else if (N_deletions_at(deletions, 3, pos1_t{162}, pos1_t{164})) {
             deletions.deletions[0].pos = pos1_t{162}; // victoria 3del
+        }
+        else if (N_deletions_at(deletions, 3, pos1_t{166}) && sequence.aa.substr(pos1_t{160}, 7) == "VPKNXXA") {
+            // 3del, misleading XX
+            deletions.deletions[0] = deletions_insertions_t::pos_num_t{pos1_t{162}, 3};
         }
         else if (N_deletions_at(deletions, 2, pos1_t{164}) && sequence.aa.substr(pos1_t{160}, 6) == "VPKNNK") {
             // B/GANSU_ANDING/1194/2021 etc.
@@ -338,6 +342,13 @@ void ae::sequences::find_deletions_insertions_set_lineage(RawSequence& sequence)
         }
         else if (N_deletions_at(deletions, 2, pos1_t{163}) /* && sequence.year() <= 2013 */) {
             apply_lineage("YAMAGATA");
+        }
+        else if (N_deletions_at(deletions, 1, pos1_t{159}) && sequence.aa.substr(pos1_t{158}, 4) == "WVIP") { // B/Lee/40
+            // ignore
+            apply_deletions(deletions);
+        }
+        else if (N_deletions_at(deletions, 1, pos1_t{1})) {
+            // do not apply, ignore
         }
         else if (!deletions.empty()) {
             apply_deletions(deletions);

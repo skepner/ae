@@ -11,11 +11,13 @@
 namespace ae::sequences
 {
     enum class issue {
-        not_translated, //
-        not_aligned,    //
-        prefix_x,       //
-        too_short,      //
-        too_long,       //
+        not_translated,     //
+        not_aligned,        //
+        prefix_x,           //
+        too_short,          //
+        too_long,           //
+        too_many_x,         //
+        too_many_deletions, //
         size_
     };
 
@@ -76,6 +78,12 @@ template <> struct fmt::formatter<ae::sequences::issue> : fmt::formatter<eu::fmt
                 break;
             case issue::too_long:
                 format_to(ctx.out(), "{}", "too_long");
+                break;
+            case issue::too_many_x:
+                format_to(ctx.out(), "{}", "too_many_x");
+                break;
+            case issue::too_many_deletions:
+                format_to(ctx.out(), "{}", "too_many_deletions");
                 break;
             case issue::size_:
                 break;

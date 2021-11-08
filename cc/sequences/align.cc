@@ -91,11 +91,14 @@ bool ae::sequences::align(RawSequence& sequence)
         }
         update_type_subtype(sequence, *aligned_data); // after adjusting sequence.aa!
         find_deletions_insertions_set_lineage(sequence);
-        // detect_insertions_deletions + lineage
         if (const auto s_length = sequence.aa.size(), m_length = ha_sequence_length_for(sequence.type_subtype); s_length < m_length)
             sequence.issues.set(issue::too_short);
         else if (s_length > m_length)
             sequence.issues.set(issue::too_long);
+        else if (sequence.aa.number_of_x() > 10)
+            sequence.issues.set(issue::too_many_x);
+        else if (sequence.aa.number_of_deletions() > 6)
+            sequence.issues.set(issue::too_many_deletions);
         return true;
     }
     else {
