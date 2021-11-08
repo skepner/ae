@@ -31,9 +31,27 @@ namespace ae::sequences::detect
         aligned_data_t(size_t offset, int add, std::string_view subtype, std::string_view detectr) : aa_shift{static_cast<int>(offset) + add}, type_subtype{subtype}, detector{detectr} {}
     };
 
-    std::optional<aligned_data_t> find_in_sequence(std::string_view sequence, size_t limit, std::initializer_list<std::string_view> look_for, int add, std::string_view subtype);
-    std::string::size_type find_in_sequence(std::string_view sequence, size_t limit, std::initializer_list<std::string_view> look_for);
-    bool has_infix(std::string_view source, size_t pos, std::string_view match);
+    inline std::string::size_type find_in_sequence(std::string_view sequence, size_t limit, std::initializer_list<std::string_view> look_for)
+    {
+        if (sequence.size() > limit) {
+            sequence.remove_suffix(sequence.size() - limit);
+            for (const auto str : look_for) {
+                if (const auto pos = sequence.find(str); pos != std::string::npos)
+                    return pos;
+            }
+        }
+        return std::string::npos;
+    }
+
+    inline std::optional<aligned_data_t> find_in_sequence(std::string_view sequence, size_t limit, std::initializer_list<std::string_view> look_for, int add, std::string_view subtype)
+    {
+        if (const auto pos = find_in_sequence(sequence, limit, look_for); pos != std::string::npos)
+            return aligned_data_t{pos, add, subtype, *look_for.begin()};
+        else
+            return std::nullopt;
+    }
+
+    inline bool has_infix(std::string_view source, size_t pos, std::string_view match) { return source.substr(pos, match.size()) == match; }
 
     // ----------------------------------------------------------------------
 
@@ -124,7 +142,8 @@ namespace ae::sequences::detect
     {
         inline std::optional<aligned_data_t> b(std::string_view not_aligned_aa)
         {
-            return find_in_sequence(not_aligned_aa, 100, {"CTDL"sv}, -59, B) // Only B has CTDL at first 100 AAs
+            return find_in_sequence(not_aligned_aa, 20, {"MKAIIVLLM"sv}, 15, B)
+                | find_in_sequence(not_aligned_aa, 100, {"CTDL"sv}, -59, B) // Only B has CTDL at first 100 AAs
                 | find_in_sequence(not_aligned_aa, 100, {"NSPHVV"sv}, -10, B)        // Only B has NSPHVV at first 100 AAs
                 | find_in_sequence(not_aligned_aa, 150, {"EHIRL"sv}, -114, B)
                 | find_in_sequence(not_aligned_aa, 250, {"CPNATS"sv}, -142, B)// Only B (YAMAGATA?) has CPNATS in whole AA sequence
@@ -237,32 +256,6 @@ namespace ae::sequences::detect
         }
 
     } // namespace hx
-
-    // ----------------------------------------------------------------------
-    // utils
-    // ----------------------------------------------------------------------
-
-    inline std::string::size_type find_in_sequence(std::string_view sequence, size_t limit, std::initializer_list<std::string_view> look_for)
-    {
-        if (sequence.size() > limit) {
-            sequence.remove_suffix(sequence.size() - limit);
-            for (const auto str : look_for) {
-                if (const auto pos = sequence.find(str); pos != std::string::npos)
-                    return pos;
-            }
-        }
-        return std::string::npos;
-    }
-
-    inline bool has_infix(std::string_view source, size_t pos, std::string_view match) { return source.substr(pos, match.size()) == match; }
-
-    inline std::optional<aligned_data_t> find_in_sequence(std::string_view sequence, size_t limit, std::initializer_list<std::string_view> look_for, int add, std::string_view subtype)
-    {
-        if (const auto pos = find_in_sequence(sequence, limit, look_for); pos != std::string::npos)
-            return aligned_data_t{pos, add, subtype, *look_for.begin()};
-        else
-            return std::nullopt;
-    }
 
 } // namespace ae::sequences::detect
 

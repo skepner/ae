@@ -1,8 +1,8 @@
-
 #include "sequences/align.hh"
 #include "sequences/raw-sequence.hh"
 #include "sequences/detect.hh"
 #include "sequences/master.hh"
+#include "sequences/deletions.hh"
 
 // ======================================================================
 
@@ -90,6 +90,7 @@ bool ae::sequences::align(RawSequence& sequence)
             sequence.nuc.remove_prefix(aligned_data->aa_shift * 3);
         }
         update_type_subtype(sequence, *aligned_data); // after adjusting sequence.aa!
+        find_deletions_insertions_set_lineage(sequence);
         // detect_insertions_deletions + lineage
         if (const auto s_length = sequence.aa.size(), m_length = ha_sequence_length_for(sequence.type_subtype); s_length < m_length)
             sequence.issues.set(issue::too_short);

@@ -94,8 +94,8 @@ def gisaid_parse_subtype(subtype: str, metadata: dict, context: Context):
         context.message(field="type_subtype", value=subtype, message=f"[gisaid]: invalid subtype")
         return ""
 
-# def parse_lineage(lineage, metadata: dict, context: Context):
-#     return lineage
+def parse_lineage(lineage, metadata: dict, context: Context):
+    return lineage.upper()
 
 def gisaid_parse_lab(lab: str, metadata: dict, context: Context):
     return sGisaidLabs.get(lab.upper(), lab)
@@ -121,7 +121,7 @@ sGisaidFieldKeys = {
 
 sGisaidFieldParsers = [
     ["type_subtype",                  gisaid_parse_subtype],
-    #[ "lineage",                      parse_lineage],
+    [ "lineage",                      parse_lineage],
     ["date",                          parse_date],
     ["lab",                           gisaid_parse_lab],
     ["gisaid_last_modified",          parse_date],

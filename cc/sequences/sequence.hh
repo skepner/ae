@@ -17,7 +17,7 @@ namespace ae::sequences
         template <std::integral Size> void remove_prefix(Size offset) { this->get().erase(0, static_cast<size_t>(offset)); }
         template <std::integral Size> void add_prefix(Size size, char symbol = 'X') { this->get().insert(0, static_cast<size_t>(size), symbol); }
 
-        /*constexpr*/ char operator[](pos0_t pos0) const noexcept { return pos0 < pos0_t{this->size()} ? this->get().operator[](*pos0) : ' '; }
+        /*constexpr*/ char operator[](pos0_t pos0) const noexcept { return *pos0 < this->size() ? this->get().operator[](*pos0) : ' '; }
     };
 
     // class sequence_nuc_t : public basic_sequence_t<struct sequence_nuc_t_tag>

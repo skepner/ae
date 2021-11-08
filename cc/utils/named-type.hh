@@ -23,6 +23,8 @@ namespace ae
         template <typename T2> requires std::assignable_from<T&, T2> constexpr named_t& operator=(const T2& value) { value_ = value; return *this; }
         template <typename T2> requires std::assignable_from<T&, T2> constexpr named_t& operator=(T2&& value) { value_ = std::move(value); return *this; }
 
+        auto operator<=>(const named_t&) const = default;
+
         constexpr T& get() noexcept { return value_; }
         constexpr const T& get() const noexcept { return value_; }
         constexpr T& operator*() noexcept { return value_; }
@@ -84,8 +86,6 @@ namespace ae
         }
     };
 
-    template <std::integral T, typename Tag> constexpr auto operator<=>(named_number_t<T, Tag> lhs, named_number_t<T, Tag> rhs) noexcept { return lhs.get() <=> rhs.get(); }
-
     template <std::integral Number, typename Tag> constexpr named_number_t<Number, Tag> operator-(named_number_t<Number, Tag> rhs) noexcept { return named_number_t<Number, Tag>{-rhs.get()}; }
     template <std::integral Number, typename Tag> constexpr named_number_t<Number, Tag> operator+(named_number_t<Number, Tag> lhs, named_number_t<Number, Tag> rhs) noexcept { return named_number_t<Number, Tag>{lhs.get() + rhs.get()}; }
     template <std::integral Number, typename Tag> constexpr named_number_t<Number, Tag> operator+(named_number_t<Number, Tag> lhs, Number rhs) noexcept { return named_number_t<Number, Tag>{lhs.get() + rhs}; }
@@ -104,6 +104,8 @@ namespace ae
     // no operator/
 
 }
+
+
 
 // ----------------------------------------------------------------------
 
