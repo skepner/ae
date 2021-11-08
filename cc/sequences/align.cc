@@ -48,12 +48,12 @@ inline void update_type_subtype(ae::sequences::RawSequence& sequence, const ae::
         }
         else {
             if (sequence.type_subtype.empty() || sequence.type_subtype.h_or_b() == "H0") {
-                if (subtype_to_report(aligned_data.type_subtype, sequence.type_subtype))
-                    fmt::print(">> detected subtype {} is used, provided {}, no reasonable master found\n", aligned_data.type_subtype, sequence.type_subtype);
+                if (sequence.aa[ae::sequences::pos0_t{0}] != 'X' && sequence.aa.size() > 500 && subtype_to_report(aligned_data.type_subtype, sequence.type_subtype))
+                    fmt::print(">> detected subtype {} is used, provided {}, no reasonable master found\nS:  {}\nMD: {}\n", aligned_data.type_subtype, sequence.type_subtype, sequence.aa, ae::sequences::master_sequence_for(aligned_data.type_subtype)->aa);
                 sequence.type_subtype = aligned_data.type_subtype;
             }
             else {
-                if (sequence.aa[ae::sequences::pos0_t{0}] != 'X' && subtype_to_report(aligned_data.type_subtype, sequence.type_subtype))
+                if (sequence.aa[ae::sequences::pos0_t{0}] != 'X' && sequence.aa.size() > 500 && subtype_to_report(aligned_data.type_subtype, sequence.type_subtype))
                     fmt::print(">> provided subtype {} is used, detected {}, no reasonable master found\nS:  {}\nMP: {}\nMD: {}\n", sequence.type_subtype, aligned_data.type_subtype, sequence.aa,
                                ae::sequences::master_sequence_for(sequence.type_subtype)->aa, ae::sequences::master_sequence_for(aligned_data.type_subtype)->aa);
             }
