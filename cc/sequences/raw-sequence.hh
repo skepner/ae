@@ -34,6 +34,8 @@ namespace ae::sequences
         std::string raw_sequence; // nuc or aa, uppercased!
         sequence_nuc_t nuc;
         sequence_aa_t aa;
+        insertions_t aa_insertions;
+        insertions_t nuc_insertions;
 
         std::string name;       // parsed or raw_name if parsing failed
         std::string date;

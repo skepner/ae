@@ -31,7 +31,10 @@ def main(args: list):
             if not (excluded := metadata.get("excluded")):
                 fasta.add_metadata_to_sequence(metadata, sequence)
                 ae_backend.raw_sequence.translate(sequence)
-                ae_backend.raw_sequence.align(sequence)
+                try:
+                    ae_backend.raw_sequence.align(sequence)
+                except Exception as err:
+                    print(f"> {err}: {sequence.name}\n    {sequence.aa}")
                 if sequence.is_translated_not_aligned() and args.report_not_aligned and re.match(r"(A\(H[13]N|B)", sequence.type_subtype):
                     print(f">> not aligned {sequence.name} ({sequence.type_subtype})\n{sequence.aa}")
             elif args.print_messages and args.report_excluded:

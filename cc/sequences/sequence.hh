@@ -1,6 +1,8 @@
 #pragma once
 
 #include <string>
+#include <string_view>
+#include <vector>
 
 #include "sequences/pos.hh"
 
@@ -32,6 +34,14 @@ namespace ae::sequences
 
     using sequence_nuc_t = basic_sequence_t<struct sequence_nuc_t_tag>;
     using sequence_aa_t = basic_sequence_t<struct sequence_aa_t_tag>;
+
+    struct insertion_t
+    {
+        pos0_t pos;
+        std::string insertion;
+    };
+
+    using insertions_t = std::vector<insertion_t>;
 }
 
 // ======================================================================

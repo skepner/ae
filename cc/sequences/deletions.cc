@@ -257,7 +257,7 @@ inline deletions_insertions_t find_deletions_insertions(const ae::sequences::Raw
         else if (N_deletions_at(deletions, 2, pos1_t{164}) && sequence.aa.substr(pos1_t{160}, 6) == "VPKNNK") {
             // B/GANSU_ANDING/1194/2021 etc.
             // Vic 3del with insertion at 165: "VPKNNK" -> "VP---NNK"
-            deletions.deletions[0].pos = pos1_t{162};
+            deletions.deletions[0] = deletions_insertions_t::pos_num_t{pos1_t{162}, 3};
             deletions.insertions.push_back(deletions_insertions_t::pos_num_t{pos1_t{165}, 1});
         }
     }
@@ -298,20 +298,30 @@ void ae::sequences::find_deletions_insertions_set_lineage(RawSequence& sequence)
         sequence.aa = fmt::to_string(aa);
         sequence.nuc = fmt::to_string(nuc);
 
+        size_t base_pos_aa{0};
         for (const auto& en : deletions.insertions) {
-            sequence.aa.get().erase(en.pos.get0(), en.num);
+            sequence.aa_insertions.push_back(insertion_t{en.pos, sequence.aa.get().substr(en.pos.get0() + base_pos_aa, en.num)});
+            sequence.aa.get().erase(en.pos.get0() + base_pos_aa, en.num);
+            base_pos_aa += en.num;
+            sequence.nuc_insertions.push_back(insertion_t{en.pos.aa_to_nuc(), sequence.nuc.get().substr(en.pos.aa_to_nuc().get0() + base_pos_aa * 3, en.num * 3)});
+            sequence.nuc.get().erase(en.pos.aa_to_nuc().get0() + base_pos_aa * 3, en.num * 3);
         }
 
     };
 
-    const auto apply_deletions_lineage = [&sequence, apply_deletions](const deletions_insertions_t& deletions, std::string_view lineage) {
-        apply_deletions(deletions);
+    const auto apply_lineage = [&sequence](std::string_view lineage) {
         if (sequence.lineage.empty() || sequence.lineage == "UNKNOWN")
             sequence.lineage = lineage;
         else if (sequence.lineage != lineage) {
-            fmt::print(">> lineage difference \"{}\" provided:{} detected:{} deletions:{}\n", sequence.name, sequence.lineage, lineage, deletions);
+            if (sequence.aa.size() > 500)
+                fmt::print(">> lineage difference \"{}\" provided:{} detected:{}\nS:  {}\n", sequence.name, sequence.lineage, lineage, sequence.aa);
             sequence.lineage = lineage;
         }
+    };
+
+    const auto apply_deletions_lineage = [apply_deletions, apply_lineage](const deletions_insertions_t& deletions, std::string_view lineage) {
+        apply_deletions(deletions);
+        apply_lineage(lineage);
     };
 
     using namespace std::string_view_literals;
@@ -326,9 +336,13 @@ void ae::sequences::find_deletions_insertions_set_lineage(RawSequence& sequence)
         else if (N_deletions_at(deletions, 2, pos1_t{169})) {
             // 12 sequences from TAIWAN 2010 have deletions 169:2
         }
+        else if (N_deletions_at(deletions, 2, pos1_t{163}) /* && sequence.year() <= 2013 */) {
+            apply_lineage("YAMAGATA");
+        }
         else if (!deletions.empty()) {
             apply_deletions(deletions);
-            fmt::print("deletions \"{}\" {} {}\nS: {}\nM: {}\n", sequence.name, sequence.lineage, deletions, sequence.aa, master_sequence_for(ae::virus::type_subtype_t{"B"})->aa);
+            if (sequence.aa.size() > 500)
+                fmt::print("deletions \"{}\" {} {}\nS:  {}\nM:  {}\n", sequence.name, sequence.lineage, deletions, sequence.aa, master_sequence_for(ae::virus::type_subtype_t{"B"})->aa);
         }
     }
 

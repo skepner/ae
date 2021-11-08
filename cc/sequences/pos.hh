@@ -18,6 +18,8 @@ namespace ae::sequences
 
         constexpr operator pos0_t() const;
         constexpr size_t get0() const;
+
+        constexpr pos1_t aa_to_nuc() const;
     };
 
     // constexpr const pos1_t NoPos1{static_cast<size_t>(-1)};
@@ -43,6 +45,8 @@ namespace ae::sequences
 
     constexpr size_t pos0_t::get0() const { return this->get(); }
     constexpr size_t pos1_t::get0() const { return static_cast<pos0_t>(*this).get0(); }
+
+    constexpr pos1_t pos1_t::aa_to_nuc() const { return static_cast<pos1_t>(static_cast<pos0_t>(*this).aa_to_nuc()); }
 
 } // namespace ae::sequences
 
