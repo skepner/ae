@@ -48,8 +48,8 @@ inline void update_type_subtype(ae::sequences::RawSequence& sequence, const ae::
         }
         else {
             if (sequence.type_subtype.empty() || sequence.type_subtype.h_or_b() == "H0") {
-                if (sequence.aa[ae::sequences::pos0_t{0}] != 'X' && sequence.aa.size() > 500 && subtype_to_report(aligned_data.type_subtype, sequence.type_subtype))
-                    fmt::print(">> detected subtype {} is used, provided {}, no reasonable master found\nS:  {}\nMD: {}\n", aligned_data.type_subtype, sequence.type_subtype, sequence.aa, ae::sequences::master_sequence_for(aligned_data.type_subtype)->aa);
+                // if (sequence.aa[ae::sequences::pos0_t{0}] != 'X' && sequence.aa.size() > 500 && subtype_to_report(aligned_data.type_subtype, sequence.type_subtype))
+                //     fmt::print(">> detected subtype {} is used, provided {}, no reasonable master found\nS:  {}\nMD: {}\n", aligned_data.type_subtype, sequence.type_subtype, sequence.aa, ae::sequences::master_sequence_for(aligned_data.type_subtype)->aa);
                 sequence.type_subtype = aligned_data.type_subtype;
             }
             else {
@@ -90,8 +90,11 @@ bool ae::sequences::align(RawSequence& sequence)
             sequence.nuc.remove_prefix(aligned_data->aa_shift * 3);
         }
         update_type_subtype(sequence, *aligned_data); // after adjusting sequence.aa!
-        // if (aligned_data->type_subtype == ae::virus::type_subtype_t{"B"})
-        //     fmt::print("{} \"{}\"\n{}\n{}\n\n", sequence.type_subtype, sequence.name, sequence.aa, sequence.nuc);
+        // detect_insertions_deletions + lineage
+        if (const auto s_length = sequence.aa.size(), m_length = ha_sequence_length_for(sequence.type_subtype); s_length < m_length)
+            sequence.issues.set(issue::too_short);
+        else if (s_length > m_length)
+            sequence.issues.set(issue::too_long);
         return true;
     }
     else {
