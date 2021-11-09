@@ -28,11 +28,13 @@ def main(args: list):
             raise RuntimeError(f"\"{filename}\": unrecognized or does not exist")
 
         for metadata, sequence in reader:
+            messages += reader.get_and_clear_messages()
             if not (excluded := metadata.get("excluded")):
                 fasta.add_metadata_to_sequence(metadata, sequence)
-                ae_backend.raw_sequence.translate(sequence)
+                sequence_messages = ae_backend.Messages()
                 try:
-                    ae_backend.raw_sequence.align(sequence)
+                    ae_backend.raw_sequence.translate(sequence, sequence_messages)
+                    ae_backend.raw_sequence.align(sequence, sequence_messages)
                 except Exception as err:
                     print(f"> {err}: {sequence.name}\n    {sequence.aa}")
                 if sequence.is_translated_not_aligned() and args.report_not_aligned and re.match(r"(A\(H[13]N|B)", sequence.type_subtype):
@@ -40,7 +42,6 @@ def main(args: list):
             elif args.print_messages and args.report_excluded:
                 print(f">> excluded: {metadata}")
             num_seqs += 1
-        messages += reader.messages
         unrecognized_locations |= reader.unrecognized_locations
 
     print(f">>> {num_seqs} sequences read")
@@ -49,7 +50,7 @@ def main(args: list):
     print(f"Messages: {len(messages)}")
     if args.print_messages and messages:
         for msg in messages:
-            print(f"  {msg.message_raw.type_short() if msg.message_raw else ' '} {msg.field}[{msg.value}]: {msg.message} @@ {msg.filename}:{msg.line_no}")
+            print(f"  {msg.report()}")
         if unrecognized_locations:
             print(f"Unrecognized locations: {len(unrecognized_locations)}")
             for loc in unrecognized_locations:

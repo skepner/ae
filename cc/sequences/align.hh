@@ -2,12 +2,17 @@
 
 // ======================================================================
 
+namespace ae
+{
+    class Messages;
+}
+
 namespace ae::sequences
 {
     struct RawSequence;
 
     // returns if sequence was translated
-    bool align(RawSequence& sequence);
+    bool align(RawSequence& sequence, Messages& messages);
 }
 
 // ======================================================================

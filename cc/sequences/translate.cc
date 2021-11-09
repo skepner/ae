@@ -3,13 +3,17 @@
 #include "ext/range-v3.hh"
 #include "utils/string.hh"
 
+#include "utils/messages.hh"
 #include "sequences/translate.hh"
 #include "sequences/raw-sequence.hh"
 
 // ----------------------------------------------------------------------
 
 static std::string translate_nucleotides_to_amino_acids(std::string_view nucleotides, size_t offset);
-static void aa_trim_absent(ae::sequences::RawSequence& sequence);
+namespace ae::sequences
+{
+    static void aa_trim_absent(RawSequence& sequence, Messages& messages);
+}
 
 // ----------------------------------------------------------------------
 
@@ -20,7 +24,7 @@ static void aa_trim_absent(ae::sequences::RawSequence& sequence);
 // of them. Most probably just one offset leads to finding correct
 // align shift.
 
-bool ae::sequences::translate(RawSequence& sequence)
+bool ae::sequences::translate(RawSequence& sequence, Messages& messages)
 {
     constexpr size_t MINIMUM_SEQUENCE_AA_LENGTH = 200; // throw away everything shorter, HA1 is kinda 318, need to have just HA1 sequences to be able to make HA1 trees
 
@@ -58,8 +62,7 @@ bool ae::sequences::translate(RawSequence& sequence)
     if (sequence.aa.empty())
         sequence.issues.set(issue::not_translated);
 
-    // fmt::print("raw: {}\nnuc: {}\naa:  {}\n\n", sequence.raw_sequence, sequence.nuc, sequence.aa);
-    aa_trim_absent(sequence);
+    aa_trim_absent(sequence, messages);
 
     return !sequence.aa.empty();
 
@@ -110,7 +113,7 @@ std::string translate_nucleotides_to_amino_acids(std::string_view nucleotides, s
 
 // ----------------------------------------------------------------------
 
-void aa_trim_absent(ae::sequences::RawSequence& sequence)
+void ae::sequences::aa_trim_absent(RawSequence& sequence, Messages& messages)
 {
     if (!sequence.aa.empty()) {
         // remove trailing X and - in aa
@@ -119,11 +122,10 @@ void aa_trim_absent(ae::sequences::RawSequence& sequence)
             sequence.nuc.get().erase((found + 1) * 3);
         }
         else
-            fmt::print(stderr, ">> just X and - in AA sequence for {} ::: {}\n", sequence.name, sequence.aa);
+            messages.add(Message::invalid_sequence, sequence.name, "just X and - in AA sequence");
 
         // remove leading X and -
         if (const auto found = sequence.aa->find_first_not_of("X-"); found > 0 && found != std::string::npos) {
-            // fmt::print(stderr, "leading X: {} ::: {}\n", full_name(), sequence.aa);
             sequence.aa.get().erase(0, found);
             sequence.nuc.get().erase(0, found * 3);
         }

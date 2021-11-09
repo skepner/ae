@@ -18,6 +18,7 @@ void ae::py::utils(pybind11::module_& mdl)
         ;
 
     pybind11::class_<ae::Messages>(mdl, "Messages")                           //
+        .def(pybind11::init())                                                //
         .def("empty", &ae::Messages::empty)                                   //
         .def("unrecognized_locations", &ae::Messages::unrecognized_locations) //
         .def("messages", &ae::Messages::messages)                             //

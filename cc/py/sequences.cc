@@ -1,4 +1,5 @@
 #include "utils/enum.hh"
+#include "utils/messages.hh"
 #include "sequences/fasta.hh"
 #include "sequences/translate.hh"
 #include "sequences/align.hh"
@@ -62,8 +63,8 @@ void ae::py::sequences(pybind11::module_& mdl)
             "__iter__", [](fasta::Reader& reader) { return pybind11::make_iterator(reader.begin(), reader.end()); }, pybind11::keep_alive<0, 1>()) //
         ;
 
-    raw_sequence_submodule.def("translate", &translate, "sequence"_a);
-    raw_sequence_submodule.def("align", &align, "sequence"_a);
+    raw_sequence_submodule.def("translate", &translate, "sequence"_a, "messages"_a);
+    raw_sequence_submodule.def("align", &align, "sequence"_a, "messages"_a);
 
     // ----------------------------------------------------------------------
 }

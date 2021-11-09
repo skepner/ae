@@ -1,3 +1,4 @@
+#include "utils/messages.hh"
 #include "sequences/align.hh"
 #include "sequences/raw-sequence.hh"
 #include "sequences/detect.hh"
@@ -63,7 +64,7 @@ inline void update_type_subtype(ae::sequences::RawSequence& sequence, const ae::
 
 // ======================================================================
 
-bool ae::sequences::align(RawSequence& sequence)
+bool ae::sequences::align(RawSequence& sequence, Messages& messages)
 {
     const std::string_view not_aligned_aa{sequence.aa};
     std::optional<detect::aligned_data_t> aligned_data;

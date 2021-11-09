@@ -23,12 +23,17 @@ class reader:
 
     def __iter__(self):
         for en in self.reader_:
-            context = Context(self, filename=Path(en.filename), line_no=en.line_no)
+            self.context = Context(self, filename=Path(en.filename), line_no=en.line_no)
             metadata = \
-                gisaid_name_parser(en.raw_name, context=context) \
-                or naomi_name_parser(en.raw_name, context=context) \
-                or regular_name_parser(en.raw_name, lab_hint=self.lab_hint, context=context)
+                gisaid_name_parser(en.raw_name, context=self.context) \
+                or naomi_name_parser(en.raw_name, context=self.context) \
+                or regular_name_parser(en.raw_name, lab_hint=self.lab_hint, context=self.context)
             yield metadata, en.sequence # metadata may contain "excluded" key to manually exclude the sequence
+
+    def get_and_clear_messages(self):
+        messages = self.messages
+        self.messages = []
+        return messages
 
 # ----------------------------------------------------------------------
 

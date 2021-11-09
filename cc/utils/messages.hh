@@ -18,7 +18,14 @@ namespace ae
 
     struct Message
     {
-        enum message_type { unknown, unhandled_virus_name, invalid_subtype, unrecognized_location, invalid_year };
+        enum message_type {        //
+            unknown,               //
+            unhandled_virus_name,  //
+            invalid_subtype,       //
+            unrecognized_location, //
+            invalid_sequence,      //
+            invalid_year           //
+        };
 
         message_type type;
         std::string value{};
@@ -38,6 +45,8 @@ namespace ae
                     return "Y";
                 case unhandled_virus_name:
                     return "-";
+                case invalid_sequence:
+                    return "X";
             }
             return "U";
         }
@@ -55,6 +64,8 @@ namespace ae
                     return "invalid year";
                 case unhandled_virus_name:
                     return "unhandled virus name";
+                case invalid_sequence:
+                    return "invalid sequence";
             }
             return "unknown";
         }
@@ -72,26 +83,27 @@ namespace ae
         constexpr const auto& messages() const { return messages_; }
         const auto& unrecognized_locations() const { return unrecognized_locations_; }
 
-        void add(Message::message_type type, std::string_view value, std::string_view context, const MessageLocation& location)
-            {
-                messages_.push_back({type, std::string{value}, std::string{context},  location});
-                switch (type) {
-                    case Message::unrecognized_location:
-                        unrecognized_locations_.emplace(value);
-                        break;
-                    case Message::invalid_subtype:
-                    case Message::invalid_year:
-                    case Message::unhandled_virus_name:
-                    case Message::unknown:
-                        break;
-                }
+        void add(Message::message_type type, std::string_view value, std::string_view context, const MessageLocation& location = {})
+        {
+            messages_.push_back({type, std::string{value}, std::string{context}, location});
+            switch (type) {
+                case Message::unrecognized_location:
+                    unrecognized_locations_.emplace(value);
+                    break;
+                case Message::invalid_subtype:
+                case Message::invalid_year:
+                case Message::unhandled_virus_name:
+                case Message::invalid_sequence:
+                case Message::unknown:
+                    break;
             }
+        }
 
       private:
         std::vector<Message> messages_;
         std::set<std::string> unrecognized_locations_;
     };
-}
+} // namespace ae
 
 // ----------------------------------------------------------------------
 
