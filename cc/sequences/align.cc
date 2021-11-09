@@ -79,7 +79,7 @@ namespace ae::sequences
             }
             else if (s_length > master->aa.size()) {
                 if (sequence.aa.at_end(ending_size) == master->aa.at_end(ending_size)) {
-                    messages.add(Message::not_detected_insertions, "", fmt::format("S:  {}\nM:  {}", sequence.aa, master->aa));
+                    messages.add(Message::not_detected_insertions, fmt::format("\"{}\"", sequence.name), fmt::format("\nS:  {}\nM:  {}", sequence.aa, master->aa));
                     sequence.issues.set(issue::too_long);
                 }
                 else if (sequence.aa.substr(master->aa.size() - ending_size, ending_size) == master->aa.at_end(ending_size)) {
@@ -87,7 +87,7 @@ namespace ae::sequences
                     sequence.nuc.truncate(master->aa.size() * 3);
                 }
                 else {
-                    messages.add(Message::garbage_at_the_end, "(not detected deletions?)", fmt::format("S:  {}\nM:  {}", sequence.aa, master->aa));
+                    messages.add(Message::garbage_at_the_end, fmt::format("\"{}\" (not detected deletions?)", sequence.name), fmt::format("\nS:  {}\nM:  {}", sequence.aa, master->aa));
                     sequence.issues.set(issue::garbage_at_the_end);
                     sequence.issues.set(issue::too_long);
                 }
@@ -95,7 +95,7 @@ namespace ae::sequences
             else {
                 if (sequence.aa.at_end(ending_size) != master->aa.at_end(ending_size)) {
                     // unrecognized deletions or garbage at the end
-                    messages.add(Message::garbage_at_the_end, "(not detected deletions?)", fmt::format("S:  {}\nM:  {}", sequence.aa, master->aa));
+                    messages.add(Message::garbage_at_the_end, fmt::format("\"{}\" (not detected deletions?)", sequence.name), fmt::format("\nS:  {}\nM:  {}", sequence.aa, master->aa));
                     sequence.issues.set(issue::garbage_at_the_end);
                 }
             }

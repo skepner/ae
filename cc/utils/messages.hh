@@ -46,6 +46,7 @@ namespace ae
                     return "L";
                 case unrecognized_deletions:
                 case not_detected_insertions:
+                case garbage_at_the_end:
                     return "D";
                 case invalid_subtype:
                 case subtype_mismatch:
@@ -57,7 +58,6 @@ namespace ae
                 case unhandled_virus_name:
                     return "-";
                 case invalid_sequence:
-                case garbage_at_the_end:
                     return "X";
             }
             return "U";
