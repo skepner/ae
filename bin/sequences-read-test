@@ -50,9 +50,11 @@ def main(args: list):
     # print(f"Labs: {len(labs)}\n{pprint.pformat(labs)}")
     print(f"Messages: {len(messages)}")
     if args.print_messages and messages:
+        message_types = args.print_messages.lower()
         for msg in messages:
-            print(f"  {msg.report()}")
-        if unrecognized_locations:
+            if msg.type_matches(message_types):
+                print(f"  {msg.report()}")
+        if unrecognized_locations and "l" in message_types or "a" in message_types:
             print(f"Unrecognized locations: {len(unrecognized_locations)}")
             for loc in unrecognized_locations:
                 print(f"  {loc}")
@@ -62,7 +64,7 @@ def main(args: list):
 try:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("filename", nargs="+", type=Path)
-    parser.add_argument("-m", dest="print_messages", action='store_true', default=False)
+    parser.add_argument("-m", dest="print_messages", default=None, help="report messages by type: a - all, l - unrecognized locations, d - deletion issues, s - subtype issues, v - lineage issues, y - date issues")
     parser.add_argument("--report-not-aligned", dest="report_not_aligned", action='store_true', default=False)
     parser.add_argument("--report-excluded", dest="report_excluded", action='store_true', default=False)
     args = parser.parse_args()

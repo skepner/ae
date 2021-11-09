@@ -31,8 +31,8 @@ struct deletions_insertions_t
         using namespace ae::sequences;
 
         for (const auto& pos_num : deletions) {
-            if (*pos0_t{pos_num.pos} <= *pos0_t{pos}) {
-                if (*pos0_t{pos_num.pos + pos_num.num} > *pos0_t{pos})
+            if (pos_num.pos <= pos) {
+                if ((pos_num.pos + pos_num.num) > pos)
                     return {true, pos};
                 else
                     pos -= pos_num.num;

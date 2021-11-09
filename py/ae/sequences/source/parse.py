@@ -30,6 +30,9 @@ class Message:
         else:
             return f"  {self.field}[{self.value}]: {self.message}{mloc}"
 
+    def type_matches(self, types: str): # types: lowercase
+        return "a" in types or (self.message_raw and self.message_raw.type_short().lower() in types)
+
 # ======================================================================
 
 class Context:
