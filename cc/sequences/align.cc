@@ -66,17 +66,17 @@ inline void update_type_subtype(ae::sequences::RawSequence& sequence, const ae::
 bool ae::sequences::align(RawSequence& sequence)
 {
     const std::string_view not_aligned_aa{sequence.aa};
-    auto aligned_data =                            //
-        detect::h3::mktii(not_aligned_aa)          //
-        | detect::h1::mkv(not_aligned_aa)          //
-        | detect::b::b(not_aligned_aa)             //
-        | detect::hx::second_stage(not_aligned_aa) //
-        | detect::h3::third_stage(not_aligned_aa)  //
-        | detect::h1::third_stage(not_aligned_aa)  //
-        | detect::hx::third_stage(not_aligned_aa)  //
-        | detect::h1::end_ici(not_aligned_aa)      //
-        | detect::h3::end_ici(not_aligned_aa)      //
-        | detect::b::end_icl(not_aligned_aa)      //
+    std::optional<detect::aligned_data_t> aligned_data;
+    detect::h3::mktii(not_aligned_aa, aligned_data)               //
+        || detect::h1::mkv(not_aligned_aa, aligned_data)          //
+        || detect::b::b(not_aligned_aa, aligned_data)             //
+        || detect::hx::second_stage(not_aligned_aa, aligned_data) //
+        || detect::h3::third_stage(not_aligned_aa, aligned_data)  //
+        || detect::h1::third_stage(not_aligned_aa, aligned_data)  //
+        || detect::hx::third_stage(not_aligned_aa, aligned_data)  //
+        || detect::h1::end_ici(not_aligned_aa, aligned_data)      //
+        || detect::h3::end_ici(not_aligned_aa, aligned_data)      //
+        || detect::b::end_icl(not_aligned_aa, aligned_data)       //
         ;
 
     if (aligned_data.has_value()) {
@@ -91,13 +91,16 @@ bool ae::sequences::align(RawSequence& sequence)
         }
         update_type_subtype(sequence, *aligned_data); // after adjusting sequence.aa!
         find_deletions_insertions_set_lineage(sequence);
-        if (const auto s_length = sequence.aa.size(), m_length = ha_sequence_length_for(sequence.type_subtype); s_length < m_length)
+        if (const auto s_length = sequence.aa.size(), m_length = ha_sequence_length_for(sequence.type_subtype); s_length < m_length) {
             sequence.issues.set(issue::too_short);
-        else if (s_length > m_length)
+        }
+        else if (s_length > m_length) {
+            // TODO truncate
             sequence.issues.set(issue::too_long);
-        else if (sequence.aa.number_of_x() > 10)
+        }
+        if (sequence.aa.number_of_x() > 10)
             sequence.issues.set(issue::too_many_x);
-        else if (sequence.aa.number_of_deletions() > 6)
+        if (sequence.aa.number_of_deletions() > 6)
             sequence.issues.set(issue::too_many_deletions);
         return true;
     }
