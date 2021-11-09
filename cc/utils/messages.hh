@@ -22,6 +22,7 @@ namespace ae
             unknown,               //
             unhandled_virus_name,  //
             invalid_subtype,       //
+            subtype_mismatch,       //
             unrecognized_location, //
             invalid_sequence,      //
             invalid_year           //
@@ -40,6 +41,7 @@ namespace ae
                 case unrecognized_location:
                     return "L";
                 case invalid_subtype:
+                case subtype_mismatch:
                     return "S";
                 case invalid_year:
                     return "Y";
@@ -60,6 +62,8 @@ namespace ae
                     return "unrecognized location";
                 case invalid_subtype:
                     return "invalid subtype";
+                case subtype_mismatch:
+                    return "subtype mismatch";
                 case invalid_year:
                     return "invalid year";
                 case unhandled_virus_name:
@@ -91,6 +95,7 @@ namespace ae
                     unrecognized_locations_.emplace(value);
                     break;
                 case Message::invalid_subtype:
+                case Message::subtype_mismatch:
                 case Message::invalid_year:
                 case Message::unhandled_virus_name:
                 case Message::invalid_sequence:

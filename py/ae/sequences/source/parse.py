@@ -9,18 +9,26 @@ import ae_backend
 
 @dataclass
 class Message:
-    field: str
-    value: str
-    message: str
-    message_raw: ae_backend.Message
-    filename: Path
-    line_no: int
+    field: str = None
+    value: str = None
+    message: str = None
+    message_raw: ae_backend.Message = None
+    filename: Path = None
+    line_no: int = None
 
     def report(self):
-        if self.message_raw:
-            return f"{self.message_raw.type_short()} {self.field}[{self.value}]: [{self.message_raw.type}] {self.message_raw.value} -- {self.message_raw.context} @@ {self.filename}:{self.line_no}"
+        if self.filename:
+            mloc = f" @@ {self.filename}:{self.line_no}"
         else:
-            return f"  {self.field}[{self.value}]: {self.message} @@ {self.filename}:{self.line_no}"
+            mloc = ""
+        if self.message_raw:
+            if self.field or self.value:
+                fv = f"{self.field}[{self.value}]"
+            else:
+                fv = ""
+            return f"{self.message_raw.type_short()} {fv}: [{self.message_raw.type}] {self.message_raw.value} -- {self.message_raw.context}{mloc}"
+        else:
+            return f"  {self.field}[{self.value}]: {self.message}{mloc}"
 
 # ======================================================================
 
@@ -33,6 +41,11 @@ class Context:
 
     def message(self, field: str = None, value: str = None, message: str = None, message_raw: ae_backend.Message = None):
         self.reader.messages.append(Message(field=field, value=value, message=message, message_raw=message_raw, filename=self.filename, line_no=self.line_no))
+
+    def messages_from_backend(self, messages: ae_backend.Messages):
+        for raw_message in messages:
+            self.reader.messages.append(Message(message_raw=raw_message))
+            print(f">>> messages_from_backend\n{self.reader.messages[-1].report()}")
 
     def unrecognized_locations(self, unrecognized_locations: set):
         self.reader.unrecognized_locations |= unrecognized_locations

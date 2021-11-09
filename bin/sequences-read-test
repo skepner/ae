@@ -28,7 +28,6 @@ def main(args: list):
             raise RuntimeError(f"\"{filename}\": unrecognized or does not exist")
 
         for metadata, sequence in reader:
-            messages += reader.get_and_clear_messages()
             if not (excluded := metadata.get("excluded")):
                 fasta.add_metadata_to_sequence(metadata, sequence)
                 sequence_messages = ae_backend.Messages()
@@ -37,10 +36,12 @@ def main(args: list):
                     ae_backend.raw_sequence.align(sequence, sequence_messages)
                 except Exception as err:
                     print(f"> {err}: {sequence.name}\n    {sequence.aa}")
+                reader.context.messages_from_backend(sequence_messages)
                 if sequence.is_translated_not_aligned() and args.report_not_aligned and re.match(r"(A\(H[13]N|B)", sequence.type_subtype):
                     print(f">> not aligned {sequence.name} ({sequence.type_subtype})\n{sequence.aa}")
             elif args.print_messages and args.report_excluded:
                 print(f">> excluded: {metadata}")
+            messages += reader.get_and_clear_messages()
             num_seqs += 1
         unrecognized_locations |= reader.unrecognized_locations
 
