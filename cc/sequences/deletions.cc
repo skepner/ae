@@ -1,5 +1,6 @@
 #include <numeric>
 
+#include "utils/messages.hh"
 #include "sequences/deletions.hh"
 #include "sequences/master.hh"
 
@@ -286,7 +287,7 @@ inline deletions_insertions_t find_deletions_insertions(const ae::sequences::Raw
 
 // ----------------------------------------------------------------------
 
-void ae::sequences::find_deletions_insertions_set_lineage(RawSequence& sequence)
+void ae::sequences::find_deletions_insertions_set_lineage(RawSequence& sequence, Messages& messages)
 {
     const auto apply_deletions = [&sequence](const deletions_insertions_t& deletions) {
         std::string_view source_aa{sequence.aa}, source_nuc{sequence.nuc};
@@ -310,15 +311,15 @@ void ae::sequences::find_deletions_insertions_set_lineage(RawSequence& sequence)
             sequence.nuc_insertions.push_back(insertion_t{en.pos.aa_to_nuc(), sequence.nuc.get().substr(en.pos.aa_to_nuc().get0() + base_pos_aa * 3, en.num * 3)});
             sequence.nuc.get().erase(en.pos.aa_to_nuc().get0() + base_pos_aa * 3, en.num * 3);
         }
-
     };
 
-    const auto apply_lineage = [&sequence](std::string_view lineage) {
+    const auto apply_lineage = [&sequence, &messages](std::string_view lineage) {
         if (sequence.lineage.empty() || sequence.lineage == "UNKNOWN")
             sequence.lineage = lineage;
         else if (sequence.lineage != lineage) {
             if (sequence.aa.size() > 500)
-                fmt::print(">> lineage difference \"{}\" provided:{} detected:{}\nS:  {}\n", sequence.name, sequence.lineage, lineage, sequence.aa);
+                messages.add(Message::lineage_mismatch, fmt::format("detected: {} provided: {}", lineage, sequence.lineage),
+                             fmt::format("lineage difference \"{}\" provided:{} detected:{}\nS:  {}", sequence.name, sequence.lineage, lineage, sequence.aa));
             sequence.lineage = lineage;
         }
     };
@@ -353,7 +354,8 @@ void ae::sequences::find_deletions_insertions_set_lineage(RawSequence& sequence)
         else if (!deletions.empty()) {
             apply_deletions(deletions);
             if (sequence.aa.size() > 500)
-                fmt::print("deletions \"{}\" {} {}\nS:  {}\nM:  {}\n", sequence.name, sequence.lineage, deletions, sequence.aa, master_sequence_for(ae::virus::type_subtype_t{"B"})->aa);
+                messages.add(Message::unrecognized_deletions, fmt::format("\"{}\" {}", sequence.name, sequence.lineage),
+                             fmt::format("{}\nS:  {}\nM:  {}", deletions, sequence.aa, master_sequence_for(ae::virus::type_subtype_t{"B"})->aa));
         }
     }
 

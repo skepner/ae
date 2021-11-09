@@ -23,7 +23,9 @@ namespace ae
             unhandled_virus_name,  //
             invalid_subtype,       //
             subtype_mismatch,       //
+            lineage_mismatch,       //
             unrecognized_location, //
+            unrecognized_deletions, //
             invalid_sequence,      //
             invalid_year           //
         };
@@ -40,9 +42,13 @@ namespace ae
                     return "U";
                 case unrecognized_location:
                     return "L";
+                case unrecognized_deletions:
+                    return "D";
                 case invalid_subtype:
                 case subtype_mismatch:
                     return "S";
+                case lineage_mismatch:
+                    return "V";
                 case invalid_year:
                     return "Y";
                 case unhandled_virus_name:
@@ -60,10 +66,14 @@ namespace ae
                     return "unknown";
                 case unrecognized_location:
                     return "unrecognized location";
+                case unrecognized_deletions:
+                    return "unrecognized deletions";
                 case invalid_subtype:
                     return "invalid subtype";
                 case subtype_mismatch:
                     return "subtype mismatch";
+                case lineage_mismatch:
+                    return "lineage mismatch";
                 case invalid_year:
                     return "invalid year";
                 case unhandled_virus_name:
@@ -94,8 +104,10 @@ namespace ae
                 case Message::unrecognized_location:
                     unrecognized_locations_.emplace(value);
                     break;
+                case Message::unrecognized_deletions:
                 case Message::invalid_subtype:
                 case Message::subtype_mismatch:
+                case Message::lineage_mismatch:
                 case Message::invalid_year:
                 case Message::unhandled_virus_name:
                 case Message::invalid_sequence:

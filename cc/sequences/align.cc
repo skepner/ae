@@ -100,7 +100,7 @@ bool ae::sequences::align(RawSequence& sequence, Messages& messages)
             sequence.nuc.remove_prefix(aligned_data->aa_shift * 3);
         }
         update_type_subtype(sequence, *aligned_data, messages); // after adjusting sequence.aa!
-        find_deletions_insertions_set_lineage(sequence);
+        find_deletions_insertions_set_lineage(sequence, messages);
         if (const auto s_length = sequence.aa.size(), m_length = ha_sequence_length_for(sequence.type_subtype); s_length < m_length) {
             sequence.issues.set(issue::too_short);
         }

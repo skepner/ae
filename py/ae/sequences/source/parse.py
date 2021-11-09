@@ -45,7 +45,7 @@ class Context:
     def messages_from_backend(self, messages: ae_backend.Messages):
         for raw_message in messages:
             self.reader.messages.append(Message(message_raw=raw_message))
-            print(f">>> messages_from_backend\n{self.reader.messages[-1].report()}")
+            # print(f">>> messages_from_backend\n{self.reader.messages[-1].report()}")
 
     def unrecognized_locations(self, unrecognized_locations: set):
         self.reader.unrecognized_locations |= unrecognized_locations

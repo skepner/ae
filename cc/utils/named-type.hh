@@ -23,7 +23,14 @@ namespace ae
         template <typename T2> requires std::assignable_from<T&, T2> constexpr named_t& operator=(const T2& value) { value_ = value; return *this; }
         template <typename T2> requires std::assignable_from<T&, T2> constexpr named_t& operator=(T2&& value) { value_ = std::move(value); return *this; }
 
+#pragma GCC diagnostic push
+#ifdef __clang__
+#pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
+#endif
+
         auto operator<=>(const named_t&) const = default;
+
+#pragma GCC diagnostic pop
 
         constexpr T& get() noexcept { return value_; }
         constexpr const T& get() const noexcept { return value_; }
