@@ -318,7 +318,7 @@ void ae::sequences::find_deletions_insertions_set_lineage(RawSequence& sequence,
             sequence.lineage = lineage;
         else if (sequence.lineage != lineage) {
             if (sequence.aa.size() > 500)
-                messages.add(Message::lineage_mismatch, fmt::format("detected: {} provided: {}", lineage, sequence.lineage),
+                messages.add(Message::lineage_mismatch, sequence.type_subtype, fmt::format("detected: {} provided: {}", lineage, sequence.lineage),
                              fmt::format("lineage difference \"{}\" provided:{} detected:{}\nS:  {}", sequence.name, sequence.lineage, lineage, sequence.aa));
             sequence.lineage = lineage;
         }
@@ -354,7 +354,7 @@ void ae::sequences::find_deletions_insertions_set_lineage(RawSequence& sequence,
         else if (!deletions.empty()) {
             apply_deletions(deletions);
             if (sequence.aa.size() > 500)
-                messages.add(Message::unrecognized_deletions, fmt::format("\"{}\" {}", sequence.name, sequence.lineage),
+                messages.add(Message::unrecognized_deletions, sequence.type_subtype, fmt::format("\"{}\" {}", sequence.name, sequence.lineage),
                              fmt::format("{}\nS:  {}\nM:  {}", deletions, sequence.aa, master_sequence_for(ae::virus::type_subtype_t{"B"})->aa));
         }
     }

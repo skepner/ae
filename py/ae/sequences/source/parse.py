@@ -26,12 +26,18 @@ class Message:
                 fv = f"{self.field}[{self.value}]"
             else:
                 fv = ""
-            return f"{self.message_raw.type_short()} {fv}: [{self.message_raw.type}] {self.message_raw.value} -- {self.message_raw.context}{mloc}"
+            return f"{self.message_raw.type_short()} {fv}: [{self.message_raw.type}] {self.message_raw.type_subtype} {self.message_raw.value} -- {self.message_raw.context}{mloc}"
         else:
             return f"  {self.field}[{self.value}]: {self.message}{mloc}"
 
     def type_matches(self, types: str): # types: lowercase
         return "a" in types or (self.message_raw and self.message_raw.type_short().lower() in types)
+
+    def type_subtype(self):
+        if self.message_raw:
+            return self.message_raw.type_subtype
+        else:
+            return None
 
 # ======================================================================
 

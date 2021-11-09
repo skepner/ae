@@ -5,6 +5,7 @@
 #include <string>
 
 #include "ext/fmt.hh"
+#include "virus/type-subtype.hh"
 
 // ----------------------------------------------------------------------
 
@@ -33,6 +34,7 @@ namespace ae
         };
 
         message_type type;
+        virus::type_subtype_t type_subtype{};
         std::string value{};
         std::string context{};
         MessageLocation location;
@@ -107,7 +109,7 @@ namespace ae
 
         void add(Message::message_type type, std::string_view value, std::string_view context, const MessageLocation& location = {})
         {
-            messages_.push_back({type, std::string{value}, std::string{context}, location});
+            messages_.push_back({type, virus::type_subtype_t{},  std::string{value}, std::string{context}, location});
             switch (type) {
                 case Message::unrecognized_location:
                     unrecognized_locations_.emplace(value);
@@ -124,6 +126,12 @@ namespace ae
                 case Message::unknown:
                     break;
             }
+        }
+
+        void add(Message::message_type type, const virus::type_subtype_t& type_subtype, std::string_view value, std::string_view context, const MessageLocation& location = {})
+        {
+            add(type, value, context, location);
+            messages_.back().type_subtype = type_subtype;
         }
 
       private:
