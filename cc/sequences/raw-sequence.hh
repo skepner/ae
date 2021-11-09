@@ -18,6 +18,7 @@ namespace ae::sequences
         too_long,           //
         too_many_x,         //
         too_many_deletions, //
+        garbage_at_the_end, //
         size_
     };
 
@@ -84,6 +85,9 @@ template <> struct fmt::formatter<ae::sequences::issue> : fmt::formatter<eu::fmt
                 break;
             case issue::too_many_deletions:
                 format_to(ctx.out(), "{}", "too_many_deletions");
+                break;
+            case issue::garbage_at_the_end:
+                format_to(ctx.out(), "{}", "garbage_at_the_end");
                 break;
             case issue::size_:
                 break;

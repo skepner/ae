@@ -69,6 +69,39 @@ namespace ae::sequences
         }
     }
 
+    inline void check_ending(RawSequence& sequence, Messages& messages)
+    {
+        if (const auto* master = master_sequence_for(sequence.type_subtype); master) {
+            constexpr size_t ending_size = 2;
+            const auto s_length = sequence.aa.size();
+            if (s_length < master->aa.size()) {
+                sequence.issues.set(issue::too_short);
+            }
+            else if (s_length > master->aa.size()) {
+                if (sequence.aa.at_end(ending_size) == master->aa.at_end(ending_size)) {
+                    messages.add(Message::not_detected_insertions, "", fmt::format("S:  {}\nM:  {}", sequence.aa, master->aa));
+                    sequence.issues.set(issue::too_long);
+                }
+                else if (sequence.aa.substr(master->aa.size() - ending_size, ending_size) == master->aa.at_end(ending_size)) {
+                    sequence.aa.truncate(master->aa.size());
+                    sequence.nuc.truncate(master->aa.size() * 3);
+                }
+                else {
+                    messages.add(Message::garbage_at_the_end, "(not detected deletions?)", fmt::format("S:  {}\nM:  {}", sequence.aa, master->aa));
+                    sequence.issues.set(issue::garbage_at_the_end);
+                    sequence.issues.set(issue::too_long);
+                }
+            }
+            else {
+                if (sequence.aa.at_end(ending_size) != master->aa.at_end(ending_size)) {
+                    // unrecognized deletions or garbage at the end
+                    messages.add(Message::garbage_at_the_end, "(not detected deletions?)", fmt::format("S:  {}\nM:  {}", sequence.aa, master->aa));
+                    sequence.issues.set(issue::garbage_at_the_end);
+                }
+            }
+        }
+    }
+
 } // namespace ae::sequences
 
 // ======================================================================
@@ -101,13 +134,8 @@ bool ae::sequences::align(RawSequence& sequence, Messages& messages)
         }
         update_type_subtype(sequence, *aligned_data, messages); // after adjusting sequence.aa!
         find_deletions_insertions_set_lineage(sequence, messages);
-        if (const auto s_length = sequence.aa.size(), m_length = ha_sequence_length_for(sequence.type_subtype); s_length < m_length) {
-            sequence.issues.set(issue::too_short);
-        }
-        else if (s_length > m_length) {
-            // TODO truncate
-            sequence.issues.set(issue::too_long);
-        }
+        check_ending(sequence, messages);
+
         if (sequence.aa.number_of_x() > 10)
             sequence.issues.set(issue::too_many_x);
         if (sequence.aa.number_of_deletions() > 6)

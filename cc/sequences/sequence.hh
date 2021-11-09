@@ -20,8 +20,17 @@ namespace ae::sequences
         template <std::integral Size> void remove_prefix(Size offset) { this->get().erase(0, static_cast<size_t>(offset)); }
         template <std::integral Size> void add_prefix(Size size, char symbol = 'X') { this->get().insert(0, static_cast<size_t>(size), symbol); }
 
+        void truncate(size_t size) { this->get().erase(size); }
+
         /*constexpr*/ char operator[](pos0_t pos0) const noexcept { return *pos0 < this->size() ? this->get().operator[](*pos0) : ' '; }
         /*constexpr*/ std::string_view substr(pos0_t pos0, size_t size) const { return std::string_view{this->get()}.substr(pos0.get(), size); }
+        /*constexpr*/ std::string_view at_end(size_t size) const
+        {
+            if (const auto pos = this->get().size() - size; pos < this->get().size()) // protect from pos underflow
+                return std::string_view{this->get()}.substr(pos);
+            else
+                return {};
+        }
 
         size_t number_of_x() const { return std::count(std::begin(this->get()), std::end(this->get()), 'X'); }
         size_t number_of_deletions() const { return std::count(std::begin(this->get()), std::end(this->get()), '-'); }

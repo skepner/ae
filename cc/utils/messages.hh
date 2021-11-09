@@ -26,6 +26,8 @@ namespace ae
             lineage_mismatch,       //
             unrecognized_location, //
             unrecognized_deletions, //
+            not_detected_insertions, //
+            garbage_at_the_end,      //
             invalid_sequence,      //
             invalid_year           //
         };
@@ -43,6 +45,7 @@ namespace ae
                 case unrecognized_location:
                     return "L";
                 case unrecognized_deletions:
+                case not_detected_insertions:
                     return "D";
                 case invalid_subtype:
                 case subtype_mismatch:
@@ -54,6 +57,7 @@ namespace ae
                 case unhandled_virus_name:
                     return "-";
                 case invalid_sequence:
+                case garbage_at_the_end:
                     return "X";
             }
             return "U";
@@ -68,6 +72,8 @@ namespace ae
                     return "unrecognized location";
                 case unrecognized_deletions:
                     return "unrecognized deletions";
+                case not_detected_insertions:
+                    return "not detected insertions";
                 case invalid_subtype:
                     return "invalid subtype";
                 case subtype_mismatch:
@@ -80,6 +86,8 @@ namespace ae
                     return "unhandled virus name";
                 case invalid_sequence:
                     return "invalid sequence";
+                case garbage_at_the_end:
+                    return "garbage_at_the_end";
             }
             return "unknown";
         }
@@ -105,12 +113,14 @@ namespace ae
                     unrecognized_locations_.emplace(value);
                     break;
                 case Message::unrecognized_deletions:
+                case Message::not_detected_insertions:
                 case Message::invalid_subtype:
                 case Message::subtype_mismatch:
                 case Message::lineage_mismatch:
                 case Message::invalid_year:
                 case Message::unhandled_virus_name:
                 case Message::invalid_sequence:
+                case Message::garbage_at_the_end:
                 case Message::unknown:
                     break;
             }
