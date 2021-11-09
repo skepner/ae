@@ -3,7 +3,7 @@
 Test reading ncbi files
 """
 
-import os, sys, re, pprint, argparse, traceback
+import os, sys, re, collections, pprint, argparse, traceback
 from pathlib import Path
 if os.environ.get("DYLD_INSERT_LIBRARIES"):
     sys.path[:0] = [str(Path(os.environ["AE_ROOT"], dir)) for dir in ["build.debug", "py"]]
@@ -49,10 +49,12 @@ def main(args: list):
 
     # print(f"Labs: {len(labs)}\n{pprint.pformat(labs)}")
     print(f"Messages: {len(messages)}")
+    # subtype_counter = collections.Counter(msg.type_subtype() for msg in messages)
+    # print("Message subtypes:\n  ", "\n  ".join(f"{ts:8s}: {cnt:5d}" for ts, cnt in subtype_counter.most_common() if ts), sep="")
     if args.print_messages and messages:
         message_types = args.print_messages.lower()
         for msg in messages:
-            if msg.type_matches(message_types):
+            if msg.type_matches(message_types) and msg.type_subtype() in [None, "A(H1N1)", "A(H1)", "A(H3N2)", "A(H3)", "B"]:
                 print(f"  {msg.report()}")
         if unrecognized_locations and "l" in message_types or "a" in message_types:
             print(f"Unrecognized locations: {len(unrecognized_locations)}")

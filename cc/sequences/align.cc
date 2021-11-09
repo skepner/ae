@@ -4,6 +4,7 @@
 #include "sequences/detect.hh"
 #include "sequences/master.hh"
 #include "sequences/deletions.hh"
+#include "sequences/hamming-distance.hh"
 
 // ======================================================================
 
@@ -72,17 +73,17 @@ namespace ae::sequences
     inline void check_ending(RawSequence& sequence, Messages& messages)
     {
         if (const auto* master = master_sequence_for(sequence.type_subtype); master) {
-            constexpr size_t ending_size = 2;
+            constexpr size_t ending_size = 3;
             const auto s_length = sequence.aa.size();
             if (s_length < master->aa.size()) {
                 sequence.issues.set(issue::too_short);
             }
             else if (s_length > master->aa.size()) {
-                if (sequence.aa.at_end(ending_size) == master->aa.at_end(ending_size)) {
+                if (hamming_distance(sequence.aa.at_end(ending_size), master->aa.at_end(ending_size)) <= 1) {
                     messages.add(Message::not_detected_insertions, sequence.type_subtype, fmt::format("\"{}\"", sequence.name), fmt::format("\nS:  {}\nM:  {}", sequence.aa, master->aa));
                     sequence.issues.set(issue::too_long);
                 }
-                else if (sequence.aa.substr(master->aa.size() - ending_size, ending_size) == master->aa.at_end(ending_size)) {
+                else if (hamming_distance(sequence.aa.substr(master->aa.size() - ending_size, ending_size), master->aa.at_end(ending_size)) <= 1) {
                     sequence.aa.truncate(master->aa.size());
                     sequence.nuc.truncate(master->aa.size() * 3);
                 }
@@ -93,7 +94,7 @@ namespace ae::sequences
                 }
             }
             else {
-                if (sequence.aa.at_end(ending_size) != master->aa.at_end(ending_size)) {
+                if (hamming_distance(sequence.aa.at_end(ending_size), master->aa.at_end(ending_size)) > 1) {
                     // unrecognized deletions or garbage at the end
                     messages.add(Message::garbage_at_the_end, sequence.type_subtype, fmt::format("\"{}\" (not detected deletions?)", sequence.name), fmt::format("\nS:  {}\nM:  {}", sequence.aa, master->aa));
                     sequence.issues.set(issue::garbage_at_the_end);
