@@ -5,3 +5,4 @@ simdjson-*
 range-v3-*
 pybind11-*
 lexy
+xxHash-*

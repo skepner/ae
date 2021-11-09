@@ -65,6 +65,7 @@ void ae::py::sequences(pybind11::module_& mdl)
 
     raw_sequence_submodule.def("translate", &translate, "sequence"_a, "messages"_a);
     raw_sequence_submodule.def("align", &align, "sequence"_a, "messages"_a);
+    raw_sequence_submodule.def("calculate_hash", &calculate_hash, "sequence"_a);
 
     // ----------------------------------------------------------------------
 }

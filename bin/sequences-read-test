@@ -34,6 +34,7 @@ def main(args: list):
                 try:
                     ae_backend.raw_sequence.translate(sequence, sequence_messages)
                     ae_backend.raw_sequence.align(sequence, sequence_messages)
+                    ae_backend.raw_sequence.calculate_hash(sequence)
                 except Exception as err:
                     print(f"> {err}: {sequence.name}\n    {sequence.aa}")
                 reader.context.messages_from_backend(sequence_messages)

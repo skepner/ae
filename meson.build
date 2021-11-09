@@ -37,6 +37,9 @@ range_v3 = dependency('range_v3')
 subproject('pybind11')
 pybind11 = dependency('pybind11')
 
+subproject('xxhash')
+xxhash = dependency('libxxhash')
+
 zlib = dependency('zlib', version : '>=1.2.8')
 xz = dependency('liblzma')
 bzip2 = meson.get_compiler('cpp').find_library('bz2', required : false)
@@ -98,7 +101,7 @@ ae_lib = python3.extension_module(
   'ae_backend',
   sources : sources_py + sources_virus + sources_sequences + sources_locdb + sources_utlis,
   include_directories : include_directories('./cc'),
-  dependencies : [dependency('python3'), pybind11, fmt, simdjson, range_v3, bzip2, zlib, xz, lexy],
+  dependencies : [dependency('python3'), pybind11, fmt, simdjson, range_v3, bzip2, zlib, xz, lexy, xxhash],
   install : true)
 
 # https://gabmus.org/posts/python-unittest-meson/

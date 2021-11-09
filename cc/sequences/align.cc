@@ -1,4 +1,5 @@
 #include "utils/messages.hh"
+#include "utils/hash.hh"
 #include "sequences/align.hh"
 #include "sequences/raw-sequence.hh"
 #include "sequences/detect.hh"
@@ -149,3 +150,14 @@ bool ae::sequences::align(RawSequence& sequence, Messages& messages)
 }
 
 // ======================================================================
+
+void ae::sequences::calculate_hash(RawSequence& sequence)
+{
+    if (!sequence.sequence.nuc.empty() && sequence.sequence.is_translated())
+        sequence.hash_nuc = ae::hash(*sequence.sequence.nuc);
+    else
+        sequence.hash_nuc.clear();
+
+} // ae::sequences::calculate_hash
+
+// ----------------------------------------------------------------------

@@ -13,6 +13,8 @@ namespace ae::sequences
 
     // returns if sequence was translated
     bool align(RawSequence& sequence, Messages& messages);
+
+    void calculate_hash(RawSequence& sequence);
 }
 
 // ======================================================================
