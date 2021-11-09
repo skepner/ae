@@ -36,17 +36,49 @@ namespace ae::sequences
         size_t number_of_deletions() const { return std::count(std::begin(this->get()), std::end(this->get()), '-'); }
     };
 
-    // class sequence_nuc_t : public basic_sequence_t<struct sequence_nuc_t_tag>
-    // {
-    //   public:
-    //     using Tag = struct sequence_nuc_t_tag;
-    //     using basic_sequence_t<Tag>::named_string_t;
-    //     using basic_sequence_t<Tag>::operator=;
-
-    // };
-
     using sequence_nuc_t = basic_sequence_t<struct sequence_nuc_t_tag>;
     using sequence_aa_t = basic_sequence_t<struct sequence_aa_t_tag>;
+
+    struct sequence_pair_t
+    {
+        sequence_aa_t aa;
+        sequence_nuc_t nuc;
+
+        enum class truncate_nuc { no, yes };
+
+        void set(std::string_view a_aa, std::string_view a_nuc, truncate_nuc tn = truncate_nuc::yes)
+        {
+            const auto expected_nuc = a_aa.size() * 3;
+            if (expected_nuc < a_nuc.size() && tn == truncate_nuc::yes)
+                a_nuc.remove_suffix(a_nuc.size() - expected_nuc);
+            else if (expected_nuc != a_nuc.size())
+                throw std::runtime_error{fmt::format("cannot set sequence_pair_t, length mismatch: aa:{} nuc:{} (expected:{})", a_aa.size(), a_nuc.size(), expected_nuc)};
+            aa = a_aa;
+            nuc = a_nuc;
+        }
+
+        bool is_translated() const { return !aa.empty(); }
+
+        void erase_aa(size_t pos, size_t count = std::string::npos)
+        {
+            aa.get().erase(pos, count);
+            const auto count_nuc = count = std::string::npos ? count : count * 3;
+            nuc.get().erase(pos * 3, count_nuc);
+        }
+
+        void add_prefix_aa(size_t size, char symbol = 'X')
+        {
+            aa.add_prefix(size, symbol);
+            nuc.add_prefix(size * 3, symbol);
+        }
+        void remove_prefix_aa(size_t size)
+        {
+            aa.remove_prefix(size);
+            nuc.remove_prefix(size * 3);
+        }
+    };
+
+    // ----------------------------------------------------------------------
 
     struct insertion_t
     {

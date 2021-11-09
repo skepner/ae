@@ -33,8 +33,8 @@ void ae::py::sequences(pybind11::module_& mdl)
             "type_subtype",                                                                                                                                                         //
             [](const RawSequence& seq) { return *seq.type_subtype; },                                                                                                               //
             [](RawSequence& seq, std::string_view type_subtype) { seq.type_subtype = ae::virus::type_subtype_t{type_subtype}; })                                                    //
-        .def_property_readonly("aa", [](const RawSequence& sequence) { return sequence.aa.get(); })                                                                                 //
-        .def_property_readonly("nuc", [](const RawSequence& sequence) { return sequence.nuc.get(); })                                                                               //
+        .def_property_readonly("aa", [](const RawSequence& sequence) { return sequence.sequence.aa.get(); })                                                                                 //
+        .def_property_readonly("nuc", [](const RawSequence& sequence) { return sequence.sequence.nuc.get(); })                                                                               //
         .def("is_aligned", [](const RawSequence& sequence) { return !sequence.issues.is_set(issue::not_aligned); })                                                                 //
         .def("is_translated", [](const RawSequence& sequence) { return !sequence.issues.is_set(issue::not_translated); })                                                           //
         .def("is_translated_not_aligned", [](const RawSequence& sequence) { return !sequence.issues.is_set(issue::not_translated) && sequence.issues.is_set(issue::not_aligned); }) //

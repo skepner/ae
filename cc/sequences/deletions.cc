@@ -209,9 +209,9 @@ inline deletions_insertions_t find_deletions_insertions(const ae::sequences::Raw
     using namespace ae::sequences;
 
     const auto& master = *master_sequence_for(sequence.type_subtype);
-    const std::string_view master_aa{master.aa}, sequence_aa{sequence.aa};
+    const std::string_view master_aa{master.aa}, sequence_aa{sequence.sequence.aa};
     deletions_insertions_t deletions;
-    const auto initial_head = find_common_head(master.aa, sequence.aa);
+    const auto initial_head = find_common_head(master.aa, sequence.sequence.aa);
 
     size_t master_offset = initial_head.head, to_align_offset = initial_head.head;
     std::string_view master_tail = master_aa.substr(master_offset), to_align_tail = sequence_aa.substr(to_align_offset);
@@ -246,20 +246,20 @@ inline deletions_insertions_t find_deletions_insertions(const ae::sequences::Raw
     if (deletions.deletions.size() == 1 && deletions.insertions.empty()) {
         // fmt::print("{} {} {} pos-get={} num==1:{} p0-162=>{} {}\n", deletions.deletions[0], deletions.deletions[0].pos == pos1_t{162}, deletions.deletions[0].pos, deletions.deletions[0].pos.get(),
         //            deletions.deletions[0].num == 1, pos0_t{162},  sequence_aa.substr(159, 5));
-        if ((deletions.deletions[0] == deletions_insertions_t::pos_num_t{pos1_t{162}, 1} && sequence.aa.substr(pos1_t{160}, 2) == "VP")     //
-            || (deletions.deletions[0] == deletions_insertions_t::pos_num_t{pos1_t{164}, 1} && sequence.aa.substr(pos1_t{160}, 3) == "VPK") //
-            || (deletions.deletions[0] == deletions_insertions_t::pos_num_t{pos1_t{159}, 1} && sequence.aa.substr(pos1_t{158}, 3) == "WVS") //
+        if ((deletions.deletions[0] == deletions_insertions_t::pos_num_t{pos1_t{162}, 1} && sequence.sequence.aa.substr(pos1_t{160}, 2) == "VP")     //
+            || (deletions.deletions[0] == deletions_insertions_t::pos_num_t{pos1_t{164}, 1} && sequence.sequence.aa.substr(pos1_t{160}, 3) == "VPK") //
+            || (deletions.deletions[0] == deletions_insertions_t::pos_num_t{pos1_t{159}, 1} && sequence.sequence.aa.substr(pos1_t{158}, 3) == "WVS") //
         ) {
             deletions.deletions[0].pos = pos1_t{163};
         }
         else if (N_deletions_at(deletions, 3, pos1_t{162}, pos1_t{164})) {
             deletions.deletions[0].pos = pos1_t{162}; // victoria 3del
         }
-        else if (N_deletions_at(deletions, 3, pos1_t{166}) && sequence.aa.substr(pos1_t{160}, 7) == "VPKNXXA") {
+        else if (N_deletions_at(deletions, 3, pos1_t{166}) && sequence.sequence.aa.substr(pos1_t{160}, 7) == "VPKNXXA") {
             // 3del, misleading XX
             deletions.deletions[0] = deletions_insertions_t::pos_num_t{pos1_t{162}, 3};
         }
-        else if (N_deletions_at(deletions, 2, pos1_t{164}) && sequence.aa.substr(pos1_t{160}, 6) == "VPKNNK") {
+        else if (N_deletions_at(deletions, 2, pos1_t{164}) && sequence.sequence.aa.substr(pos1_t{160}, 6) == "VPKNNK") {
             // B/GANSU_ANDING/1194/2021 etc.
             // Vic 3del with insertion at 165: "VPKNNK" -> "VP---NNK"
             deletions.deletions[0] = deletions_insertions_t::pos_num_t{pos1_t{162}, 3};
@@ -290,7 +290,7 @@ inline deletions_insertions_t find_deletions_insertions(const ae::sequences::Raw
 void ae::sequences::find_deletions_insertions_set_lineage(RawSequence& sequence, Messages& messages)
 {
     const auto apply_deletions = [&sequence](const deletions_insertions_t& deletions) {
-        std::string_view source_aa{sequence.aa}, source_nuc{sequence.nuc};
+        std::string_view source_aa{sequence.sequence.aa}, source_nuc{sequence.sequence.nuc};
         fmt::memory_buffer aa, nuc;
         pos0_t pos{0};
         for (const auto& en : deletions.deletions) {
@@ -300,16 +300,15 @@ void ae::sequences::find_deletions_insertions_set_lineage(RawSequence& sequence,
         }
         fmt::format_to(std::back_inserter(aa), "{}", source_aa.substr(*pos));
         fmt::format_to(std::back_inserter(nuc), "{}", source_nuc.substr(*pos * 3));
-        sequence.aa = fmt::to_string(aa);
-        sequence.nuc = fmt::to_string(nuc);
+        sequence.sequence.set(fmt::to_string(aa), fmt::to_string(nuc));
 
         size_t base_pos_aa{0};
         for (const auto& en : deletions.insertions) {
-            sequence.aa_insertions.push_back(insertion_t{en.pos, sequence.aa.get().substr(en.pos.get0() + base_pos_aa, en.num)});
-            sequence.aa.get().erase(en.pos.get0() + base_pos_aa, en.num);
+            sequence.aa_insertions.push_back(insertion_t{en.pos, sequence.sequence.aa.get().substr(en.pos.get0() + base_pos_aa, en.num)});
+            sequence.sequence.aa.get().erase(en.pos.get0() + base_pos_aa, en.num);
             base_pos_aa += en.num;
-            sequence.nuc_insertions.push_back(insertion_t{en.pos.aa_to_nuc(), sequence.nuc.get().substr(en.pos.aa_to_nuc().get0() + base_pos_aa * 3, en.num * 3)});
-            sequence.nuc.get().erase(en.pos.aa_to_nuc().get0() + base_pos_aa * 3, en.num * 3);
+            sequence.nuc_insertions.push_back(insertion_t{en.pos.aa_to_nuc(), sequence.sequence.nuc.get().substr(en.pos.aa_to_nuc().get0() + base_pos_aa * 3, en.num * 3)});
+            sequence.sequence.nuc.get().erase(en.pos.aa_to_nuc().get0() + base_pos_aa * 3, en.num * 3);
         }
     };
 
@@ -317,9 +316,9 @@ void ae::sequences::find_deletions_insertions_set_lineage(RawSequence& sequence,
         if (sequence.lineage.empty() || sequence.lineage == "UNKNOWN")
             sequence.lineage = lineage;
         else if (sequence.lineage != lineage) {
-            if (sequence.aa.size() > 500)
+            if (sequence.sequence.aa.size() > 500)
                 messages.add(Message::lineage_mismatch, sequence.type_subtype, fmt::format("detected: {} provided: {}", lineage, sequence.lineage),
-                             fmt::format("lineage difference \"{}\" provided:{} detected:{}\nS:  {}", sequence.name, sequence.lineage, lineage, sequence.aa));
+                             fmt::format("lineage difference \"{}\" provided:{} detected:{}\nS:  {}", sequence.name, sequence.lineage, lineage, sequence.sequence.aa));
             sequence.lineage = lineage;
         }
     };
@@ -344,7 +343,7 @@ void ae::sequences::find_deletions_insertions_set_lineage(RawSequence& sequence,
         else if (N_deletions_at(deletions, 2, pos1_t{163}) /* && sequence.year() <= 2013 */) {
             apply_lineage("YAMAGATA");
         }
-        else if (N_deletions_at(deletions, 1, pos1_t{159}) && sequence.aa.substr(pos1_t{158}, 4) == "WVIP") { // B/Lee/40
+        else if (N_deletions_at(deletions, 1, pos1_t{159}) && sequence.sequence.aa.substr(pos1_t{158}, 4) == "WVIP") { // B/Lee/40
             // ignore
             apply_deletions(deletions);
         }
@@ -353,9 +352,9 @@ void ae::sequences::find_deletions_insertions_set_lineage(RawSequence& sequence,
         }
         else if (!deletions.empty()) {
             apply_deletions(deletions);
-            if (sequence.aa.size() > 500)
+            if (sequence.sequence.aa.size() > 500)
                 messages.add(Message::unrecognized_deletions, sequence.type_subtype, fmt::format("\"{}\" {}", sequence.name, sequence.lineage),
-                             fmt::format("{}\nS:  {}\nM:  {}", deletions, sequence.aa, master_sequence_for(ae::virus::type_subtype_t{"B"})->aa));
+                             fmt::format("{}\nS:  {}\nM:  {}", deletions, sequence.sequence.aa, master_sequence_for(ae::virus::type_subtype_t{"B"})->aa));
         }
     }
 

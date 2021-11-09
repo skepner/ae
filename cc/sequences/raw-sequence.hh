@@ -35,8 +35,7 @@ namespace ae::sequences
     {
         issues_t issues;
         std::string raw_sequence; // nuc or aa, uppercased!
-        sequence_nuc_t nuc;
-        sequence_aa_t aa;
+        sequence_pair_t sequence;
         insertions_t aa_insertions;
         insertions_t nuc_insertions;
 

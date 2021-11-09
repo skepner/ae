@@ -53,18 +53,16 @@ bool ae::sequences::translate(RawSequence& sequence, Messages& messages)
 
         const auto longest_translated =
             std::max_element(std::begin(translated), std::end(translated), [](const auto& e1, const auto& e2) { return e1.longest.size() < e2.longest.size(); });
-        if (longest_translated->longest.size() >= MINIMUM_SEQUENCE_AA_LENGTH) {
-            sequence.aa = longest_translated->longest;
-            sequence.nuc = sequence.raw_sequence.substr(longest_translated->offset);
-        }
+        if (longest_translated->longest.size() >= MINIMUM_SEQUENCE_AA_LENGTH)
+            sequence.sequence.set(longest_translated->longest, sequence.raw_sequence.substr(longest_translated->offset));
     }
 
-    if (sequence.aa.empty())
+    if (!sequence.sequence.is_translated())
         sequence.issues.set(issue::not_translated);
 
     aa_trim_absent(sequence, messages);
 
-    return !sequence.aa.empty();
+    return sequence.sequence.is_translated();
 
 } // ae::sequences::translate
 
@@ -115,20 +113,16 @@ std::string translate_nucleotides_to_amino_acids(std::string_view nucleotides, s
 
 void ae::sequences::aa_trim_absent(RawSequence& sequence, Messages& messages)
 {
-    if (!sequence.aa.empty()) {
+    if (sequence.sequence.is_translated()) {
         // remove trailing X and - in aa
-        if (const auto found = sequence.aa->find_last_not_of("X-"); found != std::string::npos) {
-            sequence.aa.get().erase(found + 1);
-            sequence.nuc.get().erase((found + 1) * 3);
-        }
+        if (const auto found = sequence.sequence.aa->find_last_not_of("X-"); found != std::string::npos)
+            sequence.sequence.erase_aa(found + 1);
         else
             messages.add(Message::invalid_sequence, sequence.name, "just X and - in AA sequence");
 
         // remove leading X and -
-        if (const auto found = sequence.aa->find_first_not_of("X-"); found > 0 && found != std::string::npos) {
-            sequence.aa.get().erase(0, found);
-            sequence.nuc.get().erase(0, found * 3);
-        }
+        if (const auto found = sequence.sequence.aa->find_first_not_of("X-"); found > 0 && found != std::string::npos)
+            sequence.sequence.erase_aa(0, found);
     }
 
 } // aa_trim_absent
