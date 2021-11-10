@@ -2,7 +2,7 @@
 #include <memory>
 #include <cstdlib>
 
-// #include "ext/date.hh"
+#include "utils/file.hh"
 #include "sequences/seqdb.hh"
 #include "sequences/raw-sequence.hh"
 
@@ -152,14 +152,29 @@ void ae::sequences::Seqdb::save()
         fmt::memory_buffer json;
         fmt::format_to(
             std::back_inserter(json),
-            "{{\"_\": \"-*- js-indent-level: 1 -*-\",\n \"  version\": \"sequence-database-v4\",\n \"  date\": \"{:%Y-%m-%d %H:%M %Z}\",\n \"size\": {:d}\n \"subtype\": \"{}\"\n \"data\": [\n",
+            "{{\"_\": \"-*- js-indent-level: 1 -*-\",\n \"  version\": \"sequence-database-v4\",\n \"  date\": \"{:%Y-%m-%d %H:%M %Z}\",\n \"size\": {:d},\n \"subtype\": \"{}\",\n \"data\": [\n",
             fmt::localtime(std::time(nullptr)), entries_.size(), subtype_);
 
-        // entries
+        size_t no{1};
+        for (const auto& entry : entries_) {
+            fmt::format_to(std::back_inserter(json), "  {{\"N\": \"{}\"", entry.name);
+            if (!entry.dates.empty())
+                fmt::format_to(std::back_inserter(json), ", \"d\": [\"{}\"]", fmt::join(entry.dates, "\", \""));
+            // std::string continent;
+            // std::string country;
+            // std::string lineage;
+            fmt::format_to(std::back_inserter(json), ",\n   \"s\": [\n");
+
+            fmt::format_to(std::back_inserter(json), "\n   ]\n  }}"); // end-of "s": [], end-of entry {}
+            if (no < entries_.size())
+                fmt::format_to(std::back_inserter(json), ",");
+            fmt::format_to(std::back_inserter(json), "\n");
+            ++no;
+        }
 
         fmt::format_to(std::back_inserter(json), " ]\n}}\n");
-        if (std::filesystem::exists(db_filename))
-            ; // backup existing
+        fmt::print("writing seqdb to {}\n", db_filename);
+        ae::file::write(db_filename, fmt::to_string(json), ae::file::force_compression::no, ae::file::backup_file::yes);
         fmt::print("{}\n", fmt::to_string(json));
     }
 

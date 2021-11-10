@@ -35,10 +35,10 @@ namespace ae::file
     std::string read(const std::filesystem::path& filename, size_t padding = 0);
     // inline read_access read_from_file_descriptor(int fd, size_t chunk_size = 1024) { return read_access(fd, chunk_size); }
     // inline read_access read_stdin() { return read_from_file_descriptor(0); }
-    void write(std::string_view aFilename, std::string_view aData, force_compression aForceCompression = force_compression::no, backup_file aBackupFile = backup_file::yes);
+    void write(const std::filesystem::path& filename, std::string_view data, force_compression aForceCompression = force_compression::no, backup_file aBackupFile = backup_file::yes);
 
-    void backup(std::string_view to_backup, std::string_view backup_dir, backup_move bm = backup_move::no);
-    void backup(std::string_view to_backup, backup_move bm = backup_move::no);
+    void backup(const std::filesystem::path& to_backup, const std::filesystem::path& backup_dir, backup_move bm = backup_move::no);
+    void backup(const std::filesystem::path& to_backup, backup_move bm = backup_move::no);
 
     class temp
     {
@@ -60,9 +60,24 @@ namespace ae::file
 
     }; // class temp
 
+    inline bool extension_of(const std::filesystem::path& filename, std::initializer_list<std::string_view> extensions)
+    {
+        const auto ext = filename.extension();
+        return std::any_of(std::begin(extensions), std::end(extensions), [&ext](std::string_view en) { return en == ext; });
+    }
+
 } // namespace acmacs::file
 
 #pragma GCC diagnostic pop
+
+// ----------------------------------------------------------------------
+
+template <> struct fmt::formatter<std::filesystem::path> : fmt::formatter<eu::fmt_helper::default_formatter> {
+    template <typename FormatCtx> auto format(const std::filesystem::path& path, FormatCtx& ctx)
+    {
+        return format_to(ctx.out(), "{}", path.native());
+    }
+};
 
 // ----------------------------------------------------------------------
 /// Local Variables:

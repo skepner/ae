@@ -20,14 +20,16 @@
 
 namespace ae::file::detail
 {
-    inline std::unique_ptr<Compressor> compressor_factory(std::string_view initial_bytes, std::string_view filename, size_t padding)
+    inline std::unique_ptr<Compressor> compressor_factory(std::string_view initial_bytes, const std::filesystem::path& filename, force_compression fc, size_t padding)
     {
-        if ((!initial_bytes.empty() && xz_compressed(initial_bytes)) || (!filename.empty() && filename.ends_with(".xz")))
+        if ((!initial_bytes.empty() && xz_compressed(initial_bytes)) || extension_of(filename, {".xz", ".tjz", ".jxz"}))
             return std::make_unique<XZ_Compressor>(padding);
-        else if ((!initial_bytes.empty() && bz2_compressed(initial_bytes)) || (!filename.empty() && filename.ends_with(".bz2")))
+        else if ((!initial_bytes.empty() && bz2_compressed(initial_bytes)) || extension_of(filename, {".bz2"}))
             return std::make_unique<BZ2_Compressor>(padding);
-        else if ((!initial_bytes.empty() && gzip_compressed(initial_bytes)) || (!filename.empty() && filename.ends_with(".gz")))
+        else if ((!initial_bytes.empty() && gzip_compressed(initial_bytes)) || extension_of(filename, {".gz"}))
             return std::make_unique<GZIP_Compressor>(padding);
+        else if (fc == force_compression::yes)
+            return std::make_unique<XZ_Compressor>(padding);
         else
             return nullptr;
 
@@ -35,7 +37,7 @@ namespace ae::file::detail
 
     inline std::string decompress_if_necessary(std::string_view source, size_t padding)
     {
-        if (auto compressor = compressor_factory(source, {}, padding); compressor) {
+        if (auto compressor = compressor_factory(source, {}, force_compression::no, padding); compressor) {
             return compressor->decompress(source);
         }
         else {
@@ -123,7 +125,7 @@ std::string ae::file::read(const std::filesystem::path& filename, size_t padding
 
 // ----------------------------------------------------------------------
 
-void ae::file::backup(std::string_view _to_backup, std::string_view _backup_dir, backup_move bm)
+void ae::file::backup(const std::filesystem::path& _to_backup, const std::filesystem::path& _backup_dir, backup_move bm)
 {
     const std::filesystem::path to_backup{_to_backup}, backup_dir{_backup_dir};
 
@@ -167,7 +169,7 @@ void ae::file::backup(std::string_view _to_backup, std::string_view _backup_dir,
 
 // ----------------------------------------------------------------------
 
-void ae::file::backup(const std::string_view to_backup, backup_move bm)
+void ae::file::backup(const std::filesystem::path& to_backup, backup_move bm)
 {
     backup(to_backup, (std::filesystem::path{to_backup}.parent_path() / ".backup").native(), bm);
 
@@ -175,38 +177,41 @@ void ae::file::backup(const std::string_view to_backup, backup_move bm)
 
 // ----------------------------------------------------------------------
 
-void ae::file::write(std::string_view aFilename, std::string_view aData, force_compression aForceCompression, backup_file aBackupFile)
+void ae::file::write(const std::filesystem::path& filename, std::string_view data, force_compression aForceCompression, backup_file a_backup_file)
 {
     using namespace std::string_view_literals;
     int f = -1;
-    if (aFilename == "-") {
+    if (filename == "-") {
         f = 1;
     }
-    else if (aFilename == "=") {
+    else if (filename == "=") {
         f = 2;
     }
-    else if (aFilename == "/") {
+    else if (filename == "/") {
         f = open("/dev/null", O_WRONLY | O_TRUNC | O_CREAT, 0644);
         if (f < 0)
             throw std::runtime_error(fmt::format("Cannot open /dev/null: {}", strerror(errno)));
     }
     else {
-        if (aBackupFile == backup_file::yes && aFilename.substr(0, 4) != "/dev") // allow writing to /dev/ without making backup attempt
-            backup(aFilename);
-        f = open(aFilename.data(), O_WRONLY | O_TRUNC | O_CREAT, 0644);
+        if (a_backup_file == backup_file::yes && filename.native().substr(0, 4) != "/dev") // allow writing to /dev/ without making backup attempt
+            backup(filename);
+        f = open(filename.c_str(), O_WRONLY | O_TRUNC | O_CREAT, 0644);
         if (f < 0)
-            throw std::runtime_error(fmt::format("Cannot open {}: {}", aFilename, strerror(errno)));
+            throw std::runtime_error(fmt::format("Cannot open {}: {}", filename, strerror(errno)));
     }
     try {
-        if (aForceCompression == force_compression::yes || (aFilename.size() > 3 && (aFilename.ends_with(".xz") || aFilename.ends_with(".gz")))) {
-            auto compressor = detail::compressor_factory({}, aFilename, 0);
-            const auto data = compressor->compress(aData);
+        if (aForceCompression == force_compression::yes || extension_of(filename, {".xz", ".gz", ".tjz", ".jxz"})) {
+            std::string compressed_data;
+            if (auto compressor = detail::compressor_factory({}, filename, aForceCompression, 0); compressor) {
+                compressed_data = compressor->compress(data);
+                data = compressed_data;
+            }
             if (::write(f, data.data(), data.size()) < 0)
-                throw std::runtime_error(fmt::format("Cannot write {}: {}", aFilename, strerror(errno)));
+                throw std::runtime_error(fmt::format("Cannot write {}: {}", filename, strerror(errno)));
         }
         else {
-            if (::write(f, aData.data(), aData.size()) < 0)
-                throw std::runtime_error(fmt::format("Cannot write {}: {}", aFilename, strerror(errno)));
+            if (::write(f, data.data(), data.size()) < 0)
+                throw std::runtime_error(fmt::format("Cannot write {}: {}", filename, strerror(errno)));
         }
         if (f > 2)
             close(f);
