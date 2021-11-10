@@ -63,7 +63,7 @@ def main(args: list):
 
     sSeqdbSubtype = {"B": "B", "A(H1N1)": "A(H1N1)", "A(H1)": "A(H1N1)", "A(H3N2)": "A(H3N2)", "A(H3)": "A(H3N2)"}
     for subtype, seqdb_subtype in sSeqdbSubtype.items():
-        for seq in sequences_by_subtype[subtype]:
+        for seq in sequences_by_subtype.get(subtype, []):
             ae_backend.seqdb.for_subtype(seqdb_subtype).add(seq)
     ae_backend.seqdb.save()
 

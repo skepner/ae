@@ -37,6 +37,7 @@ namespace ae::sequences
       private:
         std::string subtype_;
         std::vector<SeqdbEntry> entries_;
+        bool modified_{false};
 
         std::filesystem::path filename() const;
     };
@@ -55,8 +56,8 @@ namespace ae::sequences
         SeqdbEntry() = default;
         SeqdbEntry(const RawSequence& raw_sequence);
 
-        void update(const RawSequence& raw_sequence);
-        void add_date(std::string_view date);
+        bool update(const RawSequence& raw_sequence); // returns if entry was modified
+        bool add_date(std::string_view date);
 
         // std::string host() const;
         // bool date_within(std::string_view start, std::string_view end) const { return !dates.empty() && (start.empty() || dates.front() >= start) && (end.empty() || dates.front() < end); }

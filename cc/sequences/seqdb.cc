@@ -2,6 +2,7 @@
 #include <memory>
 #include <cstdlib>
 
+// #include "ext/date.hh"
 #include "sequences/seqdb.hh"
 #include "sequences/raw-sequence.hh"
 
@@ -94,9 +95,11 @@ void ae::sequences::Seqdb::add(const RawSequence& raw_sequence)
 {
     const auto found = std::lower_bound(std::begin(entries_), std::end(entries_), raw_sequence.name, [](const auto& entry, std::string_view nam) { return entry.name < nam; });
     if (found != std::end(entries_) && found->name == raw_sequence.name)
-        found->update(raw_sequence);
-    else
+        modified_ = found->update(raw_sequence);
+    else {
         entries_.emplace(found, raw_sequence);
+        modified_ = true;
+    }
 
 } // ae::sequences::Seqdb::add
 
@@ -110,26 +113,32 @@ ae::sequences::SeqdbEntry::SeqdbEntry(const RawSequence& raw_sequence) : name{ra
 
 // ----------------------------------------------------------------------
 
-void ae::sequences::SeqdbEntry::update(const RawSequence& raw_sequence)
+bool ae::sequences::SeqdbEntry::update(const RawSequence& raw_sequence)
 {
-    fmt::print("SeqdbEntry::update {}\n", raw_sequence.name);
-    add_date(raw_sequence.date);
+    // fmt::print("SeqdbEntry::update {}\n", raw_sequence.name);
+    bool updated = add_date(raw_sequence.date);
 
         // std::string continent;
         // std::string country;
         // std::string lineage;
         // std::vector<SeqdbSeq> seqs;
 
+    return updated;
+
 } // ae::sequences::Seqdb::update
 
 // ----------------------------------------------------------------------
 
-void ae::sequences::SeqdbEntry::add_date(std::string_view date)
+bool ae::sequences::SeqdbEntry::add_date(std::string_view date)
 {
+    bool added { false };
     if (date.size() == 10) {    // only full dates used
-        if (const auto found = std::lower_bound(dates.begin(), dates.end(), date); found == dates.end() || *found != date)
+        if (const auto found = std::lower_bound(dates.begin(), dates.end(), date); found == dates.end() || *found != date) {
             dates.emplace(found, date);
+            added = true;
+        }
     }
+    return added;
 
 } // ae::sequences::SeqdbEntry::add_date
 
@@ -137,10 +146,22 @@ void ae::sequences::SeqdbEntry::add_date(std::string_view date)
 
 void ae::sequences::Seqdb::save()
 {
-    // modified or does not exist
-    // backup existing
+    const auto db_filename = filename();
+    if (modified_ || !std::filesystem::exists(db_filename)) {
+        // std::time_t now = std::time(nullptr);
+        fmt::memory_buffer json;
+        fmt::format_to(
+            std::back_inserter(json),
+            "{{\"_\": \"-*- js-indent-level: 1 -*-\",\n \"  version\": \"sequence-database-v4\",\n \"  date\": \"{:%Y-%m-%d %H:%M %Z}\",\n \"size\": {:d}\n \"subtype\": \"{}\"\n \"data\": [\n",
+            fmt::localtime(std::time(nullptr)), entries_.size(), subtype_);
 
-    // number of entries
+        // entries
+
+        fmt::format_to(std::back_inserter(json), " ]\n}}\n");
+        if (std::filesystem::exists(db_filename))
+            ; // backup existing
+        fmt::print("{}\n", fmt::to_string(json));
+    }
 
 } // ae::sequences::Seqdb::save
 
