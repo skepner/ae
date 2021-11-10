@@ -118,10 +118,26 @@ bool ae::sequences::SeqdbEntry::update(const RawSequence& raw_sequence)
     // fmt::print("SeqdbEntry::update {}\n", raw_sequence.name);
     bool updated = add_date(raw_sequence.date);
 
+    if (!raw_sequence.lineage.empty()) {
+        if (lineage.empty())
+            lineage = raw_sequence.lineage;
+        else if (lineage != raw_sequence.lineage)
+            fmt::print(">> SeqdbEntry::update \"{}\": conflicting lineage old:{} new:{}\n", name, lineage, raw_sequence.lineage);
+    }
         // std::string continent;
         // std::string country;
-        // std::string lineage;
-        // std::vector<SeqdbSeq> seqs;
+
+    auto& seq = seqs.emplace_back();
+    seq.aa = raw_sequence.sequence.aa;
+    seq.nuc = raw_sequence.sequence.nuc;
+    seq.hash = raw_sequence.hash_nuc;
+        // std::string annotations;
+        // std::vector<std::string> reassortants;
+        // std::vector<std::string> passages;
+        // std::string hash;
+        // issues_t issues;
+        // labs_t lab_ids;
+        // gisaid_data_t gisaid;
 
     return updated;
 
@@ -164,6 +180,39 @@ void ae::sequences::Seqdb::save()
             // std::string country;
             // std::string lineage;
             fmt::format_to(std::back_inserter(json), ",\n   \"s\": [\n");
+
+            size_t seq_no{1};
+            for (const auto& seq : entry.seqs) {
+                fmt::format_to(std::back_inserter(json), "   {{");
+                bool comma { false };
+                if (!seq.aa.empty()) {
+                    if (comma)
+                        fmt::format_to(std::back_inserter(json), ",");
+                    fmt::format_to(std::back_inserter(json), "\n    \"a\": \"{}\"", seq.aa);
+                    comma = true;
+                }
+                if (!seq.nuc.empty()) {
+                    if (comma)
+                        fmt::format_to(std::back_inserter(json), ",");
+                    fmt::format_to(std::back_inserter(json), "\n    \"n\": \"{}\"", seq.nuc);
+                    comma = true;
+                }
+                fmt::format_to(std::back_inserter(json), "\n   }}");
+                if (seq_no < entry.seqs.size())
+                    fmt::format_to(std::back_inserter(json), ",");
+                fmt::format_to(std::back_inserter(json), "\n");
+
+                ++seq_no;
+            }
+            // sequence_aa_t aa;
+            // sequence_nuc_t nuc;
+            // std::string annotations;
+            // std::vector<std::string> reassortants;
+            // std::vector<std::string> passages;
+            // std::string hash;
+            // issues_t issues;
+            // labs_t lab_ids;
+            // gisaid_data_t gisaid;
 
             fmt::format_to(std::back_inserter(json), "\n   ]\n  }}"); // end-of "s": [], end-of entry {}
             if (no < entries_.size())

@@ -1,10 +1,8 @@
 #pragma once
 
-#include <string>
-#include <string_view>
-#include <vector>
 #include <filesystem>
-#include <algorithm>
+
+#include "sequences/sequence.hh"
 
 // ======================================================================
 
@@ -70,6 +68,32 @@ namespace ae::sequences
 
     struct SeqdbSeq
     {
+        struct issues_t
+        {
+            std::string data_;
+        };
+
+        using lab_ids_t = std::vector<std::string>;
+        using labs_t = std::vector<std::pair<std::string_view, lab_ids_t>>;
+
+        struct gisaid_data_t
+        {
+            std::vector<std::string> isolate_ids; // gisaid accession numbers
+            std::vector<std::string> sample_ids_by_sample_provider; // ncbi accession numbers
+        };
+
+        // master_ref_t master; // for slave only
+        sequence_aa_t aa;
+        sequence_nuc_t nuc;
+        std::string annotations;
+        std::vector<std::string> reassortants;
+        std::vector<std::string> passages;
+        std::string hash;
+        issues_t issues;
+        labs_t lab_ids;
+        gisaid_data_t gisaid;
+
+        SeqdbSeq() = default;
     };
 
     // ----------------------------------------------------------------------
@@ -84,5 +108,15 @@ namespace ae::sequences
     }
 
 } // namespace ae::sequences
+
+// ======================================================================
+
+template <> struct fmt::formatter<ae::sequences::SeqdbSeq::issues_t> : fmt::formatter<eu::fmt_helper::default_formatter> {
+    template <typename FormatCtx> auto format(const ae::sequences::SeqdbSeq::issues_t& issues, FormatCtx& ctx)
+    {
+        return format_to(ctx.out(), "{{{}}}", issues.data_);
+    }
+};
+
 
 // ======================================================================
