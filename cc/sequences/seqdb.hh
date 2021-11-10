@@ -94,6 +94,7 @@ namespace ae::sequences
         gisaid_data_t gisaid;
 
         SeqdbSeq() = default;
+        bool update(const RawSequence& raw_sequence); // returns if entry was modified
     };
 
     // ----------------------------------------------------------------------

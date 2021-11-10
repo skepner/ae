@@ -127,17 +127,13 @@ bool ae::sequences::SeqdbEntry::update(const RawSequence& raw_sequence)
         // std::string continent;
         // std::string country;
 
-    auto& seq = seqs.emplace_back();
-    seq.aa = raw_sequence.sequence.aa;
-    seq.nuc = raw_sequence.sequence.nuc;
-    seq.hash = raw_sequence.hash_nuc;
-        // std::string annotations;
-        // std::vector<std::string> reassortants;
-        // std::vector<std::string> passages;
-        // std::string hash;
-        // issues_t issues;
-        // labs_t lab_ids;
-        // gisaid_data_t gisaid;
+    if (auto found = std::find_if(std::begin(seqs), std::end(seqs), [&raw_sequence](const auto& seq) { return seq.hash == raw_sequence.hash_nuc; }); found == std::end(seqs)) {
+        auto& seq = seqs.emplace_back();
+        updated |= seq.update(raw_sequence);
+    }
+    else {
+        updated |= found->update(raw_sequence);
+    }
 
     return updated;
 
@@ -160,6 +156,39 @@ bool ae::sequences::SeqdbEntry::add_date(std::string_view date)
 
 // ----------------------------------------------------------------------
 
+bool ae::sequences::SeqdbSeq::update(const RawSequence& raw_sequence) // returns if entry was modified
+{
+    bool updated{false};
+    if (aa != raw_sequence.sequence.aa) {
+        aa = raw_sequence.sequence.aa;
+        updated = true;
+    }
+    if (nuc != raw_sequence.sequence.nuc) {
+        nuc = raw_sequence.sequence.nuc;
+        hash = raw_sequence.hash_nuc;
+        updated = true;
+    }
+    if (!raw_sequence.annotations.empty() && std::find(std::begin(annotations), std::end(annotations), raw_sequence.annotations) == std::end(annotations)) {
+        annotations.push_back(raw_sequence.annotations);
+        updated = true;
+    }
+    if (!raw_sequence.reassortant.empty() && std::find(std::begin(reassortants), std::end(reassortants), raw_sequence.reassortant) == std::end(reassortants)) {
+        reassortants.push_back(raw_sequence.reassortant);
+        updated = true;
+    }
+    if (!raw_sequence.passage.empty() && std::find(std::begin(passages), std::end(passages), raw_sequence.passage) == std::end(passages)) {
+        passages.push_back(raw_sequence.passage);
+        updated = true;
+    }
+        // issues_t issues;
+        // labs_t lab_ids;
+        // gisaid_data_t gisaid;
+    return updated;
+
+} // ae::sequences::SeqdbSeq::update
+
+// ----------------------------------------------------------------------
+
 void ae::sequences::Seqdb::save()
 {
     const auto db_filename = filename();
@@ -174,41 +203,47 @@ void ae::sequences::Seqdb::save()
         size_t no{1};
         for (const auto& entry : entries_) {
             fmt::format_to(std::back_inserter(json), "  {{\"N\": \"{}\"", entry.name);
+            if (!entry.lineage.empty())
+                fmt::format_to(std::back_inserter(json), ", \"l\": \"{}\"", entry.lineage);
             if (!entry.dates.empty())
                 fmt::format_to(std::back_inserter(json), ", \"d\": [\"{}\"]", fmt::join(entry.dates, "\", \""));
-            // std::string continent;
-            // std::string country;
-            // std::string lineage;
+            if (!entry.continent.empty())
+                fmt::format_to(std::back_inserter(json), ", \"C\": \"{}\"", entry.continent);
+            if (!entry.country.empty())
+                fmt::format_to(std::back_inserter(json), ", \"c\": \"{}\"", entry.country);
             fmt::format_to(std::back_inserter(json), ",\n   \"s\": [\n");
 
             size_t seq_no{1};
             for (const auto& seq : entry.seqs) {
                 bool comma{false};
-                const auto add_val = [&comma, &json](std::string_view key, std::string_view formatted) {
+                enum class newline { no, yes };
+                const auto add_val = [&comma, &json](std::string_view key, std::string_view formatted, newline nl) {
                     if (comma)
                         fmt::format_to(std::back_inserter(json), ",");
-                    fmt::format_to(std::back_inserter(json), "\n    \"{}\": {}", key, formatted);
+                    if (nl == newline::yes)
+                        fmt::format_to(std::back_inserter(json), "\n   ");
+                    fmt::format_to(std::back_inserter(json), " \"{}\": {}", key, formatted);
                     comma = true;
                 };
-                const auto add_str = [add_val](std::string_view key, std::string_view value) {
+                const auto add_str = [add_val](std::string_view key, std::string_view value, newline nl) {
                     if (!value.empty())
-                        add_val(key, fmt::format("\"{}\"", value));
+                        add_val(key, fmt::format("\"{}\"", value), nl);
                 };
-                const auto add_vec = [add_val](std::string_view key, const auto& value) {
+                const auto add_vec = [add_val](std::string_view key, const auto& value, newline nl) {
                     if (!value.empty())
-                        add_val(key, fmt::format("[\"{}\"]", fmt::join(value, "\", \"")));
+                        add_val(key, fmt::format("[\"{}\"]", fmt::join(value, "\", \"")), nl);
                 };
 
                 fmt::format_to(std::back_inserter(json), "   {{");
-                add_str("a", seq.aa);
-                add_str("n", seq.nuc);
-                add_str("H", seq.hash);
-                add_vec("r", seq.reassortants);
-                add_vec("A", seq.annotations);
-                // std::vector<std::string> passages;
-                // issues_t issues;
-                // labs_t lab_ids;
-                // gisaid_data_t gisaid;
+                add_str("a", seq.aa, newline::yes);
+                add_str("n", seq.nuc, newline::yes);
+                add_str("H", seq.hash, newline::yes);
+                add_str("i", seq.issues.data_, newline::yes);
+                add_vec("r", seq.reassortants, newline::no);
+                add_vec("A", seq.annotations, newline::no);
+                add_vec("p", seq.passages, newline::no);
+                add_str("l", "!!! lab: [lab_id]", newline::yes); // labs_t lab_ids;
+                add_str("G", "!!! gisaid data", newline::yes); // // gisaid_data_t gisaid;
                 fmt::format_to(std::back_inserter(json), "\n   }}");
                 if (seq_no < entry.seqs.size())
                     fmt::format_to(std::back_inserter(json), ",");

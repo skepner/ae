@@ -2,7 +2,7 @@ import sys, re, pprint
 from pathlib import Path
 
 import ae_backend
-from .parse import Context, parse_name, parse_date
+from .parse import Context, parse_name, parse_date, parse_passage
 
 # ======================================================================
 
@@ -134,6 +134,7 @@ sGisaidFieldParsers = [
     ["date",                          parse_date],
     ["lab",                           gisaid_parse_lab],
     ["gisaid_last_modified",          parse_date],
+    ["passage",                       parse_passage],
 
     ["name",                          parse_name] # name must be the last!
 ]
@@ -194,8 +195,8 @@ def add_metadata_to_sequence(metadata: dict, sequence: ae_backend.raw_sequence.S
         sequence.lab = lab
     if lab_id := metadata.get("lab_id"):
         sequence.lab_id = lab_id
-    if lineage := metadata.get("lineage"):
-        sequence.lineage = lineage
+    if type_subtype == "B" and (lineage := metadata.get("lineage")):
+        sequence.lineage = lineage[0]
     if passage := metadata.get("passage"):
         sequence.passage = passage
     if gisaid_dna_accession_no := metadata.get("gisaid_dna_accession_no"):

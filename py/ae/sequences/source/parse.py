@@ -115,4 +115,11 @@ def parse_date(date: str, metadata: dict, context: Context):
         print(f">> date not parsed: {value}", file=sys.stderr)
         return date
 
+# ----------------------------------------------------------------------
+
+def parse_passage(passage: str, metadata: dict, context: Context):
+    if passage:
+        passage = f"!!! {passage}"
+    return passage
+
 # ======================================================================
