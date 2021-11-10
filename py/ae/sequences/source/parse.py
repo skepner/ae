@@ -81,7 +81,7 @@ def parse_name(name: str, metadata: dict, context: Context) -> (str, str): # -> 
         # print(f">>>> {preprocessed_name}", file=sys.stderr)
         result = ae_backend.virus_name_parse(preprocessed_name)
         if result.good():
-            new_name = result.parts.name()
+            new_name = result.parts.host_location_isolation_year()
             # if "CNIC" in new_name or "IVR" in new_name or "NYMC" in new_name:
             #     print(f"\"{new_name}\" <-- \"{name}\"")
             return new_name, result.parts.year

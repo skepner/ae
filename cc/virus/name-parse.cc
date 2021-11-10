@@ -569,31 +569,54 @@ namespace ae::virus::name::inline v1
 
 // ======================================================================
 
-std::string ae::virus::name::v1::Parts::name(mark_extra me) const
+inline void format_or(fmt::memory_buffer& out, std::string_view field, std::string_view alt, std::string_view sep)
 {
-    fmt::memory_buffer out;
-    const std::string_view nothing{}, space{" "}, slash{"/"}, question{"?"};
-    const auto format_or = [&out](std::string_view field, std::string_view alt, std::string_view sep) {
         if (!field.empty())
             fmt::format_to(std::back_inserter(out), "{}{}", sep, field);
         else if (!alt.empty())
             fmt::format_to(std::back_inserter(out), "{}{}", sep, alt);
-    };
+}
+
+// ----------------------------------------------------------------------
+
+std::string ae::virus::name::v1::Parts::name(mark_extra me) const
+{
+    fmt::memory_buffer out;
+    const std::string_view nothing{}, space{" "}, slash{"/"}, question{"?"};
     if (!reassortant.empty() && subtype.empty() && location.empty() && isolation.empty() && year.empty()) {
         fmt::format_to(std::back_inserter(out), "{}", reassortant);
     }
     else {
-        format_or(subtype, question, nothing);
-        format_or(host, nothing, slash);
-        format_or(location, question, slash);
-        format_or(isolation, question, slash);
-        format_or(year, question, slash);
-        format_or(reassortant, nothing, space);
+        format_or(out, subtype, question, nothing);
+        format_or(out, host, nothing, slash);
+        format_or(out, location, question, slash);
+        format_or(out, isolation, question, slash);
+        format_or(out, year, question, slash);
+        format_or(out, reassortant, nothing, space);
     }
-    format_or(extra, nothing, me == mark_extra::yes ? std::string_view{" * "} : space);
+    format_or(out, extra, nothing, me == mark_extra::yes ? std::string_view{" * "} : space);
     return fmt::to_string(out);
 
 } // ae::virus::name::v1::Parts::name
+
+// ----------------------------------------------------------------------
+
+std::string ae::virus::name::v1::Parts::host_location_isolation_year() const
+{
+    fmt::memory_buffer out;
+    const std::string_view nothing{}, slash{"/"}, question{"?"};
+    if (!reassortant.empty() && subtype.empty() && location.empty() && isolation.empty() && year.empty()) {
+        fmt::format_to(std::back_inserter(out), "{}", reassortant);
+    }
+    else {
+        format_or(out, host, nothing, nothing);
+        format_or(out, location, question, host.empty() ? nothing : slash);
+        format_or(out, isolation, question, slash);
+        format_or(out, year, question, slash);
+    }
+    return fmt::to_string(out);
+
+} // ae::virus::name::v1::Parts::host_location_isolation_year
 
 // ----------------------------------------------------------------------
 

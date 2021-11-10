@@ -183,20 +183,19 @@ void ae::sequences::Seqdb::save()
 
             size_t seq_no{1};
             for (const auto& seq : entry.seqs) {
+                bool comma{false};
+                const auto add_str = [&comma, &json](std::string_view key, std::string_view value) {
+                    if (!value.empty()) {
+                        if (comma)
+                            fmt::format_to(std::back_inserter(json), ",");
+                        fmt::format_to(std::back_inserter(json), "\n    \"{}\": \"{}\"", key, value);
+                        comma = true;
+                    }
+                };
+
                 fmt::format_to(std::back_inserter(json), "   {{");
-                bool comma { false };
-                if (!seq.aa.empty()) {
-                    if (comma)
-                        fmt::format_to(std::back_inserter(json), ",");
-                    fmt::format_to(std::back_inserter(json), "\n    \"a\": \"{}\"", seq.aa);
-                    comma = true;
-                }
-                if (!seq.nuc.empty()) {
-                    if (comma)
-                        fmt::format_to(std::back_inserter(json), ",");
-                    fmt::format_to(std::back_inserter(json), "\n    \"n\": \"{}\"", seq.nuc);
-                    comma = true;
-                }
+                add_str("a", seq.aa);
+                add_str("n", seq.nuc);
                 fmt::format_to(std::back_inserter(json), "\n   }}");
                 if (seq_no < entry.seqs.size())
                     fmt::format_to(std::back_inserter(json), ",");
@@ -204,8 +203,6 @@ void ae::sequences::Seqdb::save()
 
                 ++seq_no;
             }
-            // sequence_aa_t aa;
-            // sequence_nuc_t nuc;
             // std::string annotations;
             // std::vector<std::string> reassortants;
             // std::vector<std::string> passages;
@@ -214,7 +211,7 @@ void ae::sequences::Seqdb::save()
             // labs_t lab_ids;
             // gisaid_data_t gisaid;
 
-            fmt::format_to(std::back_inserter(json), "\n   ]\n  }}"); // end-of "s": [], end-of entry {}
+            fmt::format_to(std::back_inserter(json), "   ]\n  }}"); // end-of "s": [], end-of entry {}
             if (no < entries_.size())
                 fmt::format_to(std::back_inserter(json), ",");
             fmt::format_to(std::back_inserter(json), "\n");
