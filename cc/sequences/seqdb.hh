@@ -85,7 +85,7 @@ namespace ae::sequences
         // master_ref_t master; // for slave only
         sequence_aa_t aa;
         sequence_nuc_t nuc;
-        std::string annotations;
+        std::vector<std::string> annotations;
         std::vector<std::string> reassortants;
         std::vector<std::string> passages;
         std::string hash;

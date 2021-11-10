@@ -41,6 +41,8 @@ namespace ae::sequences
         std::string hash_nuc;
 
         std::string name;       // parsed or raw_name if parsing failed
+        std::string reassortant;
+        std::string annotations;
         std::string date;
         std::string accession_number; // gisaid isolate_id, ncbi sample_id_by_sample_provider
         virus::type_subtype_t type_subtype;

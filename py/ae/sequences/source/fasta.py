@@ -53,9 +53,7 @@ def regular_name_parser(name: str, lab_hint: str, context: Context):
             elif metadata["passage"] == "CELL":
                 metadata["passage"] = "MDCK?"
             name = mm.group(1)
-    metadata["name"], year = parse_name(name, metadata=metadata, context=context)
-    if year and not metadata.get("date"):
-        metadata["date"] = year
+    parse_name(name, metadata=metadata, context=context)
     return metadata
 
 # ======================================================================
@@ -83,10 +81,7 @@ def gisaid_extract_fields(fields: list, context: Context):
         key, value = field.split("=", maxsplit=1)
         if value:
             metadata[sGisaidFieldKeys[key]] = value.strip()
-    for field_name, parser in sGisaidFieldParsers:
-        if field_value := metadata.get(field_name):
-            metadata[field_name] = parser(field_value, metadata=metadata, context=context)
-    return metadata
+    return gisaid_parse_fields(metadata=metadata, context=context)
 
 def gisaid_parse_subtype(subtype: str, metadata: dict, context: Context):
     subtype = subtype.upper()
@@ -107,11 +102,12 @@ def parse_lineage(lineage, metadata: dict, context: Context):
 def gisaid_parse_lab(lab: str, metadata: dict, context: Context):
     return sGisaidLabs.get(lab.upper(), lab)
 
-def gisaid_parse_name(name, metadata: dict, context: Context):
-    name, year = parse_name(name, metadata=metadata, context=context)
-    if year and not metadata.get("date"):
-        metadata["date"] = year
-    return name
+def gisaid_parse_fields(metadata: dict, context: Context):
+    for field_name, parser in sGisaidFieldParsers:
+        if field_value := metadata.get(field_name):
+            if res := parser(field_value, metadata=metadata, context=context): # parse_name always returns None and updates metadata
+                metadata[field_name] = res
+    return metadata
 
 sGisaidFieldKeys = {
     "a": "isolate_id",
@@ -139,7 +135,7 @@ sGisaidFieldParsers = [
     ["lab",                           gisaid_parse_lab],
     ["gisaid_last_modified",          parse_date],
 
-    ["name",                          gisaid_parse_name] # name must be the last!
+    ["name",                          parse_name] # name must be the last!
 ]
 
 sGisaidLabs = {
@@ -178,10 +174,7 @@ def naomi_extract_fields(fields: list, context: Context):
         "type_subtype": fields[5].strip(),
         # pdm09
     }
-    for field_name, parser in sGisaidFieldParsers:
-        if field_value := metadata.get(field_name):
-            metadata[field_name] = parser(field_value, metadata=metadata, context=context)
-    return metadata
+    return gisaid_parse_fields(metadata=metadata, context=context)
 
 # ======================================================================
 
@@ -193,6 +186,10 @@ def add_metadata_to_sequence(metadata: dict, sequence: ae_backend.raw_sequence.S
         sequence.date = date
     if type_subtype := metadata.get("type_subtype"):
         sequence.type_subtype = type_subtype
+    if reassortant := metadata.get("reassortant"):
+        sequence.reassortant = reassortant
+    if extra := metadata.get("extra"):
+        sequence.annotations = extra
     if lab := metadata.get("lab"):
         sequence.lab = lab
     if lab_id := metadata.get("lab_id"):

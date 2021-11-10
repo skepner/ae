@@ -73,18 +73,15 @@ class Context:
 
 # ======================================================================
 
-def parse_name(name: str, metadata: dict, context: Context) -> (str, str): # -> name, year
+def parse_name(name: str, metadata: dict, context: Context):
     preprocessed_name = context.preprocess_virus_name(name, metadata)
     if preprocessed_name[:10] == "<no-parse>":
-        return preprocessed_name[10:], None
+        metadata["name"] = preprocessed_name[10:]
     else:
         # print(f">>>> {preprocessed_name}", file=sys.stderr)
         result = ae_backend.virus_name_parse(preprocessed_name)
         if result.good():
-            new_name = result.parts.host_location_isolation_year()
-            # if "CNIC" in new_name or "IVR" in new_name or "NYMC" in new_name:
-            #     print(f"\"{new_name}\" <-- \"{name}\"")
-            return new_name, result.parts.year
+            metadata["name"] = result.parts.host_location_isolation_year()
         else:
             if preprocessed_name != name:
                 value = f"{preprocessed_name} (original: {name})"
@@ -93,7 +90,13 @@ def parse_name(name: str, metadata: dict, context: Context) -> (str, str): # -> 
             for message in result.messages:
                 context.message(field="name", value=value, message_raw=message)
             context.unrecognized_locations(result.messages.unrecognized_locations())
-            return name, result.parts.year # perhaps empty year
+            # name not updated
+        if not metadata.get("date") and (year := result.parts.year):
+            metadata["date"] = year
+        if not metadata.get("reassortant") and (reassortant := result.parts.reassortant):
+            metadata["reassortant"] = reassortant
+        if not metadata.get("extra") and (extra := result.parts.extra):
+            metadata["extra"] = extra
 
 # ----------------------------------------------------------------------
 

@@ -31,6 +31,8 @@ void ae::py::sequences(pybind11::module_& mdl)
 
     pybind11::class_<RawSequence, std::shared_ptr<RawSequence>>(raw_sequence_submodule, "Sequence") //
         .def_readwrite("name", &RawSequence::name)
+        .def_readwrite("reassortant", &RawSequence::reassortant)
+        .def_readwrite("annotations", &RawSequence::annotations)
         .def_readwrite("date", &RawSequence::date)
         .def_readwrite("accession_number", &RawSequence::accession_number)
         .def_readwrite("lab", &RawSequence::lab)

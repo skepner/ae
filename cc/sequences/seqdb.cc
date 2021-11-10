@@ -184,18 +184,31 @@ void ae::sequences::Seqdb::save()
             size_t seq_no{1};
             for (const auto& seq : entry.seqs) {
                 bool comma{false};
-                const auto add_str = [&comma, &json](std::string_view key, std::string_view value) {
-                    if (!value.empty()) {
-                        if (comma)
-                            fmt::format_to(std::back_inserter(json), ",");
-                        fmt::format_to(std::back_inserter(json), "\n    \"{}\": \"{}\"", key, value);
-                        comma = true;
-                    }
+                const auto add_val = [&comma, &json](std::string_view key, std::string_view formatted) {
+                    if (comma)
+                        fmt::format_to(std::back_inserter(json), ",");
+                    fmt::format_to(std::back_inserter(json), "\n    \"{}\": {}", key, formatted);
+                    comma = true;
+                };
+                const auto add_str = [add_val](std::string_view key, std::string_view value) {
+                    if (!value.empty())
+                        add_val(key, fmt::format("\"{}\"", value));
+                };
+                const auto add_vec = [add_val](std::string_view key, const auto& value) {
+                    if (!value.empty())
+                        add_val(key, fmt::format("[\"{}\"]", fmt::join(value, "\", \"")));
                 };
 
                 fmt::format_to(std::back_inserter(json), "   {{");
                 add_str("a", seq.aa);
                 add_str("n", seq.nuc);
+                add_str("H", seq.hash);
+                add_vec("r", seq.reassortants);
+                add_vec("A", seq.annotations);
+                // std::vector<std::string> passages;
+                // issues_t issues;
+                // labs_t lab_ids;
+                // gisaid_data_t gisaid;
                 fmt::format_to(std::back_inserter(json), "\n   }}");
                 if (seq_no < entry.seqs.size())
                     fmt::format_to(std::back_inserter(json), ",");
@@ -203,13 +216,6 @@ void ae::sequences::Seqdb::save()
 
                 ++seq_no;
             }
-            // std::string annotations;
-            // std::vector<std::string> reassortants;
-            // std::vector<std::string> passages;
-            // std::string hash;
-            // issues_t issues;
-            // labs_t lab_ids;
-            // gisaid_data_t gisaid;
 
             fmt::format_to(std::back_inserter(json), "   ]\n  }}"); // end-of "s": [], end-of entry {}
             if (no < entries_.size())
