@@ -36,6 +36,8 @@ namespace ae::virus::name::inline v1
         std::string year{};
         std::string reassortant{};
         std::string extra{};
+        std::string continent{};
+        std::string country{};
 
         enum class mark_extra { no, yes };
 

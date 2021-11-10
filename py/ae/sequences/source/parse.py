@@ -82,6 +82,8 @@ def parse_name(name: str, metadata: dict, context: Context):
         result = ae_backend.virus_name_parse(preprocessed_name)
         if result.good():
             metadata["name"] = result.parts.host_location_isolation_year()
+            metadata["continent"] = result.parts.continent
+            metadata["country"] = result.parts.country
         else:
             if preprocessed_name != name:
                 value = f"{preprocessed_name} (original: {name})"
