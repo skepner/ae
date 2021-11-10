@@ -124,8 +124,18 @@ bool ae::sequences::SeqdbEntry::update(const RawSequence& raw_sequence)
         else if (lineage != raw_sequence.lineage)
             fmt::print(">> SeqdbEntry::update \"{}\": conflicting lineage old:{} new:{}\n", name, lineage, raw_sequence.lineage);
     }
-        // std::string continent;
-        // std::string country;
+    if (!raw_sequence.continent.empty()) {
+        if (continent.empty())
+            continent = raw_sequence.continent;
+        else if (continent != raw_sequence.continent)
+            fmt::print(">> SeqdbEntry::update \"{}\": conflicting continent old:{} new:{}\n", name, continent, raw_sequence.continent);
+    }
+    if (!raw_sequence.country.empty()) {
+        if (country.empty())
+            country = raw_sequence.country;
+        else if (country != raw_sequence.country)
+            fmt::print(">> SeqdbEntry::update \"{}\": conflicting country old:{} new:{}\n", name, country, raw_sequence.country);
+    }
 
     if (auto found = std::find_if(std::begin(seqs), std::end(seqs), [&raw_sequence](const auto& seq) { return seq.hash == raw_sequence.hash_nuc; }); found == std::end(seqs)) {
         auto& seq = seqs.emplace_back();

@@ -103,6 +103,19 @@ ae::locationdb::v1::Db::Db(std::string_view path)
 
 // ----------------------------------------------------------------------
 
+std::string_view ae::locationdb::v1::Db::continent(std::string_view country) const
+{
+    if (const auto found = countries_.find(country); found != countries_.end())
+        return continents_[found->second];
+    else {
+        // fmt::print("no continent for \"{}\"\n", country);
+        return {};
+    }
+
+} // ae::locationdb::v1::Db::continent
+
+// ----------------------------------------------------------------------
+
 std::pair<std::string_view, const ae::locationdb::v1::Db::location*> ae::locationdb::v1::Db::find(std::string_view look_for) const
 {
     if (const auto name_found = names_.find(look_for); name_found != names_.end())

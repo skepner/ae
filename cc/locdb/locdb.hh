@@ -32,13 +32,7 @@ namespace ae::locationdb::inline v1
         // returns replacement if available
         std::pair<std::string_view, const location*> find(std::string_view look_for) const;
 
-        std::string_view continent(std::string_view country) const
-        {
-            if (const auto found = countries_.find(country); found != countries_.end())
-                return continents_[found->second];
-            else
-                return {};
-        }
+        std::string_view continent(std::string_view country) const;
 
       private:
         simdjson::Parser parser_;
