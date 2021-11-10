@@ -503,15 +503,16 @@ namespace ae::virus::name::inline v1
     // ----------------------------------------------------------------------
 
     // return source unchanged, if location not found but add message
-    inline std::string_view fix_location(const std::string& location, std::string_view source, Parts& parts, Messages& messages, const MessageLocation& message_location)
+    inline std::tuple<std::string_view, std::string_view, std::string_view> fix_location(const std::string& location, std::string_view source, Parts& parts, Messages& messages, const MessageLocation& message_location)
     {
-        if (const auto fixed = locationdb::get().find(location); !fixed.empty()) {
-            return fixed;
+        const auto& locdb = locationdb::get();
+        if (const auto [fixed, location_data] = locdb.find(location); !fixed.empty()) {
+            return {fixed, locdb.continent(location_data->country), location_data->country};
         }
         else {
             parts.issues.add(Parts::issue::unrecognized_location);
             messages.add(Message::unrecognized_location, location, source, message_location);
-            return location;
+            return {location, {}, {}};
         }
     }
 
@@ -622,6 +623,7 @@ std::string ae::virus::name::v1::Parts::host_location_isolation_year() const
 
 ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, parse_settings& settings, Messages& messages, const MessageLocation& message_location)
 {
+    const auto& locdb = locationdb::get();
     Parts result;
 
     if (settings.trace()) {
@@ -651,7 +653,7 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
             result.issues.add(Parts::issue::invalid_subtype);
             messages.add(Message::invalid_subtype, fmt::format("{}/{}", parts[0].head, parts[1].head), source, message_location);
         }
-        result.location = fix_location(parts[2], source, result, messages, message_location);
+        std::tie(result.location, result.continent, result.country) = fix_location(parts[2], source, result, messages, message_location);
         result.isolation = fix_isolation(parts[3], source, result, messages, message_location);
         result.year = fix_year(parts[4], source, result, messages, message_location);
         if (type_match(parts[5], part_type::reassortant))
@@ -662,34 +664,41 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
     else if (types_match(parts, {part_type::type_subtype, part_type::letters_only, part_type::letters_only, part_type::any, part_type::digits_hyphens}) ||
              types_match(parts, {part_type::type_subtype, part_type::letters_only, part_type::letters_only, part_type::any, part_type::digits_hyphens, part_type::any})) {
         // with host or double location
-        const auto& locdb = locationdb::get();
-        if (const auto loc1 = locdb.find(parts[1].head), loc2 = locdb.find(parts[2].head); loc1.empty() && !loc2.empty()) {
+        if (const auto loc1 = locdb.find(parts[1].head), loc2 = locdb.find(parts[2].head); loc1.first.empty() && !loc2.first.empty()) {
             // A(H3N2)/HUMAN/SINGAPORE/INFIMH-16-0019/2016
             result.subtype = parts[0];
             result.host = parts[1];
-            result.location = loc2;
+            result.location = loc2.first;
+            result.country = loc2.second->country;
+            result.continent = locdb.continent(result.country);
             result.isolation = fix_isolation(parts[3], source, result, messages, message_location);
             result.year = fix_year(parts[4], source, result, messages, message_location);
         }
-        else if (const auto loc12 = locdb.find(fmt::format("{} {}", parts[1].head, parts[2].head)); !loc12.empty()) {
+        else if (const auto loc12 = locdb.find(fmt::format("{} {}", parts[1].head, parts[2].head)); !loc12.first.empty()) {
             // A(H3N2)/LYON/CHU/19/2016
             result.subtype = parts[0];
-            result.location = loc12;
+            result.location = loc12.first;
+            result.country = loc12.second->country;
+            result.continent = locdb.continent(result.country);
             result.isolation = fix_isolation(parts[3], source, result, messages, message_location);
             result.year = fix_year(parts[4], source, result, messages, message_location);
         }
-        else if (!loc1.empty() && loc2.empty()) {
+        else if (!loc1.first.empty() && loc2.first.empty()) {
             // A(H3N2)/LYON/XXX/19/2016
             result.subtype = parts[0];
-            result.location = loc1;
+            result.location = loc1.first;
+            result.country = loc1.second->country;
+            result.continent = locdb.continent(result.country);
             result.isolation = fmt::format("{}-{}", parts[2].head, std::string{parts[3]});
             result.year = fix_year(parts[4], source, result, messages, message_location);
         }
-        else if (!loc2.empty() && parts[1].head == "TURKEY") {
+        else if (!loc2.first.empty() && parts[1].head == "TURKEY") {
             // A/turkey/Poland/027/2020
             result.subtype = parts[0];
             result.host = parts[1];
-            result.location = loc2;
+            result.location = loc2.first;
+            result.country = loc2.second->country;
+            result.continent = locdb.continent(result.country);
             result.isolation = fix_isolation(parts[3], source, result, messages, message_location);
             result.year = fix_year(parts[4], source, result, messages, message_location);
         }
@@ -713,7 +722,7 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
         // A/Pennsylvania/1025/2019  IVR-213
         // IVR-213(A/Pennsylvania/1025/2019)
         result.subtype = parts[0];
-        result.location = fix_location(parts[1], source, result, messages, message_location);
+        std::tie(result.location, result.continent, result.country) = fix_location(parts[1], source, result, messages, message_location);
         result.isolation = fix_isolation(parts[2], source, result, messages, message_location);
         result.year = fix_year(parts[3], source, result, messages, message_location);
         if (type_match(parts[4], part_type::reassortant)) {

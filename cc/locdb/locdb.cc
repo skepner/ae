@@ -103,14 +103,14 @@ ae::locationdb::v1::Db::Db(std::string_view path)
 
 // ----------------------------------------------------------------------
 
-std::string_view ae::locationdb::v1::Db::find(std::string_view look_for) const
+std::pair<std::string_view, const ae::locationdb::v1::Db::location*> ae::locationdb::v1::Db::find(std::string_view look_for) const
 {
     if (const auto name_found = names_.find(look_for); name_found != names_.end())
-        return name_found->first;
+        return {name_found->first, &locations_.find(name_found->second)->second};
     else if (const auto replacement_found = replacements_.find(look_for); replacement_found != replacements_.end())
-        return replacement_found->second;
+        return find(replacement_found->second);
 
-    return {};
+    return {{}, nullptr};
 
 } // ae::locationdb::v1::Db::find
 
