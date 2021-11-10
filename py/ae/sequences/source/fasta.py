@@ -53,7 +53,9 @@ def regular_name_parser(name: str, lab_hint: str, context: Context):
             elif metadata["passage"] == "CELL":
                 metadata["passage"] = "MDCK?"
             name = mm.group(1)
-    metadata["name"] = parse_name(name, metadata=metadata, context=context)
+    metadata["name"], year = parse_name(name, metadata=metadata, context=context)
+    if year and not metadata.get("date"):
+        metadata["date"] = year
     return metadata
 
 # ======================================================================
@@ -105,6 +107,12 @@ def parse_lineage(lineage, metadata: dict, context: Context):
 def gisaid_parse_lab(lab: str, metadata: dict, context: Context):
     return sGisaidLabs.get(lab.upper(), lab)
 
+def gisaid_parse_name(name, metadata: dict, context: Context):
+    name, year = parse_name(name, metadata=metadata, context=context)
+    if year and not metadata.get("date"):
+        metadata["date"] = year
+    return name
+
 sGisaidFieldKeys = {
     "a": "isolate_id",
     "b": "type_subtype",
@@ -131,7 +139,7 @@ sGisaidFieldParsers = [
     ["lab",                           gisaid_parse_lab],
     ["gisaid_last_modified",          parse_date],
 
-    ["name",                          parse_name] # name must be the last!
+    ["name",                          gisaid_parse_name] # name must be the last!
 ]
 
 sGisaidLabs = {

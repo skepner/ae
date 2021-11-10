@@ -41,7 +41,8 @@ void ae::py::virus(pybind11::module_& mdl)
     pybind11::class_<ae::virus::name::Parts>(mdl, "VirusNameParts") //
         .def(
             "name", [](const ae::virus::name::Parts& parts, bool mark_extra) { return parts.name(mark_extra ? ae::virus::name::Parts::mark_extra::yes : ae::virus::name::Parts::mark_extra::no); },
-            "mark_extra"_a = false) //
+            "mark_extra"_a = false)                          //
+        .def_readonly("year", &ae::virus::name::Parts::year) //
         ;
 }
 

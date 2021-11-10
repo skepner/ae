@@ -73,10 +73,10 @@ class Context:
 
 # ======================================================================
 
-def parse_name(name: str, metadata: dict, context: Context):
+def parse_name(name: str, metadata: dict, context: Context) -> (str, str): # -> name, year
     preprocessed_name = context.preprocess_virus_name(name, metadata)
     if preprocessed_name[:10] == "<no-parse>":
-        return preprocessed_name[10:]
+        return preprocessed_name[10:], None
     else:
         # print(f">>>> {preprocessed_name}", file=sys.stderr)
         result = ae_backend.virus_name_parse(preprocessed_name)
@@ -84,7 +84,7 @@ def parse_name(name: str, metadata: dict, context: Context):
             new_name = result.parts.name()
             # if "CNIC" in new_name or "IVR" in new_name or "NYMC" in new_name:
             #     print(f"\"{new_name}\" <-- \"{name}\"")
-            return new_name
+            return new_name, result.parts.year
         else:
             if preprocessed_name != name:
                 value = f"{preprocessed_name} (original: {name})"
@@ -93,7 +93,7 @@ def parse_name(name: str, metadata: dict, context: Context):
             for message in result.messages:
                 context.message(field="name", value=value, message_raw=message)
             context.unrecognized_locations(result.messages.unrecognized_locations())
-            return name
+            return name, result.parts.year # perhaps empty year
 
 # ----------------------------------------------------------------------
 

@@ -18,6 +18,7 @@ def main(args: list):
     num_seqs = 0
     messages = []
     unrecognized_locations = set()
+    sequences_by_subtype = {}
 
     for filename in args.filename:
         if filename.is_dir() and filename.joinpath("influenza_na.dat.xz").exists():
@@ -35,6 +36,7 @@ def main(args: list):
                     ae_backend.raw_sequence.translate(sequence, sequence_messages)
                     ae_backend.raw_sequence.align(sequence, sequence_messages)
                     ae_backend.raw_sequence.calculate_hash(sequence)
+                    sequences_by_subtype.setdefault(sequence.type_subtype, []).append(sequence)
                 except Exception as err:
                     print(f"> {err}: {sequence.name}\n    {sequence.aa}")
                 reader.context.messages_from_backend(sequence_messages)
@@ -46,7 +48,17 @@ def main(args: list):
             num_seqs += 1
         unrecognized_locations |= reader.unrecognized_locations
 
-    print(f">>> {num_seqs} sequences read")
+    for seqs in sequences_by_subtype.values():
+        seqs.sort(key=lambda seq: seq.date)
+
+    sSubtypeOrder = ["B", "A(H1N1)", "A(H1)", "A(H1N0)", "A(H3N2)", "A(H3)", "A(H3N0)"]
+    def subtype_order(en: (str, list)):
+        try:
+            return str(sSubtypeOrder.index(en[0]))
+        except ValueError:
+            return f"{len(sSubtypeOrder)}{en[0]}"
+
+    print(f">>> {num_seqs} sequences read\n  ", "\n  ".join(f"{subtype:8s} {len(seqs):5d} {seqs[0].date:10s}..{seqs[-1].date:10s}" for subtype, seqs in sorted(sequences_by_subtype.items(), key=subtype_order)), sep="")
 
     # print(f"Labs: {len(labs)}\n{pprint.pformat(labs)}")
     print(f"Messages: {len(messages)}")

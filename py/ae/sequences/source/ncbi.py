@@ -72,9 +72,11 @@ class reader:
                 # "completeness": fields[10],
                 "line_no": line_no,
             }
-            metadata["name"] = parse_name(name, metadata=metadata, context=context)
+            metadata["name"], year = parse_name(name, metadata=metadata, context=context)
             if date := parse_date(fields[5], metadata=metadata, context=context):
                 metadata["date"] = date
+            elif year:
+                metadata["date"] = year
             # print(f">>>> metadata {metadata}", file=sys.stderr)
             return metadata
         else:
