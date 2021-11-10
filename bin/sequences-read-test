@@ -48,6 +48,8 @@ def main(args: list):
             num_seqs += 1
         unrecognized_locations |= reader.unrecognized_locations
 
+    # sequences must be sorted by date before adding to the database
+    # master sequence (the one with the actual sequence) in the database must be the oldest one to keep the tree more stable (if new tree is made from scratch)
     for seqs in sequences_by_subtype.values():
         seqs.sort(key=lambda seq: seq.date)
 
@@ -57,8 +59,13 @@ def main(args: list):
             return str(sSubtypeOrder.index(en[0]))
         except ValueError:
             return f"{len(sSubtypeOrder)}{en[0]}"
+    print(f">>> {num_seqs} sequences read\n  ", "\n  ".join(f"{subtype:8s} {len(seqs):5d} {seqs[0].date:10s}..{seqs[-1].date:10s}" for subtype, seqs in sorted(sequences_by_subtype.items(), key=subtype_order) if subtype in sSubtypeOrder), sep="")
 
-    print(f">>> {num_seqs} sequences read\n  ", "\n  ".join(f"{subtype:8s} {len(seqs):5d} {seqs[0].date:10s}..{seqs[-1].date:10s}" for subtype, seqs in sorted(sequences_by_subtype.items(), key=subtype_order)), sep="")
+    sSeqdbSubtype = {"B": "B", "A(H1N1)": "A(H1N1)", "A(H1)": "A(H1N1)", "A(H3N2)": "A(H3N2)", "A(H3)": "A(H3N2)"}
+    for subtype, seqdb_subtype in sSeqdbSubtype.items():
+        for seq in sequences_by_subtype[subtype]:
+            ae_backend.seqdb.for_subtype(seqdb_subtype).add(seq)
+    ae_backend.seqdb.save()
 
     # print(f"Labs: {len(labs)}\n{pprint.pformat(labs)}")
     print(f"Messages: {len(messages)}")

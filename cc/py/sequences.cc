@@ -3,6 +3,7 @@
 #include "sequences/fasta.hh"
 #include "sequences/translate.hh"
 #include "sequences/align.hh"
+#include "sequences/seqdb.hh"
 
 #include "py/module.hh"
 
@@ -12,6 +13,17 @@ void ae::py::sequences(pybind11::module_& mdl)
 {
     using namespace pybind11::literals;
     using namespace ae::sequences;
+
+    // ----------------------------------------------------------------------
+
+    auto seqdb_submodule = mdl.def_submodule("seqdb", "seqdb access");
+
+    seqdb_submodule.def("for_subtype", &ae::sequences::seqdb_for_subtype, "subtype"_a, pybind11::return_value_policy::reference);
+    seqdb_submodule.def("save", &ae::sequences::seqdb_save);
+
+    pybind11::class_<ae::sequences::Seqdb>(seqdb_submodule, "SeqdbForSubtype") //
+        .def("add", &ae::sequences::Seqdb::add, "raw_sequence"_a)              //
+        ;
 
     // ----------------------------------------------------------------------
 
@@ -33,8 +45,8 @@ void ae::py::sequences(pybind11::module_& mdl)
             "type_subtype",                                                                                                                                                         //
             [](const RawSequence& seq) { return *seq.type_subtype; },                                                                                                               //
             [](RawSequence& seq, std::string_view type_subtype) { seq.type_subtype = ae::virus::type_subtype_t{type_subtype}; })                                                    //
-        .def_property_readonly("aa", [](const RawSequence& sequence) { return sequence.sequence.aa.get(); })                                                                                 //
-        .def_property_readonly("nuc", [](const RawSequence& sequence) { return sequence.sequence.nuc.get(); })                                                                               //
+        .def_property_readonly("aa", [](const RawSequence& sequence) { return sequence.sequence.aa.get(); })                                                                        //
+        .def_property_readonly("nuc", [](const RawSequence& sequence) { return sequence.sequence.nuc.get(); })                                                                      //
         .def("is_aligned", [](const RawSequence& sequence) { return !sequence.issues.is_set(issue::not_aligned); })                                                                 //
         .def("is_translated", [](const RawSequence& sequence) { return !sequence.issues.is_set(issue::not_translated); })                                                           //
         .def("is_translated_not_aligned", [](const RawSequence& sequence) { return !sequence.issues.is_set(issue::not_translated) && sequence.issues.is_set(issue::not_aligned); }) //
