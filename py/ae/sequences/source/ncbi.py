@@ -37,7 +37,10 @@ class reader:
     def read_fna_name(self, name: str, context: Context):
         fields = name.split("|")
         if len(fields) == 5:
+            # print(f">>>> {fields[3]}", file=sys.stderr)
             if metadata := self.na_dat.get(fields[3]):
+                if fields[3] == "KY859943":
+                    print(metadata)
                 return metadata
             # if not found, it most probably means wrong segment (not HA)
         else:
@@ -78,6 +81,8 @@ class reader:
                 "line_no": line_no,
             }
             parse_name(name, metadata=metadata, context=context)
+            if metadata.get("extra") == "(MIXED)":
+                del metadata["extra"]
             if date := parse_date(fields[5], metadata=metadata, context=context):
                 metadata["date"] = date
             # print(f">>>> metadata {metadata}", file=sys.stderr)
@@ -93,10 +98,10 @@ class reader:
             subtype = f"A({subtype})"
         elif mm_mixed_h := self.sReSubtypeFixMixedH.match(subtype):
             subtype = f"A(H{mm_mixed_h.end()})"
-        elif ",MIXED" in subtype:
-            subtype = subtype.replace(",MIXED", "")
         elif subtype == "MIXED" or subtype[:1] == "N":
             subtype = ""
+        if ",MIXED" in subtype: # A(H1,MIXED) -> A(H1)
+            subtype = subtype.replace(",MIXED", "")
         return subtype
 
     def parse_country(self, country):
