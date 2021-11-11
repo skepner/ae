@@ -211,5 +211,9 @@ def add_metadata_to_sequence(metadata: dict, sequence: ae_backend.raw_sequence.S
         sequence.gisaid_identifier = gisaid_identifier
     if gisaid_last_modified := metadata.get("gisaid_last_modified"):
         sequence.gisaid_last_modified = gisaid_last_modified
+    if gisaid_submitter := metadata.get("submitter"):
+        sequence.gisaid_submitter = gisaid_submitter
+    if gisaid_originating_lab := metadata.get("originating_lab"):
+        sequence.gisaid_originating_lab = gisaid_originating_lab
 
 # ======================================================================

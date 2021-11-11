@@ -74,9 +74,15 @@ namespace ae::sequences
 
         struct gisaid_data_t
         {
-            std::vector<std::string> isolate_ids; // gisaid accession numbers
-            std::vector<std::string> sample_ids_by_sample_provider; // ncbi accession numbers
-            bool empty() const { return isolate_ids.empty() && sample_ids_by_sample_provider.empty(); }
+            std::vector<std::string> accession_number;                   // gisaid accession numbers, ncbi accession numbers
+            std::vector<std::string> gisaid_dna_accession_no;
+            std::vector<std::string> gisaid_dna_insdc;
+            std::vector<std::string> gisaid_identifier;
+            std::vector<std::string> gisaid_last_modified;
+            std::vector<std::string> gisaid_submitter;
+            std::vector<std::string> gisaid_originating_lab;
+
+            bool empty() const { return accession_number.empty() && gisaid_dna_accession_no.empty() && gisaid_dna_insdc.empty() && gisaid_identifier.empty() && gisaid_last_modified.empty(); }
         };
 
         // master_ref_t master; // for slave only

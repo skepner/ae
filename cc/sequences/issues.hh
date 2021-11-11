@@ -56,18 +56,18 @@ namespace ae::sequences
     {
         std::string data_;
 
-        seqdb_issues_t& operator=(const issues_t& issues) { from(issues); return *this; }
-
-        void from(const issues_t& issues)
+        bool update(const issues_t& issues)
         {
-            data_.resize(issues.count(), ' ');
-            auto cur = data_.begin();
+            bool updated { false };
             for (auto iss = issue::not_translated; iss < issue::size_; ++iss) {
                 if (issues.is_set(iss)) {
-                    *cur = issue_to_char(iss);
-                    ++cur;
+                    if (const auto ic = issue_to_char(iss); data_.find(ic) == std::string::npos) {
+                        data_.push_back(ic);
+                        updated = true;
+                    }
                 }
             }
+            return updated;
         }
     };
 

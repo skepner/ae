@@ -45,6 +45,8 @@ void ae::py::sequences(pybind11::module_& mdl)
         .def_readwrite("gisaid_dna_insdc", &RawSequence::gisaid_dna_insdc)
         .def_readwrite("gisaid_identifier", &RawSequence::gisaid_identifier)
         .def_readwrite("gisaid_last_modified", &RawSequence::gisaid_last_modified)
+        .def_readwrite("gisaid_submitter", &RawSequence::gisaid_submitter)
+        .def_readwrite("gisaid_originating_lab", &RawSequence::gisaid_originating_lab)
         .def_property(
             "type_subtype",                                                                                                                                                         //
             [](const RawSequence& seq) { return *seq.type_subtype; },                                                                                                               //

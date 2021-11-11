@@ -35,6 +35,8 @@ namespace ae::sequences
         std::string gisaid_dna_insdc;
         std::string gisaid_identifier;
         std::string gisaid_last_modified;
+        std::string gisaid_submitter;
+        std::string gisaid_originating_lab;
         std::string_view raw_name{};
 
         RawSequence(std::string_view rn) : raw_name{rn} {}

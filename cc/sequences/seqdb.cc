@@ -169,7 +169,15 @@ bool ae::sequences::SeqdbEntry::add_date(std::string_view date)
 bool ae::sequences::SeqdbSeq::update(const RawSequence& raw_sequence) // returns if entry was modified
 {
     bool updated{false};
-    if (aa != raw_sequence.sequence.aa) {
+    const auto update_vec = [&updated](auto& vec, std::string_view source) {
+        if (!source.empty() && std::find(std::begin(vec), std::end(vec), source) == std::end(vec)) {
+            vec.emplace_back(source);
+            updated = true;
+        }
+    };
+
+    if (aa != raw_sequence.sequence.aa)
+    {
         aa = raw_sequence.sequence.aa;
         updated = true;
     }
@@ -178,31 +186,26 @@ bool ae::sequences::SeqdbSeq::update(const RawSequence& raw_sequence) // returns
         hash = raw_sequence.hash_nuc;
         updated = true;
     }
-    if (!raw_sequence.annotations.empty() && std::find(std::begin(annotations), std::end(annotations), raw_sequence.annotations) == std::end(annotations)) {
-        annotations.push_back(raw_sequence.annotations);
-        updated = true;
-    }
-    if (!raw_sequence.reassortant.empty() && std::find(std::begin(reassortants), std::end(reassortants), raw_sequence.reassortant) == std::end(reassortants)) {
-        reassortants.push_back(raw_sequence.reassortant);
-        updated = true;
-    }
-    if (!raw_sequence.passage.empty() && std::find(std::begin(passages), std::end(passages), raw_sequence.passage) == std::end(passages)) {
-        passages.push_back(raw_sequence.passage);
-        updated = true;
-    }
-    issues = raw_sequence.issues;
+    update_vec(annotations, raw_sequence.annotations);
+    update_vec(reassortants, raw_sequence.reassortant);
+    update_vec(passages, raw_sequence.passage);
+    updated |= issues.update(raw_sequence.issues);
     if (!raw_sequence.lab.empty()) {
-        if (auto lab = std::find_if(std::begin(lab_ids), std::end(lab_ids), [&raw_sequence](const auto& en) { return en.first == raw_sequence.lab; }); lab != std::end(lab_ids)) {
-            if (!raw_sequence.lab_id.empty()) {
-                if (auto id = std::find(std::begin(lab->second), std::end(lab->second), raw_sequence.lab_id); id == std::end(lab->second))
-                    lab->second.emplace_back(raw_sequence.lab_id);
-            }
-        }
+        if (auto lab = std::find_if(std::begin(lab_ids), std::end(lab_ids), [&raw_sequence](const auto& en) { return en.first == raw_sequence.lab; }); lab != std::end(lab_ids))
+            update_vec(lab->second, raw_sequence.lab_id);
         else
             lab_ids.emplace_back(raw_sequence.lab, lab_ids_t{raw_sequence.lab_id});
+        updated = true;
     }
 
-    // gisaid_data_t gisaid;
+    update_vec(gisaid.accession_number, raw_sequence.accession_number);
+    update_vec(gisaid.gisaid_dna_accession_no, raw_sequence.gisaid_dna_accession_no);
+    update_vec(gisaid.gisaid_dna_insdc, raw_sequence.gisaid_dna_insdc);
+    update_vec(gisaid.gisaid_identifier, raw_sequence.gisaid_identifier);
+    update_vec(gisaid.gisaid_last_modified, raw_sequence.gisaid_last_modified);
+    update_vec(gisaid.gisaid_submitter, raw_sequence.gisaid_submitter);
+    update_vec(gisaid.gisaid_originating_lab, raw_sequence.gisaid_originating_lab);
+
     return updated;
 
 } // ae::sequences::SeqdbSeq::update
@@ -270,15 +273,13 @@ void ae::sequences::Seqdb::save()
                             fmt::format_to(std::back_inserter(json), ",");
                         fmt::format_to(std::back_inserter(json), " \"G\": {{");
                         bool comma_gisaid{false};
-                        add_vec("i", gisaid.isolate_ids, newline::no, comma_gisaid);
-                        add_vec("s", gisaid.sample_ids_by_sample_provider, newline::no, comma_gisaid);
-                        // "S": ["submitters"],
-                        // "m": ["gisaid_last_modified"],
-                        // "o": ["originating_lab"],
-                        // "n": ["gisaid_segment_number"],
-                        // "t": ["gisaid_identifier"],
-                        // "D": ["gisaid_dna_accession_no"],
-                        // "d": ["gisaid_dna_insdc"]
+                        add_vec("i", gisaid.accession_number, newline::no, comma_gisaid);
+                        add_vec("D", gisaid.gisaid_dna_accession_no, newline::no, comma_gisaid);
+                        add_vec("d", gisaid.gisaid_dna_insdc, newline::no, comma_gisaid);
+                        add_vec("t", gisaid.gisaid_identifier, newline::no, comma_gisaid);
+                        // add_vec("m", gisaid.gisaid_last_modified, newline::no, comma_gisaid);
+                        // add_vec("S", gisaid.gisaid_submitter, newline::no, comma_gisaid);
+                        // add_vec("o", gisaid.gisaid_originating_lab, newline::no, comma_gisaid);
                         fmt::format_to(std::back_inserter(json), "}}");
                         comma = true;
                     }
