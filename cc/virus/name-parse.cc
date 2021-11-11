@@ -510,6 +510,7 @@ namespace ae::virus::name::inline v1
             return {fixed, locdb.continent(location_data->country), location_data->country};
         }
         else {
+            // fmt::print("{} -> unrecognized {}\n", location, source);
             parts.issues.add(Parts::issue::unrecognized_location);
             messages.add(Message::unrecognized_location, location, source, message_location);
             return {location, {}, {}};
@@ -626,12 +627,15 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
     const auto& locdb = locationdb::get();
     Parts result;
 
+    // fmt::print(">>>> parsing \"{}\"\n", source);
     if (settings.trace()) {
         fmt::print(">>> parsing \"{}\"\n", source);
         lexy::trace<grammar::parts>(stderr, lexy::string_input<lexy::utf8_encoding>{source});
     }
     const auto parsing_result = lexy::parse<grammar::parts>(lexy::string_input<lexy::utf8_encoding>{source}, lexy_ext::report_error);
     const auto parts = parsing_result.value();
+    // if (source == "A(H1N1)/NIB/4/1988")
+    //     fmt::print(">>>> parsing \"{}\" -> {}\n", source, parts);
     if (settings.trace())
         fmt::print(">>> parts: {}\n", parts);
     // order of if's important, do not change!
@@ -741,6 +745,8 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
     // extra at the end
     else
         messages.add(Message::unhandled_virus_name, fmt::format("{}", parts), source, message_location);
+    // if (source == "A(H1N1)/NIB/4/1988")
+    //     fmt::print(">>>> parsing \"{}\" -> \"{}\" \"{}\"\n", source, result.name(), result.reassortant);
     return result;
 }
 

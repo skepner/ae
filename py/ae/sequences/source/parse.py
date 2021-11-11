@@ -85,6 +85,7 @@ def parse_name(name: str, metadata: dict, context: Context):
             metadata["continent"] = result.parts.continent
             metadata["country"] = result.parts.country
         else:
+            metadata["name"] = preprocessed_name
             if preprocessed_name != name:
                 value = f"{preprocessed_name} (original: {name})"
             else:
@@ -92,7 +93,6 @@ def parse_name(name: str, metadata: dict, context: Context):
             for message in result.messages:
                 context.message(field="name", value=value, message_raw=message)
             context.unrecognized_locations(result.messages.unrecognized_locations())
-            # name not updated
         if not metadata.get("date") and (year := result.parts.year):
             metadata["date"] = year
         if not metadata.get("reassortant") and (reassortant := result.parts.reassortant):
@@ -120,8 +120,8 @@ def parse_date(date: str, metadata: dict, context: Context):
 # ----------------------------------------------------------------------
 
 def parse_passage(passage: str, metadata: dict, context: Context):
-    if passage:
-        passage = f"!!! {passage}"
+    # if passage:
+    #     passage = f"!!! {passage}"
     return passage
 
 # ======================================================================

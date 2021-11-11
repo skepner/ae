@@ -21,6 +21,7 @@ def main(args: list):
     sequences_by_subtype = {}
 
     for filename in args.filename:
+        print(f">>> {filename}")
         if filename.is_dir() and filename.joinpath("influenza_na.dat.xz").exists():
             reader = ncbi.reader(filename)
         elif filename.is_file():
@@ -52,6 +53,11 @@ def main(args: list):
     # master sequence (the one with the actual sequence) in the database must be the oldest one to keep the tree more stable (if new tree is made from scratch)
     for seqs in sequences_by_subtype.values():
         seqs.sort(key=lambda seq: seq.date)
+
+    # report all passages
+    passages = collections.Counter(seq.passage for seqs in sequences_by_subtype.values() for seq in seqs)
+    print("Passages:\n  ", "\n  ".join("{passage:60s} {cnt:6d}".format(passage=f'"{passage}":', cnt=cnt) for passage, cnt in passages.most_common()), sep="")
+    exit(1)
 
     sSubtypeOrder = ["B", "A(H1N1)", "A(H1)", "A(H1N0)", "A(H3N2)", "A(H3)", "A(H3N0)"]
     def subtype_order(en: (str, list)):

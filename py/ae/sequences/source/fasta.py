@@ -180,7 +180,10 @@ def naomi_extract_fields(fields: list, context: Context):
 # ======================================================================
 
 def add_metadata_to_sequence(metadata: dict, sequence: ae_backend.raw_sequence.Sequence):
-    sequence.name = metadata["name"]
+    if not metadata.get("name"):
+        print(f">> NO NAME in metadata: {metadata}", file=sys.stderr)
+    else:
+        sequence.name = metadata["name"]
     if continent := metadata.get("continent"):
         sequence.continent = continent
     if country := metadata.get("country"):

@@ -23,9 +23,14 @@ class reader:
         self.reader_ = ae_backend.raw_sequence.FastaReader(self.fna_filename)
         self.na_dat = self.read_influenza_na_dat(self.na_dat_filename)
         for en in self.reader_:
-            context = Context(self, filename=self.fna_filename, line_no=en.line_no)
-            if metadata := self.read_fna_name(en.raw_name, context=context):
+            self.context = Context(self, filename=self.fna_filename, line_no=en.line_no)
+            if metadata := self.read_fna_name(en.raw_name, context=self.context):
                 yield metadata, en.sequence # metadata may contain "excluded" key to manually exclude the sequence
+
+    def get_and_clear_messages(self):
+        messages = self.messages
+        self.messages = []
+        return messages
 
     # ----------------------------------------------------------------------
 
