@@ -30,9 +30,14 @@ struct D
 size_t passage_parsing_test(bool verbose)
 {
     const std::array data{
-        D{"Original", "OR"}, //
-        D{"C1", "MDCK1"},    //
-        D{"MDCK1", "MDCK1"}, //
+        D{"Original", "OR"},              //
+        D{"C1", "MDCK1"},                 //
+        D{"MDCK1", "MDCK1"},              //
+        D{"MDCK 2 +1", "MDCK2/MDCK1"},    //
+        D{"MDCKX,MDCK1", "MDCK?/MDCK1"},  //
+        D{"MDCKX, MDCK1", "MDCK?/MDCK1"}, //
+        D{"MDCK1/SIAT1", "MDCK1/SIAT1"},  //
+        D{"C2+C1", "MDCK2/MDCK1"},        //
     };
 
     size_t errors = 0;
