@@ -235,9 +235,8 @@ void ae::sequences::Seqdb::save()
 
             size_t seq_no{1};
             for (const auto& seq : entry.seqs) {
-                bool comma{false};
                 enum class newline { no, yes };
-                const auto add_val = [&comma, &json](std::string_view key, std::string_view formatted, newline nl) {
+                const auto add_val = [&json](std::string_view key, std::string_view formatted, newline nl, bool& comma) {
                     if (comma)
                         fmt::format_to(std::back_inserter(json), ",");
                     if (nl == newline::yes)
@@ -245,42 +244,58 @@ void ae::sequences::Seqdb::save()
                     fmt::format_to(std::back_inserter(json), " \"{}\": {}", key, formatted);
                     comma = true;
                 };
-                const auto add_str = [add_val](std::string_view key, std::string_view value, newline nl) {
+                const auto add_str = [add_val](std::string_view key, std::string_view value, newline nl, bool& comma) {
                     if (!value.empty())
-                        add_val(key, fmt::format("\"{}\"", value), nl);
+                        add_val(key, fmt::format("\"{}\"", value), nl, comma);
                 };
-                const auto add_vec = [add_val](std::string_view key, const auto& value, newline nl) {
+                const auto add_vec = [add_val](std::string_view key, const auto& value, newline nl, bool& comma) {
                     if (!value.empty())
-                        add_val(key, fmt::format("[\"{}\"]", fmt::join(value, "\", \"")), nl);
+                        add_val(key, fmt::format("[\"{}\"]", fmt::join(value, "\", \"")), nl, comma);
                 };
-                const auto add_lab_ids = [&comma, &json](const SeqdbSeq::labs_t& lab_ids) {
+                const auto add_lab_ids = [&json, add_vec](const SeqdbSeq::labs_t& lab_ids, bool& comma) {
                     if (!lab_ids.empty()) {
                         if (comma)
                             fmt::format_to(std::back_inserter(json), ",");
                         fmt::format_to(std::back_inserter(json), " \"l\": {{");
                         bool comma_lab{false};
-                        for (const auto& [lab, ids] : lab_ids) {
-                            if (comma_lab)
-                                fmt::format_to(std::back_inserter(json), ", ");
-                            fmt::format_to(std::back_inserter(json), "\"{}\": [\"{}\"]", lab, fmt::join(ids, "\", \""));
-                            comma_lab = true;
-                        }
+                        for (const auto& [lab, ids] : lab_ids)
+                            add_vec(lab, ids, newline::no, comma_lab);
+                        fmt::format_to(std::back_inserter(json), "}}");
+                        comma = true;
+                    }
+                };
+                const auto add_gisaid = [&json, add_vec](const SeqdbSeq::gisaid_data_t& gisaid, bool& comma) {
+                    if (!gisaid.empty()) {
+                        if (comma)
+                            fmt::format_to(std::back_inserter(json), ",");
+                        fmt::format_to(std::back_inserter(json), " \"G\": {{");
+                        bool comma_gisaid{false};
+                        add_vec("i", gisaid.isolate_ids, newline::no, comma_gisaid);
+                        add_vec("s", gisaid.sample_ids_by_sample_provider, newline::no, comma_gisaid);
+                        // "S": ["submitters"],
+                        // "m": ["gisaid_last_modified"],
+                        // "o": ["originating_lab"],
+                        // "n": ["gisaid_segment_number"],
+                        // "t": ["gisaid_identifier"],
+                        // "D": ["gisaid_dna_accession_no"],
+                        // "d": ["gisaid_dna_insdc"]
                         fmt::format_to(std::back_inserter(json), "}}");
                         comma = true;
                     }
                 };
 
+                bool comma{false};
                 fmt::format_to(std::back_inserter(json), "   {{");
-                add_str("a", seq.aa, newline::yes);
-                add_str("n", seq.nuc, newline::yes);
-                add_str("H", seq.hash, newline::yes);
-                add_str("i", seq.issues.data_, newline::yes);
-                add_vec("r", seq.reassortants, newline::no);
-                add_vec("A", seq.annotations, newline::no);
-                add_vec("p", seq.passages, newline::no);
-                add_lab_ids(seq.lab_ids);
+                add_str("a", seq.aa, newline::yes, comma);
+                add_str("n", seq.nuc, newline::yes, comma);
+                add_str("H", seq.hash, newline::yes, comma);
+                add_str("i", seq.issues.data_, newline::yes, comma);
+                add_vec("r", seq.reassortants, newline::no, comma);
+                add_vec("A", seq.annotations, newline::no, comma);
+                add_vec("p", seq.passages, newline::no, comma);
+                add_lab_ids(seq.lab_ids, comma);
+                add_gisaid(seq.gisaid, comma);
 
-                add_str("G", "!!! gisaid data", newline::yes); // // gisaid_data_t gisaid;
                 fmt::format_to(std::back_inserter(json), "\n   }}");
                 if (seq_no < entry.seqs.size())
                     fmt::format_to(std::back_inserter(json), ",");

@@ -76,6 +76,7 @@ namespace ae::sequences
         {
             std::vector<std::string> isolate_ids; // gisaid accession numbers
             std::vector<std::string> sample_ids_by_sample_provider; // ncbi accession numbers
+            bool empty() const { return isolate_ids.empty() && sample_ids_by_sample_provider.empty(); }
         };
 
         // master_ref_t master; // for slave only
