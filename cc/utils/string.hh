@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string_view>
+#include <string>
 #include <vector>
 #include <iterator>
 #include <cctype>
@@ -25,6 +26,15 @@ namespace ae::string
     {
         std::transform(std::begin(source), std::end(source), std::begin(source), [](auto cc) { return std::toupper(cc); });
     }
+
+    template <typename Iter, typename F> inline std::string transform(Iter first, Iter last, F&& func)
+    {
+        std::string result(static_cast<size_t>(last - first), '?');
+        std::transform(first, last, result.begin(), func);
+        return result;
+    }
+
+    inline std::string uppercase(std::string_view source) { return transform(source.begin(), source.end(), ::toupper); }
 
 } // namespace ae::string
 

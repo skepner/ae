@@ -2,6 +2,8 @@
 
 #include "ext/lexy.hh"
 #include "ext/fmt.hh"
+#include "utils/string.hh"
+#include "utils/named-type.hh"
 #include "virus/passage-parse.hh"
 
 // ======================================================================
@@ -31,14 +33,14 @@ namespace ae::virus::passage
 
 #pragma GCC diagnostic pop
 
-        inline const std::string_view apply(const std::string& look_for)
+        inline const std::string apply(const std::string& look_for)
         {
             if (const auto found = std::find_if(std::begin(table), std::end(table), [&look_for](const auto& cc) { return cc.trigger == look_for; }); found != std::end(table))
-                return found->replacement;
+                return std::string{found->replacement};
             else if (look_for.size() > 1 && look_for.back() == 'X')
-                return std::string_view(look_for.data(), look_for.size() - 1);
+                return string::uppercase(std::string_view(look_for.data(), look_for.size() - 1));
             else
-                return look_for;
+                return string::uppercase(look_for);
         }
 
     } // namespace conversion
@@ -63,13 +65,14 @@ namespace ae::virus::passage
         struct passage_number
         {
             static constexpr auto symbol = dsl::digit<> / X / dsl::question_mark;
+            static constexpr auto cond = dsl::peek(dsl::digit<>);
             static constexpr auto rule = dsl::peek(symbol) >> dsl::capture(dsl::while_(symbol));
             static constexpr auto value = lexy::as_string<std::string>;
         };
 
         struct passage_separator
         {
-            static constexpr auto symbol = dsl::slash / dsl::comma / PLUS;
+            static constexpr auto symbol = dsl::slash / dsl::backslash / dsl::comma / PLUS;
             static constexpr auto rule = symbol >> dsl::capture(dsl::while_(symbol));
             static constexpr auto value = lexy::as_string<std::string>;
         };
@@ -95,10 +98,39 @@ namespace ae::virus::passage
             });
         };
 
+        using part_without_name_t = named_string_t<std::string, struct part_without_name_t_tag>;
+
+        struct part_without_name
+        {
+            static constexpr auto rule = dsl::p<passage_number> + WS + dsl::opt(dsl::p<passage_separator>) + WS;
+            static constexpr auto value = lexy::callback<part_without_name_t>([](const std::string& number, auto separator) {
+                std::string result{number};
+                if constexpr (!std::is_same_v<decltype(separator), lexy::nullopt>)
+                    result.append(1, '/');
+                return result;
+            });
+        };
+
         struct passages
         {
-            static constexpr auto rule = dsl::list(passage_name::cond >> dsl::p<part>);
-            static constexpr auto value = lexy::as_string<std::string>;
+            static constexpr auto rule = dsl::list((passage_name::cond >> dsl::p<part>) | (passage_number::cond >> dsl::p<part_without_name>));
+            // static constexpr auto value = lexy::as_string<std::string>;
+            static constexpr auto value = lexy::fold_inplace<std::string>("", [](std::string& target, const auto& val) {
+                if constexpr (std::is_same_v<decltype(val), const part_without_name_t&>) {
+                    auto end = target.rbegin();
+                    while (end != target.rend() && (std::isdigit(*end) || *end == '/' || *end == '?'))
+                        ++end;
+                    if (end != target.rend()) {
+                        auto begin = std::prev(end.base());
+                        while (begin != target.begin() && std::isalpha(*std::prev(begin)))
+                            --begin;
+                        target.append(begin, end.base());
+                    }
+                    target.append(*val);
+                }
+                else
+                    target.append(val);
+            });
         };
 
         struct whole
