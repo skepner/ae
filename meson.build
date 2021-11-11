@@ -50,7 +50,7 @@ bzip2 = meson.get_compiler('cpp').find_library('bz2', required : false)
 
 # ----------------------------------------------------------------------
 
-sources_virus = ['cc/virus/name-parse.cc']
+sources_virus = ['cc/virus/name-parse.cc', 'cc/virus/passage-parse.cc']
 sources_sequences = ['cc/sequences/seqdb.cc', 'cc/sequences/fasta.cc', 'cc/sequences/translate.cc', 'cc/sequences/align.cc', 'cc/sequences/master.cc', 'cc/sequences/deletions.cc']
 sources_locdb = ['cc/locdb/locdb.cc']
 sources_utlis = ['cc/utils/file.cc', 'cc/utils/messages.cc', 'cc/ext/date.cc']
@@ -72,6 +72,13 @@ test_virus_name = executable(
   dependencies : [fmt, simdjson, range_v3, bzip2, zlib, xz, lexy],
   install : true)
 
+test_passage = executable(
+  'test-passage',
+  ['cc/test/test-passage.cc', 'cc/virus/passage-parse.cc', 'cc/utils/messages.cc'],
+  include_directories : include_directories('./cc'),
+  dependencies : [fmt, range_v3, lexy],
+  install : true)
+
 test_date = executable(
   'test-date',
   ['cc/test/test-date.cc', 'cc/ext/date.cc'],
@@ -88,7 +95,7 @@ test_pos = executable(
 
 test('ae test virus name parsing', test_virus_name)
 test('ae test date parsing', test_date)
-
+test('ae test passage parsing', test_passage)
 
 # ----------------------------------------------------------------------
 # python module
