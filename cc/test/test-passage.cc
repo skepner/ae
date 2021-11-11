@@ -32,12 +32,14 @@ size_t passage_parsing_test(bool verbose)
     const std::array data{
         D{"C1", "MDCK1"},                                                                                                       //
         D{"MDCK1", "MDCK1"},                                                                                                    //
-        D{"MDCK 2 +1", "MDCK2/MDCK1"},                                                                                          //
+        D{"MDCK1/SIAT1", "MDCK1/SIAT1"},                                                                                        //
+        D{"MDCK1,SIAT1", "MDCK1/SIAT1"},                                                                                        //
+        D{"MDCK1, SIAT1", "MDCK1/SIAT1"},                                                                                        //
         D{"MDCKX,MDCK1", "MDCK?/MDCK1"},                                                                                        //
         D{"MDCKX, MDCK1", "MDCK?/MDCK1"},                                                                                       //
-        D{"MDCK1/SIAT1", "MDCK1/SIAT1"},                                                                                        //
-        D{"MDCKx\\MDCK2", "MDCK?/MDCK2"},                                                                                       //
         D{"C2+C1", "MDCK2/MDCK1"},                                                                                              //
+        D{"MDCK 2 +1", "MDCK2/MDCK1"},                                                                                          //
+        D{"MDCKx\\MDCK2", "MDCK?/MDCK2"},                                                                                       //
         D{"X1", "X1"},                                                                                                          //
         D{"X", "X?"},                                                                                                           //
         D{"X/MDCK1", "X?/MDCK1"},                                                                                               //
