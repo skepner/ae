@@ -30,14 +30,26 @@ struct D
 size_t passage_parsing_test(bool verbose)
 {
     const std::array data{
-        D{"Original", "OR"},              //
-        D{"C1", "MDCK1"},                 //
-        D{"MDCK1", "MDCK1"},              //
-        D{"MDCK 2 +1", "MDCK2/MDCK1"},    //
-        D{"MDCKX,MDCK1", "MDCK?/MDCK1"},  //
-        D{"MDCKX, MDCK1", "MDCK?/MDCK1"}, //
-        D{"MDCK1/SIAT1", "MDCK1/SIAT1"},  //
-        D{"C2+C1", "MDCK2/MDCK1"},        //
+        D{"C1", "MDCK1"},                                                                                                       //
+        D{"MDCK1", "MDCK1"},                                                                                                    //
+        D{"MDCK 2 +1", "MDCK2/MDCK1"},                                                                                          //
+        D{"MDCKX,MDCK1", "MDCK?/MDCK1"},                                                                                        //
+        D{"MDCKX, MDCK1", "MDCK?/MDCK1"},                                                                                       //
+        D{"MDCK1/SIAT1", "MDCK1/SIAT1"},                                                                                        //
+        D{"MDCKx\\MDCK2", "MDCK?/MDCK2"},                                                                                       //
+        D{"C2+C1", "MDCK2/MDCK1"},                                                                                              //
+        D{"X1", "X1"},                                                                                                          //
+        D{"X", "X?"},                                                                                                           //
+        D{"X/MDCK1", "X?/MDCK1"},                                                                                               //
+        D{"E2 (2012-11-01)", "E2 (2012-11-01)"},                                                                                //
+        D{"passage details: MDCKX, MDCK2", "MDCK?/MDCK2"},                                                                      //
+        D{"Original", "OR"},                                                                                                    //
+        D{"Original Specimen", "OR"},                                                                                           //
+        D{"Original Sample", "OR"},                                                                                             //
+        D{"passage: Original", "OR"},                                                                                           //
+        D{"passage details: original specimen", "OR"},                                                                          //
+        D{"Clinical Specimen", "CS"},                                                                                           //
+        D{"10 passages - embryonated chicken eggs; Passage Line 5", "*10 passages - embryonated chicken eggs; Passage Line 5"}, //
     };
 
     size_t errors = 0;
