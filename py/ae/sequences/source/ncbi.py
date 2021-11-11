@@ -39,8 +39,6 @@ class reader:
         if len(fields) == 5:
             # print(f">>>> {fields[3]}", file=sys.stderr)
             if metadata := self.na_dat.get(fields[3]):
-                if fields[3] == "KY859943":
-                    print(metadata)
                 return metadata
             # if not found, it most probably means wrong segment (not HA)
         else:
