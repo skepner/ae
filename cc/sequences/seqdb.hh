@@ -70,7 +70,7 @@ namespace ae::sequences
     struct SeqdbSeq
     {
         using lab_ids_t = std::vector<std::string>;
-        using labs_t = std::vector<std::pair<std::string_view, lab_ids_t>>;
+        using labs_t = std::vector<std::pair<std::string, lab_ids_t>>;
 
         struct gisaid_data_t
         {

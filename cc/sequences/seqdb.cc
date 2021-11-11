@@ -191,8 +191,18 @@ bool ae::sequences::SeqdbSeq::update(const RawSequence& raw_sequence) // returns
         updated = true;
     }
     issues = raw_sequence.issues;
-        // labs_t lab_ids;
-        // gisaid_data_t gisaid;
+    if (!raw_sequence.lab.empty()) {
+        if (auto lab = std::find_if(std::begin(lab_ids), std::end(lab_ids), [&raw_sequence](const auto& en) { return en.first == raw_sequence.lab; }); lab != std::end(lab_ids)) {
+            if (!raw_sequence.lab_id.empty()) {
+                if (auto id = std::find(std::begin(lab->second), std::end(lab->second), raw_sequence.lab_id); id == std::end(lab->second))
+                    lab->second.emplace_back(raw_sequence.lab_id);
+            }
+        }
+        else
+            lab_ids.emplace_back(raw_sequence.lab, lab_ids_t{raw_sequence.lab_id});
+    }
+
+    // gisaid_data_t gisaid;
     return updated;
 
 } // ae::sequences::SeqdbSeq::update
@@ -243,6 +253,22 @@ void ae::sequences::Seqdb::save()
                     if (!value.empty())
                         add_val(key, fmt::format("[\"{}\"]", fmt::join(value, "\", \"")), nl);
                 };
+                const auto add_lab_ids = [&comma, &json](const SeqdbSeq::labs_t& lab_ids) {
+                    if (!lab_ids.empty()) {
+                        if (comma)
+                            fmt::format_to(std::back_inserter(json), ",");
+                        fmt::format_to(std::back_inserter(json), " \"l\": {{");
+                        bool comma_lab{false};
+                        for (const auto& [lab, ids] : lab_ids) {
+                            if (comma_lab)
+                                fmt::format_to(std::back_inserter(json), ", ");
+                            fmt::format_to(std::back_inserter(json), "\"{}\": [\"{}\"]", lab, fmt::join(ids, "\", \""));
+                            comma_lab = true;
+                        }
+                        fmt::format_to(std::back_inserter(json), "}}");
+                        comma = true;
+                    }
+                };
 
                 fmt::format_to(std::back_inserter(json), "   {{");
                 add_str("a", seq.aa, newline::yes);
@@ -252,7 +278,8 @@ void ae::sequences::Seqdb::save()
                 add_vec("r", seq.reassortants, newline::no);
                 add_vec("A", seq.annotations, newline::no);
                 add_vec("p", seq.passages, newline::no);
-                add_str("l", "!!! lab: [lab_id]", newline::yes); // labs_t lab_ids;
+                add_lab_ids(seq.lab_ids);
+
                 add_str("G", "!!! gisaid data", newline::yes); // // gisaid_data_t gisaid;
                 fmt::format_to(std::back_inserter(json), "\n   }}");
                 if (seq_no < entry.seqs.size())
