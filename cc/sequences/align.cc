@@ -62,10 +62,16 @@ namespace ae::sequences
                     sequence.type_subtype = aligned_data.type_subtype;
                 }
                 else {
-                    if (sequence.sequence.aa[pos0_t{0}] != 'X' && sequence.sequence.aa.size() > 500 && subtype_to_report(aligned_data.type_subtype, sequence.type_subtype))
-                        messages.add(Message::subtype_mismatch, aligned_data.type_subtype, fmt::format("detected: {} provided: {}", aligned_data.type_subtype, sequence.type_subtype),
-                                     fmt::format("provided subtype {} is used, detected {}, no reasonable master found\nS:  {}\nMP: {}\nMD: {}", sequence.type_subtype, aligned_data.type_subtype,
-                                                 sequence.sequence.aa, master_sequence_for(sequence.type_subtype)->aa, master_sequence_for(aligned_data.type_subtype)->aa));
+                    if (sequence.sequence.aa[pos0_t{0}] != 'X' && sequence.sequence.aa.size() > 500 && subtype_to_report(aligned_data.type_subtype, sequence.type_subtype)) {
+                        if (const auto* master_provided_subtype = master_sequence_for(sequence.type_subtype); master_provided_subtype)
+                            messages.add(Message::subtype_mismatch, aligned_data.type_subtype, fmt::format("detected: {} provided: {}", aligned_data.type_subtype, sequence.type_subtype),
+                                         fmt::format("provided subtype {} is used, detected {}, no reasonable master found\nS:  {}\nMP: {}\nMD: {}", sequence.type_subtype, aligned_data.type_subtype,
+                                                     sequence.sequence.aa, master_provided_subtype->aa, master_sequence_for(aligned_data.type_subtype)->aa));
+                        else
+                            messages.add(Message::subtype_mismatch, aligned_data.type_subtype, fmt::format("detected: {} provided: {}", aligned_data.type_subtype, sequence.type_subtype),
+                                         fmt::format("provided subtype {} is used, detected {}, no reasonable master found\nS:  {}\nMD: {}", sequence.type_subtype, aligned_data.type_subtype,
+                                                     sequence.sequence.aa, master_sequence_for(aligned_data.type_subtype)->aa));
+                    }
                 }
             }
         }

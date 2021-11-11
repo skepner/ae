@@ -98,10 +98,12 @@ class reader:
             subtype = f"A({subtype})"
         elif mm_mixed_h := self.sReSubtypeFixMixedH.match(subtype):
             subtype = f"A(H{mm_mixed_h.end()})"
-        elif subtype == "MIXED" or subtype[:1] == "N":
+        elif subtype == "MIXED" or subtype[:1] == "N" or subtype[:7] == "MIXED,N":
             subtype = ""
         if ",MIXED" in subtype: # A(H1,MIXED) -> A(H1)
             subtype = subtype.replace(",MIXED", "")
+        if "MIXED" in subtype:
+            print(f">> not fixed subtype: {subtype}")
         return subtype
 
     def parse_country(self, country):
