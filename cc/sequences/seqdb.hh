@@ -3,6 +3,7 @@
 #include <filesystem>
 
 #include "sequences/sequence.hh"
+#include "sequences/issues.hh"
 
 // ======================================================================
 
@@ -68,11 +69,6 @@ namespace ae::sequences
 
     struct SeqdbSeq
     {
-        struct issues_t
-        {
-            std::string data_;
-        };
-
         using lab_ids_t = std::vector<std::string>;
         using labs_t = std::vector<std::pair<std::string_view, lab_ids_t>>;
 
@@ -89,7 +85,7 @@ namespace ae::sequences
         std::vector<std::string> reassortants;
         std::vector<std::string> passages;
         std::string hash;
-        issues_t issues;
+        seqdb_issues_t issues;
         labs_t lab_ids;
         gisaid_data_t gisaid;
 
@@ -109,15 +105,5 @@ namespace ae::sequences
     }
 
 } // namespace ae::sequences
-
-// ======================================================================
-
-template <> struct fmt::formatter<ae::sequences::SeqdbSeq::issues_t> : fmt::formatter<eu::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(const ae::sequences::SeqdbSeq::issues_t& issues, FormatCtx& ctx)
-    {
-        return format_to(ctx.out(), "{{{}}}", issues.data_);
-    }
-};
-
 
 // ======================================================================

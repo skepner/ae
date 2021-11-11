@@ -190,7 +190,7 @@ bool ae::sequences::SeqdbSeq::update(const RawSequence& raw_sequence) // returns
         passages.push_back(raw_sequence.passage);
         updated = true;
     }
-        // issues_t issues;
+    issues = raw_sequence.issues;
         // labs_t lab_ids;
         // gisaid_data_t gisaid;
     return updated;
