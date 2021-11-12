@@ -14,9 +14,9 @@ namespace ae::virus::passage
     {
         struct element_t
         {
-            std::string name;
-            std::string count; // if count empty, name did not parsed
-            bool new_lab;
+            std::string name{};
+            std::string count{}; // if count empty, name did not parsed
+            bool new_lab{false};
 
             std::string construct(bool add_new_lab_separator) const
             {
@@ -32,8 +32,12 @@ namespace ae::virus::passage
             bool cell() const { return name == "MDCK" || name == "SIAT" || name == "HCK" || name == "SPFCK"; }
         };
 
-        std::vector<element_t> elements;
-        std::string date;
+        std::vector<element_t> elements{};
+        std::string date{};
+
+        constexpr passage_deconstructed_t() = default;
+        constexpr passage_deconstructed_t(int) : passage_deconstructed_t() {} // to support lexy::fold_inplace in passage-parse.cc
+        passage_deconstructed_t(const std::vector<element_t>& a_elements, const std::string& a_date) : elements{a_elements}, date{a_date} {}
 
         bool egg() const { return !elements.empty() && elements.back().egg(); }
         bool cell() const { return !elements.empty() && elements.back().cell(); }

@@ -60,7 +60,7 @@ size_t passage_parsing_test(bool verbose)
     for (const auto [no, entry] : ranges::views::enumerate(data)) {
         try {
             ae::Messages messages;
-            const auto result = ae::virus::passage::parse(entry.raw_name, settings, messages, ae::MessageLocation{"test", no});
+            const auto result = ae::virus::passage::parse(entry.raw_name, settings, messages, ae::MessageLocation{"test", no}).construct();
             // if (verbose)
             //     fmt::print(">>>  \"{}\"\n", entry.raw_name);
             if (!messages.empty()) {

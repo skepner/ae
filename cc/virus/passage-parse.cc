@@ -84,27 +84,30 @@ namespace ae::virus::passage
         struct part
         {
             static constexpr auto rule = dsl::p<passage_name> + WS + dsl::opt(dsl::p<passage_number>) + WS + dsl::opt(dsl::p<passage_separator>) + WS;
-            static constexpr auto value = lexy::callback<std::string>([](const std::string& name, auto number, auto separator) {
-                std::string result{name};
+
+            static constexpr auto value = lexy::callback<passage_deconstructed_t::element_t>([](const std::string& name, auto number, auto separator) {
+                passage_deconstructed_t::element_t result{.name = name};
                 if constexpr (!std::is_same_v<decltype(number), lexy::nullopt>)
-                    result.append(number.begin(), number.end());
+                    result.count.append(number.begin(), number.end());
                 else
-                    result.append(1, '?');
+                    result.count.append(1, '?');
                 if constexpr (!std::is_same_v<decltype(separator), lexy::nullopt>)
-                    result.append(1, '/');
+                    result.new_lab = true;
                 return result;
             });
         };
 
-        using part_without_name_t = named_string_t<std::string, struct part_without_name_t_tag>;
+        using part_without_name_t = named_t<passage_deconstructed_t::element_t, struct part_without_name_t_tag>;
 
         struct part_without_name
         {
             static constexpr auto rule = dsl::p<passage_number> + WS + dsl::opt(dsl::p<passage_separator>) + WS;
+
             static constexpr auto value = lexy::callback<part_without_name_t>([](const std::string& number, auto separator) {
-                std::string result{number};
+                passage_deconstructed_t::element_t result{.count = number};
                 if constexpr (!std::is_same_v<decltype(separator), lexy::nullopt>)
-                    result.append(1, '/');
+                    result.new_lab = true;
+                fmt::print(">>>> part_without_name: {}\n", result.construct(true));
                 return result;
             });
         };
@@ -112,30 +115,29 @@ namespace ae::virus::passage
         struct passages
         {
             static constexpr auto rule = dsl::list((passage_name::cond >> dsl::p<part>) | (passage_number::cond >> dsl::p<part_without_name>));
-            // static constexpr auto value = lexy::as_string<std::string>;
-            static constexpr auto value = lexy::fold_inplace<std::string>("", [](std::string& target, const auto& val) {
+
+            static constexpr auto value = lexy::fold_inplace<passage_deconstructed_t>(0, [](passage_deconstructed_t& target, const auto& val) {
                 if constexpr (std::is_same_v<decltype(val), const part_without_name_t&>) {
-                    auto end = target.rbegin();
-                    while (end != target.rend() && (std::isdigit(*end) || *end == '/' || *end == '?'))
-                        ++end;
-                    if (end != target.rend()) {
-                        auto begin = std::prev(end.base());
-                        while (begin != target.begin() && std::isalpha(*std::prev(begin)))
-                            --begin;
-                        target.append(begin, end.base());
-                    }
-                    target.append(*val);
+                    if (target.elements.empty())
+                        fmt::print("> ae::virus::passage::grammar::passages: adding part_without_name_t to an empty passage\n");
+                    target.elements.push_back({.name = target.elements.back().name, .count = val->count, .new_lab = val->new_lab});
                 }
-                else
-                    target.append(val);
+                else {
+                    target.elements.push_back(val);
+                }
+//                fmt::print(">>>> passages: {}\n", target.construct());
+                return target;
             });
+
         };
 
         struct whole
         {
             static constexpr auto rule = WS + dsl::p<passages> + dsl::opt(OPEN >> dsl::p<passage_date>) + dsl::eof;
-            static constexpr auto value = lexy::callback<std::string>([](const std::string& passages, const std::string& date) { return fmt::format("{} {}", passages, date); },
-                                                                      [](const std::string& passages, lexy::nullopt) { return passages; });
+
+            static constexpr auto value = lexy::callback<passage_deconstructed_t>(
+                [](const passage_deconstructed_t& passages, const std::string& date) { return passage_deconstructed_t{passages.elements, date}; },
+                [](const passage_deconstructed_t& passages, lexy::nullopt) { return passages; });
         };
 
     } // namespace grammar
@@ -144,7 +146,7 @@ namespace ae::virus::passage
 
 // ======================================================================
 
-std::string ae::virus::passage::parse(std::string_view source, parse_settings& settings, Messages& messages, const MessageLocation& location)
+ae::virus::passage::passage_deconstructed_t ae::virus::passage::parse(std::string_view source, parse_settings& settings, Messages& messages, const MessageLocation& location)
 {
     if (settings.trace()) {
         fmt::print(">>> parsing \"{}\"\n", source);

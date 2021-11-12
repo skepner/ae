@@ -27,7 +27,7 @@ namespace ae::virus::passage
         tracing tracing_{tracing::no};
     };
 
-    std::string parse(std::string_view source, parse_settings& settings, Messages& messages, const MessageLocation& location);
+    passage_deconstructed_t parse(std::string_view source, parse_settings& settings, Messages& messages, const MessageLocation& location);
 
 } // namespace ae::virus::passage
 
