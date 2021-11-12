@@ -1,8 +1,6 @@
 #include <array>
 
 #include "ext/lexy.hh"
-#include "ext/fmt.hh"
-#include "utils/string.hh"
 #include "utils/named-type.hh"
 #include "virus/passage-parse.hh"
 
