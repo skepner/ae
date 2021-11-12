@@ -49,9 +49,33 @@ namespace ae::virus::passage
     {
         namespace dsl = lexy::dsl;
 
+        static constexpr auto A = dsl::lit_c<'A'> / dsl::lit_c<'a'>;
+        // static constexpr auto B = dsl::lit_c<'B'> / dsl::lit_c<'b'>;
+        // static constexpr auto C = dsl::lit_c<'C'> / dsl::lit_c<'c'>;
+        static constexpr auto D = dsl::lit_c<'D'> / dsl::lit_c<'d'>;
+        static constexpr auto E = dsl::lit_c<'E'> / dsl::lit_c<'e'>;
+        // static constexpr auto F = dsl::lit_c<'F'> / dsl::lit_c<'f'>;
+        static constexpr auto G = dsl::lit_c<'G'> / dsl::lit_c<'g'>;
+        // static constexpr auto H = dsl::lit_c<'H'> / dsl::lit_c<'h'>;
+        static constexpr auto I = dsl::lit_c<'I'> / dsl::lit_c<'i'>;
+        // static constexpr auto J = dsl::lit_c<'J'> / dsl::lit_c<'j'>;
+        // static constexpr auto K = dsl::lit_c<'K'> / dsl::lit_c<'k'>;
+        static constexpr auto L = dsl::lit_c<'L'> / dsl::lit_c<'l'>;
+        // static constexpr auto M = dsl::lit_c<'M'> / dsl::lit_c<'m'>;
+        // static constexpr auto N = dsl::lit_c<'N'> / dsl::lit_c<'n'>;
         static constexpr auto O = dsl::lit_c<'O'> / dsl::lit_c<'o'>;
+        static constexpr auto P = dsl::lit_c<'P'> / dsl::lit_c<'p'>;
+        // static constexpr auto Q = dsl::lit_c<'Q'> / dsl::lit_c<'q'>;
         static constexpr auto R = dsl::lit_c<'R'> / dsl::lit_c<'r'>;
+        static constexpr auto S = dsl::lit_c<'S'> / dsl::lit_c<'s'>;
+        static constexpr auto T = dsl::lit_c<'T'> / dsl::lit_c<'t'>;
+        // static constexpr auto U = dsl::lit_c<'U'> / dsl::lit_c<'u'>;
+        // static constexpr auto V = dsl::lit_c<'V'> / dsl::lit_c<'v'>;
+        // static constexpr auto W = dsl::lit_c<'W'> / dsl::lit_c<'w'>;
         static constexpr auto X = dsl::lit_c<'X'> / dsl::lit_c<'x'>;
+        // static constexpr auto Y = dsl::lit_c<'Y'> / dsl::lit_c<'y'>;
+        // static constexpr auto Z = dsl::lit_c<'Z'> / dsl::lit_c<'z'>;
+
         static constexpr auto PLUS = dsl::lit_c<'+'>;
         static constexpr auto OPEN = dsl::lit_c<'('>;
         static constexpr auto CLOSE = dsl::lit_c<')'>;
@@ -59,8 +83,9 @@ namespace ae::virus::passage
 
         struct passage_or
         {
-            static constexpr auto cond = dsl::peek(O + R);
-            static constexpr auto rule = O + R + dsl::any;
+            static constexpr auto prefix = O + R;
+            static constexpr auto cond = dsl::peek(prefix);
+            static constexpr auto rule = prefix + dsl::any;
             static constexpr auto value = lexy::callback<std::string>([]() { return "OR"; });
         };
 
@@ -92,13 +117,23 @@ namespace ae::virus::passage
             static constexpr auto value = lexy::as_string<std::string>;
         };
 
+        struct passage_prefix
+        {
+            static constexpr auto prefix = P + A + S + S + A + G + E;
+            static constexpr auto prefix_details = D + E + T + A + I + L + S;
+            static constexpr auto cond = dsl::peek(prefix);
+            static constexpr auto rule = prefix + WS + dsl::opt(dsl::peek(prefix_details) >> prefix_details + WS) + dsl::colon + WS;
+            static constexpr auto value = lexy::callback<lexy::nullopt>([](lexy::nullopt) { return lexy::nullopt{}; }, []() { return lexy::nullopt{}; });
+        };
+
         struct part
         {
             static constexpr auto rule = //
-                (passage_or::cond >> dsl::p<passage_or> + dsl::nullopt + dsl::nullopt) // nullopt to match value callback arg list
-                | (passage_name::cond >> dsl::p<passage_name> + WS + dsl::opt(dsl::p<passage_number>) + WS + dsl::opt(dsl::p<passage_separator>) + WS);
+                dsl::opt(passage_prefix::cond >> dsl::p<passage_prefix>)
+                + ((passage_or::cond >> dsl::p<passage_or> + dsl::nullopt + dsl::nullopt) // nullopt to match value callback arg list
+                   | (passage_name::cond >> dsl::p<passage_name> + WS + dsl::opt(dsl::p<passage_number>) + WS + dsl::opt(dsl::p<passage_separator>) + WS));
 
-            static constexpr auto value = lexy::callback<passage_deconstructed_t::element_t>([](const std::string& name, auto number, auto separator) {
+            static constexpr auto value = lexy::callback<passage_deconstructed_t::element_t>([](lexy::nullopt, const std::string& name, auto number, auto separator) {
                 passage_deconstructed_t::element_t result{.name = name};
                 if constexpr (!std::is_same_v<decltype(number), lexy::nullopt>)
                     result.count.append(number.begin(), number.end());
