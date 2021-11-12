@@ -22,9 +22,10 @@ namespace ae::string
         return source;
     }
 
-    inline void uppercase_in_place(std::string& source)
+    inline std::string& uppercase_in_place(std::string& source)
     {
         std::transform(std::begin(source), std::end(source), std::begin(source), [](auto cc) { return std::toupper(cc); });
+        return source;
     }
 
     template <typename Iter, typename F> inline std::string transform(Iter first, Iter last, F&& func)
@@ -35,6 +36,7 @@ namespace ae::string
     }
 
     inline std::string uppercase(std::string_view source) { return transform(source.begin(), source.end(), ::toupper); }
+    template <typename Iter> inline std::string uppercase(Iter first, Iter last) { return transform(first, last, ::toupper); }
 
 } // namespace ae::string
 

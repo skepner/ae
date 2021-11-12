@@ -38,9 +38,9 @@ namespace ae::virus::passage
             if (const auto found = std::find_if(std::begin(table), std::end(table), [&look_for](const auto& cc) { return cc.trigger == look_for; }); found != std::end(table))
                 return std::string{found->replacement};
             else if (look_for.size() > 1 && (look_for.back() == 'X' || look_for.back() == 'x'))
-                return string::uppercase(std::string_view(look_for.data(), look_for.size() - 1));
+                return look_for.substr(0, look_for.size() - 1);
             else
-                return string::uppercase(look_for);
+                return look_for;
         }
 
     } // namespace conversion
@@ -59,7 +59,7 @@ namespace ae::virus::passage
         {
             static constexpr auto cond = dsl::peek(dsl::ascii::alpha);
             static constexpr auto rule = cond >> dsl::capture(dsl::while_one(dsl::ascii::alpha));
-            static constexpr auto value = lexy::callback<std::string>([](auto captured) { return std::string{conversion::apply(std::string(captured.begin(), captured.end()))}; });
+            static constexpr auto value = lexy::callback<std::string>([](auto captured) { return std::string{conversion::apply(string::uppercase(captured.begin(), captured.end()))}; });
         };
 
         struct passage_number
