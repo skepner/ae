@@ -49,16 +49,25 @@ namespace ae::virus::passage
     {
         namespace dsl = lexy::dsl;
 
+        static constexpr auto O = dsl::lit_c<'O'> / dsl::lit_c<'o'>;
+        static constexpr auto R = dsl::lit_c<'R'> / dsl::lit_c<'r'>;
         static constexpr auto X = dsl::lit_c<'X'> / dsl::lit_c<'x'>;
         static constexpr auto PLUS = dsl::lit_c<'+'>;
         static constexpr auto OPEN = dsl::lit_c<'('>;
         static constexpr auto CLOSE = dsl::lit_c<')'>;
         static constexpr auto WS = dsl::whitespace(dsl::ascii::space);
 
+        struct passage_or
+        {
+            static constexpr auto cond = dsl::peek(O + R);
+            static constexpr auto rule = O + R + dsl::any;
+            static constexpr auto value = lexy::callback<std::string>([]() { return "OR"; });
+        };
+
         struct passage_name
         {
             static constexpr auto cond = dsl::peek(dsl::ascii::alpha);
-            static constexpr auto rule = cond >> dsl::capture(dsl::while_one(dsl::ascii::alpha));
+            static constexpr auto rule = dsl::capture(dsl::while_one(dsl::ascii::alpha));
             static constexpr auto value = lexy::callback<std::string>([](auto captured) { return std::string{conversion::apply(string::uppercase(captured.begin(), captured.end()))}; });
         };
 
@@ -85,7 +94,9 @@ namespace ae::virus::passage
 
         struct part
         {
-            static constexpr auto rule = dsl::p<passage_name> + WS + dsl::opt(dsl::p<passage_number>) + WS + dsl::opt(dsl::p<passage_separator>) + WS;
+            static constexpr auto rule = //
+                (passage_or::cond >> dsl::p<passage_or> + dsl::nullopt + dsl::nullopt) // nullopt to match value callback arg list
+                | (passage_name::cond >> dsl::p<passage_name> + WS + dsl::opt(dsl::p<passage_number>) + WS + dsl::opt(dsl::p<passage_separator>) + WS);
 
             static constexpr auto value = lexy::callback<passage_deconstructed_t::element_t>([](const std::string& name, auto number, auto separator) {
                 passage_deconstructed_t::element_t result{.name = name};
