@@ -51,7 +51,7 @@ namespace ae::virus::passage
 
         static constexpr auto A = dsl::lit_c<'A'> / dsl::lit_c<'a'>;
         // static constexpr auto B = dsl::lit_c<'B'> / dsl::lit_c<'b'>;
-        // static constexpr auto C = dsl::lit_c<'C'> / dsl::lit_c<'c'>;
+        static constexpr auto C = dsl::lit_c<'C'> / dsl::lit_c<'c'>;
         static constexpr auto D = dsl::lit_c<'D'> / dsl::lit_c<'d'>;
         static constexpr auto E = dsl::lit_c<'E'> / dsl::lit_c<'e'>;
         // static constexpr auto F = dsl::lit_c<'F'> / dsl::lit_c<'f'>;
@@ -87,6 +87,14 @@ namespace ae::virus::passage
             static constexpr auto cond = dsl::peek(prefix);
             static constexpr auto rule = prefix + dsl::any;
             static constexpr auto value = lexy::callback<std::string>([]() { return "OR"; });
+        };
+
+        struct passage_cs
+        {
+            static constexpr auto prefix1 = C + S;
+            static constexpr auto cond = dsl::peek(prefix1);
+            static constexpr auto rule = prefix1 + dsl::any;
+            static constexpr auto value = lexy::callback<std::string>([]() { return "CS"; });
         };
 
         struct passage_name
@@ -131,13 +139,14 @@ namespace ae::virus::passage
             static constexpr auto rule = //
                 dsl::opt(passage_prefix::cond >> dsl::p<passage_prefix>)
                 + ((passage_or::cond >> dsl::p<passage_or> + dsl::nullopt + dsl::nullopt) // nullopt to match value callback arg list
+                   | (passage_cs::cond >> dsl::p<passage_cs> + dsl::nullopt + dsl::nullopt)
                    | (passage_name::cond >> dsl::p<passage_name> + WS + dsl::opt(dsl::p<passage_number>) + WS + dsl::opt(dsl::p<passage_separator>) + WS));
 
             static constexpr auto value = lexy::callback<passage_deconstructed_t::element_t>([](lexy::nullopt, const std::string& name, auto number, auto separator) {
                 passage_deconstructed_t::element_t result{.name = name};
                 if constexpr (!std::is_same_v<decltype(number), lexy::nullopt>)
                     result.count.append(number.begin(), number.end());
-                else if (name != "OR")
+                else if (name != "OR" && name != "CS")
                     result.count.append(1, '?');
                 if constexpr (!std::is_same_v<decltype(separator), lexy::nullopt>)
                     result.new_lab = true;

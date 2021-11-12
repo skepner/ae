@@ -34,8 +34,8 @@ size_t passage_parsing_test(bool verbose)
         D{"MDCK1", "MDCK1"},                                                                                                    //
         D{"MDCK1/SIAT1", "MDCK1/SIAT1"},                                                                                        //
         D{"MDCK1,SIAT1", "MDCK1/SIAT1"},                                                                                        //
-        D{"MDCK1, SIAT1", "MDCK1/SIAT1"},                                                                                        //
-        D{"Mdck1, Siat1", "MDCK1/SIAT1"},                                                                                        //
+        D{"MDCK1, SIAT1", "MDCK1/SIAT1"},                                                                                       //
+        D{"Mdck1, Siat1", "MDCK1/SIAT1"},                                                                                       //
         D{"MDCKX,MDCK1", "MDCK?/MDCK1"},                                                                                        //
         D{"MDCKX, MDCK1", "MDCK?/MDCK1"},                                                                                       //
         D{"C2+C1", "MDCK2/MDCK1"},                                                                                              //
@@ -51,6 +51,7 @@ size_t passage_parsing_test(bool verbose)
         D{"Original Sample", "OR"},                                                                                             //
         D{"passage: Original", "OR"},                                                                                           //
         D{"passage details: original specimen", "OR"},                                                                          //
+        D{"CS", "CS"},                                                                                                          //
         D{"Clinical Specimen", "CS"},                                                                                           //
         D{"10 passages - embryonated chicken eggs; Passage Line 5", "*10 passages - embryonated chicken eggs; Passage Line 5"}, //
     };
