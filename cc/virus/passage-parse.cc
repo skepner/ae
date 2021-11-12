@@ -119,14 +119,14 @@ namespace ae::virus::passage
 
             static constexpr auto value = lexy::fold_inplace<passage_deconstructed_t>(0, [](passage_deconstructed_t& target, const auto& val) {
                 if constexpr (std::is_same_v<decltype(val), const part_without_name_t&>) {
-                    if (target.elements.empty())
-                        fmt::print("> ae::virus::passage::grammar::passages: adding part_without_name_t to an empty passage\n");
-                    target.elements.push_back({.name = target.elements.back().name, .count = val->count, .new_lab = val->new_lab});
+                    if (!target.elements.empty())
+                        target.elements.push_back({.name = target.elements.back().name, .count = val->count, .new_lab = val->new_lab});
+                    // else
+                    //     fmt::print("> ae::virus::passage::grammar::passages: adding part_without_name_t to an empty passage\n");
                 }
                 else {
                     target.elements.push_back(val);
                 }
-//                fmt::print(">>>> passages: {}\n", target.construct());
                 return target;
             });
 
@@ -186,6 +186,7 @@ namespace ae::virus::passage
 
 ae::virus::passage::passage_deconstructed_t ae::virus::passage::parse(std::string_view source, parse_settings& settings, Messages& messages, const MessageLocation& location)
 {
+    // fmt::print(">>> parsing \"{}\"\n", source);
     if (settings.trace()) {
         fmt::print(">>> parsing \"{}\"\n", source);
         lexy::trace<grammar::whole>(stderr, lexy::string_input<lexy::utf8_encoding>{source});
