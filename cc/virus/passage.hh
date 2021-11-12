@@ -41,6 +41,7 @@ namespace ae::virus::passage
 
         bool egg() const { return !elements.empty() && elements.back().egg(); }
         bool cell() const { return !elements.empty() && elements.back().cell(); }
+        bool empty() const { return elements.empty(); }
 
         std::string construct() const
         {

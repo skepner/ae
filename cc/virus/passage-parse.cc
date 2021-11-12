@@ -25,8 +25,10 @@ namespace ae::virus::passage
         const static std::array table{
             C{"C", "MDCK"},    //
             C{"CELL", "MDCK"}, //
+            C{"MDKC", "MDCK"}, //
             C{"S", "SIAT"},    //
             C{"EGG", "E"},     //
+            C{"ORIGINAL", "OR"},     //
         };
 
 #pragma GCC diagnostic pop
@@ -35,7 +37,7 @@ namespace ae::virus::passage
         {
             if (const auto found = std::find_if(std::begin(table), std::end(table), [&look_for](const auto& cc) { return cc.trigger == look_for; }); found != std::end(table))
                 return std::string{found->replacement};
-            else if (look_for.size() > 1 && look_for.back() == 'X')
+            else if (look_for.size() > 1 && (look_for.back() == 'X' || look_for.back() == 'x'))
                 return string::uppercase(std::string_view(look_for.data(), look_for.size() - 1));
             else
                 return string::uppercase(look_for);
@@ -77,7 +79,7 @@ namespace ae::virus::passage
 
         struct passage_date
         {
-            static constexpr auto rule = dsl::capture(dsl::while_(OPEN / CLOSE / dsl::digit<> / dsl::hyphen / dsl::slash));
+            static constexpr auto rule = dsl::capture(dsl::while_(dsl::digit<> / dsl::hyphen / dsl::slash)) + dsl::if_(dsl::peek(CLOSE) >> CLOSE);
             static constexpr auto value = lexy::as_string<std::string>;
         };
 
@@ -89,7 +91,7 @@ namespace ae::virus::passage
                 passage_deconstructed_t::element_t result{.name = name};
                 if constexpr (!std::is_same_v<decltype(number), lexy::nullopt>)
                     result.count.append(number.begin(), number.end());
-                else
+                else if (name != "OR")
                     result.count.append(1, '?');
                 if constexpr (!std::is_same_v<decltype(separator), lexy::nullopt>)
                     result.new_lab = true;
@@ -107,7 +109,6 @@ namespace ae::virus::passage
                 passage_deconstructed_t::element_t result{.count = number};
                 if constexpr (!std::is_same_v<decltype(separator), lexy::nullopt>)
                     result.new_lab = true;
-                fmt::print(">>>> part_without_name: {}\n", result.construct(true));
                 return result;
             });
         };
@@ -133,14 +134,51 @@ namespace ae::virus::passage
 
         struct whole
         {
-            static constexpr auto rule = WS + dsl::p<passages> + dsl::opt(OPEN >> dsl::p<passage_date>) + dsl::eof;
+            // static constexpr auto rule = WS + dsl::try_(dsl::p<passages> + dsl::opt(OPEN >> dsl::p<passage_date>), dsl::nullopt) + dsl::eof;
+            static constexpr auto rule = WS + dsl::try_(dsl::p<passages> + dsl::opt(OPEN >> dsl::p<passage_date>), dsl::recover(dsl::eof)) + dsl::eof;
 
             static constexpr auto value = lexy::callback<passage_deconstructed_t>(
-                [](const passage_deconstructed_t& passages, const std::string& date) { return passage_deconstructed_t{passages.elements, date}; },
-                [](const passage_deconstructed_t& passages, lexy::nullopt) { return passages; });
+                [](const passage_deconstructed_t& passages, const std::string& date) {
+                    return passage_deconstructed_t{passages.elements, date};
+                },                                                                               //
+                [](const passage_deconstructed_t& passages, lexy::nullopt) { return passages; }, //
+                [](lexy::nullopt) { return passage_deconstructed_t{}; },                          //
+                []() { return passage_deconstructed_t{}; }                          //
+            );
         };
 
     } // namespace grammar
+
+    struct report_error
+    {
+        struct error_sink
+        {
+            // std::size_t _count;
+            using return_type = std::size_t;
+
+            template <typename Production, typename Input, typename Reader, typename Tag>
+            void operator()(const lexy::error_context<Production, Input>& /*context*/, const lexy::error<Reader, Tag>& /*error*/)
+            {
+                // _detail::write_error(lexy::cfile_output_iterator{stderr}, context, error, {lexy::visualize_fancy});
+                // ++_count;
+            }
+
+            return_type finish() &&
+            {
+                // if (_count != 0)
+                //     std::fputs("\n", stderr);
+                // return _count;
+                return 0;
+            }
+
+            const report_error& report_error_;
+        };
+
+        constexpr auto sink() const { return error_sink{*this}; }
+
+        Messages& messages;
+        const MessageLocation& location;
+    };
 
 } // namespace ae::virus::passage
 
@@ -153,8 +191,15 @@ ae::virus::passage::passage_deconstructed_t ae::virus::passage::parse(std::strin
         lexy::trace<grammar::whole>(stderr, lexy::string_input<lexy::utf8_encoding>{source});
     }
 
-    const auto parsing_result = lexy::parse<grammar::whole>(lexy::string_input<lexy::utf8_encoding>{source}, lexy_ext::report_error);
+    const auto parsing_result = lexy::parse<grammar::whole>(lexy::string_input<lexy::utf8_encoding>{source}, report_error{messages, location});
 
+    if (parsing_result.value().empty()) {
+        fmt::print(">> not parsed: \"{}\"\n", source);
+        // !!! add message
+        passage_deconstructed_t result;
+        result.elements.push_back(passage_deconstructed_t::element_t{.name = fmt::format("*{}", source)});
+        return result;
+    }
     return parsing_result.value();
 
 } // ae::virus::passage::parse
