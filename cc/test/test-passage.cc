@@ -65,13 +65,11 @@ size_t passage_parsing_test(bool verbose)
             const auto result = ae::virus::passage::parse(entry.raw_name, settings, messages, ae::MessageLocation{"test", no}).construct();
             // if (verbose)
             //     fmt::print(">>>  \"{}\"\n", entry.raw_name);
-            if (!messages.empty()) {
-                fmt::print("> \"{}\"\n{}", entry.raw_name, messages.report());
-                ++errors;
-            }
-            else if (result != entry.expected) {
+            if (result != entry.expected) {
                 fmt::print("> {:60s} <-- \"{}\"  expected: \"{}\"\n", fmt::format("\"{}\"", result), entry.raw_name, entry.expected);
                 ++errors;
+                if (!messages.empty())
+                fmt::print("> \"{}\"\n{}", entry.raw_name, messages.report());
             }
             else if (verbose)
                 fmt::print("  {:60s} <-- \"{}\"\n", fmt::format("\"{}\"", result), entry.raw_name);

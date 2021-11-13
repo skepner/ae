@@ -258,8 +258,8 @@ ae::virus::passage::passage_deconstructed_t ae::virus::passage::parse(std::strin
 
     try {
         const auto parsing_result = lexy::parse<grammar::whole>(lexy::string_input<lexy::utf8_encoding>{source}, report_error{messages, message_location});
-        if (parsing_result.value().empty())
-            throw grammar::invalid_input{"empty result"};
+        if (!parsing_result.value().good())
+            throw grammar::invalid_input{"invalid result"};
         return parsing_result.value();
     }
     catch (grammar::invalid_input& err) {

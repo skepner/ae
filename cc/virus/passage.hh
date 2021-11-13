@@ -52,6 +52,12 @@ namespace ae::virus::passage
                 result.append(fmt::format(" ({})", date));
             return result;
         }
+
+        bool good() const
+        {
+            return !elements.empty() && !elements.front().name.empty() && elements.front().name[0] != '*' &&
+                   std::count_if(std::begin(elements), std::end(elements), [](const auto& elt) { return elt.count.empty() || elt.count[0] == '?'; }) < 2;
+        }
     };
 
 } // namespace ae::virus::passage
