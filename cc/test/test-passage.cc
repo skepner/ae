@@ -38,6 +38,7 @@ size_t passage_parsing_test(bool verbose)
         D{"Mdck1, Siat1", "MDCK1/SIAT1"},                                                                                       //
         D{"MDCKX,MDCK1", "MDCK?/MDCK1"},                                                                                        //
         D{"MDCKX, MDCK1", "MDCK?/MDCK1"},                                                                                       //
+        D{"SIAT-1/MDCK1", "SIAT1/MDCK1"},                                                                                       //
         D{"C2+C1", "MDCK2/MDCK1"},                                                                                              //
         D{"MDCK 2 +1", "MDCK2/MDCK1"},                                                                                          //
         D{"MDCKx\\MDCK2", "MDCK?/MDCK2"},                                                                                       //
@@ -54,7 +55,7 @@ size_t passage_parsing_test(bool verbose)
         D{"CS", "OR"},                                                                                                          //
         D{"Clinical Specimen", "OR"},                                                                                           //
         D{"10 passages - embryonated chicken eggs; Passage Line 5", "*10 passages - embryonated chicken eggs; Passage Line 5"}, //
-        D{"embryonated hen egg", "*embryonated hen egg"}, //
+        D{"embryonated hen egg", "*embryonated hen egg"},                                                                       //
     };
 
     size_t errors = 0;
@@ -69,7 +70,7 @@ size_t passage_parsing_test(bool verbose)
                 fmt::print("> {:60s} <-- \"{}\"  expected: \"{}\"\n", fmt::format("\"{}\"", result), entry.raw_name, entry.expected);
                 ++errors;
                 if (!messages.empty())
-                fmt::print("> \"{}\"\n{}", entry.raw_name, messages.report());
+                    fmt::print("{}", messages.report());
             }
             else if (verbose)
                 fmt::print("  {:60s} <-- \"{}\"\n", fmt::format("\"{}\"", result), entry.raw_name);

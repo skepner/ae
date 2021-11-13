@@ -118,9 +118,10 @@ namespace ae::virus::passage
 
         struct passage_number
         {
+            static constexpr auto hyphen = dsl::while_(dsl::hyphen);
             static constexpr auto symbol = dsl::digit<> / X / dsl::question_mark;
-            static constexpr auto cond = dsl::peek(dsl::digit<>);
-            static constexpr auto rule = dsl::peek(symbol) >> dsl::capture(dsl::while_(symbol));
+            static constexpr auto cond = dsl::peek(hyphen + dsl::digit<>);
+            static constexpr auto rule = dsl::peek(hyphen + symbol) >> hyphen + dsl::capture(dsl::while_(symbol));
             static constexpr auto value = lexy::as_string<std::string>;
         };
 

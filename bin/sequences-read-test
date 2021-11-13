@@ -55,9 +55,9 @@ def main(args: list):
         seqs.sort(key=lambda seq: seq.date)
 
     # report all passages
-    passages = collections.Counter(seq.passage for seqs in sequences_by_subtype.values() for seq in seqs)
-    print("Passages:\n  ", "\n  ".join("{passage:60s} {cnt:6d}".format(passage=f'"{passage}":', cnt=cnt) for passage, cnt in passages.most_common()), sep="")
-    exit(1)
+    # passages = collections.Counter(seq.passage for seqs in sequences_by_subtype.values() for seq in seqs)
+    # print("Passages:\n  ", "\n  ".join("{passage:60s} {cnt:6d}".format(passage=f'"{passage}":', cnt=cnt) for passage, cnt in passages.most_common()), sep="")
+    # exit(1)
 
     sSubtypeOrder = ["B", "A(H1N1)", "A(H1)", "A(H1N0)", "A(H3N2)", "A(H3)", "A(H3N0)"]
     def subtype_order(en: (str, list)):
