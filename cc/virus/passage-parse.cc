@@ -1,4 +1,5 @@
 #include <array>
+#include <stdexcept>
 
 #include "ext/lexy.hh"
 #include "utils/named-type.hh"
@@ -49,6 +50,8 @@ namespace ae::virus::passage
     {
         namespace dsl = lexy::dsl;
 
+        class invalid_input : public std::runtime_error { public: using std::runtime_error::runtime_error; };
+
         static constexpr auto A = dsl::lit_c<'A'> / dsl::lit_c<'a'>;
         // static constexpr auto B = dsl::lit_c<'B'> / dsl::lit_c<'b'>;
         static constexpr auto C = dsl::lit_c<'C'> / dsl::lit_c<'c'>;
@@ -81,27 +84,33 @@ namespace ae::virus::passage
         static constexpr auto CLOSE = dsl::lit_c<')'>;
         static constexpr auto WS = dsl::whitespace(dsl::ascii::space);
 
-        struct passage_or
+        struct passage_or_cs
         {
-            static constexpr auto prefix = O + R;
-            static constexpr auto cond = dsl::peek(prefix);
-            static constexpr auto rule = prefix + dsl::any;
-            static constexpr auto value = lexy::callback<std::string>([]() { return "OR"; });
-        };
+            static constexpr auto just_or = O + R;
+            static constexpr auto ori = just_or + I;
+            static constexpr auto just_cs = C + S;
+            static constexpr auto cli = C + L + I;
+            static constexpr auto cond = dsl::peek(just_or) | dsl::peek(just_cs) | dsl::peek(cli);
 
-        struct passage_cs
-        {
-            static constexpr auto prefix1 = C + S;
-            static constexpr auto cond = dsl::peek(prefix1);
-            static constexpr auto rule = prefix1 + dsl::any;
-            static constexpr auto value = lexy::callback<std::string>([]() { return "CS"; });
+            static constexpr auto rule = //
+                (dsl::peek(ori) >> ori + dsl::any) //
+                | (dsl::peek(just_or) >> just_or) //
+                | (dsl::peek(cli) >> cli + dsl::any) //
+                | (dsl::peek(just_cs) >> just_cs) //
+                ;
+
+            static constexpr auto value = lexy::callback<std::string>([]() { return "OR"; });
         };
 
         struct passage_name
         {
             static constexpr auto cond = dsl::peek(dsl::ascii::alpha);
             static constexpr auto rule = dsl::capture(dsl::while_one(dsl::ascii::alpha));
-            static constexpr auto value = lexy::callback<std::string>([](auto captured) { return std::string{conversion::apply(string::uppercase(captured.begin(), captured.end()))}; });
+            static constexpr auto value = lexy::callback<std::string>([](auto captured) {
+                if ((captured.end() - captured.begin()) > 5)
+                    throw invalid_input{"passage name too long"};
+                return std::string{conversion::apply(string::uppercase(captured.begin(), captured.end()))};
+            });
         };
 
         struct passage_number
@@ -137,10 +146,9 @@ namespace ae::virus::passage
         struct part
         {
             static constexpr auto rule = //
-                dsl::opt(passage_prefix::cond >> dsl::p<passage_prefix>)
-                + ((passage_or::cond >> dsl::p<passage_or> + dsl::nullopt + dsl::nullopt) // nullopt to match value callback arg list
-                   | (passage_cs::cond >> dsl::p<passage_cs> + dsl::nullopt + dsl::nullopt)
-                   | (passage_name::cond >> dsl::p<passage_name> + WS + dsl::opt(dsl::p<passage_number>) + WS + dsl::opt(dsl::p<passage_separator>) + WS));
+                dsl::opt(passage_prefix::cond >> dsl::p<passage_prefix>) +
+                ((passage_or_cs::cond >> dsl::p<passage_or_cs> + dsl::nullopt + dsl::nullopt) // nullopt to match value callback arg list
+                 | (passage_name::cond >> dsl::p<passage_name> + WS + dsl::opt(dsl::p<passage_number>) + WS + dsl::opt(dsl::p<passage_separator>) + WS));
 
             static constexpr auto value = lexy::callback<passage_deconstructed_t::element_t>([](lexy::nullopt, const std::string& name, auto number, auto separator) {
                 passage_deconstructed_t::element_t result{.name = name};
@@ -247,16 +255,19 @@ ae::virus::passage::passage_deconstructed_t ae::virus::passage::parse(std::strin
         lexy::trace<grammar::whole>(stderr, lexy::string_input<lexy::utf8_encoding>{source});
     }
 
-    const auto parsing_result = lexy::parse<grammar::whole>(lexy::string_input<lexy::utf8_encoding>{source}, report_error{messages, location});
-
-    if (parsing_result.value().empty()) {
-        fmt::print(">> not parsed: \"{}\"\n", source);
+    try {
+        const auto parsing_result = lexy::parse<grammar::whole>(lexy::string_input<lexy::utf8_encoding>{source}, report_error{messages, location});
+        if (parsing_result.value().empty())
+            throw grammar::invalid_input{"empty result"};
+        return parsing_result.value();
+    }
+    catch (grammar::invalid_input& err) {
+        // fmt::print(">> not parsed: {} <- \"{}\"\n", err.what(), source);
         // !!! add message
         passage_deconstructed_t result;
         result.elements.push_back(passage_deconstructed_t::element_t{.name = fmt::format("*{}", source)});
         return result;
     }
-    return parsing_result.value();
 
 } // ae::virus::passage::parse
 

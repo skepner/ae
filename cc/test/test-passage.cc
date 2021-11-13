@@ -51,9 +51,10 @@ size_t passage_parsing_test(bool verbose)
         D{"Original Sample", "OR"},                                                                                             //
         D{"passage: Original", "OR"},                                                                                           //
         D{"passage details: original specimen", "OR"},                                                                          //
-        D{"CS", "CS"},                                                                                                          //
-        D{"Clinical Specimen", "CS"},                                                                                           //
+        D{"CS", "OR"},                                                                                                          //
+        D{"Clinical Specimen", "OR"},                                                                                           //
         D{"10 passages - embryonated chicken eggs; Passage Line 5", "*10 passages - embryonated chicken eggs; Passage Line 5"}, //
+        D{"embryonated hen egg", "*embryonated hen egg"}, //
     };
 
     size_t errors = 0;
