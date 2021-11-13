@@ -71,6 +71,12 @@ class Context:
         else:
             return date
 
+    def preprocess_passage(self, passage, metadata: dict):
+        if (directory_module := ae.utils.directory_module.load(self.filename.parent)) and (preprocessor := getattr(directory_module, "preprocess_passage", None)):
+            return preprocessor(passage, metadata)
+        else:
+            return passage
+
 # ======================================================================
 
 def parse_name(name: str, metadata: dict, context: Context):
@@ -120,8 +126,11 @@ def parse_date(date: str, metadata: dict, context: Context):
 # ----------------------------------------------------------------------
 
 def parse_passage(passage: str, metadata: dict, context: Context):
-    # if passage:
-    #     passage = f"!!! {passage}"
-    return passage
+    preprocessed_passage = context.preprocess_passage(passage, metadata)
+    result = ae_backend.passage_parse(preprocessed_passage)
+    if result.good():
+        return result.passage()
+    else:
+        return "*" + passage
 
 # ======================================================================

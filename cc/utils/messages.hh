@@ -19,18 +19,19 @@ namespace ae
 
     struct Message
     {
-        enum message_type {        //
-            unknown,               //
-            unhandled_virus_name,  //
-            invalid_subtype,       //
-            subtype_mismatch,       //
-            lineage_mismatch,       //
-            unrecognized_location, //
-            unrecognized_deletions, //
+        enum message_type {          //
+            unknown,                 //
+            unhandled_virus_name,    //
+            unrecognized_passage,    //
+            invalid_subtype,         //
+            subtype_mismatch,        //
+            lineage_mismatch,        //
+            unrecognized_location,   //
+            unrecognized_deletions,  //
             not_detected_insertions, //
             garbage_at_the_end,      //
-            invalid_sequence,      //
-            invalid_year           //
+            invalid_sequence,        //
+            invalid_year             //
         };
 
         message_type type;
@@ -46,6 +47,8 @@ namespace ae
                     return "U";
                 case unrecognized_location:
                     return "L";
+                case unrecognized_passage:
+                    return "P";
                 case unrecognized_deletions:
                 case not_detected_insertions:
                 case garbage_at_the_end:
@@ -72,6 +75,8 @@ namespace ae
                     return "unknown";
                 case unrecognized_location:
                     return "unrecognized location";
+                case unrecognized_passage:
+                    return "unrecognized passage";
                 case unrecognized_deletions:
                     return "unrecognized deletions";
                 case not_detected_insertions:
@@ -114,6 +119,7 @@ namespace ae
                 case Message::unrecognized_location:
                     unrecognized_locations_.emplace(value);
                     break;
+                case Message::unrecognized_passage:
                 case Message::unrecognized_deletions:
                 case Message::not_detected_insertions:
                 case Message::invalid_subtype:

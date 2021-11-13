@@ -3,6 +3,7 @@
 
 #include "ext/lexy.hh"
 #include "utils/named-type.hh"
+#include "utils/messages.hh"
 #include "virus/passage-parse.hh"
 
 // ======================================================================
@@ -247,7 +248,7 @@ namespace ae::virus::passage
 
 // ======================================================================
 
-ae::virus::passage::passage_deconstructed_t ae::virus::passage::parse(std::string_view source, parse_settings& settings, Messages& messages, const MessageLocation& location)
+ae::virus::passage::passage_deconstructed_t ae::virus::passage::parse(std::string_view source, parse_settings& settings, Messages& messages, const MessageLocation& message_location)
 {
     // fmt::print(">>> parsing \"{}\"\n", source);
     if (settings.trace()) {
@@ -256,14 +257,14 @@ ae::virus::passage::passage_deconstructed_t ae::virus::passage::parse(std::strin
     }
 
     try {
-        const auto parsing_result = lexy::parse<grammar::whole>(lexy::string_input<lexy::utf8_encoding>{source}, report_error{messages, location});
+        const auto parsing_result = lexy::parse<grammar::whole>(lexy::string_input<lexy::utf8_encoding>{source}, report_error{messages, message_location});
         if (parsing_result.value().empty())
             throw grammar::invalid_input{"empty result"};
         return parsing_result.value();
     }
     catch (grammar::invalid_input& err) {
         // fmt::print(">> not parsed: {} <- \"{}\"\n", err.what(), source);
-        // !!! add message
+        messages.add(Message::unrecognized_passage, err.what(), source, message_location);
         passage_deconstructed_t result;
         result.elements.push_back(passage_deconstructed_t::element_t{.name = fmt::format("*{}", source)});
         return result;
