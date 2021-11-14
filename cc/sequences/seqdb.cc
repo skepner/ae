@@ -98,8 +98,8 @@ void ae::sequences::Seqdb::add(const RawSequence& raw_sequence)
     const bool keep_sequence = !found_by_hash || found_by_hash.entry->name == raw_sequence.name;
     if (keep_sequence)
         hash_index_.try_emplace(raw_sequence.hash_nuc, raw_sequence.name);
-    else
-        fmt::print(">>>> dont_keep_sequence \"{}\" {} -> \"{}\"\n", raw_sequence.name, raw_sequence.hash_nuc, found_by_hash.entry->name);
+    // else
+    //     fmt::print(">>>> dont_keep_sequence \"{}\" {} -> \"{}\"\n", raw_sequence.name, raw_sequence.hash_nuc, found_by_hash.entry->name);
     const auto found = std::lower_bound(std::begin(entries_), std::end(entries_), raw_sequence.name, [](const auto& entry, std::string_view nam) { return entry.name < nam; });
     if (found != std::end(entries_) && found->name == raw_sequence.name) {
         modified_ = found->update(raw_sequence, keep_sequence);
@@ -340,7 +340,7 @@ void ae::sequences::Seqdb::save()
         }
 
         fmt::format_to(std::back_inserter(json), " ]\n}}\n");
-        fmt::print(">>>> writing seqdb to {}\n", db_filename);
+        fmt::print(">>> writing seqdb to {}\n", db_filename);
         ae::file::write(db_filename, fmt::to_string(json), ae::file::force_compression::no, ae::file::backup_file::yes);
         // fmt::print("{}\n", fmt::to_string(json));
     }
