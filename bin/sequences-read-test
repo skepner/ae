@@ -54,10 +54,9 @@ def main(args: list):
     for seqs in sequences_by_subtype.values():
         seqs.sort(key=lambda seq: seq.date)
 
-    # report all passages
-    # passages = collections.Counter(seq.passage for seqs in sequences_by_subtype.values() for seq in seqs)
-    # print("Passages:\n  ", "\n  ".join("{passage:60s} {cnt:6d}".format(passage=f'"{passage}":', cnt=cnt) for passage, cnt in passages.most_common()), sep="")
-    # exit(1)
+    if args.report_passages:
+        passages = collections.Counter(seq.passage for seqs in sequences_by_subtype.values() for seq in seqs)
+        print("Passages:\n  ", "\n  ".join("{passage:60s} {cnt:6d}".format(passage=f'"{passage}":', cnt=cnt) for passage, cnt in passages.most_common()), sep="")
 
     sSubtypeOrder = ["B", "A(H1N1)", "A(H1)", "A(H1N0)", "A(H3N2)", "A(H3)", "A(H3N0)"]
     def subtype_order(en: (str, list)):
@@ -95,6 +94,7 @@ try:
     parser.add_argument("-m", dest="print_messages", default=None, help="report messages by type: a - all, l - unrecognized locations, d - deletion issues, s - subtype issues, v - lineage issues, y - date issues")
     parser.add_argument("--report-not-aligned", dest="report_not_aligned", action='store_true', default=False)
     parser.add_argument("--report-excluded", dest="report_excluded", action='store_true', default=False)
+    parser.add_argument("--report-passages", dest="report_passages", action='store_true', default=False)
     args = parser.parse_args()
     exit_code = main(args) or 0
 except Exception as err:
