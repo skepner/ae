@@ -49,7 +49,7 @@ namespace ae::sequences
         std::string subtype_;
         std::vector<SeqdbEntry> entries_;
         bool modified_{false};
-        std::unordered_map<hash_t, std::string_view> hash_index_; // hash -> name
+        std::unordered_map<hash_t, std::string> hash_index_; // hash -> name
 
         std::filesystem::path filename() const;
     };

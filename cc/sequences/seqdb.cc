@@ -96,16 +96,18 @@ void ae::sequences::Seqdb::add(const RawSequence& raw_sequence)
 {
     const auto found_by_hash = find_by_hash(raw_sequence.hash_nuc);
     const bool keep_sequence = !found_by_hash || found_by_hash.entry->name == raw_sequence.name;
+    if (keep_sequence)
+        hash_index_.try_emplace(raw_sequence.hash_nuc, raw_sequence.name);
+    else
+        fmt::print(">>>> dont_keep_sequence \"{}\" {} -> \"{}\"\n", raw_sequence.name, raw_sequence.hash_nuc, found_by_hash.entry->name);
     const auto found = std::lower_bound(std::begin(entries_), std::end(entries_), raw_sequence.name, [](const auto& entry, std::string_view nam) { return entry.name < nam; });
     if (found != std::end(entries_) && found->name == raw_sequence.name) {
         modified_ = found->update(raw_sequence, keep_sequence);
     }
     else {
         const auto added = entries_.emplace(found, raw_sequence);
-        if (!keep_sequence) {
-            fmt::print(">>>> dont_keep_sequence \"{}\" {} -> \"{}\"\n", added->name, raw_sequence.hash_nuc, found_by_hash.entry->name);
+        if (!keep_sequence)
             added->find_by_hash(raw_sequence.hash_nuc)->dont_keep_sequence();
-        }
         modified_ = true;
     }
 
@@ -198,7 +200,11 @@ bool ae::sequences::SeqdbSeq::update(const RawSequence& raw_sequence, bool keep_
     else {
         if (!aa.empty() || !nuc.empty())
             throw std::runtime_error{fmt::format("SeqdbSeq::update keep_sequence={} raw_sequence.hash={} hash={} sequence present", keep_sequence, raw_sequence.hash_nuc, hash)};
-        if (hash != raw_sequence.hash_nuc)
+        if (hash.empty()) {
+            hash = raw_sequence.hash_nuc;
+            updated = true;
+        }
+        else if (hash != raw_sequence.hash_nuc)
             throw std::runtime_error{fmt::format("SeqdbSeq::update keep_sequence={} raw_sequence.hash={} hash={} hash difference", keep_sequence, raw_sequence.hash_nuc, hash)};
     }
 
@@ -303,17 +309,22 @@ void ae::sequences::Seqdb::save()
 
                 bool comma{false};
                 fmt::format_to(std::back_inserter(json), "   {{");
+                const auto nl_after_seq = seq.nuc.empty() ? newline::no : newline::yes;
+                const auto nl_after_i = seq.issues.data_.empty() ? nl_after_seq : newline::no;
                 add_str("a", seq.aa, newline::yes, comma);
                 add_str("n", seq.nuc, newline::yes, comma);
-                add_str("H", seq.hash, newline::yes, comma);
-                add_str("i", seq.issues.data_, newline::yes, comma);
+                add_str("i", seq.issues.data_, nl_after_seq, comma);
+                add_str("H", seq.hash, nl_after_i, comma);
                 add_vec("r", seq.reassortants, newline::no, comma);
                 add_vec("A", seq.annotations, newline::no, comma);
                 add_vec("p", seq.passages, newline::no, comma);
                 add_lab_ids(seq.lab_ids, comma);
                 add_gisaid(seq.gisaid, comma);
 
-                fmt::format_to(std::back_inserter(json), "\n   }}");
+                if (!seq.nuc.empty())
+                    fmt::format_to(std::back_inserter(json), "\n   }}");
+                else
+                    fmt::format_to(std::back_inserter(json), "}}");
                 if (seq_no < entry.seqs.size())
                     fmt::format_to(std::back_inserter(json), ",");
                 fmt::format_to(std::back_inserter(json), "\n");
@@ -329,9 +340,9 @@ void ae::sequences::Seqdb::save()
         }
 
         fmt::format_to(std::back_inserter(json), " ]\n}}\n");
-        fmt::print("writing seqdb to {}\n", db_filename);
+        fmt::print(">>>> writing seqdb to {}\n", db_filename);
         ae::file::write(db_filename, fmt::to_string(json), ae::file::force_compression::no, ae::file::backup_file::yes);
-        fmt::print("{}\n", fmt::to_string(json));
+        // fmt::print("{}\n", fmt::to_string(json));
     }
 
 } // ae::sequences::Seqdb::save
