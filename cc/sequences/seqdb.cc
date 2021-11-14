@@ -74,6 +74,7 @@ ae::sequences::Seqdb::Seqdb(std::string_view subtype) : subtype_{subtype}
 {
     if (const auto db_filename = filename(); std::filesystem::exists(db_filename)) {
         // load
+        // build hash_index_
     }
 
 } // ae::sequences::Seqdb::Seqdb
@@ -93,11 +94,18 @@ std::filesystem::path ae::sequences::Seqdb::filename() const
 
 void ae::sequences::Seqdb::add(const RawSequence& raw_sequence)
 {
+    const auto found_by_hash = find_by_hash(raw_sequence.hash_nuc);
+    const bool keep_sequence = !found_by_hash || found_by_hash.entry->name == raw_sequence.name;
     const auto found = std::lower_bound(std::begin(entries_), std::end(entries_), raw_sequence.name, [](const auto& entry, std::string_view nam) { return entry.name < nam; });
-    if (found != std::end(entries_) && found->name == raw_sequence.name)
-        modified_ = found->update(raw_sequence);
+    if (found != std::end(entries_) && found->name == raw_sequence.name) {
+        modified_ = found->update(raw_sequence, keep_sequence);
+    }
     else {
-        entries_.emplace(found, raw_sequence);
+        const auto added = entries_.emplace(found, raw_sequence);
+        if (!keep_sequence) {
+            fmt::print(">>>> dont_keep_sequence \"{}\" {} -> \"{}\"\n", added->name, raw_sequence.hash_nuc, found_by_hash.entry->name);
+            added->find_by_hash(raw_sequence.hash_nuc)->dont_keep_sequence();
+        }
         modified_ = true;
     }
 
@@ -113,7 +121,7 @@ ae::sequences::SeqdbEntry::SeqdbEntry(const RawSequence& raw_sequence) : name{ra
 
 // ----------------------------------------------------------------------
 
-bool ae::sequences::SeqdbEntry::update(const RawSequence& raw_sequence)
+bool ae::sequences::SeqdbEntry::update(const RawSequence& raw_sequence, bool keep_sequence)
 {
     // fmt::print("SeqdbEntry::update {}\n", raw_sequence.name);
     bool updated = add_date(raw_sequence.date);
@@ -139,10 +147,10 @@ bool ae::sequences::SeqdbEntry::update(const RawSequence& raw_sequence)
 
     if (auto found = std::find_if(std::begin(seqs), std::end(seqs), [&raw_sequence](const auto& seq) { return seq.hash == raw_sequence.hash_nuc; }); found == std::end(seqs)) {
         auto& seq = seqs.emplace_back();
-        updated |= seq.update(raw_sequence);
+        updated |= seq.update(raw_sequence, keep_sequence);
     }
     else {
-        updated |= found->update(raw_sequence);
+        updated |= found->update(raw_sequence, keep_sequence);
     }
 
     return updated;
@@ -166,7 +174,7 @@ bool ae::sequences::SeqdbEntry::add_date(std::string_view date)
 
 // ----------------------------------------------------------------------
 
-bool ae::sequences::SeqdbSeq::update(const RawSequence& raw_sequence) // returns if entry was modified
+bool ae::sequences::SeqdbSeq::update(const RawSequence& raw_sequence, bool keep_sequence) // returns if entry was modified
 {
     bool updated{false};
     const auto update_vec = [&updated](auto& vec, std::string_view source) {
@@ -176,16 +184,24 @@ bool ae::sequences::SeqdbSeq::update(const RawSequence& raw_sequence) // returns
         }
     };
 
-    if (aa != raw_sequence.sequence.aa)
-    {
-        aa = raw_sequence.sequence.aa;
-        updated = true;
+    if (keep_sequence) {
+        if (aa != raw_sequence.sequence.aa) {
+            aa = raw_sequence.sequence.aa;
+            updated = true;
+        }
+        if (nuc != raw_sequence.sequence.nuc) {
+            nuc = raw_sequence.sequence.nuc;
+            hash = raw_sequence.hash_nuc;
+            updated = true;
+        }
     }
-    if (nuc != raw_sequence.sequence.nuc) {
-        nuc = raw_sequence.sequence.nuc;
-        hash = raw_sequence.hash_nuc;
-        updated = true;
+    else {
+        if (!aa.empty() || !nuc.empty())
+            throw std::runtime_error{fmt::format("SeqdbSeq::update keep_sequence={} raw_sequence.hash={} hash={} sequence present", keep_sequence, raw_sequence.hash_nuc, hash)};
+        if (hash != raw_sequence.hash_nuc)
+            throw std::runtime_error{fmt::format("SeqdbSeq::update keep_sequence={} raw_sequence.hash={} hash={} hash difference", keep_sequence, raw_sequence.hash_nuc, hash)};
     }
+
     update_vec(annotations, raw_sequence.annotations);
     update_vec(reassortants, raw_sequence.reassortant);
     update_vec(passages, raw_sequence.passage);

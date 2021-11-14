@@ -87,6 +87,11 @@ namespace ae::sequences
     };
 
     using insertions_t = std::vector<insertion_t>;
-}
+
+    // ----------------------------------------------------------------------
+
+    using hash_t = std::string;
+
+} // namespace ae::sequences
 
 // ======================================================================

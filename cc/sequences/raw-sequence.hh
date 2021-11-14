@@ -17,7 +17,7 @@ namespace ae::sequences
         sequence_pair_t sequence;
         insertions_t aa_insertions;
         insertions_t nuc_insertions;
-        std::string hash_nuc;
+        hash_t hash_nuc;
 
         std::string name;       // parsed or raw_name if parsing failed
         std::string continent;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <filesystem>
+#include <unordered_map>
 
 #include "sequences/sequence.hh"
 #include "sequences/issues.hh"
@@ -19,6 +20,15 @@ namespace ae::sequences
 
     // ----------------------------------------------------------------------
 
+    struct SeqdbSeqRef
+    {
+        const SeqdbEntry* entry{nullptr};
+        const SeqdbSeq* seq{nullptr};
+        constexpr operator bool() const { return entry != nullptr && seq != nullptr; }
+    };
+
+    // ----------------------------------------------------------------------
+
     class Seqdb
     {
       public:
@@ -32,11 +42,14 @@ namespace ae::sequences
         void save();
 
         const SeqdbEntry* find_by_name(std::string_view name) const;
+        SeqdbSeqRef find_by_name_hash(std::string_view name, const hash_t& hash) const;
+        SeqdbSeqRef find_by_hash(const hash_t& hash) const; // via hash_index_
 
       private:
         std::string subtype_;
         std::vector<SeqdbEntry> entries_;
         bool modified_{false};
+        std::unordered_map<hash_t, std::string_view> hash_index_; // hash -> name
 
         std::filesystem::path filename() const;
     };
@@ -55,7 +68,10 @@ namespace ae::sequences
         SeqdbEntry() = default;
         SeqdbEntry(const RawSequence& raw_sequence);
 
-        bool update(const RawSequence& raw_sequence); // returns if entry was modified
+        const SeqdbSeq* find_by_hash(const hash_t& hash) const;
+        SeqdbSeq* find_by_hash(const hash_t& hash);
+
+        bool update(const RawSequence& raw_sequence, bool keep_sequence = true); // returns if entry was modified
         bool add_date(std::string_view date);
 
         // std::string host() const;
@@ -91,13 +107,19 @@ namespace ae::sequences
         std::vector<std::string> annotations;
         std::vector<std::string> reassortants;
         std::vector<std::string> passages;
-        std::string hash;
+        hash_t hash;
         seqdb_issues_t issues;
         labs_t lab_ids;
         gisaid_data_t gisaid;
 
         SeqdbSeq() = default;
-        bool update(const RawSequence& raw_sequence); // returns if entry was modified
+        bool update(const RawSequence& raw_sequence, bool keep_sequence); // returns if entry was modified
+
+        void dont_keep_sequence()
+        {
+            aa.get().clear();
+            nuc.get().clear();
+        }
     };
 
     // ----------------------------------------------------------------------
@@ -106,6 +128,39 @@ namespace ae::sequences
     {
         if (const auto found = std::lower_bound(std::begin(entries_), std::end(entries_), name, [](const auto& entry, std::string_view nam) { return entry.name < nam; });
             found != std::end(entries_) && found->name == name)
+            return &*found;
+        else
+            return nullptr;
+    }
+
+    inline SeqdbSeqRef Seqdb::find_by_name_hash(std::string_view name, const hash_t& hash) const
+    {
+        if (const auto* entry = find_by_name(name); entry) {
+            if (const auto* seq = entry->find_by_hash(hash); seq)
+                return SeqdbSeqRef{.entry = entry, .seq = seq};
+        }
+        return {};
+    }
+
+    inline SeqdbSeqRef Seqdb::find_by_hash(const hash_t& hash) const
+    {
+        if (const auto found = hash_index_.find(hash); found != hash_index_.end())
+            return find_by_name_hash(found->second, hash);
+        else
+            return {};
+    }
+
+    inline const SeqdbSeq* SeqdbEntry::find_by_hash(const hash_t& hash) const
+    {
+        if (const auto found = std::find_if(std::begin(seqs), std::end(seqs), [&hash](const auto& seq) { return seq.hash == hash; }); found != std::end(seqs))
+            return &*found;
+        else
+            return nullptr;
+    }
+
+    inline SeqdbSeq* SeqdbEntry::find_by_hash(const hash_t& hash)
+    {
+        if (const auto found = std::find_if(std::begin(seqs), std::end(seqs), [&hash](const auto& seq) { return seq.hash == hash; }); found != std::end(seqs))
             return &*found;
         else
             return nullptr;
