@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 """
-Test reading ncbi files
+Updates seqdb with sequences read from fasta and/or ncbi
 """
 
 import os, sys, re, collections, pprint, argparse, traceback
@@ -14,7 +14,7 @@ import ae_backend
 
 # ----------------------------------------------------------------------
 
-def main(args: list):
+def main(args: argparse.Namespace):
     num_seqs = 0
     messages = []
     unrecognized_locations = set()
@@ -64,7 +64,7 @@ def main(args: list):
             return str(sSubtypeOrder.index(en[0]))
         except ValueError:
             return f"{len(sSubtypeOrder)}{en[0]}"
-    print(f">>> {num_seqs} sequences read\n  ", "\n  ".join(f"{subtype:8s} {len(seqs):5d} {seqs[0].date:>10s}..{seqs[-1].date:10s}" for subtype, seqs in sorted(sequences_by_subtype.items(), key=subtype_order) if subtype in sSubtypeOrder), sep="")
+    print(f">>> {num_seqs} sequences read\n  ", "\n  ".join(f"{subtype:8s} {len(seqs):6d} {seqs[0].date:>10s}..{seqs[-1].date:10s}" for subtype, seqs in sorted(sequences_by_subtype.items(), key=subtype_order) if subtype in sSubtypeOrder), sep="")
 
     sSeqdbSubtype = {"B": "B", "A(H1N1)": "A(H1N1)", "A(H1)": "A(H1N1)", "A(H3N2)": "A(H3N2)", "A(H3)": "A(H3N2)"}
     for subtype, seqdb_subtype in sSeqdbSubtype.items():

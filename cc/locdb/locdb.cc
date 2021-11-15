@@ -18,8 +18,8 @@ namespace ae::locationdb::inline v1::detail
 #pragma GCC diagnostic ignored "-Wglobal-constructors"
 #endif
 
-    static std::string db_path;
-    static std::string_view get_db_path();
+    static std::filesystem::path db_path;
+    static const std::filesystem::path& get_db_path();
 
 #pragma GCC diagnostic pop
 }
@@ -36,7 +36,7 @@ const ae::locationdb::v1::Db& ae::locationdb::v1::get()
 
 // ----------------------------------------------------------------------
 
-void ae::locationdb::v1::db_path(std::string_view path)
+void ae::locationdb::v1::db_path(const std::filesystem::path& path)
 {
     detail::db_path = path;
 
@@ -44,7 +44,7 @@ void ae::locationdb::v1::db_path(std::string_view path)
 
 // ----------------------------------------------------------------------
 
-std::string_view ae::locationdb::v1::detail::get_db_path()
+const std::filesystem::path& ae::locationdb::v1::detail::get_db_path()
 {
     if (db_path.empty()) {
         if (const char* ldb2_path = std::getenv("LOCATIONDB_V2"); ldb2_path)
@@ -58,7 +58,7 @@ std::string_view ae::locationdb::v1::detail::get_db_path()
 
 // ----------------------------------------------------------------------
 
-ae::locationdb::v1::Db::Db(std::string_view path)
+ae::locationdb::v1::Db::Db(const std::filesystem::path& path)
     : parser_{path}
 {
     for(auto field : parser_.doc().get_object()) {

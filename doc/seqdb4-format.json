@@ -1,0 +1,37 @@
+{"_": "-*- js-indent-level: 1 -*-",
+ "  version": "sequence-database-v4",
+ "  date": "2021-11-10 15:40 CET",
+ "size": 44,
+ "subtype": "A(H3N2)",
+ "data": [
+     {
+         "N": "<name> - without subtype, e.g. LAOS/1742/2020",
+         "d": ["YYYY-MM-DD"],
+         "C": "continent",
+         "c": "country",
+         "l": "V[ICTORIA]|Y[AMAGATA]",
+         "s": [
+             {
+                 "a": "sequence-amino-acids",
+                 "n": "sequence-nucleotides",
+                 "H": "hash of nucs, xxhash32 hex encoded",
+                 "R": "<name> - reference to the seq entry with the same sequence",
+                 "r": ["reassortant"],
+                 "A": ["annotations"],
+                 "p": ["passage"],
+                 "i": "<issues (letters): i - insertions, s - short, b - garbage_at_the_beginning, e - garbage_at_the_end, h - high_hamming_distance_bin>",
+                 "l": {"lab": ["lab_id"]},
+                 "G": {         //? gisaid, ncbi data
+                     "i": ["accession_number"],
+                     "S": ["submitters"],
+                     "m": ["gisaid_last_modified"],
+                     "o": ["originating_lab"],
+                     "t": ["gisaid_identifier"],
+                     "D": ["gisaid_dna_accession_no"],
+                     "d": ["gisaid_dna_insdc"]
+                 }
+             },
+         ]
+     }
+ ]
+}

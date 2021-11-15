@@ -33,10 +33,12 @@
 
 namespace ae::simdjson
 {
+    using namespace ::simdjson;
+
     class Parser
     {
       public:
-        Parser(std::string_view filename)
+        Parser(const std::filesystem::path& filename)
             : parser_{},
               json_{file::read(filename, ::simdjson::SIMDJSON_PADDING)},
               doc_{parser_.iterate(json_, json_.size() + ::simdjson::SIMDJSON_PADDING)}

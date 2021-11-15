@@ -2,6 +2,7 @@
 
 #include <filesystem>
 #include <unordered_map>
+#include <stdexcept>
 
 #include "sequences/sequence.hh"
 #include "sequences/issues.hh"
@@ -14,6 +15,13 @@ namespace ae::sequences
     class Seqdb;
     struct SeqdbEntry;
     struct SeqdbSeq;
+
+    class Error : public std::runtime_error
+    {
+      public:
+        template <typename ... Args> Error(fmt::format_string<Args...> format, Args&& ... args)
+            : std::runtime_error{fmt::format("seqdb: {}", fmt::format(format, args...))} {}
+    };
 
     Seqdb& seqdb_for_subtype(std::string_view subtype);
     void seqdb_save();
@@ -32,7 +40,7 @@ namespace ae::sequences
     class Seqdb
     {
       public:
-        Seqdb(std::string_view subtype);
+        Seqdb(std::string_view subtype) : subtype_{subtype} { load(); }
         Seqdb(const Seqdb&) = delete;
         Seqdb(Seqdb&&) = delete;
         Seqdb& operator=(const Seqdb&) = delete;
@@ -52,6 +60,7 @@ namespace ae::sequences
         std::unordered_map<hash_t, std::string> hash_index_; // hash -> name
 
         std::filesystem::path filename() const;
+        void load();
     };
 
     // ----------------------------------------------------------------------
@@ -90,7 +99,7 @@ namespace ae::sequences
 
         struct gisaid_data_t
         {
-            std::vector<std::string> accession_number;                   // gisaid accession numbers, ncbi accession numbers
+            std::vector<std::string> accession_number; // gisaid accession numbers, ncbi accession numbers
             std::vector<std::string> gisaid_dna_accession_no;
             std::vector<std::string> gisaid_dna_insdc;
             std::vector<std::string> gisaid_identifier;

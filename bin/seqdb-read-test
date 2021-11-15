@@ -1,0 +1,34 @@
+#!  /usr/bin/env python3
+"""
+Reading seqdb test
+"""
+
+import os, sys, re, collections, pprint, argparse, traceback
+from pathlib import Path
+if os.environ.get("DYLD_INSERT_LIBRARIES"):
+    sys.path[:0] = [str(Path(os.environ["AE_ROOT"], dir)) for dir in ["build.debug", "py"]]
+else:
+    sys.path[:0] = [str(Path(os.environ["AE_ROOT"], dir)) for dir in ["build", "py"]]
+from ae.sequences.source import fasta, ncbi
+import ae_backend
+
+# ----------------------------------------------------------------------
+
+def main(args: argparse.Namespace):
+    for subtype in ["B", "A(H1N1)", "A(H3N2)"]:
+        ae_backend.seqdb.for_subtype(subtype)
+    ae_backend.seqdb.save()
+
+# ----------------------------------------------------------------------
+
+try:
+    parser = argparse.ArgumentParser(description=__doc__)
+    # parser.add_argument("filename", nargs="+", type=Path)
+    args = parser.parse_args()
+    exit_code = main(args) or 0
+except Exception as err:
+    print(f"> {err}\n{traceback.format_exc()}", file=sys.stderr)
+    exit_code = 1
+exit(exit_code)
+
+# ======================================================================

@@ -13,7 +13,7 @@ namespace ae::locationdb::inline v1
 
     class Db;
     const Db& get();
-    void db_path(std::string_view path);
+    void db_path(const std::filesystem::path& path);
 
     // ----------------------------------------------------------------------
 
@@ -43,7 +43,7 @@ namespace ae::locationdb::inline v1
         std::map<std::string_view, std::string_view> names_;
         std::map<std::string_view, std::string_view> replacements_;
 
-        Db(std::string_view path);
+        Db(const std::filesystem::path& path);
 
         friend const Db& get();
     };
