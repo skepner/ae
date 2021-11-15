@@ -38,11 +38,12 @@ namespace ae::simdjson
     class Parser
     {
       public:
-        Parser(const std::filesystem::path& filename)
-            : parser_{},
-              json_{file::read(filename, ::simdjson::SIMDJSON_PADDING)},
+        Parser(const std::filesystem::path& filename)                    //
+            : parser_{},                                                 //
+              json_{file::read(filename, ::simdjson::SIMDJSON_PADDING)}, //
               doc_{parser_.iterate(json_, json_.size() + ::simdjson::SIMDJSON_PADDING)}
-            {}
+        {
+        }
 
         constexpr auto& doc() { return doc_; }
 
@@ -54,6 +55,6 @@ namespace ae::simdjson
         std::string json_;
         decltype(parser_.iterate(json_, json_.capacity())) doc_;
     };
-}
+} // namespace ae::simdjson
 
 // ----------------------------------------------------------------------

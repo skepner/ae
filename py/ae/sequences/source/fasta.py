@@ -109,8 +109,10 @@ def gisaid_parse_fields(metadata: dict, context: Context):
                 metadata[field_name] = res
     return metadata
 
+sReSpaces = re.compile(r"\s+")
+
 def gisaid_fix_field(value: str):
-    value = value.strip()
+    value = sReSpaces.sub(" ", value.strip()) # collapse spaces (and tabs, simdjson does not like unescaped tabs)
     if value and value[0] == '"' and value[-1] == '"': # enclosed in double quotes (see EPI_ISL_2455085)
         value = value[1:-1]     # also '"' -> ''
     return value
