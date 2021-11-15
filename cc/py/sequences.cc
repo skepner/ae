@@ -23,6 +23,8 @@ void ae::py::sequences(pybind11::module_& mdl)
 
     pybind11::class_<ae::sequences::Seqdb>(seqdb_submodule, "SeqdbForSubtype") //
         .def("add", &ae::sequences::Seqdb::add, "raw_sequence"_a)              //
+        .def(
+            "save", [](const ae::sequences::Seqdb& seqdb, pybind11::object filename) { seqdb.save(std::string{pybind11::str(filename)}); }, "filename"_a) //
         ;
 
     // ----------------------------------------------------------------------

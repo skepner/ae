@@ -47,7 +47,8 @@ namespace ae::sequences
         Seqdb& operator=(Seqdb&&) = delete;
 
         void add(const RawSequence& raw_sequence);
-        void save();
+        void save() const;
+        void save(const std::filesystem::path& filename) const;
 
         const SeqdbEntry* find_by_name(std::string_view name) const;
         SeqdbSeqRef find_by_name_hash(std::string_view name, const hash_t& hash) const;
@@ -60,6 +61,7 @@ namespace ae::sequences
         std::unordered_map<hash_t, std::string> hash_index_; // hash -> name
 
         std::filesystem::path filename() const;
+        std::string export_to_string() const;
         void load();
         void make_hash_index();
     };

@@ -176,11 +176,8 @@ void ae::sequences::Seqdb::make_hash_index()
 
 // ----------------------------------------------------------------------
 
-void ae::sequences::Seqdb::save()
+std::string ae::sequences::Seqdb::export_to_string() const
 {
-    const auto db_filename = filename();
-    if (modified_ || !std::filesystem::exists(db_filename)) {
-        // std::time_t now = std::time(nullptr);
         fmt::memory_buffer json;
         fmt::format_to(
             std::back_inserter(json),
@@ -282,10 +279,27 @@ void ae::sequences::Seqdb::save()
         }
 
         fmt::format_to(std::back_inserter(json), " ]\n}}\n");
-        fmt::print(">>> writing seqdb to {}\n", db_filename);
-        ae::file::write(db_filename, fmt::to_string(json), ae::file::force_compression::no, ae::file::backup_file::yes);
-        // fmt::print("{}\n", fmt::to_string(json));
-    }
+
+        return fmt::to_string(json);
+
+} // ae::sequences::Seqdb::export_to_string
+
+// ----------------------------------------------------------------------
+
+void ae::sequences::Seqdb::save() const
+{
+    const auto db_filename = filename();
+    if (modified_ || !std::filesystem::exists(db_filename))
+        save(db_filename);
+
+} // ae::sequences::Seqdb::save
+
+// ----------------------------------------------------------------------
+
+void ae::sequences::Seqdb::save(const std::filesystem::path& filename) const
+{
+    fmt::print(">>> writing seqdb {} to {}\n", subtype_, filename);
+    ae::file::write(filename, export_to_string(), ae::file::force_compression::no, ae::file::backup_file::yes);
 
 } // ae::sequences::Seqdb::save
 
