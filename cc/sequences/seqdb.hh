@@ -61,6 +61,7 @@ namespace ae::sequences
 
         std::filesystem::path filename() const;
         void load();
+        void make_hash_index();
     };
 
     // ----------------------------------------------------------------------
@@ -129,6 +130,8 @@ namespace ae::sequences
             aa.get().clear();
             nuc.get().clear();
         }
+
+        bool is_master() const { return !nuc.empty(); }
     };
 
     // ----------------------------------------------------------------------

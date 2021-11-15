@@ -63,9 +63,31 @@ inline void load_seq(ae::sequences::SeqdbSeq& seq, simdjson::simdjson_result<sim
         else if (key == "i"sv)
             seq.issues = std::string_view{field.value()};
         else if (key == "l"sv) {
-
+            for (auto lab_id_field : field.value().get_object()) {
+                auto& lab_entry = seq.lab_ids.emplace_back(std::string_view{lab_id_field.unescaped_key()}, ae::sequences::SeqdbSeq::lab_ids_t{});
+                load_array_of_string(lab_entry.second, lab_id_field);
+            }
         }
         else if (key == "G"sv) {
+            for (auto gisaid_field : field.value().get_object()) {
+                const std::string_view gisaid_key = gisaid_field.unescaped_key();
+                if (gisaid_key == "i"sv)
+                    load_array_of_string(seq.gisaid.accession_number, gisaid_field);
+                else if (gisaid_key == "S"sv)
+                    load_array_of_string(seq.gisaid.gisaid_submitter, gisaid_field);
+                else if (gisaid_key == "m"sv)
+                    load_array_of_string(seq.gisaid.gisaid_last_modified, gisaid_field);
+                else if (gisaid_key == "o"sv)
+                    load_array_of_string(seq.gisaid.gisaid_originating_lab, gisaid_field);
+                else if (gisaid_key == "t"sv)
+                    load_array_of_string(seq.gisaid.gisaid_identifier, gisaid_field);
+                else if (gisaid_key == "D"sv)
+                    load_array_of_string(seq.gisaid.gisaid_dna_accession_no, gisaid_field);
+                else if (gisaid_key == "d"sv)
+                    load_array_of_string(seq.gisaid.gisaid_dna_insdc, gisaid_field);
+                else
+                    fmt::print("> seqdb load_seq unhandled gisaid key \"{}\"\n", gisaid_key);
+            }
         }
         else
             fmt::print("> seqdb load_seq unhandled key \"{}\"\n", key);
@@ -133,11 +155,24 @@ void ae::sequences::Seqdb::load()
         catch (simdjson_error& err) {
             fmt::print("> parsing error: {} at {} \"{}\"\n", err.what(), parser.current_location_offset(), parser.current_location_snippet(50));
         }
-#warning build hash_index_
-        fmt::print(">>>> loaded \"{}\" {} -> {}\n", subtype_, db_filename, entries_.size());
+        make_hash_index();
+        // fmt::print(">>>> loaded \"{}\" {} -> {}\n", subtype_, db_filename, entries_.size());
     }
 
 } // ae::sequences::Seqdb::load
+
+// ----------------------------------------------------------------------
+
+void ae::sequences::Seqdb::make_hash_index()
+{
+    for (const auto& entry : entries_) {
+        for (const auto& seq : entry.seqs) {
+            if (seq.is_master())
+                hash_index_.try_emplace(seq.hash, entry.name);
+        }
+    }
+
+} // ae::sequences::Seqdb::make_hash_index
 
 // ----------------------------------------------------------------------
 
