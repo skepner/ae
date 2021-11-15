@@ -4,6 +4,7 @@
 #include "utils/string.hh"
 
 #include "utils/messages.hh"
+#include "utils/string-hash.hh"
 #include "sequences/translate.hh"
 #include "sequences/raw-sequence.hh"
 
@@ -74,7 +75,7 @@ bool ae::sequences::translate(RawSequence& sequence, Messages& messages)
 #pragma GCC diagnostic ignored "-Wexit-time-destructors"
 #endif
 
-static const std::unordered_map<std::string_view, char> CODON_TO_PROTEIN = {
+static const std::unordered_map<std::string_view, char, ae::string_hash_for_unordered_map, std::equal_to<>> CODON_TO_PROTEIN = {
     {"UGC", 'C'}, {"GTA", 'V'}, {"GTG", 'V'}, {"CCT", 'P'}, {"CUG", 'L'}, {"AGG", 'R'}, {"CTT", 'L'}, {"CUU", 'L'},
     {"CTG", 'L'}, {"GCU", 'A'}, {"CCG", 'P'}, {"AUG", 'M'}, {"GGC", 'G'}, {"UUA", 'L'}, {"GAG", 'E'}, {"UGG", 'W'},
     {"UUU", 'F'}, {"UUG", 'L'}, {"ACU", 'T'}, {"TTA", 'L'}, {"AAT", 'N'}, {"CGU", 'R'}, {"CCA", 'P'}, {"GCC", 'A'},

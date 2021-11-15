@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <stdexcept>
 
+#include "utils/string-hash.hh"
 #include "sequences/sequence.hh"
 #include "sequences/issues.hh"
 
@@ -58,7 +59,7 @@ namespace ae::sequences
         std::string subtype_;
         std::vector<SeqdbEntry> entries_;
         bool modified_{false};
-        std::unordered_map<hash_t, std::string> hash_index_; // hash -> name
+        std::unordered_map<hash_t, std::string, ae::string_hash_for_unordered_map, std::equal_to<>> hash_index_; // hash -> name
 
         std::filesystem::path filename() const;
         std::string export_to_string() const;
