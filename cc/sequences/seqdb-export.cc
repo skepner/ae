@@ -43,10 +43,10 @@ inline void load_array_of_string(std::vector<std::string>& target, simdjson::sim
         target.emplace_back(value);
 }
 
-inline void load_seq(ae::sequences::SeqdbSeq& seq, simdjson::simdjson_result<simdjson::fallback::ondemand::value>& src)
+inline void load_seq(ae::sequences::SeqdbSeq& seq, simdjson::ondemand::object& json_seq)
 {
     using namespace std::string_view_literals;
-    for (auto field : src.get_object()) {
+    for (auto field : json_seq) {
         const std::string_view key = field.unescaped_key();
         if (key == "a"sv)
             seq.aa = std::string_view{field.value()};
@@ -94,26 +94,28 @@ inline void load_seq(ae::sequences::SeqdbSeq& seq, simdjson::simdjson_result<sim
     }
 }
 
-inline void load_entry(ae::sequences::SeqdbEntry& entry, simdjson::simdjson_result<simdjson::fallback::ondemand::field>& field)
+inline void load_entry(ae::sequences::SeqdbEntry& entry, simdjson::ondemand::object& json_entry)
 {
     using namespace std::string_view_literals;
-    const std::string_view key = field.unescaped_key();
-    if (key == "N"sv)
-        entry.name = std::string_view{field.value()};
-    else if (key == "d"sv)
-        load_array_of_string(entry.dates, field);
-    else if (key == "C"sv)
-        entry.continent = std::string_view{field.value()};
-    else if (key == "c"sv)
-        entry.country = std::string_view{field.value()};
-    else if (key == "l"sv)
-        entry.lineage = std::string_view{field.value()};
-    else if (key == "s"sv) {
-        for (auto json_seq : field.value().get_array())
-            load_seq(entry.seqs.emplace_back(), json_seq);
+    for (auto field : json_entry) {
+        const std::string_view key = field.unescaped_key();
+        if (key == "N"sv)
+            entry.name = std::string_view{field.value()};
+        else if (key == "d"sv)
+            load_array_of_string(entry.dates, field);
+        else if (key == "C"sv)
+            entry.continent = std::string_view{field.value()};
+        else if (key == "c"sv)
+            entry.country = std::string_view{field.value()};
+        else if (key == "l"sv)
+            entry.lineage = std::string_view{field.value()};
+        else if (key == "s"sv) {
+            for (simdjson::ondemand::object json_seq : field.value().get_array())
+                load_seq(entry.seqs.emplace_back(), json_seq);
+        }
+        else
+            fmt::print("> seqdb load_entry unhandled key \"{}\"\n", key);
     }
-    else
-        fmt::print("> seqdb load_entry unhandled key \"{}\"\n", key);
 }
 
 void ae::sequences::Seqdb::load()
@@ -138,11 +140,8 @@ void ae::sequences::Seqdb::load()
                     entries_.reserve(static_cast<uint64_t>(field.value()));
                 }
                 else if (key == "data") {
-                    for (ondemand::object json_entry : field.value().get_array()) {
-                        for (auto data_field : json_entry) {
-                            load_entry(entries_.emplace_back(), data_field);
-                        }
-                    }
+                    for (ondemand::object json_entry : field.value().get_array())
+                        load_entry(entries_.emplace_back(), json_entry);
                 }
                 else if (key == "subtype") {
                     if (const std::string_view subtype{field.value()}; subtype != subtype_)
