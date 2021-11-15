@@ -67,6 +67,8 @@ namespace ae::sequences
             return *this;
         }
 
+        bool has_issues() const { return !data_.empty(); }
+
         bool update(const issues_t& issues)
         {
             bool updated { false };

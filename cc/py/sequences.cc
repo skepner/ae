@@ -18,13 +18,23 @@ void ae::py::sequences(pybind11::module_& mdl)
 
     auto seqdb_submodule = mdl.def_submodule("seqdb", "seqdb access");
 
-    seqdb_submodule.def("for_subtype", &ae::sequences::seqdb_for_subtype, "subtype"_a, pybind11::return_value_policy::reference);
-    seqdb_submodule.def("save", &ae::sequences::seqdb_save);
+    seqdb_submodule.def("for_subtype", &seqdb_for_subtype, "subtype"_a, pybind11::return_value_policy::reference);
+    seqdb_submodule.def("save", &seqdb_save);
 
-    pybind11::class_<ae::sequences::Seqdb>(seqdb_submodule, "SeqdbForSubtype") //
-        .def("add", &ae::sequences::Seqdb::add, "raw_sequence"_a)              //
+    pybind11::class_<Seqdb>(seqdb_submodule, "SeqdbForSubtype") //
+        .def("add", &Seqdb::add, "raw_sequence"_a)              //
         .def(
-            "save", [](const ae::sequences::Seqdb& seqdb, pybind11::object filename) { seqdb.save(std::string{pybind11::str(filename)}); }, "filename"_a) //
+            "save", [](const Seqdb& seqdb, pybind11::object filename) { seqdb.save(std::string{pybind11::str(filename)}); }, "filename"_a) //
+        .def("select_all", &Seqdb::select_all)                                                                                             //
+        ;
+
+    pybind11::class_<SeqdbSelected, std::shared_ptr<SeqdbSelected>>(seqdb_submodule, "Selected") //
+        .def("exclude_with_issue", &SeqdbSelected::exclude_with_issue)                           //
+        .def(
+            "filter_dates", [](SeqdbSelected& selected, std::string_view first, std::string_view last) -> SeqdbSelected& { return selected.filter_dates(first, last); }, "first"_a = std::string_view{},
+            "last"_a = std::string_view{}) //
+        .def(
+            "sort_by_date", [](SeqdbSelected& selected, bool ascending) { return selected.sort_by_date(ascending ? order::ascending : order::descending); }, "ascending"_a = true) //
         ;
 
     // ----------------------------------------------------------------------

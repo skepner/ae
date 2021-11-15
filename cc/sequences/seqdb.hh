@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <unordered_map>
 #include <stdexcept>
+#include <memory>
 
 #include "utils/string-hash.hh"
 #include "sequences/sequence.hh"
@@ -16,6 +17,9 @@ namespace ae::sequences
     class Seqdb;
     struct SeqdbEntry;
     struct SeqdbSeq;
+    class SeqdbSelected;
+
+    enum class order { ascending, descending };
 
     class Error : public std::runtime_error
     {
@@ -33,7 +37,13 @@ namespace ae::sequences
     {
         const SeqdbEntry* entry{nullptr};
         const SeqdbSeq* seq{nullptr};
+
         constexpr operator bool() const { return entry != nullptr && seq != nullptr; }
+        void erase()
+        {
+            entry = nullptr;
+            seq = nullptr;
+        }
     };
 
     // ----------------------------------------------------------------------
@@ -54,6 +64,8 @@ namespace ae::sequences
         const SeqdbEntry* find_by_name(std::string_view name) const;
         SeqdbSeqRef find_by_name_hash(std::string_view name, const hash_t& hash) const;
         SeqdbSeqRef find_by_hash(const hash_t& hash) const; // via hash_index_
+
+        std::shared_ptr<SeqdbSelected> select_all() const;
 
       private:
         std::string subtype_;
@@ -86,6 +98,23 @@ namespace ae::sequences
 
         bool update(const RawSequence& raw_sequence, bool keep_sequence = true); // returns if entry was modified
         bool add_date(std::string_view date);
+
+        bool date_within(std::string_view first_date, std::string_view last_date) const
+        {
+            return !dates.empty() && (first_date.empty() || first_date <= dates.back()) && (last_date.empty() || last_date > dates.back());
+        }
+
+        bool date_less_than(const SeqdbEntry& another) const
+        {
+            if (!dates.empty()) {
+                if (!another.dates.empty())
+                    return dates.back() < another.dates.back();
+                else
+                    return false;
+            }
+            else
+                return true;
+        }
 
         // std::string host() const;
         // bool date_within(std::string_view start, std::string_view end) const { return !dates.empty() && (start.empty() || dates.front() >= start) && (end.empty() || dates.front() < end); }
@@ -128,6 +157,8 @@ namespace ae::sequences
         SeqdbSeq() = default;
         bool update(const RawSequence& raw_sequence, bool keep_sequence); // returns if entry was modified
 
+        bool has_issues() const { return issues.has_issues(); }
+
         void dont_keep_sequence()
         {
             aa.get().clear();
@@ -139,7 +170,50 @@ namespace ae::sequences
 
     // ----------------------------------------------------------------------
 
-    inline const SeqdbEntry* Seqdb::find_by_name(std::string_view name) const
+    class SeqdbSelected
+    {
+      public:
+        SeqdbSelected() {}
+
+        auto size() const { return refs_.size(); }
+
+        SeqdbSelected& exclude_with_issue()
+        {
+            refs_.erase(std::remove_if(std::begin(refs_), std::end(refs_), [](const auto& ref) -> bool { return ref.seq->has_issues(); }), std::end(refs_));
+            return *this;
+        }
+
+        SeqdbSelected& filter_dates(std::string_view first_date, std::string_view last_date)
+        {
+            refs_.erase(std::remove_if(std::begin(refs_), std::end(refs_), [first_date, last_date](const auto& ref) -> bool { return !ref.entry->date_within(first_date, last_date); }),
+                        std::end(refs_));
+            return *this;
+        }
+
+        SeqdbSelected& sort_by_date(order ord = order::ascending)
+        {
+            if (ord == order::ascending)
+                std::sort(std::begin(refs_), std::end(refs_), [](const auto& ref1, const auto& ref2) { return ref1.entry->date_less_than(*ref2.entry); });
+            else
+                std::sort(std::begin(refs_), std::end(refs_), [](const auto& ref1, const auto& ref2) { return ref2.entry->date_less_than(*ref1.entry); });
+            return *this;
+        }
+
+      private:
+        std::vector<SeqdbSeqRef> refs_;
+
+        // void remove_empty()
+        // {
+        //     refs_.erase(std::remove_if(std::begin(refs_), std::end(refs_), [](const auto& ref) -> bool { return !ref; }), std::end(refs_));
+        // }
+
+        friend class Seqdb;
+    };
+
+    // ----------------------------------------------------------------------
+
+    inline const SeqdbEntry*
+    Seqdb::find_by_name(std::string_view name) const
     {
         if (const auto found = std::lower_bound(std::begin(entries_), std::end(entries_), name, [](const auto& entry, std::string_view nam) { return entry.name < nam; });
             found != std::end(entries_) && found->name == name)
