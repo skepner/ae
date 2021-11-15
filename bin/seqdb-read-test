@@ -17,7 +17,7 @@ import ae_backend
 def main(args: argparse.Namespace):
     for subtype in ["B", "A(H1N1)", "A(H3N2)"]:
         seqdb = ae_backend.seqdb.for_subtype(subtype)
-        seqdb.save("/r/" + subtype.lower().replace("(", "").replace(")", "") + ".jxz")
+        seqdb.save("/r/z-" + subtype.lower().replace("(", "").replace(")", "") + ".json.xz")
 
 # ----------------------------------------------------------------------
 
