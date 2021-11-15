@@ -80,7 +80,7 @@ def gisaid_extract_fields(fields: list, context: Context):
     for field in fields[1:-1]:
         key, value = field.split("=", maxsplit=1)
         if value:
-            metadata[sGisaidFieldKeys[key]] = value.strip()
+            metadata[sGisaidFieldKeys[key]] = gisaid_fix_field(value)
     return gisaid_parse_fields(metadata=metadata, context=context)
 
 def gisaid_parse_subtype(subtype: str, metadata: dict, context: Context):
@@ -108,6 +108,12 @@ def gisaid_parse_fields(metadata: dict, context: Context):
             if res := parser(field_value, metadata=metadata, context=context): # parse_name always returns None and updates metadata
                 metadata[field_name] = res
     return metadata
+
+def gisaid_fix_field(value: str):
+    value = value.strip()
+    if value and value[0] == '"' and value[-1] == '"': # enclosed in double quotes (see EPI_ISL_2455085)
+        value = value[1:-1]     # also '"' -> ''
+    return value
 
 sGisaidFieldKeys = {
     "a": "isolate_id",

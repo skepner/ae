@@ -122,8 +122,6 @@ void ae::sequences::Seqdb::load()
 {
     if (const auto db_filename = filename(); std::filesystem::exists(db_filename)) {
         fmt::print(">>>> load \"{}\" {}\n", subtype_, db_filename);
-        if (subtype_ != "B")
-            return;
 
         using namespace ae::simdjson;
         Parser parser{db_filename};
