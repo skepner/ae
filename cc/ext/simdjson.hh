@@ -46,6 +46,9 @@ namespace ae::simdjson
 
         constexpr auto& doc() { return doc_; }
 
+        size_t current_location_offset() { return doc_.current_location().value() - json_.data(); }
+        std::string_view current_location_snippet(size_t size) { return std::string_view(doc_.current_location().value(), size); }
+
       private:
         ::simdjson::ondemand::parser parser_;
         std::string json_;

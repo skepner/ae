@@ -15,7 +15,6 @@
                  "a": "sequence-amino-acids",
                  "n": "sequence-nucleotides",
                  "H": "hash of nucs, xxhash32 hex encoded",
-                 "R": "<name> - reference to the seq entry with the same sequence",
                  "r": ["reassortant"],
                  "A": ["annotations"],
                  "p": ["passage"],

@@ -56,6 +56,17 @@ namespace ae::sequences
     {
         std::string data_;
 
+        seqdb_issues_t() = default;
+        seqdb_issues_t(const seqdb_issues_t&) = default;
+        seqdb_issues_t(seqdb_issues_t&&) = default;
+        seqdb_issues_t& operator=(const seqdb_issues_t&) = default;
+        seqdb_issues_t& operator=(seqdb_issues_t&&) = default;
+        seqdb_issues_t& operator=(std::string_view src)
+        {
+            data_ = src;
+            return *this;
+        }
+
         bool update(const issues_t& issues)
         {
             bool updated { false };

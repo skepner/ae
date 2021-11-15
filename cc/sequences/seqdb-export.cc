@@ -37,35 +37,104 @@ std::filesystem::path ae::sequences::Seqdb::filename() const
 
 // ----------------------------------------------------------------------
 
+inline void load_array_of_string(std::vector<std::string>& target, simdjson::simdjson_result<simdjson::fallback::ondemand::field>& field)
+{
+    for (std::string_view value : field.value().get_array())
+        target.emplace_back(value);
+}
+
+inline void load_seq(ae::sequences::SeqdbSeq& seq, simdjson::simdjson_result<simdjson::fallback::ondemand::value>& src)
+{
+    using namespace std::string_view_literals;
+    for (auto field : src.get_object()) {
+        const std::string_view key = field.unescaped_key();
+        if (key == "a"sv)
+            seq.aa = std::string_view{field.value()};
+        else if (key == "n"sv)
+            seq.nuc = std::string_view{field.value()};
+        else if (key == "H"sv)
+            seq.hash = std::string_view{field.value()};
+        else if (key == "r"sv)
+            load_array_of_string(seq.reassortants, field);
+        else if (key == "A"sv)
+            load_array_of_string(seq.annotations, field);
+        else if (key == "p"sv)
+            load_array_of_string(seq.passages, field);
+        else if (key == "i"sv)
+            seq.issues = std::string_view{field.value()};
+        else if (key == "l"sv) {
+
+        }
+        else if (key == "G"sv) {
+        }
+        else
+            fmt::print("> seqdb load_seq unhandled key \"{}\"\n", key);
+    }
+}
+
+inline void load_entry(ae::sequences::SeqdbEntry& entry, simdjson::simdjson_result<simdjson::fallback::ondemand::field>& field)
+{
+    using namespace std::string_view_literals;
+    const std::string_view key = field.unescaped_key();
+    if (key == "N"sv)
+        entry.name = std::string_view{field.value()};
+    else if (key == "d"sv)
+        load_array_of_string(entry.dates, field);
+    else if (key == "C"sv)
+        entry.continent = std::string_view{field.value()};
+    else if (key == "c"sv)
+        entry.country = std::string_view{field.value()};
+    else if (key == "l"sv)
+        entry.lineage = std::string_view{field.value()};
+    else if (key == "s"sv) {
+        for (auto json_seq : field.value().get_array())
+            load_seq(entry.seqs.emplace_back(), json_seq);
+    }
+    else
+        fmt::print("> seqdb load_entry unhandled key \"{}\"\n", key);
+}
+
 void ae::sequences::Seqdb::load()
 {
     if (const auto db_filename = filename(); std::filesystem::exists(db_filename)) {
         fmt::print(">>>> load \"{}\" {}\n", subtype_, db_filename);
+        if (subtype_ != "B")
+            return;
 
         using namespace ae::simdjson;
         Parser parser{db_filename};
-        for (auto field : parser.doc().get_object()) {
-            const std::string_view key = field.unescaped_key();
-            if (key == "  version") {
-                if (const std::string_view ver{field.value()}; ver != "sequence-database-v4""")
-                    throw Error{"unsupported version: \"{}\"", ver};
-            }
-            else if (key == "size") {
-                entries_.reserve(static_cast<uint64_t>(field.value()));
-            }
-            else if (key == "data") {
-                for (ondemand::object entry : field.value().get_array()) {
-                    // fmt::print(">>>>  \"{}\"\n", std::string_view{entry["N"]});
+        try {
+            for (auto field : parser.doc().get_object()) {
+                const std::string_view key = field.unescaped_key();
+                // fmt::print(">>>> key \"{}\"\n", key);
+                if (key == "  version") {
+                    if (const std::string_view ver{field.value()}; ver != "sequence-database-v4"
+                                                                          "")
+                        throw Error{"unsupported version: \"{}\"", ver};
                 }
+                else if (key == "size") {
+                    entries_.reserve(static_cast<uint64_t>(field.value()));
+                }
+                else if (key == "data") {
+                    for (ondemand::object json_entry : field.value().get_array()) {
+                        for (auto data_field : json_entry) {
+                            load_entry(entries_.emplace_back(), data_field);
+                        }
+                    }
+                }
+                else if (key == "subtype") {
+                    if (const std::string_view subtype{field.value()}; subtype != subtype_)
+                        throw Error{"wrong subtype: \"{}\"", subtype};
+                }
+                else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
+                    fmt::print(">> seqdb: unhandled \"{}\"\n", key);
             }
-            else if (key == "subtype") {
-                if (const std::string_view subtype{field.value()}; subtype != subtype_)
-                    throw Error{"wrong subtype: \"{}\"", subtype};
-            }
-            else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
-                fmt::print(">> seqdb: unhandled \"{}\"\n", key);
+        }
+        catch (simdjson_error& err) {
+            fmt::print("> parsing error: {} at {} \"{}\"\n", err.what(), parser.current_location_offset(), parser.current_location_snippet(50));
         }
 #warning build hash_index_
+        fmt::print(">>>> loaded \"{}\" {} -> {}\n", subtype_, db_filename, entries_.size());
     }
 
 } // ae::sequences::Seqdb::load
