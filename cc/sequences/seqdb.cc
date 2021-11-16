@@ -39,11 +39,12 @@ namespace ae::sequences
 
 // ----------------------------------------------------------------------
 
-ae::sequences::Seqdb& ae::sequences::seqdb_for_subtype(std::string_view subtype)
+ae::sequences::Seqdb& ae::sequences::seqdb_for_subtype(std::string_view subtype, verbose verb)
 {
     if (auto found = std::find_if(sSeqdb.begin(), sSeqdb.end(), [subtype](const auto& en) { return en.subtype == subtype; }); found != sSeqdb.end()) {
         if (!found->db)
             found->db = std::make_unique<Seqdb>(subtype);
+        found->db->set_verbose(verb);
         return *found->db;
     }
     else

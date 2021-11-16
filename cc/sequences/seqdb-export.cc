@@ -121,7 +121,8 @@ inline void load_entry(ae::sequences::SeqdbEntry& entry, simdjson::ondemand::obj
 void ae::sequences::Seqdb::load()
 {
     if (const auto db_filename = filename(); std::filesystem::exists(db_filename)) {
-        fmt::print(">>>> load \"{}\" {}\n", subtype_, db_filename);
+        if (is_verbose())
+            fmt::print(">>>> load \"{}\" {}\n", subtype_, db_filename);
 
         using namespace ae::simdjson;
         try {

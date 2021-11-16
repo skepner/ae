@@ -18,7 +18,9 @@ void ae::py::sequences(pybind11::module_& mdl)
 
     auto seqdb_submodule = mdl.def_submodule("seqdb", "seqdb access");
 
-    seqdb_submodule.def("for_subtype", &seqdb_for_subtype, "subtype"_a, pybind11::return_value_policy::reference);
+    seqdb_submodule.def(
+        "for_subtype", [](std::string_view subtype, bool verb) -> Seqdb& { return seqdb_for_subtype(subtype, verb ? verbose::yes : verbose::no); }, "subtype"_a, "verbose"_a = false,
+        pybind11::return_value_policy::reference);
     seqdb_submodule.def("save", &seqdb_save);
 
     pybind11::class_<Seqdb>(seqdb_submodule, "SeqdbForSubtype") //
@@ -29,7 +31,10 @@ void ae::py::sequences(pybind11::module_& mdl)
         ;
 
     pybind11::class_<SeqdbSelected, std::shared_ptr<SeqdbSelected>>(seqdb_submodule, "Selected") //
-        .def("exclude_with_issue", &SeqdbSelected::exclude_with_issue)                           //
+        .def("__len__", [](const SeqdbSelected& selected) { return selected.size(); })           //
+        .def(
+            "__iter__", [](const SeqdbSelected& selected) { return pybind11::make_iterator(selected.begin(), selected.end()); }, pybind11::keep_alive<0, 1>()) //
+        .def("exclude_with_issue", &SeqdbSelected::exclude_with_issue, "exclude"_a = true)                                                                     //
         .def(
             "filter_dates", [](SeqdbSelected& selected, std::string_view first, std::string_view last) -> SeqdbSelected& { return selected.filter_dates(first, last); }, "first"_a = std::string_view{},
             "last"_a = std::string_view{}) //

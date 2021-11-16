@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <memory>
 
+#include "utils/debug.hh"
 #include "utils/string-hash.hh"
 #include "sequences/sequence.hh"
 #include "sequences/issues.hh"
@@ -28,7 +29,7 @@ namespace ae::sequences
             : std::runtime_error{fmt::format("seqdb: {}", fmt::format(format, args...))} {}
     };
 
-    Seqdb& seqdb_for_subtype(std::string_view subtype);
+    Seqdb& seqdb_for_subtype(std::string_view subtype, verbose verb = verbose::no);
     void seqdb_save();
 
     // ----------------------------------------------------------------------
@@ -67,11 +68,15 @@ namespace ae::sequences
 
         std::shared_ptr<SeqdbSelected> select_all() const;
 
+        void set_verbose(verbose verb) const { verbose_ = verb; }
+        bool is_verbose() const { return verbose_ == verbose::yes; }
+
       private:
         std::string subtype_;
         std::vector<SeqdbEntry> entries_;
         bool modified_{false};
         std::unordered_map<hash_t, std::string, ae::string_hash_for_unordered_map, std::equal_to<>> hash_index_; // hash -> name
+        mutable verbose verbose_{verbose::no};
 
         std::filesystem::path filename() const;
         std::string export_to_string() const;
@@ -177,16 +182,18 @@ namespace ae::sequences
 
         auto size() const { return refs_.size(); }
 
-        SeqdbSelected& exclude_with_issue()
+        SeqdbSelected& exclude_with_issue(bool exclude = true)
         {
-            refs_.erase(std::remove_if(std::begin(refs_), std::end(refs_), [](const auto& ref) -> bool { return ref.seq->has_issues(); }), std::end(refs_));
+            if (exclude)
+                refs_.erase(std::remove_if(std::begin(refs_), std::end(refs_), [](const auto& ref) -> bool { return ref.seq->has_issues(); }), std::end(refs_));
             return *this;
         }
 
         SeqdbSelected& filter_dates(std::string_view first_date, std::string_view last_date)
         {
-            refs_.erase(std::remove_if(std::begin(refs_), std::end(refs_), [first_date, last_date](const auto& ref) -> bool { return !ref.entry->date_within(first_date, last_date); }),
-                        std::end(refs_));
+            if (!first_date.empty() || !last_date.empty())
+                refs_.erase(std::remove_if(std::begin(refs_), std::end(refs_), [first_date, last_date](const auto& ref) -> bool { return !ref.entry->date_within(first_date, last_date); }),
+                            std::end(refs_));
             return *this;
         }
 
@@ -198,6 +205,9 @@ namespace ae::sequences
                 std::sort(std::begin(refs_), std::end(refs_), [](const auto& ref1, const auto& ref2) { return ref2.entry->date_less_than(*ref1.entry); });
             return *this;
         }
+
+        auto begin() const { return refs_.begin(); }
+        auto end() const { return refs_.end(); }
 
       private:
         std::vector<SeqdbSeqRef> refs_;
