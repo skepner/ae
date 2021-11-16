@@ -90,7 +90,7 @@ void ae::sequences::Seqdb::add(const RawSequence& raw_sequence)
 
 std::shared_ptr<ae::sequences::SeqdbSelected> ae::sequences::Seqdb::select_all() const
 {
-    auto selected = std::make_shared<SeqdbSelected>();
+    auto selected = std::make_shared<SeqdbSelected>(*this);
     for (const auto& entry : entries_) {
         for (const auto& seq : entry.seqs)
             selected->refs_.push_back(SeqdbSeqRef{.entry = &entry, .seq = &seq});

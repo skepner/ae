@@ -40,7 +40,8 @@ void ae::py::sequences(pybind11::module_& mdl)
             "filter_dates", [](SeqdbSelected& selected, std::string_view first, std::string_view last) -> SeqdbSelected& { return selected.filter_dates(first, last); }, "first"_a = std::string_view{},
             "last"_a = std::string_view{}) //
         .def(
-            "sort", [](SeqdbSelected& selected, std::string_view sorting_order) {
+            "sort",
+            [](SeqdbSelected& selected, std::string_view sorting_order) {
                 order ord = order::date_ascending;
                 if (sorting_order == "date"sv || sorting_order == "+date"sv)
                     ord = order::date_ascending;
@@ -52,14 +53,16 @@ void ae::py::sequences(pybind11::module_& mdl)
                     ord = order::name_descending;
                 else
                     fmt::print(">> unrecognized soring order {} (+date assumed)", sorting_order);
-                return selected.sort(ord); }, "order"_a = "+date") //
+                return selected.sort(ord);
+            },
+            "order"_a = "+date") //
         ;
 
-    pybind11::class_<SeqdbSeqRef>(seqdb_submodule, "SeqdbSeqRef") //
+    pybind11::class_<SeqdbSeqRef>(seqdb_submodule, "SeqdbSeqRef")                 //
         .def("seq_id", [](const SeqdbSeqRef& ref) { return ref.seq_id().get(); }) //
-        .def("date", &SeqdbSeqRef::date) //
-        .def("aa", [](const SeqdbSeqRef& ref) { return ref.seq->aa.get(); }) //
-        .def("nuc", [](const SeqdbSeqRef& ref) { return ref.seq->nuc.get(); }) //
+        .def("date", &SeqdbSeqRef::date)                                          //
+        .def("aa", &SeqdbSeqRef::aa)                                              //
+        .def("nuc", &SeqdbSeqRef::nuc)                                            //
         ;
 
     // ----------------------------------------------------------------------

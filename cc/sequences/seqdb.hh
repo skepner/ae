@@ -39,6 +39,7 @@ namespace ae::sequences
     {
         const SeqdbEntry* entry{nullptr};
         const SeqdbSeq* seq{nullptr};
+        const SeqdbSeq* master{nullptr};
 
         constexpr operator bool() const { return entry != nullptr && seq != nullptr; }
         void erase()
@@ -49,6 +50,8 @@ namespace ae::sequences
 
         seq_id_t seq_id() const;
         std::string_view date() const;
+        std::string_view aa() const;
+        std::string_view nuc() const;
     };
 
     // ----------------------------------------------------------------------
@@ -183,7 +186,7 @@ namespace ae::sequences
     class SeqdbSelected
     {
       public:
-        SeqdbSelected() {}
+        SeqdbSelected(const Seqdb& seqdb) : seqdb_{seqdb} {}
 
         auto size() const { return refs_.size(); }
 
@@ -227,6 +230,7 @@ namespace ae::sequences
         auto end() const { return refs_.end(); }
 
       private:
+        const Seqdb& seqdb_;
         std::vector<SeqdbSeqRef> refs_;
 
         // void remove_empty()
@@ -282,6 +286,22 @@ namespace ae::sequences
     }
 
     inline std::string_view SeqdbSeqRef::date() const { return entry->date(); }
+
+    inline std::string_view SeqdbSeqRef::aa() const
+    {
+        if (master)
+            return master->aa;
+        else
+            return seq->aa;
+    }
+
+    inline std::string_view SeqdbSeqRef::nuc() const
+    {
+        if (master)
+            return master->nuc;
+        else
+            return seq->nuc;
+    }
 
 } // namespace ae::sequences
 
