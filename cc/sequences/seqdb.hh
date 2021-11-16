@@ -20,7 +20,9 @@ namespace ae::sequences
     struct SeqdbSeq;
     class SeqdbSelected;
 
-    enum class order { ascending, descending };
+    enum class order { none, date_ascending, date_descending, name_ascending, name_descending };
+
+    using seq_id_t = ae::named_string_t<std::string, struct acmacs_seqdb_SeqId_tag>;
 
     class Error : public std::runtime_error
     {
@@ -28,6 +30,7 @@ namespace ae::sequences
         template <typename ... Args> Error(fmt::format_string<Args...> format, Args&& ... args)
             : std::runtime_error{fmt::format("seqdb: {}", fmt::format(format, args...))} {}
     };
+
 
     Seqdb& seqdb_for_subtype(std::string_view subtype, verbose verb = verbose::no);
     void seqdb_save();
@@ -45,6 +48,8 @@ namespace ae::sequences
             entry = nullptr;
             seq = nullptr;
         }
+
+        seq_id_t seq_id() const;
     };
 
     // ----------------------------------------------------------------------
@@ -197,12 +202,24 @@ namespace ae::sequences
             return *this;
         }
 
-        SeqdbSelected& sort_by_date(order ord = order::ascending)
+        SeqdbSelected& sort(order ord = order::date_ascending)
         {
-            if (ord == order::ascending)
-                std::sort(std::begin(refs_), std::end(refs_), [](const auto& ref1, const auto& ref2) { return ref1.entry->date_less_than(*ref2.entry); });
-            else
-                std::sort(std::begin(refs_), std::end(refs_), [](const auto& ref1, const auto& ref2) { return ref2.entry->date_less_than(*ref1.entry); });
+            switch (ord) {
+                case order::date_ascending:
+                    std::sort(std::begin(refs_), std::end(refs_), [](const auto& ref1, const auto& ref2) { return ref1.entry->date_less_than(*ref2.entry); });
+                    break;
+                case order::date_descending:
+                    std::sort(std::begin(refs_), std::end(refs_), [](const auto& ref1, const auto& ref2) { return ref2.entry->date_less_than(*ref1.entry); });
+                    break;
+                case order::name_ascending:
+                    std::sort(std::begin(refs_), std::end(refs_), [](const auto& ref1, const auto& ref2) { return ref1.seq_id().get() < ref2.seq_id().get(); });
+                    break;
+                case order::name_descending:
+                    std::sort(std::begin(refs_), std::end(refs_), [](const auto& ref1, const auto& ref2) { return ref2.seq_id().get() < ref1.seq_id().get(); });
+                    break;
+                case order::none:
+                    break;
+            }
             return *this;
         }
 

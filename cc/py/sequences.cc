@@ -13,6 +13,7 @@ void ae::py::sequences(pybind11::module_& mdl)
 {
     using namespace pybind11::literals;
     using namespace ae::sequences;
+    using namespace std::string_view_literals;
 
     // ----------------------------------------------------------------------
 
@@ -39,7 +40,23 @@ void ae::py::sequences(pybind11::module_& mdl)
             "filter_dates", [](SeqdbSelected& selected, std::string_view first, std::string_view last) -> SeqdbSelected& { return selected.filter_dates(first, last); }, "first"_a = std::string_view{},
             "last"_a = std::string_view{}) //
         .def(
-            "sort_by_date", [](SeqdbSelected& selected, bool ascending) { return selected.sort_by_date(ascending ? order::ascending : order::descending); }, "ascending"_a = true) //
+            "sort", [](SeqdbSelected& selected, std::string_view sorting_order) {
+                order ord = order::date_ascending;
+                if (sorting_order == "date"sv || sorting_order == "+date"sv)
+                    ord = order::date_ascending;
+                else if (sorting_order == "-date"sv)
+                    ord = order::date_descending;
+                else if (sorting_order == "name"sv || sorting_order == "+name"sv)
+                    ord = order::name_ascending;
+                else if (sorting_order == "-name"sv)
+                    ord = order::name_descending;
+                else
+                    fmt::print(">> unrecognized soring order {} (+date assumed)", sorting_order);
+                return selected.sort(ord); }, "order"_a = "+date") //
+        ;
+
+    pybind11::class_<SeqdbSeqRef>(seqdb_submodule, "SeqdbSeqRef") //
+        .def("seq_id", [](const SeqdbSeqRef& ref) { return ref.seq_id().get(); }) //
         ;
 
     // ----------------------------------------------------------------------

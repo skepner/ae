@@ -2,7 +2,7 @@
 #include <memory>
 #include <cstdlib>
 
-// #include "utils/file.hh"
+#include "ext/range-v3.hh"
 #include "sequences/seqdb.hh"
 #include "sequences/raw-sequence.hh"
 
@@ -217,5 +217,72 @@ bool ae::sequences::SeqdbSeq::update(const RawSequence& raw_sequence, bool keep_
     return updated;
 
 } // ae::sequences::SeqdbSeq::update
+
+// ----------------------------------------------------------------------
+
+inline ae::sequences::seq_id_t make_seq_id(std::string_view designation)
+{
+    const auto to_remove = [](char cc) {
+        switch (cc) {
+          case '(':
+          case ')':
+          case '[':
+          case ']':
+          case ':':
+          case '\'':
+          case ';':
+              // unlikely to be in seqdb, but remove them just in case
+          case '!':
+          case '#':
+          case '*':
+          case '@':
+          case '$':
+              return true;
+        }
+        return false;
+    };
+
+    const auto to_replace_with_underscore = [](char cc) {
+        switch (cc) {
+          case ' ':
+          case '&':
+          case '=':
+              return true;
+        }
+        return false;
+    };
+
+    const auto to_replace_with_slash = [](char cc) {
+        switch (cc) {
+          case ',':
+          case '+':
+              return true;
+        }
+        return false;
+    };
+
+    const std::regex re_no_spaces{"[^ &=]"};
+    return ae::sequences::seq_id_t{
+        designation
+        | ranges::views::remove_if(to_remove)
+        | ranges::views::replace('?', 'x')
+        | ranges::views::replace_if(to_replace_with_slash, '/') // usually in passages
+        | ranges::views::replace_if(to_replace_with_underscore, '_')
+        | ranges::views::adjacent_remove_if([](char left, char right) { return left == '_' && right == '_'; })
+        | ranges::to<std::string>()
+                };
+
+} // acmacs::seqdb::v3::make_seq_id
+
+ae::sequences::seq_id_t ae::sequences::SeqdbSeqRef::seq_id() const
+{
+    if (entry != nullptr && seq != nullptr) {
+        return make_seq_id(
+            fmt::format("{} {} {} {}", entry->name, seq->reassortants.empty() ? std::string{} : seq->reassortants.front(), seq->passages.empty() ? std::string{} : seq->passages.front(), seq->hash));
+    }
+    else
+        return seq_id_t{"<NULL>"};
+
+} // ae::sequences::SeqdbSeqRef::seq_id
 
 // ----------------------------------------------------------------------

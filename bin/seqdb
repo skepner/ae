@@ -30,8 +30,13 @@ def find(subtype: str, names: list[str], args: argparse.Namespace):
                 .select_all()
                 .exclude_with_issue(not args.with_issues)
                 .filter_dates(args.start_date, args.end_date)
+                .sort(args.sort_order)
                 )
     print(f"{subtype:7s} {len(selected)}")
+    for no, seq in enumerate(selected):
+        print(f"  {seq.seq_id()}")
+        if no >= 20:
+            break
 
 # ----------------------------------------------------------------------
 
@@ -40,6 +45,7 @@ try:
     parser.add_argument("-b", "--start-date", dest="start_date", default="")
     parser.add_argument("-e", "--end-date", dest="end_date", default="")
     parser.add_argument("--with-issues", dest="with_issues", action="store_true", default=False)
+    parser.add_argument("-s", "--sort", dest="sort_order", default="+date", help="date, +date, -date, name, +name, -name")
     parser.add_argument("name", nargs="*")
     parser.add_argument("-v", "--verbose", dest="verbose", action="store_true", default=False)
     args = parser.parse_args()
