@@ -1,6 +1,7 @@
-// #include <unordered_map>
 #include <memory>
 #include <cstdlib>
+#include <variant>
+#include <regex>
 
 #include "ext/range-v3.hh"
 #include "sequences/seqdb.hh"
@@ -290,5 +291,70 @@ ae::sequences::seq_id_t ae::sequences::SeqdbSeqRef::seq_id() const
         return seq_id_t{"<NULL>"};
 
 } // ae::sequences::SeqdbSeqRef::seq_id
+
+// ----------------------------------------------------------------------
+
+struct match_name_str
+{
+    match_name_str(std::string_view pat) : pattern{pat} {}
+    bool operator()(const ae::sequences::SeqdbSeqRef& ref) const { return ref.entry->name.find(pattern) != std::string::npos; }
+    std::string_view pattern;
+};
+
+struct match_name_re
+{
+    match_name_re(std::string_view pat) : pattern{pat.begin(), pat.end(), std::regex::icase | std::regex::ECMAScript | std::regex::optimize} {}
+    bool operator()(const ae::sequences::SeqdbSeqRef& ref) const { return std::regex_search(ref.entry->name, pattern); }
+    std::regex pattern;
+};
+
+struct match_seq_id_str
+{
+    match_seq_id_str(std::string_view pat) : pattern{pat} {}
+    bool operator()(const ae::sequences::SeqdbSeqRef& ref) const { return ref.seq_id().get().find(pattern) != std::string::npos; }
+    std::string_view pattern;
+};
+
+struct match_seq_id_re
+{
+    match_seq_id_re(std::string_view pat) : pattern{pat.begin(), pat.end(), std::regex::icase | std::regex::ECMAScript | std::regex::optimize} {}
+    bool operator()(const ae::sequences::SeqdbSeqRef& ref) const { return std::regex_search(ref.seq_id().get(), pattern); }
+    std::regex pattern;
+};
+
+using matcher_t = std::variant<match_name_str, match_name_re, match_seq_id_str, match_seq_id_re>;
+
+inline matcher_t make_matcher(std::string_view pat)
+{
+    if (pat.empty())
+        return match_name_str{pat};
+    if (pat[0] == '~') {
+        if (pat.find('_') == std::string_view::npos)
+            return match_name_re{pat.substr(1)};
+        else
+            return match_seq_id_re{pat.substr(1)};
+    }
+    else {
+        if (pat.find('_') == std::string_view::npos)
+            return match_name_str{pat};
+        else
+            return match_seq_id_str{pat};
+    }
+}
+
+ae::sequences::SeqdbSelected& ae::sequences::SeqdbSelected::filter_name(const std::vector<std::string>& names)
+{
+    std::vector<matcher_t> matchers;
+    matchers.reserve(names.size());
+    std::transform(names.begin(), names.end(), std::back_inserter(matchers), &make_matcher);
+
+    refs_.erase(std::remove_if(std::begin(refs_), std::end(refs_),
+                               [&matchers](const auto& ref) -> bool {
+                                   return std::none_of(std::begin(matchers), std::end(matchers), [&ref](const auto& matcher) { return std::visit([&ref](auto&& mat) { return mat(ref); }, matcher); });
+                               }),
+                std::end(refs_));
+    return *this;
+
+} // ae::sequences::SeqdbSelected::filter_name
 
 // ----------------------------------------------------------------------
