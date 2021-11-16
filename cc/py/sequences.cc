@@ -42,8 +42,12 @@ void ae::py::sequences(pybind11::module_& mdl)
         .def("human", &SeqdbSelected::filter_human)                //
         .def("filter_host", &SeqdbSelected::filter_host, "host"_a) //
         .def(
+            "filter_name", [](SeqdbSelected& selected, const std::vector<std::string>& names) -> SeqdbSelected& { return selected.filter_name(names); }, "names"_a) //
+        .def(
+            "filter_name", [](SeqdbSelected& selected, const std::string& name) -> SeqdbSelected& { return selected.filter_name(std::vector<std::string>{name}); }, "names"_a) //
+        .def(
             "sort",
-            [](SeqdbSelected& selected, std::string_view sorting_order) {
+            [](SeqdbSelected& selected, std::string_view sorting_order) -> SeqdbSelected& {
                 order ord = order::date_ascending;
                 if (sorting_order == "date"sv || sorting_order == "+date"sv)
                     ord = order::date_ascending;

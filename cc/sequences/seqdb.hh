@@ -220,6 +220,16 @@ namespace ae::sequences
             return *this;
         }
 
+        SeqdbSelected& filter_name(const std::vector<std::string>& names)
+        {
+            refs_.erase(std::remove_if(std::begin(refs_), std::end(refs_),
+                                       [&names](const auto& ref) -> bool {
+                                           return std::any_of(std::begin(names), std::end(names), [&ref](const auto& name) { return ref.entry->name.find(name) == std::string::npos; });
+                                       }),
+                        std::end(refs_));
+            return *this;
+        }
+
         SeqdbSelected& sort(order ord = order::date_ascending)
         {
             switch (ord) {

@@ -30,11 +30,16 @@ def find(subtype: str, names: list[str], args: argparse.Namespace):
                 .select_all()
                 .exclude_with_issue(not args.with_issues)
                 .filter_dates(args.start_date, args.end_date)
-                # .find_masters()
-                .remove_hash_duplicates()
-                .replace_with_master()
-                .sort(args.sort_order)
                 )
+    if names:
+        selected.filter_name([name.upper() for name in names])
+    else:
+        (selected
+         # .find_masters()
+         .remove_hash_duplicates()
+         .replace_with_master()
+         )
+    selected.sort(args.sort_order)
     if not args.any_host:
         if args.host and (host := args.host.upper()) != "HUMAN":
             selected.filter_host(host)
@@ -50,9 +55,10 @@ def find(subtype: str, names: list[str], args: argparse.Namespace):
         print_names = False
     print(f"{subtype:7s} {len(selected)}")
     if print_names:
+        max_names = 20 if not names else 0
         for no, seq in enumerate(selected):
             print(f"> {seq.seq_id()} [{seq.date()}]")
-            if no >= 20:
+            if max_names and no >= max_names:
                 break
 
 # ----------------------------------------------------------------------
