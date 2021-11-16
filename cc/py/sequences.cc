@@ -56,6 +56,7 @@ void ae::py::sequences(pybind11::module_& mdl)
                 return selected.sort(ord);
             },
             "order"_a = "+date") //
+        .def("find_masters", &SeqdbSelected::find_masters) //
         ;
 
     pybind11::class_<SeqdbSeqRef>(seqdb_submodule, "SeqdbSeqRef")                 //

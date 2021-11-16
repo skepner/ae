@@ -30,6 +30,7 @@ def find(subtype: str, names: list[str], args: argparse.Namespace):
                 .select_all()
                 .exclude_with_issue(not args.with_issues)
                 .filter_dates(args.start_date, args.end_date)
+                .find_masters()
                 .sort(args.sort_order)
                 )
     print(f"{subtype:7s} {len(selected)}")
