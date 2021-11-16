@@ -1,4 +1,4 @@
-import sys, re, pprint
+import sys, re, io, pprint
 from pathlib import Path
 
 import ae_backend
@@ -57,6 +57,29 @@ def regular_name_parser(name: str, lab_hint: str, context: Context):
             name = mm.group(1)
     parse_name(name, metadata=metadata, context=context)
     return metadata
+
+# ======================================================================
+# writer
+# ======================================================================
+
+def write(file: io.TextIOWrapper|Path, selected :ae_backend.seqdb.Selected, aa: bool, wrap_pos: int = 0, name=lambda ref: ref.seq_id()):
+    def do_wrap(data: str):
+        if wrap_pos:
+            return "\n".join(data[i:i+wrap_pos] for i in range(0, len(data), wrap_pos))
+        else:
+            return data
+
+    if isinstance(file, (Path, str)):
+        if file == "-":
+            fil = sys.stdout
+        else:
+            fil = file.open("w")
+    else:
+        fil = file
+    for ref in selected:
+        fil.write(f">{name(ref)}\n{do_wrap(ref.aa() if aa else ref.nuc())}\n")
+    if isinstance(file, (Path, str)) and file != "-":
+        fil.close()
 
 # ======================================================================
 # gisaid

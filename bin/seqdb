@@ -9,6 +9,7 @@ if os.environ.get("DYLD_INSERT_LIBRARIES"):
     sys.path[:0] = [str(Path(os.environ["AE_ROOT"], dir)) for dir in ["build.debug", "py"]]
 else:
     sys.path[:0] = [str(Path(os.environ["AE_ROOT"], dir)) for dir in ["build", "py"]]
+from ae.sequences.source import fasta
 import ae_backend
 
 # ----------------------------------------------------------------------
@@ -36,36 +37,36 @@ def find(subtype: str, names: list[str], args: argparse.Namespace):
                 )
     print_names = True
     if args.fasta_aa:
-        write_fasta(selected, args.fasta_aa, aa=True, wrap=args.wrap)
+        fasta.write(args.fasta_aa, selected, aa=True, wrap_pos=80 if args.wrap else 0, name=lambda ref: ref.seq_id())
         print_names = False
     if args.fasta_nuc:
-        write_fasta(selected, args.fasta_nuc, aa=False, wrap=args.wrap)
+        fasta.write(args.fasta_nuc, selected, aa=False, wrap_pos=80 if args.wrap else 0, name=lambda ref: ref.seq_id())
         print_names = False
     print(f"{subtype:7s} {len(selected)}")
     if print_names:
         for no, seq in enumerate(selected):
-            print(f"> {seq.seq_id()} [{seq.date()}]\n{seq.aa()}")
+            print(f"> {seq.seq_id()} [{seq.date()}]")
             if no >= 20:
                 break
 
 # ----------------------------------------------------------------------
 
-def write_fasta(selected, filename: Path, aa: bool, wrap: bool):
-    def do_wrap(data: str):
-        if wrap:
-            size = 80
-            return "\n".join(data[i:i+size] for i in range(0, len(data), size))
-        else:
-            return data
+# def write_fasta(selected :ae_backend.seqdb.Selected, filename: Path, aa: bool, wrap: bool):
+#     def do_wrap(data: str):
+#         if wrap:
+#             size = 80
+#             return "\n".join(data[i:i+size] for i in range(0, len(data), size))
+#         else:
+#             return data
 
-    if filename == "-":
-        fil = sys.stdout
-    else:
-        fil = filename.open("w")
-    for ref in selected:
-        fil.write(f">{ref.seq_id()}\n{do_wrap(ref.aa() if aa else ref.nuc())}\n")
-    if filename != "-":
-        fil.close()
+#     if filename == "-":
+#         fil = sys.stdout
+#     else:
+#         fil = filename.open("w")
+#     for ref in selected:
+#         fil.write(f">{ref.seq_id()}\n{do_wrap(ref.aa() if aa else ref.nuc())}\n")
+#     if filename != "-":
+#         fil.close()
 
 # ----------------------------------------------------------------------
 
