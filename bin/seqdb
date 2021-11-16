@@ -57,7 +57,8 @@ def find(subtype: str, names: list[str], args: argparse.Namespace):
     if print_names:
         max_names = 20 if not names else 0
         for no, seq in enumerate(selected):
-            print(f"> {seq.seq_id()} [{seq.date()}]")
+            issues = f" issues:{seq.issues()}" if seq.has_issues() else ""
+            print(f"> {seq.seq_id()} [{seq.date()}]{issues}")
             if max_names and no >= max_names:
                 break
 

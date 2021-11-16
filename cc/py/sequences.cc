@@ -75,11 +75,13 @@ void ae::py::sequences(pybind11::module_& mdl)
         .def("replace_with_master", &SeqdbSelected::replace_with_master)       //
         ;
 
-    pybind11::class_<SeqdbSeqRef>(seqdb_submodule, "SeqdbSeqRef")                 //
-        .def("seq_id", [](const SeqdbSeqRef& ref) { return ref.seq_id().get(); }) //
-        .def("date", &SeqdbSeqRef::date)                                          //
-        .def("aa", &SeqdbSeqRef::aa)                                              //
-        .def("nuc", &SeqdbSeqRef::nuc)                                            //
+    pybind11::class_<SeqdbSeqRef>(seqdb_submodule, "SeqdbSeqRef")                               //
+        .def("seq_id", [](const SeqdbSeqRef& ref) { return ref.seq_id().get(); })               //
+        .def("date", &SeqdbSeqRef::date)                                                        //
+        .def("aa", &SeqdbSeqRef::aa)                                                            //
+        .def("nuc", &SeqdbSeqRef::nuc)                                                          //
+        .def("has_issues", [](const SeqdbSeqRef& ref) { return ref.seq->issues.has_issues(); }) //
+        .def("issues", [](const SeqdbSeqRef& ref) { return ref.seq->issues.to_strings(); })     //
         ;
 
     // ----------------------------------------------------------------------
@@ -115,15 +117,7 @@ void ae::py::sequences(pybind11::module_& mdl)
         .def("is_translated", [](const RawSequence& sequence) { return !sequence.issues.is_set(issue::not_translated); })                                                           //
         .def("is_translated_not_aligned", [](const RawSequence& sequence) { return !sequence.issues.is_set(issue::not_translated) && sequence.issues.is_set(issue::not_aligned); }) //
         .def("has_issues", [](const RawSequence& sequence) { return sequence.issues.any(); })                                                                                       //
-        .def("issues",
-             [](const RawSequence& sequence) {
-                 std::vector<std::string> result;
-                 for (auto iss = issue::not_translated; iss < issue::size_; ++iss) {
-                     if (sequence.issues.is_set(iss))
-                         result.push_back(fmt::format("{}", iss));
-                 }
-                 return result;
-             }) //
+        .def("issues", [](const RawSequence& sequence) { return sequence.issues.to_strings(); })                                                                                    //
         ;
 
     pybind11::class_<fasta::Reader::value_t>(raw_sequence_submodule, "ReaderValue")                                      //

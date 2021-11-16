@@ -1,6 +1,7 @@
 #pragma once
 
 #include <bitset>
+#include <vector>
 
 #include "ext/fmt.hh"
 #include "utils/enum.hh"
@@ -45,11 +46,37 @@ namespace ae::sequences
         }
     }
 
+    inline issue issue_from_char(char iss)
+    {
+        switch (iss) {
+            case 't':
+                return issue::not_translated;
+            case 'a':
+                return issue::not_aligned;
+            case 'x':
+                return issue::prefix_x;
+            case 's':
+                return issue::too_short;
+            case 'l':
+                return issue::too_long;
+            case 'X':
+                return issue::too_many_x;
+            case 'D':
+                return issue::too_many_deletions;
+            case 'E':
+                return issue::garbage_at_the_end;
+            default:
+                return issue::size_;
+        }
+        // return issue::size_;
+    }
+
     struct issues_t : public std::bitset<static_cast<size_t>(issue::size_)>
     {
         issues_t() = default;
         void set(issue iss) { std::bitset<static_cast<size_t>(issue::size_)>::set(static_cast<size_t>(iss)); }
         bool is_set(issue iss) const { return std::bitset<static_cast<size_t>(issue::size_)>::operator[](static_cast<size_t>(iss)); }
+        std::vector<std::string> to_strings() const;
     };
 
     struct seqdb_issues_t
@@ -82,6 +109,16 @@ namespace ae::sequences
             }
             return updated;
         }
+
+        issues_t extract() const
+        {
+            issues_t issues;
+            for (char cc : data_)
+                issues.set(issue_from_char(cc));
+            return issues;
+        }
+
+        std::vector<std::string> to_strings() const { return extract().to_strings(); }
     };
 
 } // namespace ae::sequences
@@ -130,5 +167,17 @@ template <> struct fmt::formatter<ae::sequences::seqdb_issues_t> : fmt::formatte
         return format_to(ctx.out(), "{{{}}}", seqdb_issues.data_);
     }
 };
+
+// ======================================================================
+
+inline std::vector<std::string> ae::sequences::issues_t::to_strings() const
+{
+    std::vector<std::string> result;
+    for (auto iss = issue::not_translated; iss < issue::size_; ++iss) {
+        if (is_set(iss))
+            result.push_back(fmt::format("{}", iss));
+    }
+    return result;
+}
 
 // ======================================================================
