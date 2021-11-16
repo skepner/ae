@@ -27,10 +27,8 @@ namespace ae::sequences
     class Error : public std::runtime_error
     {
       public:
-        template <typename ... Args> Error(fmt::format_string<Args...> format, Args&& ... args)
-            : std::runtime_error{fmt::format("seqdb: {}", fmt::format(format, args...))} {}
+        template <typename... Args> Error(fmt::format_string<Args...> format, Args&&... args) : std::runtime_error{fmt::format("seqdb: {}", fmt::format(format, args...))} {}
     };
-
 
     Seqdb& seqdb_for_subtype(std::string_view subtype, verbose verb = verbose::no);
     void seqdb_save();
@@ -50,6 +48,7 @@ namespace ae::sequences
         }
 
         seq_id_t seq_id() const;
+        std::string_view date() const;
     };
 
     // ----------------------------------------------------------------------
@@ -126,11 +125,12 @@ namespace ae::sequences
                 return true;
         }
 
+        std::string_view date() const { return dates.empty() ? std::string_view{} : std::string_view{dates.back()}; }
+
         // std::string host() const;
-        // bool date_within(std::string_view start, std::string_view end) const { return !dates.empty() && (start.empty() || dates.front() >= start) && (end.empty() || dates.front() < end); }
-        // std::string_view date() const;
-        // bool has_date(std::string_view date) const { return std::find(std::begin(dates), std::end(dates), date) != std::end(dates); }
-        // std::string location() const;
+        // bool date_within(std::string_view start, std::string_view end) const { return !dates.empty() && (start.empty() || dates.front() >= start) && (end.empty() ||
+        // dates.front() < end); } std::string_view date() const; bool has_date(std::string_view date) const { return std::find(std::begin(dates), std::end(dates), date)
+        // != std::end(dates); } std::string location() const;
     };
 
     // ----------------------------------------------------------------------
@@ -239,8 +239,7 @@ namespace ae::sequences
 
     // ----------------------------------------------------------------------
 
-    inline const SeqdbEntry*
-    Seqdb::find_by_name(std::string_view name) const
+    inline const SeqdbEntry* Seqdb::find_by_name(std::string_view name) const
     {
         if (const auto found = std::lower_bound(std::begin(entries_), std::end(entries_), name, [](const auto& entry, std::string_view nam) { return entry.name < nam; });
             found != std::end(entries_) && found->name == name)
@@ -281,6 +280,8 @@ namespace ae::sequences
         else
             return nullptr;
     }
+
+    inline std::string_view SeqdbSeqRef::date() const { return entry->date(); }
 
 } // namespace ae::sequences
 

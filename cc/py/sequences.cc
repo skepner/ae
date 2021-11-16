@@ -57,6 +57,9 @@ void ae::py::sequences(pybind11::module_& mdl)
 
     pybind11::class_<SeqdbSeqRef>(seqdb_submodule, "SeqdbSeqRef") //
         .def("seq_id", [](const SeqdbSeqRef& ref) { return ref.seq_id().get(); }) //
+        .def("date", &SeqdbSeqRef::date) //
+        .def("aa", [](const SeqdbSeqRef& ref) { return ref.seq->aa.get(); }) //
+        .def("nuc", [](const SeqdbSeqRef& ref) { return ref.seq->nuc.get(); }) //
         ;
 
     // ----------------------------------------------------------------------

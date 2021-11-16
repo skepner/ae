@@ -34,7 +34,7 @@ def find(subtype: str, names: list[str], args: argparse.Namespace):
                 )
     print(f"{subtype:7s} {len(selected)}")
     for no, seq in enumerate(selected):
-        print(f"  {seq.seq_id()}")
+        print(f"> {seq.seq_id()} [{seq.date()}]\n{seq.aa()}")
         if no >= 20:
             break
 
