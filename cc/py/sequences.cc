@@ -42,9 +42,11 @@ void ae::py::sequences(pybind11::module_& mdl)
         .def("human", &SeqdbSelected::filter_human)                //
         .def("filter_host", &SeqdbSelected::filter_host, "host"_a) //
         .def(
-            "filter_name", [](SeqdbSelected& selected, const std::vector<std::string>& names) -> SeqdbSelected& { return selected.filter_name(names); }, "names"_a) //
+            "filter_name", [](SeqdbSelected& selected, const std::vector<std::string>& names) -> SeqdbSelected& { return selected.filter_name(names); }, "names"_a,
+            py::doc("if name starts with ~ use regex matching (~ removed), if name contains _ use seq_id matching")) //
         .def(
-            "filter_name", [](SeqdbSelected& selected, const std::string& name) -> SeqdbSelected& { return selected.filter_name(std::vector<std::string>{name}); }, "names"_a) //
+            "filter_name", [](SeqdbSelected& selected, const std::string& name) -> SeqdbSelected& { return selected.filter_name(std::vector<std::string>{name}); }, "names"_a,
+            py::doc("if name starts with ~ use regex matching (~ removed), if name contains _ use seq_id matching")) //
         .def(
             "sort",
             [](SeqdbSelected& selected, std::string_view sorting_order) -> SeqdbSelected& {
