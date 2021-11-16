@@ -103,6 +103,7 @@ namespace ae::sequences
         std::vector<std::string> dates;
         std::string lineage;
         std::vector<SeqdbSeq> seqs;
+        std::string host;
 
         SeqdbEntry() = default;
         SeqdbEntry(const RawSequence& raw_sequence);
@@ -204,6 +205,18 @@ namespace ae::sequences
             if (!first_date.empty() || !last_date.empty())
                 refs_.erase(std::remove_if(std::begin(refs_), std::end(refs_), [first_date, last_date](const auto& ref) -> bool { return !ref.entry->date_within(first_date, last_date); }),
                             std::end(refs_));
+            return *this;
+        }
+
+        SeqdbSelected& filter_human()
+        {
+            refs_.erase(std::remove_if(std::begin(refs_), std::end(refs_), [](const auto& ref) -> bool { return !ref.entry->host.empty(); }), std::end(refs_));
+            return *this;
+        }
+
+        SeqdbSelected& filter_host(std::string_view host)
+        {
+            refs_.erase(std::remove_if(std::begin(refs_), std::end(refs_), [host](const auto& ref) -> bool { return ref.entry->host != host; }), std::end(refs_));
             return *this;
         }
 

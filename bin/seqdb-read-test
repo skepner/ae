@@ -14,10 +14,11 @@ import ae_backend
 
 # ----------------------------------------------------------------------
 
+sSubtypeToOutput = {"B": "seqdb-b.v4.copy.json.xz", "A(H1N1)": "seqdb-h1.v4.copy.json.xz", "A(H3N2)": "seqdb-h3.v4.copy.json.xz"}
 def main(args: argparse.Namespace):
     for subtype in ["B", "A(H1N1)", "A(H3N2)"]:
         seqdb = ae_backend.seqdb.for_subtype(subtype)
-        seqdb.save("/r/z-" + subtype.lower().replace("(", "").replace(")", "") + ".json.xz")
+        seqdb.save("/r/" + sSubtypeToOutput[subtype])
 
 # ----------------------------------------------------------------------
 

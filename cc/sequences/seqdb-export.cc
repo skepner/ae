@@ -109,6 +109,8 @@ inline void load_entry(ae::sequences::SeqdbEntry& entry, simdjson::ondemand::obj
             entry.country = std::string_view{field.value()};
         else if (key == "l"sv)
             entry.lineage = std::string_view{field.value()};
+        else if (key == "h"sv)
+            entry.host = std::string_view{field.value()};
         else if (key == "s"sv) {
             for (simdjson::ondemand::object json_seq : field.value().get_array())
                 load_seq(entry.seqs.emplace_back(), json_seq);
@@ -204,6 +206,8 @@ std::string ae::sequences::Seqdb::export_to_string() const
     size_t no{1};
     for (const auto& entry : entries_) {
         fmt::format_to(std::back_inserter(json), "  {{\"N\": \"{}\"", make_str_for_json(entry.name));
+        if (!entry.host.empty())
+            fmt::format_to(std::back_inserter(json), ", \"h\": \"{}\"", make_str_for_json(entry.host));
         if (!entry.lineage.empty())
             fmt::format_to(std::back_inserter(json), ", \"l\": \"{}\"", make_str_for_json(entry.lineage));
         if (!entry.dates.empty())

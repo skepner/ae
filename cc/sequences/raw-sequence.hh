@@ -20,6 +20,7 @@ namespace ae::sequences
         hash_t hash_nuc;
 
         std::string name;       // parsed or raw_name if parsing failed
+        std::string host;
         std::string continent;
         std::string country;
         std::string reassortant;

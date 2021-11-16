@@ -217,6 +217,8 @@ def add_metadata_to_sequence(metadata: dict, sequence: ae_backend.raw_sequence.S
         print(f">> NO NAME in metadata: {metadata}", file=sys.stderr)
     else:
         sequence.name = metadata["name"]
+    if host := metadata.get("host"):
+        sequence.host = host
     if continent := metadata.get("continent"):
         sequence.continent = continent
     if country := metadata.get("country"):

@@ -38,7 +38,9 @@ void ae::py::sequences(pybind11::module_& mdl)
         .def("exclude_with_issue", &SeqdbSelected::exclude_with_issue, "exclude"_a = true)                                                                     //
         .def(
             "filter_dates", [](SeqdbSelected& selected, std::string_view first, std::string_view last) -> SeqdbSelected& { return selected.filter_dates(first, last); }, "first"_a = std::string_view{},
-            "last"_a = std::string_view{}) //
+            "last"_a = std::string_view{})                         //
+        .def("human", &SeqdbSelected::filter_human)                //
+        .def("filter_host", &SeqdbSelected::filter_host, "host"_a) //
         .def(
             "sort",
             [](SeqdbSelected& selected, std::string_view sorting_order) {
@@ -74,6 +76,7 @@ void ae::py::sequences(pybind11::module_& mdl)
 
     pybind11::class_<RawSequence, std::shared_ptr<RawSequence>>(raw_sequence_submodule, "Sequence") //
         .def_readwrite("name", &RawSequence::name)
+        .def_readwrite("host", &RawSequence::host)
         .def_readwrite("continent", &RawSequence::continent)
         .def_readwrite("country", &RawSequence::country)
         .def_readwrite("reassortant", &RawSequence::reassortant)
