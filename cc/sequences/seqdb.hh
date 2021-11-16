@@ -226,6 +226,15 @@ namespace ae::sequences
             return *this;
         }
 
+        SeqdbSelected& find_masters()
+        {
+            for (auto& ref : refs_) {
+                if (ref.seq && ref.seq->nuc.empty())
+                    ref.master = seqdb_.find_by_hash(ref.seq->hash).seq;
+            }
+            return *this;
+        }
+
         auto begin() const { return refs_.begin(); }
         auto end() const { return refs_.end(); }
 
