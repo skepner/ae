@@ -342,12 +342,19 @@ inline matcher_t make_matcher(std::string_view pat)
     }
 }
 
-ae::sequences::SeqdbSelected& ae::sequences::SeqdbSelected::filter_name(const std::vector<std::string>& names)
+inline std::vector<matcher_t> make_matchers(const std::vector<std::string>& names)
 {
     std::vector<matcher_t> matchers;
     matchers.reserve(names.size());
     std::transform(names.begin(), names.end(), std::back_inserter(matchers), &make_matcher);
+    return matchers;
+}
 
+// ----------------------------------------------------------------------
+
+ae::sequences::SeqdbSelected& ae::sequences::SeqdbSelected::filter_name(const std::vector<std::string>& names)
+{
+    const auto matchers = make_matchers(names);
     refs_.erase(std::remove_if(std::begin(refs_), std::end(refs_),
                                [&matchers](const auto& ref) -> bool {
                                    return std::none_of(std::begin(matchers), std::end(matchers), [&ref](const auto& matcher) { return std::visit([&ref](auto&& mat) { return mat(ref); }, matcher); });
@@ -356,5 +363,19 @@ ae::sequences::SeqdbSelected& ae::sequences::SeqdbSelected::filter_name(const st
     return *this;
 
 } // ae::sequences::SeqdbSelected::filter_name
+
+// ----------------------------------------------------------------------
+
+ae::sequences::SeqdbSelected& ae::sequences::SeqdbSelected::exclude_name(const std::vector<std::string>& names)
+{
+    const auto matchers = make_matchers(names);
+    refs_.erase(std::remove_if(std::begin(refs_), std::end(refs_),
+                               [&matchers](const auto& ref) -> bool {
+                                   return std::any_of(std::begin(matchers), std::end(matchers), [&ref](const auto& matcher) { return std::visit([&ref](auto&& mat) { return mat(ref); }, matcher); });
+                               }),
+                std::end(refs_));
+    return *this;
+
+} // ae::sequences::SeqdbSelected::exclude_name
 
 // ----------------------------------------------------------------------

@@ -221,6 +221,7 @@ namespace ae::sequences
         }
 
         SeqdbSelected& filter_name(const std::vector<std::string>& names);
+        SeqdbSelected& exclude_name(const std::vector<std::string>& names);
 
         SeqdbSelected& sort(order ord = order::date_ascending)
         {

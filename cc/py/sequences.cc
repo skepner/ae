@@ -48,6 +48,12 @@ void ae::py::sequences(pybind11::module_& mdl)
             "filter_name", [](SeqdbSelected& selected, const std::string& name) -> SeqdbSelected& { return selected.filter_name(std::vector<std::string>{name}); }, "names"_a,
             pybind11::doc("if name starts with ~ use regex matching (~ removed), if name contains _ use seq_id matching")) //
         .def(
+            "exclude_name", [](SeqdbSelected& selected, const std::vector<std::string>& names) -> SeqdbSelected& { return selected.exclude_name(names); }, "names"_a,
+            pybind11::doc("if name starts with ~ use regex matching (~ removed), if name contains _ use seq_id matching")) //
+        .def(
+            "exclude_name", [](SeqdbSelected& selected, const std::string& name) -> SeqdbSelected& { return selected.exclude_name(std::vector<std::string>{name}); }, "names"_a,
+            pybind11::doc("if name starts with ~ use regex matching (~ removed), if name contains _ use seq_id matching")) //
+        .def(
             "sort",
             [](SeqdbSelected& selected, std::string_view sorting_order) -> SeqdbSelected& {
                 order ord = order::date_ascending;
