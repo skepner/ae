@@ -55,8 +55,10 @@ void ae::py::sequences(pybind11::module_& mdl)
                     fmt::print(">> unrecognized soring order {} (+date assumed)", sorting_order);
                 return selected.sort(ord);
             },
-            "order"_a = "+date") //
-        .def("find_masters", &SeqdbSelected::find_masters) //
+            "order"_a = "+date")                                               //
+        .def("find_masters", &SeqdbSelected::find_masters)                     //
+        .def("remove_hash_duplicates", &SeqdbSelected::remove_hash_duplicates) //
+        .def("replace_with_master", &SeqdbSelected::replace_with_master)       //
         ;
 
     pybind11::class_<SeqdbSeqRef>(seqdb_submodule, "SeqdbSeqRef")                 //

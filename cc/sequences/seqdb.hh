@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <memory>
 
+#include "ext/string.hh"
 #include "utils/debug.hh"
 #include "utils/string-hash.hh"
 #include "sequences/sequence.hh"
@@ -20,7 +21,7 @@ namespace ae::sequences
     struct SeqdbSeq;
     class SeqdbSelected;
 
-    enum class order { none, date_ascending, date_descending, name_ascending, name_descending };
+    enum class order { none, date_ascending, date_descending, name_ascending, name_descending, hash };
 
     using seq_id_t = ae::named_string_t<std::string, struct acmacs_seqdb_SeqId_tag>;
 
@@ -48,6 +49,7 @@ namespace ae::sequences
             seq = nullptr;
         }
 
+        bool is_master() const;
         seq_id_t seq_id() const;
         std::string_view date() const;
         std::string_view aa() const;
@@ -215,10 +217,18 @@ namespace ae::sequences
                     std::sort(std::begin(refs_), std::end(refs_), [](const auto& ref1, const auto& ref2) { return ref2.entry->date_less_than(*ref1.entry); });
                     break;
                 case order::name_ascending:
-                    std::sort(std::begin(refs_), std::end(refs_), [](const auto& ref1, const auto& ref2) { return ref1.seq_id().get() < ref2.seq_id().get(); });
+                    std::sort(std::begin(refs_), std::end(refs_), [](const auto& ref1, const auto& ref2) { return ref1.seq_id() < ref2.seq_id(); });
                     break;
                 case order::name_descending:
-                    std::sort(std::begin(refs_), std::end(refs_), [](const auto& ref1, const auto& ref2) { return ref2.seq_id().get() < ref1.seq_id().get(); });
+                    std::sort(std::begin(refs_), std::end(refs_), [](const auto& ref1, const auto& ref2) { return ref2.seq_id() < ref1.seq_id(); });
+                    break;
+                case order::hash:
+                    std::sort(std::begin(refs_), std::end(refs_), [](const auto& ref1, const auto& ref2) {
+                        if (const auto cmp = ref1.seq->hash <=> ref2.seq->hash; cmp == std::strong_ordering::equal)
+                            return ref2.entry->date() < ref1.entry->date();
+                        else
+                            return cmp == std::strong_ordering::less;
+                    });
                     break;
                 case order::none:
                     break;
@@ -229,8 +239,24 @@ namespace ae::sequences
         SeqdbSelected& find_masters()
         {
             for (auto& ref : refs_) {
-                if (ref.seq && ref.seq->nuc.empty())
+                if (!ref.is_master())
                     ref.master = seqdb_.find_by_hash(ref.seq->hash).seq;
+            }
+            return *this;
+        }
+
+        SeqdbSelected& remove_hash_duplicates() // keep most recent
+        {
+            sort(order::hash);
+            refs_.erase(std::unique(std::begin(refs_), std::end(refs_), [](const auto& ref1, const auto& ref2) { return ref1.seq->hash == ref2.seq->hash; }), std::end(refs_));
+            return *this;
+        }
+
+        SeqdbSelected& replace_with_master()
+        {
+            for (auto& ref : refs_) {
+                if (!ref.is_master())
+                    ref = seqdb_.find_by_hash(ref.seq->hash);
             }
             return *this;
         }
@@ -311,6 +337,8 @@ namespace ae::sequences
         else
             return seq->nuc;
     }
+
+    inline bool SeqdbSeqRef::is_master() const { return !seq->nuc.empty(); }
 
 } // namespace ae::sequences
 

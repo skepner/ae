@@ -29,6 +29,7 @@ namespace ae
 #endif
 
         auto operator<=>(const named_t&) const = default;
+        bool operator==(const named_t&) const = default;
 
 #pragma GCC diagnostic pop
 
