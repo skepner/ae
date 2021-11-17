@@ -437,11 +437,11 @@ ae::sequences::SeqdbSelected& ae::sequences::SeqdbSelected::move_name_to_beginni
 {
     if (refs_.size() > 1) {
         const auto matchers = make_matchers(names);
-        auto last = refs_.rend(); // - 1;
-        for (auto it = refs_.rbegin(); it != last; ++it) {
-            if (any_matcher_match(matchers, *it.base())) {
-                std::rotate(it, it + 1, last);
-                --last;
+        auto first = refs_.begin();
+        for (auto it = refs_.begin() + 1; it != refs_.end(); ++it) {
+            if (any_matcher_match(matchers, *it)) {
+                std::rotate(first, it, it + 1);
+                ++first;
             }
         }
     }
