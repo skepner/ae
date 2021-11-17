@@ -39,7 +39,7 @@ void ae::py::sequences(pybind11::module_& mdl)
         .def(
             "filter_dates", [](SeqdbSelected& selected, std::string_view first, std::string_view last) -> SeqdbSelected& { return selected.filter_dates(first, last); }, "first"_a = std::string_view{},
             "last"_a = std::string_view{})                         //
-        .def("lineage", &SeqdbSelected::lineage, "lineage"_a)                //
+        .def("lineage", &SeqdbSelected::lineage, "lineage"_a)      //
         .def("human", &SeqdbSelected::filter_human)                //
         .def("filter_host", &SeqdbSelected::filter_host, "host"_a) //
         .def(
@@ -81,6 +81,7 @@ void ae::py::sequences(pybind11::module_& mdl)
         .def("date", &SeqdbSeqRef::date)                                                        //
         .def("aa", &SeqdbSeqRef::aa)                                                            //
         .def("nuc", &SeqdbSeqRef::nuc)                                                          //
+        .def("lineage", [](const SeqdbSeqRef& ref) { return ref.entry->lineage; })              //
         .def("has_issues", [](const SeqdbSeqRef& ref) { return ref.seq->issues.has_issues(); }) //
         .def("issues", [](const SeqdbSeqRef& ref) { return ref.seq->issues.to_strings(); })     //
         ;
