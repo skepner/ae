@@ -167,10 +167,10 @@ void ae::py::sequences(pybind11::module_& mdl)
                     fmt::print(">> unrecognized soring order {} (+date assumed)", sorting_order);
                 return selected.sort(ord);
             },
-            "order"_a = "+date")                                               //
-        .def("find_masters", &SeqdbSelected::find_masters)                     //
-        .def("remove_hash_duplicates", &SeqdbSelected::remove_hash_duplicates) //
-        .def("replace_with_master", &SeqdbSelected::replace_with_master)       //
+            "order"_a = "+date", pybind11::doc("sequences without date are ordered last if +date or -date ordering used")) //
+        .def("find_masters", &SeqdbSelected::find_masters)                                                                 //
+        .def("remove_hash_duplicates", &SeqdbSelected::remove_hash_duplicates)                                             //
+        .def("replace_with_master", &SeqdbSelected::replace_with_master)                                                   //
         ;
 
     pybind11::class_<SeqdbSeqRef>(seqdb_submodule, "SeqdbSeqRef")                               //
@@ -189,9 +189,9 @@ void ae::py::sequences(pybind11::module_& mdl)
         .def(
             "__getitem__", [](const sequence_aa_t& seq, std::string_view pos_aa) { return matches_all(seq, pos_aa); }, "pos_aa"_a,
             pybind11::doc("pos_aa: \"193S\", \"!193S\", \"!56N 115E\" (matches all)")) //
-        .def("__len__", [](const sequence_aa_t& seq) { return seq.size(); })                  //
-        .def("__str__", [](const sequence_aa_t& seq) { return *seq; })                        //
-        .def("__bool__", [](const sequence_aa_t& seq) { return !seq.empty(); })               //
+        .def("__len__", [](const sequence_aa_t& seq) { return seq.size(); })           //
+        .def("__str__", [](const sequence_aa_t& seq) { return *seq; })                 //
+        .def("__bool__", [](const sequence_aa_t& seq) { return !seq.empty(); })        //
         .def(
             "has",
             [](const sequence_aa_t& seq, size_t pos, std::string_view aas) {
@@ -213,9 +213,9 @@ void ae::py::sequences(pybind11::module_& mdl)
         .def(
             "__getitem__", [](const sequence_nuc_t& seq, std::string_view pos_nuc) { return matches_all(seq, pos_nuc); }, "pos_nuc"_a,
             pybind11::doc("pos_nuc: \"193A\", \"!193A\", \"!56T 115A\" (matches all)")) //
-        .def("__len__", [](const sequence_nuc_t& seq) { return seq.size(); })                  //
-        .def("__str__", [](const sequence_nuc_t& seq) { return *seq; })                        //
-        .def("__bool__", [](const sequence_nuc_t& seq) { return !seq.empty(); })               //
+        .def("__len__", [](const sequence_nuc_t& seq) { return seq.size(); })           //
+        .def("__str__", [](const sequence_nuc_t& seq) { return *seq; })                 //
+        .def("__bool__", [](const sequence_nuc_t& seq) { return !seq.empty(); })        //
         .def(
             "has",
             [](const sequence_nuc_t& seq, size_t pos, std::string_view nucs) {

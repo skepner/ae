@@ -125,10 +125,22 @@ namespace ae::sequences
                 if (!another.dates.empty())
                     return dates.back() < another.dates.back();
                 else
-                    return false;
+                    return true;
             }
             else
-                return true;
+                return false;
+        }
+
+        bool date_more_than(const SeqdbEntry& another) const
+        {
+            if (!dates.empty()) {
+                if (!another.dates.empty())
+                    return dates.back() > another.dates.back();
+                else
+                    return true;
+            }
+            else
+                return false;
         }
 
         std::string_view date() const { return dates.empty() ? std::string_view{} : std::string_view{dates.back()}; }
@@ -248,7 +260,7 @@ namespace ae::sequences
                     std::sort(std::begin(refs_), std::end(refs_), [](const auto& ref1, const auto& ref2) { return ref1.entry->date_less_than(*ref2.entry); });
                     break;
                 case order::date_descending:
-                    std::sort(std::begin(refs_), std::end(refs_), [](const auto& ref1, const auto& ref2) { return ref2.entry->date_less_than(*ref1.entry); });
+                    std::sort(std::begin(refs_), std::end(refs_), [](const auto& ref1, const auto& ref2) { return ref1.entry->date_more_than(*ref2.entry); });
                     break;
                 case order::name_ascending:
                     std::sort(std::begin(refs_), std::end(refs_), [](const auto& ref1, const auto& ref2) { return ref1.seq_id() < ref2.seq_id(); });
