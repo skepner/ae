@@ -174,6 +174,12 @@ void ae::py::sequences(pybind11::module_& mdl)
                 return selected.sort(ord);
             },
             "order"_a = "+date", pybind11::doc("sequences without date are ordered last if +date or -date ordering used")) //
+        .def(
+            "move_name_to_beginning", [](SeqdbSelected& selected, const std::vector<std::string>& names) -> SeqdbSelected& { return selected.move_name_to_beginning(names); }, "names"_a,
+            pybind11::doc("if name starts with ~ use regex matching (~ removed), if name contains _ use seq_id matching")) //
+        .def(
+            "move_name_to_beginning", [](SeqdbSelected& selected, const std::string& name) -> SeqdbSelected& { return selected.move_name_to_beginning(std::vector<std::string>{name}); }, "names"_a,
+            pybind11::doc("if name starts with ~ use regex matching (~ removed), if name contains _ use seq_id matching")) //
         .def("find_masters", &SeqdbSelected::find_masters)                                                                 //
         .def("remove_hash_duplicates", &SeqdbSelected::remove_hash_duplicates)                                             //
         .def("replace_with_master", &SeqdbSelected::replace_with_master)                                                   //

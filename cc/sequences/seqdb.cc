@@ -350,16 +350,26 @@ inline std::vector<matcher_t> make_matchers(const std::vector<std::string>& name
     return matchers;
 }
 
+struct matcher_match
+{
+    const ae::sequences::SeqdbSeqRef& ref;
+    bool operator()(const matcher_t& matcher) const
+    {
+        return std::visit([this](auto&& mat) { return mat(ref); }, matcher);
+    }
+};
+
+inline bool any_matcher_match(const std::vector<matcher_t>& matchers, const ae::sequences::SeqdbSeqRef& ref)
+{
+    return std::any_of(std::begin(matchers), std::end(matchers), matcher_match{ref});
+}
+
 // ----------------------------------------------------------------------
 
 ae::sequences::SeqdbSelected& ae::sequences::SeqdbSelected::filter_name(const std::vector<std::string>& names)
 {
     const auto matchers = make_matchers(names);
-    refs_.erase(std::remove_if(std::begin(refs_), std::end(refs_),
-                               [&matchers](const auto& ref) -> bool {
-                                   return std::none_of(std::begin(matchers), std::end(matchers), [&ref](const auto& matcher) { return std::visit([&ref](auto&& mat) { return mat(ref); }, matcher); });
-                               }),
-                std::end(refs_));
+    refs_.erase(std::remove_if(std::begin(refs_), std::end(refs_), [&matchers](const auto& ref) -> bool { return !any_matcher_match(matchers, ref); }), std::end(refs_));
     return *this;
 
 } // ae::sequences::SeqdbSelected::filter_name
@@ -369,11 +379,7 @@ ae::sequences::SeqdbSelected& ae::sequences::SeqdbSelected::filter_name(const st
 ae::sequences::SeqdbSelected& ae::sequences::SeqdbSelected::exclude_name(const std::vector<std::string>& names)
 {
     const auto matchers = make_matchers(names);
-    refs_.erase(std::remove_if(std::begin(refs_), std::end(refs_),
-                               [&matchers](const auto& ref) -> bool {
-                                   return std::any_of(std::begin(matchers), std::end(matchers), [&ref](const auto& matcher) { return std::visit([&ref](auto&& mat) { return mat(ref); }, matcher); });
-                               }),
-                std::end(refs_));
+    refs_.erase(std::remove_if(std::begin(refs_), std::end(refs_), [&matchers](const auto& ref) -> bool { return any_matcher_match(matchers, ref); }), std::end(refs_));
     return *this;
 
 } // ae::sequences::SeqdbSelected::exclude_name
@@ -392,5 +398,55 @@ ae::sequences::SeqdbSelected& ae::sequences::SeqdbSelected::include_name(const s
     return *this;
 
 } // ae::sequences::SeqdbSelected::include_name
+
+// ----------------------------------------------------------------------
+
+ae::sequences::SeqdbSelected& ae::sequences::SeqdbSelected::sort(order ord)
+{
+    switch (ord) {
+        case order::date_ascending:
+            std::sort(std::begin(refs_), std::end(refs_), [](const auto& ref1, const auto& ref2) { return ref1.entry->date_less_than(*ref2.entry); });
+            break;
+        case order::date_descending:
+            std::sort(std::begin(refs_), std::end(refs_), [](const auto& ref1, const auto& ref2) { return ref1.entry->date_more_than(*ref2.entry); });
+            break;
+        case order::name_ascending:
+            std::sort(std::begin(refs_), std::end(refs_), [](const auto& ref1, const auto& ref2) { return ref1.seq_id() < ref2.seq_id(); });
+            break;
+        case order::name_descending:
+            std::sort(std::begin(refs_), std::end(refs_), [](const auto& ref1, const auto& ref2) { return ref2.seq_id() < ref1.seq_id(); });
+            break;
+        case order::hash:
+            std::sort(std::begin(refs_), std::end(refs_), [](const auto& ref1, const auto& ref2) {
+                if (const auto cmp = ref1.seq->hash <=> ref2.seq->hash; cmp == std::strong_ordering::equal)
+                    return ref2.entry->date() < ref1.entry->date();
+                else
+                    return cmp == std::strong_ordering::less;
+            });
+            break;
+        case order::none:
+            break;
+    }
+    return *this;
+
+} // ae::sequences::SeqdbSelected::sort
+
+// ----------------------------------------------------------------------
+
+ae::sequences::SeqdbSelected& ae::sequences::SeqdbSelected::move_name_to_beginning(const std::vector<std::string>& names)
+{
+    if (refs_.size() > 1) {
+        const auto matchers = make_matchers(names);
+        auto last = refs_.rend(); // - 1;
+        for (auto it = refs_.rbegin(); it != last; ++it) {
+            if (any_matcher_match(matchers, *it.base())) {
+                std::rotate(it, it + 1, last);
+                --last;
+            }
+        }
+    }
+    return *this;
+
+} // ae::sequences::SeqdbSelected::move_name_to_beginning
 
 // ----------------------------------------------------------------------

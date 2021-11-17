@@ -255,34 +255,8 @@ namespace ae::sequences
             return *this;
         }
 
-        SeqdbSelected& sort(order ord = order::date_ascending)
-        {
-            switch (ord) {
-                case order::date_ascending:
-                    std::sort(std::begin(refs_), std::end(refs_), [](const auto& ref1, const auto& ref2) { return ref1.entry->date_less_than(*ref2.entry); });
-                    break;
-                case order::date_descending:
-                    std::sort(std::begin(refs_), std::end(refs_), [](const auto& ref1, const auto& ref2) { return ref1.entry->date_more_than(*ref2.entry); });
-                    break;
-                case order::name_ascending:
-                    std::sort(std::begin(refs_), std::end(refs_), [](const auto& ref1, const auto& ref2) { return ref1.seq_id() < ref2.seq_id(); });
-                    break;
-                case order::name_descending:
-                    std::sort(std::begin(refs_), std::end(refs_), [](const auto& ref1, const auto& ref2) { return ref2.seq_id() < ref1.seq_id(); });
-                    break;
-                case order::hash:
-                    std::sort(std::begin(refs_), std::end(refs_), [](const auto& ref1, const auto& ref2) {
-                        if (const auto cmp = ref1.seq->hash <=> ref2.seq->hash; cmp == std::strong_ordering::equal)
-                            return ref2.entry->date() < ref1.entry->date();
-                        else
-                            return cmp == std::strong_ordering::less;
-                    });
-                    break;
-                case order::none:
-                    break;
-            }
-            return *this;
-        }
+        SeqdbSelected& sort(order ord = order::date_ascending);
+        SeqdbSelected& move_name_to_beginning(const std::vector<std::string>& names);
 
         SeqdbSelected& find_masters()
         {
