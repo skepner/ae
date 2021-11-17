@@ -122,6 +122,7 @@ def gisaid_parse_subtype(subtype: str, metadata: dict, context: Context):
         return ""
 
 def parse_lineage(lineage, metadata: dict, context: Context):
+    # print(f"parse_lineage \"{lineage}\"")
     return lineage.upper()
 
 def gisaid_parse_lab(lab: str, metadata: dict, context: Context):
@@ -163,7 +164,7 @@ sGisaidFieldKeys = {
 
 sGisaidFieldParsers = [
     ["type_subtype",                  gisaid_parse_subtype],
-    [ "lineage",                      parse_lineage],
+    ["lineage",                       parse_lineage],
     ["date",                          parse_date],
     ["lab",                           gisaid_parse_lab],
     ["gisaid_last_modified",          parse_date],
@@ -237,8 +238,8 @@ def add_metadata_to_sequence(metadata: dict, sequence: ae_backend.raw_sequence.S
         sequence.lab = lab
     if lab_id := metadata.get("lab_id"):
         sequence.lab_id = lab_id
-    if type_subtype == "B" and (lineage := metadata.get("lineage")):
-        sequence.lineage = lineage[0]
+    if type_subtype == "B" and (lineage := metadata.get("lineage")) and lineage != "UNKNOWN":
+        sequence.lineage = lineage
     if passage := metadata.get("passage"):
         sequence.passage = passage
     if gisaid_dna_accession_no := metadata.get("gisaid_dna_accession_no"):

@@ -1,3 +1,5 @@
+#include <cctype>
+
 #include "utils/enum.hh"
 #include "utils/messages.hh"
 #include "sequences/fasta.hh"
@@ -38,8 +40,18 @@ void ae::py::sequences(pybind11::module_& mdl)
         .def("exclude_with_issue", &SeqdbSelected::exclude_with_issue, "exclude"_a = true)                                                                     //
         .def(
             "filter_dates", [](SeqdbSelected& selected, std::string_view first, std::string_view last) -> SeqdbSelected& { return selected.filter_dates(first, last); }, "first"_a = std::string_view{},
-            "last"_a = std::string_view{})                         //
-        .def("lineage", &SeqdbSelected::lineage, "lineage"_a)      //
+            "last"_a = std::string_view{}) //
+        .def(
+            "lineage",
+            [](SeqdbSelected& selected, std::string_view lineage) {
+                if (!lineage.empty()) {
+                    const char lin{static_cast<char>(std::toupper(lineage[0]))};
+                    return selected.lineage(std::string_view{&lin, 1});
+                }
+                else
+                    return selected.lineage(std::string_view{});
+            },
+            "lineage"_a)                                           //
         .def("human", &SeqdbSelected::filter_human)                //
         .def("filter_host", &SeqdbSelected::filter_host, "host"_a) //
         .def(
