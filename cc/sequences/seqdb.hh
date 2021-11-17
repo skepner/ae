@@ -42,6 +42,7 @@ namespace ae::sequences
         const SeqdbSeq* seq{nullptr};
         const SeqdbSeq* master{nullptr};
 
+        constexpr bool operator==(const SeqdbSeqRef& rhs) const { return seq == rhs.seq; }
         constexpr operator bool() const { return entry != nullptr && seq != nullptr; }
         void erase()
         {
@@ -240,6 +241,7 @@ namespace ae::sequences
 
         SeqdbSelected& filter_name(const std::vector<std::string>& names);
         SeqdbSelected& exclude_name(const std::vector<std::string>& names);
+        SeqdbSelected& include_name(const std::vector<std::string>& names);
 
         // keeps refs for which predicate returned true
         template <std::regular_invocable<const SeqdbSeqRef&> Func> SeqdbSelected& filter(Func&& predicate) {

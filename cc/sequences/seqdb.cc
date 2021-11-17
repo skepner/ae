@@ -379,3 +379,18 @@ ae::sequences::SeqdbSelected& ae::sequences::SeqdbSelected::exclude_name(const s
 } // ae::sequences::SeqdbSelected::exclude_name
 
 // ----------------------------------------------------------------------
+
+ae::sequences::SeqdbSelected& ae::sequences::SeqdbSelected::include_name(const std::vector<std::string>& names)
+{
+    auto refs_with_name = seqdb_.select_all();
+    refs_with_name->filter_name(names);
+    refs_with_name->refs_.erase(
+        std::remove_if(std::begin(refs_with_name->refs_), std::end(refs_with_name->refs_),
+                       [this](const auto& ref_with_name) -> bool { return std::any_of(std::begin(refs_), std::end(refs_), [&ref_with_name](const auto& ref) { return ref_with_name == ref; }); }),
+        std::end(refs_with_name->refs_));
+    std::copy(std::begin(refs_with_name->refs_), std::end(refs_with_name->refs_), std::back_inserter(refs_));
+    return *this;
+
+} // ae::sequences::SeqdbSelected::include_name
+
+// ----------------------------------------------------------------------
