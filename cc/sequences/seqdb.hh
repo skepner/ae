@@ -208,6 +208,12 @@ namespace ae::sequences
             return *this;
         }
 
+        SeqdbSelected& lineage(std::string_view lineage)
+        {
+            refs_.erase(std::remove_if(std::begin(refs_), std::end(refs_), [lineage](const auto& ref) -> bool { return ref.entry->lineage != lineage; }), std::end(refs_));
+            return *this;
+        }
+
         SeqdbSelected& filter_human()
         {
             refs_.erase(std::remove_if(std::begin(refs_), std::end(refs_), [](const auto& ref) -> bool { return !ref.entry->host.empty(); }), std::end(refs_));
