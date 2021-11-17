@@ -77,7 +77,7 @@ def write(file: io.TextIOWrapper|Path, selected :ae_backend.seqdb.Selected, aa: 
     else:
         fil = file
     for ref in selected:
-        fil.write(f">{name(ref)}\n{do_wrap(ref.aa() if aa else ref.nuc())}\n")
+        fil.write(f">{name(ref)}\n{do_wrap(str(ref.aa if aa else ref.nuc))}\n")
     if isinstance(file, (Path, str)) and file != "-":
         fil.close()
 

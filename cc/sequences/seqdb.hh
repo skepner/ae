@@ -52,8 +52,8 @@ namespace ae::sequences
         bool is_master() const;
         seq_id_t seq_id() const;
         std::string_view date() const;
-        std::string_view aa() const;
-        std::string_view nuc() const;
+        const sequence_aa_t& aa() const;
+        const sequence_nuc_t& nuc() const;
     };
 
     // ----------------------------------------------------------------------
@@ -356,7 +356,7 @@ namespace ae::sequences
 
     inline std::string_view SeqdbSeqRef::date() const { return entry->date(); }
 
-    inline std::string_view SeqdbSeqRef::aa() const
+    inline const sequence_aa_t& SeqdbSeqRef::aa() const
     {
         if (master)
             return master->aa;
@@ -364,7 +364,7 @@ namespace ae::sequences
             return seq->aa;
     }
 
-    inline std::string_view SeqdbSeqRef::nuc() const
+    inline const sequence_nuc_t& SeqdbSeqRef::nuc() const
     {
         if (master)
             return master->nuc;

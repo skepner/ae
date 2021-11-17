@@ -1,13 +1,92 @@
 #include <cctype>
+#include <stdexcept>
+#include <charconv>
+#include <limits>
 
 #include "utils/enum.hh"
 #include "utils/messages.hh"
+#include "utils/string.hh"
 #include "sequences/fasta.hh"
 #include "sequences/translate.hh"
 #include "sequences/align.hh"
 #include "sequences/seqdb.hh"
 
 #include "py/module.hh"
+
+// ======================================================================
+
+namespace ae::sequences
+{
+    namespace detail
+    {
+        inline size_t from_chars(std::string_view src)
+        {
+            size_t result;
+            if (const auto [p, ec] = std::from_chars(&*src.begin(), &*src.end(), result); ec == std::errc{} && p == &*src.end())
+                return result;
+            else
+                return std::numeric_limits<size_t>::max();
+        }
+
+    } // namespace detail
+
+    class extract_at_pos_error : public std::runtime_error
+    {
+      public:
+        using std::runtime_error::runtime_error;
+    };
+
+    struct aa_nuc_at_pos1_eq_t : public std::tuple<pos1_t, char, bool> // pos (1-based), aa, equal/not-equal
+    {
+        using std::tuple<pos1_t, char, bool>::tuple;
+        constexpr aa_nuc_at_pos1_eq_t() : std::tuple<pos1_t, char, bool>{pos1_t{0}, ' ', false} {}
+    };
+
+    using amino_acid_at_pos1_eq_list_t = std::vector<aa_nuc_at_pos1_eq_t>;
+
+    template <size_t MIN_SIZE, size_t MAX_SIZE> inline aa_nuc_at_pos1_eq_t extract_aa_nuc_at_pos1_eq(std::string_view source)
+    {
+        if (source.size() >= MIN_SIZE && source.size() <= MAX_SIZE && std::isdigit(source.front()) && (std::isalpha(source.back()) || source.back() == '-'))
+            return {pos1_t{detail::from_chars(source.substr(0, source.size() - 1))}, source.back(), true};
+        else if (source.size() >= (MIN_SIZE + 1) && source.size() <= (MAX_SIZE + 1) && source.front() == '!' && std::isdigit(source[1]) && (std::isalpha(source.back()) || source.back() == '-'))
+            return {pos1_t{detail::from_chars(source.substr(1, source.size() - 2))}, source.back(), false};
+        else
+            throw extract_at_pos_error{fmt::format("invalid aa/nuc-pos: \"{}\" (expected 183P or !183P)", source)};
+    }
+
+    template <size_t MIN_SIZE, size_t MAX_SIZE> inline amino_acid_at_pos1_eq_list_t extract_aa_nuc_at_pos1_eq_list(std::string_view source)
+    {
+        const auto fields = ae::string::split(source, ae::string::split_emtpy::remove);
+        amino_acid_at_pos1_eq_list_t pos1_aa_eq(fields.size());
+        std::transform(std::begin(fields), std::end(fields), std::begin(pos1_aa_eq), [](std::string_view field) { return extract_aa_nuc_at_pos1_eq<MIN_SIZE, MAX_SIZE>(field); });
+        return pos1_aa_eq;
+
+    } // acmacs::seqdb::v3::extract_aa_at_pos_eq_list
+
+    inline amino_acid_at_pos1_eq_list_t extract_aa_nuc_at_pos1_eq_list(const std::vector<std::string>& source)
+    {
+        amino_acid_at_pos1_eq_list_t list(source.size());
+        std::transform(std::begin(source), std::end(source), std::begin(list), [](const auto& en) { return extract_aa_nuc_at_pos1_eq<2, 4>(en); });
+        return list;
+
+    } // acmacs::seqdb::v3::extract_aa_at_pos1_eq_list
+
+    inline amino_acid_at_pos1_eq_list_t extract_aa_nuc_at_pos1_eq_list(std::string_view source) { return extract_aa_nuc_at_pos1_eq_list<2, 4>(source); }
+
+    // ----------------------------------------------------------------------
+
+    template <typename Seq, typename ARG> inline static bool matches_all(const Seq& seq, ARG data)
+    {
+        using namespace ae::sequences;
+        const auto matches = [&seq](const auto& en) {
+            const auto eq = seq[std::get<pos1_t>(en)] == std::get<char>(en);
+            return std::get<bool>(en) == eq;
+        };
+        const auto elts = extract_aa_nuc_at_pos1_eq_list(data);
+        return std::all_of(std::begin(elts), std::end(elts), matches);
+    }
+
+} // namespace ae::sequences
 
 // ======================================================================
 
@@ -97,11 +176,59 @@ void ae::py::sequences(pybind11::module_& mdl)
     pybind11::class_<SeqdbSeqRef>(seqdb_submodule, "SeqdbSeqRef")                               //
         .def("seq_id", [](const SeqdbSeqRef& ref) { return ref.seq_id().get(); })               //
         .def("date", &SeqdbSeqRef::date)                                                        //
-        .def("aa", &SeqdbSeqRef::aa)                                                            //
-        .def("nuc", &SeqdbSeqRef::nuc)                                                          //
+        .def_property_readonly("aa", &SeqdbSeqRef::aa)                                          //
+        .def_property_readonly("nuc", &SeqdbSeqRef::nuc)                                        //
         .def("lineage", [](const SeqdbSeqRef& ref) { return ref.entry->lineage; })              //
         .def("has_issues", [](const SeqdbSeqRef& ref) { return ref.seq->issues.has_issues(); }) //
         .def("issues", [](const SeqdbSeqRef& ref) { return ref.seq->issues.to_strings(); })     //
+        ;
+
+    pybind11::class_<sequence_aa_t>(mdl, "SequenceAA") //
+        .def(
+            "__getitem__", [](const sequence_aa_t& seq, size_t pos) { return seq[pos1_t{pos}]; }, "pos"_a, pybind11::doc("pos is 1-based")) //
+        .def(
+            "__getitem__", [](const sequence_aa_t& seq, std::string_view pos_aa) { return matches_all(seq, pos_aa); }, "pos_aa"_a,
+            pybind11::doc("pos_aa: \"193S\", \"!193S\", \"!56N 115E\" (matches all)")) //
+        .def("__len__", [](const sequence_aa_t& seq) { return seq.size(); })                  //
+        .def("__str__", [](const sequence_aa_t& seq) { return *seq; })                        //
+        .def("__bool__", [](const sequence_aa_t& seq) { return !seq.empty(); })               //
+        .def(
+            "has",
+            [](const sequence_aa_t& seq, size_t pos, std::string_view aas) {
+                if (aas.size() > 1 && aas[0] == '!')
+                    return aas.find(seq[pos1_t{pos}], 1) == std::string_view::npos;
+                else
+                    return aas.find(seq[pos1_t{pos}]) != std::string_view::npos;
+            },
+            "pos"_a, "letters"_a,
+            pybind11::doc("return if seq has any of the letters at pos. if letters starts with ! then return if none of the letters are at pos")) //
+        .def(
+            "matches_all", [](const sequence_aa_t& seq, const std::vector<std::string>& pos_aa) { return matches_all(seq, pos_aa); }, "data"_a,
+            pybind11::doc(R"(Returns if sequence matches all data entries, e.g. ["197N", "!199T"])")) //
+        ;
+
+    pybind11::class_<sequence_nuc_t>(mdl, "SequenceNuc") //
+        .def(
+            "__getitem__", [](const sequence_nuc_t& seq, size_t pos) { return seq[pos1_t{pos}]; }, "pos"_a, pybind11::doc("pos is 1-based")) //
+        .def(
+            "__getitem__", [](const sequence_nuc_t& seq, std::string_view pos_nuc) { return matches_all(seq, pos_nuc); }, "pos_nuc"_a,
+            pybind11::doc("pos_nuc: \"193A\", \"!193A\", \"!56T 115A\" (matches all)")) //
+        .def("__len__", [](const sequence_nuc_t& seq) { return seq.size(); })                  //
+        .def("__str__", [](const sequence_nuc_t& seq) { return *seq; })                        //
+        .def("__bool__", [](const sequence_nuc_t& seq) { return !seq.empty(); })               //
+        .def(
+            "has",
+            [](const sequence_nuc_t& seq, size_t pos, std::string_view nucs) {
+                if (nucs.size() > 1 && nucs[0] == '!')
+                    return nucs.find(seq[pos1_t{pos}], 1) == std::string_view::npos;
+                else
+                    return nucs.find(seq[pos1_t{pos}]) != std::string_view::npos;
+            },
+            "pos"_a, "letters"_a,
+            pybind11::doc("return if seq has any of the letters at pos. if letters starts with ! then return if none of the letters are at pos")) //
+        .def(
+            "matches_all", [](const sequence_nuc_t& seq, const std::vector<std::string>& pos_nuc) { return matches_all(seq, pos_nuc); }, "data"_a,
+            pybind11::doc(R"(Returns if sequence matches all data entries, e.g. ["197A", "!199T"])")) //
         ;
 
     // ----------------------------------------------------------------------
