@@ -2,8 +2,10 @@
 
 // ======================================================================
 
-std::shared_ptr<ae::tree::Tree> ae::tree::load_newick(const std::filesystem::path& filename)
+std::shared_ptr<ae::tree::Tree> ae::tree::load_newick(const std::string& data)
 {
+    fmt::print(">>>> load_newick\n");
+    return std::make_shared<Tree>();
 
 } // ae::tree::load_newick
 
