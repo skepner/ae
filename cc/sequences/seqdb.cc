@@ -121,8 +121,8 @@ bool ae::sequences::SeqdbEntry::update(const RawSequence& raw_sequence, bool kee
         else if (host != raw_sequence.host)
             fmt::print(">> SeqdbEntry::update \"{}\": conflicting host old:{} new:{}\n", name, host, raw_sequence.host);
     }
-    if (!raw_sequence.lineage.empty()) {
-        if (lineage.empty())
+    if (raw_sequence.lineage) {
+        if (!lineage)
             lineage = raw_sequence.lineage;
         else if (lineage != raw_sequence.lineage)
             fmt::print(">> SeqdbEntry::update \"{}\": conflicting lineage old:{} new:{}\n", name, lineage, raw_sequence.lineage);

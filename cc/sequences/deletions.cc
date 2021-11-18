@@ -313,7 +313,7 @@ void ae::sequences::find_deletions_insertions_set_lineage(RawSequence& sequence,
     };
 
     const auto apply_lineage = [&sequence, &messages](std::string_view lineage) {
-        if (sequence.lineage.empty())
+        if (!sequence.lineage)
             sequence.lineage = lineage;
         else if (sequence.lineage != lineage) {
             if (sequence.sequence.aa.size() > 500)

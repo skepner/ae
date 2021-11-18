@@ -5,6 +5,7 @@
 #include "virus/type-subtype.hh"
 #include "sequences/sequence.hh"
 #include "sequences/issues.hh"
+#include "sequences/lineage.hh"
 
 // ======================================================================
 
@@ -30,7 +31,7 @@ namespace ae::sequences
         virus::type_subtype_t type_subtype;
         std::string lab;
         std::string lab_id;     // cdcid
-        std::string lineage;
+        lineage_t lineage;
         std::string passage;
         std::string gisaid_dna_accession_no;
         std::string gisaid_dna_insdc;

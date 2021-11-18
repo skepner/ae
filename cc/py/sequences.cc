@@ -185,14 +185,14 @@ void ae::py::sequences(pybind11::module_& mdl)
         .def("replace_with_master", &SeqdbSelected::replace_with_master)                                                   //
         ;
 
-    pybind11::class_<SeqdbSeqRef>(seqdb_submodule, "SeqdbSeqRef")                               //
-        .def("seq_id", [](const SeqdbSeqRef& ref) { return ref.seq_id().get(); })               //
-        .def("date", &SeqdbSeqRef::date)                                                        //
-        .def_property_readonly("aa", &SeqdbSeqRef::aa)                                          //
-        .def_property_readonly("nuc", &SeqdbSeqRef::nuc)                                        //
-        .def("lineage", [](const SeqdbSeqRef& ref) { return ref.entry->lineage; })              //
-        .def("has_issues", [](const SeqdbSeqRef& ref) { return ref.seq->issues.has_issues(); }) //
-        .def("issues", [](const SeqdbSeqRef& ref) { return ref.seq->issues.to_strings(); })     //
+    pybind11::class_<SeqdbSeqRef>(seqdb_submodule, "SeqdbSeqRef")                                        //
+        .def("seq_id", [](const SeqdbSeqRef& ref) { return ref.seq_id().get(); })                        //
+        .def("date", &SeqdbSeqRef::date)                                                                 //
+        .def_property_readonly("aa", &SeqdbSeqRef::aa)                                                   //
+        .def_property_readonly("nuc", &SeqdbSeqRef::nuc)                                                 //
+        .def("lineage", [](const SeqdbSeqRef& ref) -> const std::string& { return ref.entry->lineage; }) //
+        .def("has_issues", [](const SeqdbSeqRef& ref) { return ref.seq->issues.has_issues(); })          //
+        .def("issues", [](const SeqdbSeqRef& ref) { return ref.seq->issues.to_strings(); })              //
         ;
 
     pybind11::class_<sequence_aa_t>(mdl, "SequenceAA") //
@@ -258,7 +258,6 @@ void ae::py::sequences(pybind11::module_& mdl)
         .def_readwrite("accession_number", &RawSequence::accession_number)
         .def_readwrite("lab", &RawSequence::lab)
         .def_readwrite("lab_id", &RawSequence::lab_id)
-        .def_readwrite("lineage", &RawSequence::lineage)
         .def_readwrite("passage", &RawSequence::passage)
         .def_readwrite("gisaid_dna_accession_no", &RawSequence::gisaid_dna_accession_no)
         .def_readwrite("gisaid_dna_insdc", &RawSequence::gisaid_dna_insdc)
@@ -266,6 +265,9 @@ void ae::py::sequences(pybind11::module_& mdl)
         .def_readwrite("gisaid_last_modified", &RawSequence::gisaid_last_modified)
         .def_readwrite("gisaid_submitter", &RawSequence::gisaid_submitter)
         .def_readwrite("gisaid_originating_lab", &RawSequence::gisaid_originating_lab)
+        .def_property(
+            "lineage", [](const RawSequence& seq) -> const std::string& { return seq.lineage; }, //
+            [](RawSequence& seq, std::string_view lineage) { seq.lineage = lineage; })           //
         .def_property(
             "type_subtype",                                                                                                                                                         //
             [](const RawSequence& seq) { return *seq.type_subtype; },                                                                                                               //

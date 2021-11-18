@@ -29,7 +29,7 @@ int main()
 
     xlnt::workbook wb;
     // wb.load("empty.xlsx");
-    const auto ws = wb.active_sheet();
+    // const auto ws = wb.active_sheet();
     // fmt::print("{}\n", ws.cell(1, 1).value<std::string>());
 
     const auto today = floor<std::chrono::days>(std::chrono::system_clock::now());

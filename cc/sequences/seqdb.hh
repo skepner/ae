@@ -10,6 +10,7 @@
 #include "utils/string-hash.hh"
 #include "sequences/sequence.hh"
 #include "sequences/issues.hh"
+#include "sequences/lineage.hh"
 
 // ======================================================================
 
@@ -102,7 +103,7 @@ namespace ae::sequences
         std::string continent;
         std::string country;
         std::vector<std::string> dates;
-        std::string lineage;
+        lineage_t lineage;
         std::vector<SeqdbSeq> seqs;
         std::string host;
 

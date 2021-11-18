@@ -208,8 +208,8 @@ std::string ae::sequences::Seqdb::export_to_string() const
         fmt::format_to(std::back_inserter(json), "  {{\"N\": \"{}\"", make_str_for_json(entry.name));
         if (!entry.host.empty())
             fmt::format_to(std::back_inserter(json), ", \"h\": \"{}\"", make_str_for_json(entry.host));
-        if (!entry.lineage.empty())
-            fmt::format_to(std::back_inserter(json), ", \"l\": \"{}\"", entry.lineage[0]);
+        if (entry.lineage)
+            fmt::format_to(std::back_inserter(json), ", \"l\": \"{}\"", entry.lineage);
         if (!entry.dates.empty())
             fmt::format_to(std::back_inserter(json), ", \"d\": [\"{}\"]", fmt::join(fix_vec_str(entry.dates), "\", \""));
         if (!entry.continent.empty())
