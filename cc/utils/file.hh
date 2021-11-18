@@ -3,9 +3,8 @@
 #include <stdexcept>
 #include <string_view>
 #include <memory>
-#include <filesystem>
 
-#include "ext/fmt.hh"
+#include "ext/filesystem.hh"
 #include "ext/compressor.hh"
 
 #pragma GCC diagnostic push
@@ -70,16 +69,4 @@ namespace ae::file
 
 #pragma GCC diagnostic pop
 
-// ----------------------------------------------------------------------
-
-template <> struct fmt::formatter<std::filesystem::path> : fmt::formatter<eu::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(const std::filesystem::path& path, FormatCtx& ctx)
-    {
-        return format_to(ctx.out(), "{}", path.native());
-    }
-};
-
-// ----------------------------------------------------------------------
-/// Local Variables:
-/// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
-/// End:
+// ======================================================================

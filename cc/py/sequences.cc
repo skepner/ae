@@ -92,9 +92,9 @@ namespace ae::sequences
 
 void ae::py::sequences(pybind11::module_& mdl)
 {
+    using namespace std::string_view_literals;
     using namespace pybind11::literals;
     using namespace ae::sequences;
-    using namespace std::string_view_literals;
 
     // ----------------------------------------------------------------------
 

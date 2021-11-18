@@ -254,7 +254,4 @@ std::string ae::file::temp::make_template(std::string_view prefix)
 
 } // ae::file::temp::make_template
 
-// ----------------------------------------------------------------------
-/// Local Variables:
-/// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
-/// End:
+// ======================================================================
