@@ -62,7 +62,7 @@ namespace ae::sequences
         void erase_aa(size_t pos, size_t count = std::string::npos)
         {
             aa.get().erase(pos, count);
-            const auto count_nuc = count = std::string::npos ? count : count * 3;
+            const auto count_nuc = count == std::string::npos ? count : count * 3;
             nuc.get().erase(pos * 3, count_nuc);
         }
 
