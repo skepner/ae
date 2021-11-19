@@ -1,4 +1,5 @@
 #include <vector>
+#include <stack>
 
 #include "tree/newick.hh"
 #include "ext/from_chars.hh"
@@ -10,26 +11,30 @@
 
 namespace ae::tree::newick
 {
-    struct state_t
+    struct tree_builder_t
     {
-        state_t(Tree& a_tree) : tree{a_tree} {}
+        tree_builder_t(Tree& a_tree) : tree{a_tree} {}
 
         void subtree_begin() const
         {
-            fmt::print("{:{}s}subtree_begin\n", "", indent);
-            indent += 4;
+            if (parents.empty())
+                parents.push(tree.root_index());
+            else
+                parents.push(tree.add_inode(parents.top()).first);
         }
 
-        void subtree_end(const std::string& name, double edge) const
+        void subtree_end(std::string_view name, double edge) const
         {
-            indent -= 4;
-            fmt::print("{:{}s}subtree_end \"{}\" edge:{}\n", "", indent, name, edge);
+            auto& inode = tree.inode(parents.top());
+            inode.edge = EdgeLength{edge};
+            inode.name = name;
+            parents.pop();
         }
 
-        void leaf(const std::string& name, double edge) const { fmt::print("{:{}s}leaf \"{}\" edge:{}\n", "", indent, name, edge); }
+        void leaf(std::string_view name, double edge) const { tree.add_leaf(parents.top(), name, EdgeLength{edge}); }
 
         Tree& tree;
-        mutable size_t indent{0};
+        mutable std::stack<node_index_t> parents{};
     };
 
     // ----------------------------------------------------------------------
@@ -48,20 +53,20 @@ namespace ae::tree::newick
 
         struct sink_callback
         {
-            const state_t& state;
+            const tree_builder_t& tree_builder;
             Callback callback;
 
             using return_type = result_t;
 
-            template <typename... Args> constexpr void operator()(Args&&... args) { std::invoke(callback, state, std::forward<Args>(args)...); }
+            template <typename... Args> constexpr void operator()(Args&&... args) { std::invoke(callback, tree_builder, std::forward<Args>(args)...); }
 
             constexpr return_type finish() && { return {}; }
         };
 
-        constexpr auto sink(const state_t& state) const
+        constexpr auto sink(const tree_builder_t& tree_builder) const
         {
-            state.subtree_begin();
-            return sink_callback{state, callback};
+            tree_builder.subtree_begin();
+            return sink_callback{tree_builder, callback};
         }
     };
 
@@ -112,8 +117,8 @@ namespace ae::tree::newick
             static constexpr auto whitespace = dsl::ascii::space / dsl::ascii::newline;
             static constexpr auto rule = dsl::p<name> + dsl::p<length>;
 
-            static constexpr auto value = lexy::bind(lexy::callback<result_t>([](const state_t& state, const std::string& name, double edge) {
-                                                         state.leaf(name, edge);
+            static constexpr auto value = lexy::bind(lexy::callback<result_t>([](const tree_builder_t& tree_builder, const std::string& name, double edge) {
+                                                         tree_builder.leaf(name, edge);
                                                          return result_t{};
                                                      }),
                                                      lexy::parse_state, lexy::values);
@@ -133,7 +138,7 @@ namespace ae::tree::newick
             static constexpr auto whitespace = dsl::ascii::space / dsl::ascii::newline;
             static constexpr auto rule = dsl::list(dsl::p<subtree>, dsl::sep(dsl::comma));
 
-            static constexpr auto value = lexy::bind_sink(fold_branch([](const state_t&, result_t) {}), lexy::parse_state);
+            static constexpr auto value = lexy::bind_sink(fold_branch([](const tree_builder_t&, result_t) {}), lexy::parse_state);
         };
 
         struct internal_node
@@ -141,8 +146,8 @@ namespace ae::tree::newick
             static constexpr auto whitespace = dsl::ascii::space / dsl::ascii::newline;
             static constexpr auto rule = OPEN + dsl::p<branch_set> + CLOSE + dsl::p<name> + dsl::p<length>;
 
-            static constexpr auto value = lexy::bind(lexy::callback<result_t>([](const state_t& state, result_t, const std::string& name, double edge) {
-                                                         state.subtree_end(name, edge);
+            static constexpr auto value = lexy::bind(lexy::callback<result_t>([](const tree_builder_t& tree_builder, result_t, const std::string& name, double edge) {
+                                                         tree_builder.subtree_end(name, edge);
                                                          return result_t{};
                                                      }),
                                                      lexy::parse_state, lexy::values);
@@ -204,8 +209,8 @@ std::shared_ptr<ae::tree::Tree> ae::tree::load_newick(const std::string& source)
 
     try {
         auto tree = std::make_shared<Tree>();
-        newick::state_t state{*tree};
-        if (!lexy::parse<newick::grammar::tree>(lexy::string_input<lexy::utf8_encoding>{source}, state, newick::report_error{}))
+        newick::tree_builder_t tree_builder{*tree};
+        if (!lexy::parse<newick::grammar::tree>(lexy::string_input<lexy::utf8_encoding>{source}, tree_builder, newick::report_error{}))
             throw newick::grammar::invalid_input{"parsing failed"};
         return tree;
     }

@@ -111,9 +111,15 @@ namespace ae
     template <std::integral Number, typename Tag> constexpr named_number_t<Number, Tag>& operator*=(named_number_t<Number, Tag>& lhs, Number rhs) noexcept { lhs.get() = lhs.get() * rhs; return lhs; }
     // no operator/
 
+    // ----------------------------------------------------------------------
+
+    template <typename Tag> class named_double_t : public named_t<double, Tag>
+    {
+      public:
+        using named_t<double, Tag>::named_t;
+        using named_t<double, Tag>::operator=;
+    };
 }
-
-
 
 // ----------------------------------------------------------------------
 
