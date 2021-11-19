@@ -1,6 +1,7 @@
 #include <vector>
 
 #include "tree/newick.hh"
+#include "ext/from_chars.hh"
 #include "ext/lexy.hh"
 
 // https://en.wikipedia.org/wiki/Newick_format
@@ -11,29 +12,61 @@ namespace ae::tree::newick
 {
     struct result_t
     {
-        result_t() { fmt::print(">>>> result_t{{}}\n"); }
-        result_t(int ii) { fmt::print(">>>> result_t{{{}}}\n", ii); }
-        result_t(std::initializer_list<result_t>) { fmt::print(">>>> result_t{{initializer_list}}\n"); }
-        result_t(const char* text) { fmt::print(">>>> result_t{{\"{}\"}}\n", text); }
-        result_t(const result_t&) { fmt::print(">>>> result_t(copy)\n"); }
-        result_t(result_t&&) { fmt::print(">>>> result_t(move)\n"); }
-        result_t& operator=(const result_t&) { fmt::print(">>>> =(copy)\n"); return *this; }
-        result_t& operator=(result_t&&) { fmt::print(">>>> =(move)\n"); return *this; }
+        // result_t() = default;
+        //result_t(std::initializer_list<result_t>) {}
     };
 
     struct state_t
     {
         state_t() = default;
-        // template <typename ... Args> state_t& self(Args&& ... args) {
-        //     fmt::print(">>>> state_t::self {}\n", sizeof...(args));
-        //     return *this;
-        // }
-        // state_t& self() { fmt::print(">>>> state_t::self\n"); return *this; }
-        result_t self() const { fmt::print(">>>> state_t::self()\n");
-            return result_t {};
+
+        void subtree_begin() const
+        {
+            fmt::print("{:{}s}subtree_begin\n", "", indent);
+            indent += 4;
         }
-        result_t self(const result_t& res) const { fmt::print(">>>> state_t::self(const result_t&)\n"); return res; }
+
+        void subtree_end(const std::string& name, double edge) const
+        {
+            indent -= 4;
+            fmt::print("{:{}s}subtree_end \"{}\" edge:{}\n", "", indent, name, edge);
+        }
+
+        void leaf(const std::string& name, double edge) const { fmt::print("{:{}s}leaf \"{}\" edge:{}\n", "", indent, name, edge); }
+
+        mutable size_t indent{0};
     };
+
+    // ----------------------------------------------------------------------
+
+    template <typename Callback> struct fold_branch_t
+    {
+        Callback callback;
+
+        using return_type = result_t;
+
+        struct sink_callback
+        {
+            const state_t& state;
+            Callback callback;
+
+            using return_type = result_t;
+
+            template <typename... Args> constexpr void operator()(Args&&... args) { std::invoke(callback, state, std::forward<Args>(args)...); }
+
+            constexpr return_type finish() && { return {}; }
+        };
+
+        constexpr auto sink(const state_t& state) const
+        {
+            state.subtree_begin();
+            return sink_callback{state, callback};
+        }
+    };
+
+    template <typename Callback> constexpr auto fold_branch(Callback&& callback) { return fold_branch_t<Callback>{std::forward<Callback>(callback)}; }
+
+    // ----------------------------------------------------------------------
 
     namespace grammar
     {
@@ -56,10 +89,7 @@ namespace ae::tree::newick
         struct number
         {
             static constexpr auto rule = dsl::peek(dsl::lit_c<'-'> / dsl::digit<>) >> dsl::capture(dsl::while_(dsl::hyphen / PLUS / dsl::period / dsl::digit<> / E));
-            static constexpr auto value = lexy::callback<double>( //
-                [](const std::string& data) { return std::stod(data); }, //
-                [](auto lex) { fmt::print(">>>> number(auto) {}\n", std::string(lex.begin(), lex.end())); return -1967; }//
-            );
+            static constexpr auto value = lexy::callback<double>([](auto lex) { return ae::from_chars<double>(lex.begin(), lex.end()); });
         };
 
         struct length
@@ -77,72 +107,46 @@ namespace ae::tree::newick
             static constexpr auto value = lexy::as_string<std::string>;
         };
 
+        struct name_edge
+        {
+            static constexpr auto whitespace = dsl::ascii::space / dsl::ascii::newline;
+            static constexpr auto rule = dsl::p<name> + dsl::p<length>;
+
+            static constexpr auto value = lexy::bind(lexy::callback<result_t>([](const state_t& state, const std::string& name, double edge) {
+                                                         state.leaf(name, edge);
+                                                         return result_t{};
+                                                     }),
+                                                     lexy::parse_state, lexy::values);
+        };
+
         struct internal_node;
 
         struct subtree
         {
             static constexpr auto whitespace = dsl::ascii::space / dsl::ascii::newline;
-            static constexpr auto rule = (dsl::peek(OPEN) >> dsl::recurse<internal_node> | dsl::else_ >> dsl::p<name>);
-
-            static constexpr auto value = lexy::callback<result_t>( //
-                [](int) {
-                    fmt::print(">>>> subtree int");
-                    return result_t{};
-                },
-                [](const char*) {
-                    fmt::print(">>>> subtree const char*");
-                    return result_t{};
-                },
-                [](const std::vector<result_t>& res) {
-                    fmt::print(">>>> subtree<-{}\n", res.size());
-                    return result_t{};
-                }, //
-                [](const std::string& name) {
-                    fmt::print(">>>> subtree<-name \"{}\"\n", name);
-                    return result_t{};
-                }, //
-                [](const result_t&) {
-                    fmt::print(">>>> subtree<-result_t\n");
-                    return result_t{};
-                } //
-            );
+            static constexpr auto rule = (dsl::peek(OPEN) >> dsl::recurse<internal_node> | dsl::else_ >> dsl::p<name_edge>);
+            static constexpr auto value = lexy::forward<result_t>;
         };
 
         struct branch_set
         {
             static constexpr auto whitespace = dsl::ascii::space / dsl::ascii::newline;
-            static constexpr auto rule = dsl::list(dsl::p<subtree> + dsl::p<length>, dsl::sep(dsl::comma));
-            // static constexpr auto value = lexy::as_list<std::vector<result_t>>;
-            static constexpr auto value = lexy::fold_inplace<result_t>(
-                "fold-init-branch_set" /* std::initializer_list<result_t> {} */, [](result_t& res, const result_t&, double) { fmt::print(">>>> fold_inplace branch_set\n");});
+            static constexpr auto rule = dsl::list(dsl::p<subtree>, dsl::sep(dsl::comma));
+
+            static constexpr auto value = lexy::bind_sink(fold_branch([](const state_t&, const result_t&) {}), lexy::parse_state);
         };
 
         struct internal_node
         {
             static constexpr auto whitespace = dsl::ascii::space / dsl::ascii::newline;
-            static constexpr auto rule = OPEN + dsl::p<branch_set> + CLOSE + dsl::p<name>;
+            static constexpr auto rule = OPEN + dsl::p<branch_set> + CLOSE + dsl::p<name> + dsl::p<length>;
 
-            // static constexpr auto cb = lexy::callback<int>([](const state_t& state, const result_t& br_set, const std::string& name) { fmt::print(">>>> internal_node::cb\n"); return 0; });
-            // static constexpr auto value = lexy::bind(cb, lexy::parse_state, lexy::values);
-
-            // static constexpr auto value = lexy::bind(lexy::callback(&state_t::self), lexy::parse_state, lexy::values);
-            // static constexpr auto value = lexy::bind(lexy::callback([](const state_t& state, const result_t& br_set) { state.self(br_set); return 0; }), lexy::parse_state, lexy::values);
-            // static constexpr auto value = lexy::bind(lexy::callback([](const state_t& state) { state.self(); return 0; }), lexy::parse_state);
-
-            static constexpr auto value = lexy::callback<result_t>([](const result_t&, const std::string&) { return result_t{}; });
-            // static constexpr auto value = lexy::fold_inplace<result_t>(
-            //     "fold-init-internal_node", [](result_t& res, const result_t&, const std::string&) { fmt::print(">>>> fold_inplace internal_node");});
+            static constexpr auto value = lexy::bind(lexy::callback<result_t>([](const state_t& state, const result_t&, const std::string& name, double edge) {
+                                                         state.subtree_end(name, edge);
+                                                         return result_t{};
+                                                     }),
+                                                     lexy::parse_state, lexy::values);
         };
-
-        // struct xtree
-        // {
-        //     using return_type = xtree;
-        //     constexpr xtree()
-        //     { /*fmt::print(">>>> xtree\n");*/
-        //     }
-        //     constexpr xtree operator()(const result_t&) { return *this; }
-        //     constexpr xtree operator()(result_t&&) { return *this; }
-        // };
 
         struct tree
         {
