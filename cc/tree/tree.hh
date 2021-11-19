@@ -160,9 +160,15 @@ namespace ae::tree
             }
         };
 
+        const auto current_index = [this]() {
+            if (const auto [parent_index, child_no] = parents_.back(); child_no == parent_itself)
+                return parent_index;
+            else
+                return tree_.inode(parent_index).children[child_no];
+        };
+
         bool end{false};
-        for (bool cont{true}; cont && !end;)
-        {
+        for (bool cont{true}; cont && !end;) {
             auto& [parent_index, child_no] = parents_.back();
             if (child_no == parent_itself) {
                 child_no = 0;
@@ -186,12 +192,15 @@ namespace ae::tree
             }
         }
         if (!end) {
-            auto& [parent_index, child_no] = parents_.back();
-            auto& parent = tree_.inode(parent_index);
-            if (const auto current_index = parent.children[child_no]; !is_leaf(current_index))
-                parents_.emplace_back(current_index, parent_itself);
+            if (const auto cur_index = current_index(); !is_leaf(cur_index))
+                parents_.emplace_back(cur_index, parent_itself);
+            if (const auto cur_index = current_index(); is_leaf(cur_index)) {
+                fmt::print(">>>> {} ++ {} {}\n", *cur_index, *parents_.back().first, parents_.back().second);
+                fmt::print(">>>>     \"{}\"\n", tree_.leaf(cur_index).name);
+            }
+            else
+                fmt::print(">>>> {} ++ {} {}\n", *cur_index, *parents_.back().first, parents_.back().second);
         }
-        fmt::print(">>>> ++ {} {}\n", *parents_.back().first, parents_.back().second);
         return *this;
     }
 
