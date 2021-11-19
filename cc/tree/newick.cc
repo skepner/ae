@@ -10,15 +10,9 @@
 
 namespace ae::tree::newick
 {
-    struct result_t
-    {
-        // result_t() = default;
-        //result_t(std::initializer_list<result_t>) {}
-    };
-
     struct state_t
     {
-        state_t() = default;
+        state_t(Tree& a_tree) : tree{a_tree} {}
 
         void subtree_begin() const
         {
@@ -34,7 +28,14 @@ namespace ae::tree::newick
 
         void leaf(const std::string& name, double edge) const { fmt::print("{:{}s}leaf \"{}\" edge:{}\n", "", indent, name, edge); }
 
+        Tree& tree;
         mutable size_t indent{0};
+    };
+
+    // ----------------------------------------------------------------------
+
+    struct result_t
+    {
     };
 
     // ----------------------------------------------------------------------
@@ -72,7 +73,6 @@ namespace ae::tree::newick
     {
         namespace dsl = lexy::dsl;
 
-        static constexpr auto WS = dsl::whitespace(dsl::ascii::space);
         static constexpr auto OPEN = dsl::lit_c<'('>;
         static constexpr auto CLOSE = dsl::lit_c<')'>;
         static constexpr auto PLUS = dsl::lit_c<'+'>;
@@ -133,7 +133,7 @@ namespace ae::tree::newick
             static constexpr auto whitespace = dsl::ascii::space / dsl::ascii::newline;
             static constexpr auto rule = dsl::list(dsl::p<subtree>, dsl::sep(dsl::comma));
 
-            static constexpr auto value = lexy::bind_sink(fold_branch([](const state_t&, const result_t&) {}), lexy::parse_state);
+            static constexpr auto value = lexy::bind_sink(fold_branch([](const state_t&, result_t) {}), lexy::parse_state);
         };
 
         struct internal_node
@@ -141,7 +141,7 @@ namespace ae::tree::newick
             static constexpr auto whitespace = dsl::ascii::space / dsl::ascii::newline;
             static constexpr auto rule = OPEN + dsl::p<branch_set> + CLOSE + dsl::p<name> + dsl::p<length>;
 
-            static constexpr auto value = lexy::bind(lexy::callback<result_t>([](const state_t& state, const result_t&, const std::string& name, double edge) {
+            static constexpr auto value = lexy::bind(lexy::callback<result_t>([](const state_t& state, result_t, const std::string& name, double edge) {
                                                          state.subtree_end(name, edge);
                                                          return result_t{};
                                                      }),
@@ -155,10 +155,6 @@ namespace ae::tree::newick
             static constexpr auto max_recursion_depth = 100;
 
             static constexpr auto value = lexy::forward<result_t>;
-            // static constexpr auto value = lexy::callback<tree_t>([](const result_t&) { return std::make_shared<Tree>(); });
-            // static constexpr auto value = xtree{};
-            // static constexpr auto value = lexy::fold_inplace<result_t>(
-            //     "fold-init-tree", [](result_t& res, const result_t&) { fmt::print(">>>> tree->fold");});
         };
 
     } // namespace grammar
@@ -199,18 +195,19 @@ namespace ae::tree::newick
 
 std::shared_ptr<ae::tree::Tree> ae::tree::load_newick(const std::string& source)
 {
-   //  const bool trace { false };
+    const bool trace { false };
 
-   // if (trace) {
-   //      fmt::print(">>> parsing newick\n");
-   //      lexy::trace<newick::grammar::tree>(stderr, lexy::string_input<lexy::utf8_encoding>{source});
-   //  }
+   if (trace) {
+        fmt::print(">>> parsing newick\n");
+        lexy::trace<newick::grammar::tree>(stderr, lexy::string_input<lexy::utf8_encoding>{source});
+    }
 
     try {
-        newick::state_t state;
-        const auto parsing_result = lexy::parse<newick::grammar::tree>(lexy::string_input<lexy::utf8_encoding>{source}, state, newick::report_error{});
-        // return parsing_result.value();
-        return std::make_shared<Tree>();
+        auto tree = std::make_shared<Tree>();
+        newick::state_t state{*tree};
+        if (!lexy::parse<newick::grammar::tree>(lexy::string_input<lexy::utf8_encoding>{source}, state, newick::report_error{}))
+            throw newick::grammar::invalid_input{"parsing failed"};
+        return tree;
     }
     catch (newick::grammar::invalid_input& err) {
         fmt::print(">> newick parsing error: {}\n", err.what());
