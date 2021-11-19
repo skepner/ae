@@ -46,6 +46,18 @@ size_t ae::tree::Tree::depth() const
 
 // ----------------------------------------------------------------------
 
+ae::tree::EdgeLength ae::tree::Tree::calculate_cumulative() const
+{
+    if (max_cumulative < EdgeLength{0}) {
+        for (const auto ref : *this) {
+        }
+    }
+    return max_cumulative;
+
+} // ae::tree::Tree::calculate_cumulative
+
+// ----------------------------------------------------------------------
+
 std::shared_ptr<ae::tree::Tree> ae::tree::load(const std::filesystem::path& filename)
 {
     const auto data = file::read(filename, ::simdjson::SIMDJSON_PADDING);

@@ -29,6 +29,7 @@ namespace ae
 #endif
 
         auto operator<=>(const named_t&) const = default;
+        auto operator<=>(const T& rhs) const { return value_ <=> rhs; }
         bool operator==(const named_t&) const = default;
 
 #pragma GCC diagnostic pop
@@ -66,6 +67,8 @@ namespace ae
       public:
         using named_t<T, Tag>::named_t;
         using named_t<T, Tag>::operator=;
+        // using named_t<T, Tag>::operator==;
+        using named_t<T, Tag>::operator<=>;
 
         constexpr auto& operator++()
         {

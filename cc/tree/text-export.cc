@@ -11,10 +11,7 @@ static void export_inode(fmt::memory_buffer& text, const ae::tree::Inode& inode,
 
 std::string ae::tree::export_text(const Tree& tree)
 {
-    // tree.cumulative_calculate();
-    // const double edge_step = 200.0 / tree.max_cumulative_shown().as_number();
-
-    const double edge_step = 200.0 / 0.01;
+    const double edge_step = 200.0 / *tree.calculate_cumulative();
 
     fmt::memory_buffer text;
     fmt::format_to(std::back_inserter(text), "-*- Tal-Text-Tree -*-\n");
