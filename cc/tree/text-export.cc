@@ -29,10 +29,10 @@ std::string ae::tree::export_text(const Tree& tree)
 void export_leaf(fmt::memory_buffer& text, const ae::tree::Leaf& leaf, double edge_step, prefix_t& prefix)
 {
     using namespace fmt::literals;
-    const auto edge_size = static_cast<size_t>(*leaf.edge * edge_step);
-    fmt::format_to(std::back_inserter(text), "{prefix}{edge_symbol:{edge_size}s} \"{name}\" {aa_transitions}{accession_numbers} edge: {edge}  cumul: {cumul}  v:{vert}\n",
+    const std::string edge_symbol(static_cast<size_t>(*leaf.edge * edge_step), '-');
+    fmt::format_to(std::back_inserter(text), "{prefix}{edge_symbol} \"{name}\" {aa_transitions}{accession_numbers} edge: {edge}  cumul: {cumul}  v:{vert}\n",
                    "prefix"_a = fmt::join(prefix, std::string_view{}),                                       //
-                   "edge_symbol"_a = "-", "edge_size"_a = edge_size, "edge"_a = *leaf.edge, "cumul"_a = -1.0, //
+                   "edge_symbol"_a = edge_symbol, "edge"_a = *leaf.edge, "cumul"_a = -1.0, //
                    "name"_a = leaf.name,                                                                     //
                    "accession_numbers"_a = "",                                                               // format_accession_numbers(node)),
                    "vert"_a = 0,                                                                             // node.node_id.vertical),
@@ -47,9 +47,9 @@ void export_inode(fmt::memory_buffer& text, const ae::tree::Inode& inode, const 
 {
     using namespace fmt::literals;
     const auto edge_size = static_cast<size_t>(*inode.edge * edge_step);
-    fmt::format_to(std::back_inserter(text), "{prefix}{edge_symbol:{edge_size}s}\\ >>>> leaves: {leaves}{aa_transitions} edge: {edge} cumul: {cumul}\n", //
+    fmt::format_to(std::back_inserter(text), "{prefix}{edge_symbol}\\ >>>> leaves: {leaves}{aa_transitions} edge: {edge} cumul: {cumul}\n", //
                    "prefix"_a = fmt::join(prefix, std::string_view{}),                                                                                 //
-                   "edge_symbol"_a = "=", "edge_size"_a = edge_size, "edge"_a = *inode.edge, "cumul"_a = -1.0,                                          //
+                   "edge_symbol"_a = std::string(edge_size, '='), "edge"_a = *inode.edge, "cumul"_a = -1.0,                                          //
                    "leaves"_a = -1,                                                                                                                    // node.number_leaves_in_subtree()),
                    // "node_id"_a = inode.node_id,
                    "aa_transitions"_a = "" // aa_transitions.empty() ? std::string{} : fmt::format(" [{}]", aa_transitions))
