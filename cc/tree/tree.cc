@@ -25,9 +25,29 @@ std::pair<ae::tree::node_index_t, ae::tree::Leaf&> ae::tree::Tree::add_leaf(node
 
 // ----------------------------------------------------------------------
 
+size_t ae::tree::Tree::depth() const
+{
+    if (depth_ == 0) {
+        // without using iterator! because iterators use depth_ value
+        const auto descent = [this](const Inode& inod, size_t depth, auto&& self) -> void {
+            for (const auto child_index : inod.children) {
+                if (!ae::tree::is_leaf(child_index))
+                    self(inode(child_index), depth + 1, self);
+                else
+                    depth_ = std::max(depth_, depth + 1);
+            }
+        };
+        descent(root(), 0, descent);
+        fmt::print(">>>> tree depth {}\n", depth_);
+    }
+    return depth_;
+
+} // ae::tree::Tree::depth
+
+// ----------------------------------------------------------------------
+
 std::shared_ptr<ae::tree::Tree> ae::tree::load(const std::filesystem::path& filename)
 {
-
     const auto data = file::read(filename, ::simdjson::SIMDJSON_PADDING);
     if (is_newick(data))
         return load_newick(data);

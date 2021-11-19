@@ -15,6 +15,8 @@ namespace ae::tree
 
     inline bool is_leaf(node_index_t index) { return *index >= 0; }
 
+    // ----------------------------------------------------------------------
+
     struct Node
     {
         std::string name{};
@@ -39,7 +41,6 @@ namespace ae::tree
     {
         std::vector<node_index_t> children;
         // std::vector<std::string> aa_substs;
-
     };
 
     class Tree
@@ -58,9 +59,22 @@ namespace ae::tree
         std::pair<node_index_t, Inode&> add_inode(node_index_t parent);
         std::pair<node_index_t, Leaf&> add_leaf(node_index_t parent, std::string_view name, EdgeLength edge);
 
+        size_t depth() const;   // max nesting level
+
       private:
         std::vector<Inode> inodes_{Inode{}}; // root is always there
         std::vector<Leaf> leaves_{};
+        mutable size_t depth_ { 0 };
+    };
+
+    // ----------------------------------------------------------------------
+
+    class tree_iterator
+    {
+      public:
+        tree_iterator() {}
+
+      private:
     };
 
     std::shared_ptr<Tree> load(const std::filesystem::path& filename);
