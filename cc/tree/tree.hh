@@ -1,10 +1,9 @@
 #pragma once
 
-#include <memory>
-
 #include "ext/filesystem.hh"
 #include "utils/named-type.hh"
 #include "sequences/sequence.hh"
+#include "tree/tree.hh"
 
 // ======================================================================
 

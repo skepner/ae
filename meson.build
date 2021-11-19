@@ -52,7 +52,7 @@ bzip2 = meson.get_compiler('cpp').find_library('bz2', required : false)
 
 sources_virus = ['cc/virus/name-parse.cc', 'cc/virus/passage-parse.cc']
 sources_sequences = ['cc/sequences/seqdb.cc', 'cc/sequences/seqdb-export.cc', 'cc/sequences/fasta.cc', 'cc/sequences/translate.cc', 'cc/sequences/align.cc', 'cc/sequences/master.cc', 'cc/sequences/deletions.cc']
-sources_tree = ['cc/tree/tree.cc', 'cc/tree/newick.cc']
+sources_tree = ['cc/tree/tree.cc', 'cc/tree/newick.cc', 'cc/tree/text-export.cc']
 sources_locdb = ['cc/locdb/locdb.cc']
 sources_utlis = ['cc/utils/file.cc', 'cc/utils/messages.cc', 'cc/ext/date.cc']
 sources_py = ['cc/py/module.cc', 'cc/py/virus.cc', 'cc/py/sequences.cc', 'cc/py/tree.cc', 'cc/py/utils.cc']

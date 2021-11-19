@@ -2,6 +2,7 @@
 #include <stack>
 
 #include "tree/newick.hh"
+#include "tree/tree.hh"
 #include "ext/from_chars.hh"
 #include "ext/lexy.hh"
 
@@ -223,8 +224,9 @@ std::shared_ptr<ae::tree::Tree> ae::tree::load_newick(const std::string& source)
 
 // ----------------------------------------------------------------------
 
-void ae::tree::export_newick(const Tree& tree, const std::filesystem::path& filename)
+std::string ae::tree::export_newick(const Tree& tree)
 {
+    return {};
 
 } // ae::tree::export_newick
 

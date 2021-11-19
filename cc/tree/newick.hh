@@ -1,14 +1,18 @@
 #pragma once
 
-#include "tree/tree.hh"
+#include <memory>
+#include <string>
+#include <string_view>
 
 // ======================================================================
 
 namespace ae::tree
 {
+    class Tree;
+
     inline bool is_newick(std::string_view data) { return data.size() > 5 && data[0] == '('; }
     std::shared_ptr<Tree> load_newick(const std::string& data);
-    void export_newick(const Tree& tree, const std::filesystem::path& filename);
+    std::string export_newick(const Tree& tree);
 
 } // namespace ae::tree
 

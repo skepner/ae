@@ -15,12 +15,15 @@ import ae_backend
 
 def main(args: argparse.Namespace):
     tree = ae_backend.tree.load(args.input)
+    if args.output:
+        ae_backend.tree.export(tree, args.output)
 
 # ----------------------------------------------------------------------
 
 try:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("input", type=Path)
+    parser.add_argument("output", nargs="?", type=Path)
     args = parser.parse_args()
     exit_code = main(args) or 0
 except Exception as err:

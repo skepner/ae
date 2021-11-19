@@ -1,6 +1,7 @@
 #include "tree/tree.hh"
 #include "ext/simdjson.hh"
 #include "tree/newick.hh"
+#include "tree/text-export.hh"
 
 // ======================================================================
 
@@ -39,10 +40,19 @@ std::shared_ptr<ae::tree::Tree> ae::tree::load(const std::filesystem::path& file
 
 void ae::tree::export_tree(const Tree& tree, const std::filesystem::path& filename)
 {
-    if (filename.filename().native().find(".newick") != std::string::npos)
-        export_newick(tree, filename);
+    using namespace std::string_view_literals;
+    const auto has_suffix = [filename = filename.filename().native()](std::initializer_list<std::string_view> suffixes) {
+        return std::any_of(std::begin(suffixes), std::end(suffixes), [&filename](std::string_view suffix) { return filename.find(suffix) != std::string::npos; });
+    };
+
+    std::string data;
+    if (has_suffix({".newick"sv}))
+        data = export_newick(tree);
+    else if (filename.native() == "-" || has_suffix({".txt"sv, ".text"sv}))
+        data = export_text(tree);
     else
         throw std::runtime_error{fmt::format("cannot export tree to \"{}\": unknown file format", filename)};
+    file::write(filename, data);
 
 } // ae::tree::export_tree
 
