@@ -11,7 +11,9 @@ namespace ae::tree
 {
     using EdgeLength = named_double_t<struct tree_EdgeLength_tag>;
     using node_index_base_t = int;                                                      //  signed
-    using node_index_t = named_number_t<node_index_base_t, struct tree_node_index_tag>; // signed! positive - leaves_, negative - inodes_
+    using node_index_t = named_number_t<node_index_base_t, struct tree_node_index_tag>; // signed! positive and zero - leaves_, negative - inodes_
+
+    inline bool is_leaf(node_index_t index) { return *index >= 0; }
 
     struct Node
     {
@@ -24,6 +26,7 @@ namespace ae::tree
     {
         Leaf(std::string_view a_name, EdgeLength a_edge) : Node{.name{a_name}, .edge{a_edge}} {}
 
+        bool shown{true};
         std::string date;
         std::string continent;
         std::string country;
@@ -36,6 +39,7 @@ namespace ae::tree
     {
         std::vector<node_index_t> children;
         // std::vector<std::string> aa_substs;
+
     };
 
     class Tree
