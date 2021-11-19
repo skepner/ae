@@ -50,6 +50,7 @@ ae::tree::EdgeLength ae::tree::Tree::calculate_cumulative() const
 {
     if (max_cumulative < EdgeLength{0}) {
         for (const auto ref : *this) {
+            fmt::print(">>>> calculate_cumulative ref\n");
         }
     }
     return max_cumulative;
