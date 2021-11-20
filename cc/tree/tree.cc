@@ -49,8 +49,15 @@ size_t ae::tree::Tree::depth() const
 ae::tree::EdgeLength ae::tree::Tree::calculate_cumulative() const
 {
     if (max_cumulative < EdgeLength{0}) {
-        for (const auto ref : *this) {
-            fmt::print(">>>> calculate_cumulative ref\n");
+        // for (const auto ref : visit_all()) {
+        //     fmt::print(">>>> calculate_cumulative {}\n", ref.to_string());
+        // }
+        for (const auto ref : visit(tree_visiting::all)) {
+            fmt::print(">>>> all {}\n", ref.to_string());
+        }
+        fmt::print("\n\n");
+        for (const auto ref : visit(tree_visiting::leaves)) {
+            fmt::print(">>>> leaves {}\n", ref.to_string());
         }
     }
     return max_cumulative;
