@@ -187,7 +187,7 @@ namespace ae::tree
 
     template <lvalue_reference TREE, pointer LEAF, pointer INODE> inline tree_iterator_t<TREE, LEAF, INODE>& tree_iterator_t<TREE, LEAF, INODE>::operator++()
     {
-        // returns if suitable node found after diving
+        // returns if suitable node found after undiving and perhaps diving into the next node
         const auto undive = [this](auto& dive_ref) -> bool {
             if (parents_.size() == 1)
                 return true; // end
@@ -204,14 +204,16 @@ namespace ae::tree
             if (child_no != parent_itself) {
                 if (const auto& parent_inode = tree_.inode(parent->first); child_no >= parent_inode.children.size())
                     return undive(dive_ref);
-                else if (const auto child_index = parent_inode.children[child_no]; !is_leaf(child_index))
+                else if (const auto child_index = parent_inode.children[child_no]; !is_leaf(child_index)) {
                     parent = &parents_.emplace_back(child_index, parent_itself);
+                    child_no = parent_itself;
+                }
             }
             switch (visiting_) {
                 case tree_visiting::all:
                     return true;
                 case tree_visiting::inodes:
-                    return true;
+                    return child_no == parent_itself || !is_leaf(tree_.inode(parent->first).children[parent->second]);
                 case tree_visiting::leaves:
                     return child_no != parent_itself && is_leaf(tree_.inode(parent->first).children[parent->second]);
                 case tree_visiting::all_post:
@@ -245,61 +247,6 @@ namespace ae::tree
         }
         return *this;
     }
-
-    // template <lvalue_reference TREE, pointer LEAF, pointer INODE> inline tree_iterator_t<TREE, LEAF, INODE>& tree_iterator_t<TREE, LEAF, INODE>::operator++()
-    // {
-    //     const auto current_index = [this]() {
-    //         if (const auto [parent_index, child_no] = parents_.back(); child_no == parent_itself)
-    //             return parent_index;
-    //         else
-    //             return tree_.inode(parent_index).children[child_no];
-    //     };
-
-    //     const auto cont_for_visiting = [this](node_index_t parent_index, size_t child_no) {
-    //         switch (visiting_) {
-    //             case tree_visiting::all:
-    //                 return false;
-    //             case tree_visiting::inodes:
-    //                 return true;
-    //             case tree_visiting::leaves:
-    //                 return child_no == parent_itself; // || !is_leaf(tree_.inode(parent_index).children[child_no]);
-    //             case tree_visiting::all_post:
-    //                 return true;
-    //             case tree_visiting::inodes_post:
-    //                 return true;
-    //         }
-    //     };
-
-    //     bool end{false};
-    //     for (bool cont{true}; cont && !end;) {
-    //         auto& [parent_index, child_no] = parents_.back();
-    //         if (child_no == parent_itself) {
-    //             child_no = 0;
-    //             cont = cont_for_visiting(parent_index, child_no);
-    //         }
-    //         else {
-    //             auto& parent = tree_.inode(parent_index);
-    //             if (child_no < parent.children.size()) {
-    //                 ++child_no;
-    //                 if (child_no == parent.children.size()) {
-    //                     if (parents_.size() == 1)
-    //                         end = true;
-    //                     else
-    //                         parents_.pop_back();
-    //                 }
-    //                 else
-    //                     cont = cont_for_visiting(parent_index, child_no);
-    //             }
-    //             else
-    //                 end = true;
-    //         }
-    //     }
-    //     if (!end) {
-    //         if (const auto cur_index = current_index(); !is_leaf(cur_index))
-    //             parents_.emplace_back(cur_index, parent_itself);
-    //     }
-    //     return *this;
-    // }
 
     template <lvalue_reference TREE, pointer LEAF, pointer INODE> inline typename tree_iterator_t<TREE, LEAF, INODE>::reference tree_iterator_t<TREE, LEAF, INODE>::operator*()
     {
