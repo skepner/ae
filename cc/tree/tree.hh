@@ -26,6 +26,7 @@ namespace ae::tree
         std::string name{};
         EdgeLength edge{0};
         EdgeLength cumulative_edge{0};
+        node_index_t node_id_{0};
     };
 
     struct Leaf : public Node
@@ -60,7 +61,9 @@ namespace ae::tree
 
         std::string to_string() const
         {
-            return std::visit(overload{[](LEAF leaf) { return fmt::format("\"{}\"", leaf->name); }, [](INODE inode) { return fmt::format("children:{}", inode->children.size()); }}, ref_);
+            return std::visit(overload{[](LEAF leaf) { return fmt::format("<{}> \"{}\"", leaf->node_id_, leaf->name); },
+                                       [](INODE inode) { return fmt::format("<{}> children:{}", inode->node_id_, inode->children.size()); }},
+                              ref_);
         }
 
       private:
@@ -88,6 +91,19 @@ namespace ae::tree
         std::vector<std::pair<node_index_t, size_t>> parents_; // parent and index in tree.inode(parents_.back()).children, index=-1 for tree.inode(parents_.back()) itself
 
         constexpr static size_t parent_itself{static_cast<size_t>(-1)};
+
+        bool is_visiting_post() const
+        {
+            switch (visiting_) {
+                case tree_visiting::all:
+                case tree_visiting::inodes:
+                case tree_visiting::leaves:
+                    return false;
+                case tree_visiting::all_post:
+                case tree_visiting::inodes_post:
+                    return true;
+            }
+        }
     };
 
     using tree_iterator = tree_iterator_t<Tree&, Leaf*, Inode*>;
@@ -144,6 +160,8 @@ namespace ae::tree
         auto visit(tree_visiting visiting) { return tree_visitor{*this, visiting}; }
         auto visit_all() const { return visit(tree_visiting::all); }
         auto visit_all() { return visit(tree_visiting::all); }
+
+        void set_node_id();
 
       private:
         std::vector<Inode> inodes_{Inode{}}; // root is always there
@@ -215,35 +233,32 @@ namespace ae::tree
                 case tree_visiting::inodes:
                     return child_no == parent_itself || !is_leaf(tree_.inode(parent->first).children[parent->second]);
                 case tree_visiting::leaves:
-                    return child_no != parent_itself && is_leaf(tree_.inode(parent->first).children[parent->second]);
+                    return child_no != parent_itself; // && is_leaf(tree_.inode(parent->first).children[parent->second]);
                 case tree_visiting::all_post:
-                    return true;
+                    return child_no != parent_itself;
                 case tree_visiting::inodes_post:
-                    return true;
+                    return child_no != parent_itself;
             }
         };
 
         while (true)
         {
-            const auto [parent_index, child_no] = parents_.back();
-            if (child_no == parent_itself) {
+            auto& parent = parents_.back();
+            if (parent.second == parent_itself) {
                 if (dive(0, dive))
                     break;
             }
-            else if (const auto& parent_inode = tree_.inode(parent_index); child_no < parent_inode.children.size()) {
-                if ((child_no + 1) >= parent_inode.children.size()) {
-                    if (parents_.size() > 1) {
-                        if (undive(dive))
-                            break;
-                    }
-                    else
-                        break;  // end
+            else if (const auto& parent_inode = tree_.inode(parent.first); parent.second < parent_inode.children.size()) {
+                ++parent.second;
+                if (parent.second < parent_inode.children.size()) {
+                    if (dive(parent.second, dive))
+                        break;
                 }
-                else if (dive(child_no + 1, dive))
+                else if (is_visiting_post())
                     break;
             }
-            else
-                break;          // end
+            else if (undive(dive))
+                break;
         }
         return *this;
     }
@@ -254,8 +269,12 @@ namespace ae::tree
         auto& parent = tree_.inode(parent_index);
         if (child_no == parent_itself)
             return &parent;
-        else // if (child_no_ < parent.children.size())
+        else if (child_no < parent.children.size())
             return tree_.node(parent.children[child_no]);
+        else if (is_visiting_post())
+            return &parent;
+        else
+            throw std::runtime_error{"tree_iterator_t: derefencing at the end?"};
     }
 
 } // namespace ae::tree

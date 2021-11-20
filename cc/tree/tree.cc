@@ -56,6 +56,10 @@ ae::tree::EdgeLength ae::tree::Tree::calculate_cumulative() const
             fmt::print(">>>> all {}\n", ref.to_string());
         }
         fmt::print("\n\n");
+        for (const auto ref : visit(tree_visiting::all_post)) {
+            fmt::print(">>>> all-post {}\n", ref.to_string());
+        }
+        fmt::print("\n\n");
         for (const auto ref : visit(tree_visiting::leaves)) {
             fmt::print(">>>> leaves {}\n", ref.to_string());
         }
@@ -70,13 +74,29 @@ ae::tree::EdgeLength ae::tree::Tree::calculate_cumulative() const
 
 // ----------------------------------------------------------------------
 
+void ae::tree::Tree::set_node_id()
+{
+    node_index_t inode_id{0};
+    for (auto inode = inodes_.begin(); inode != inodes_.end(); ++inode, --inode_id)
+        inode->node_id_ = inode_id;
+    node_index_t leaf_id{0};
+    for (auto leaf = leaves_.begin(); leaf != leaves_.end(); ++leaf, ++leaf_id)
+        leaf->node_id_ = leaf_id;
+
+} // ae::tree::Tree::set_node_id
+
+// ----------------------------------------------------------------------
+
 std::shared_ptr<ae::tree::Tree> ae::tree::load(const std::filesystem::path& filename)
 {
+    std::shared_ptr<ae::tree::Tree> tree;
     const auto data = file::read(filename, ::simdjson::SIMDJSON_PADDING);
     if (is_newick(data))
-        return load_newick(data);
+        tree = load_newick(data);
     else
         throw std::runtime_error{fmt::format("cannot load tree from \"{}\": unknown file format", filename)};
+    tree->set_node_id();
+    return tree;
 
 } // ae::tree::load
 

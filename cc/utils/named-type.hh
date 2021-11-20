@@ -135,4 +135,9 @@ template <typename T, typename Tag> struct fmt::formatter<ae::named_string_t<T, 
     template <typename FormatCtx> auto format(const ae::named_string_t<T, Tag>& nt, FormatCtx& ctx) const { return fmt::formatter<std::string_view>::format(static_cast<std::string_view>(nt), ctx); }
 };
 
+template <typename T, typename Tag> struct fmt::formatter<ae::named_number_t<T, Tag>> : fmt::formatter<T>
+{
+    template <typename FormatCtx> auto format(const ae::named_number_t<T, Tag>& nt, FormatCtx& ctx) const { return fmt::formatter<T>::format(static_cast<T>(nt), ctx); }
+};
+
 // ----------------------------------------------------------------------
