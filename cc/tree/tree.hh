@@ -211,17 +211,17 @@ namespace ae::tree
                 return true; // end
             parents_.pop_back();
             // fmt::print(">>>>    undive {} {} parents_.size:{}\n", *parents_.back().first, parents_.back().second, parents_.size());
-            return dive_ref(parents_.back().second + 1, dive_ref);
+            return dive_ref(parents_.back().second + 1);
         };
 
         // returns if suitable node found after diving
-        const auto dive = [this, undive](size_t child_no, auto& dive_ref) -> bool {
+        const auto dive = [this](size_t child_no) -> bool {
             // fmt::print(">>>>    dive {}\n", child_no);
             auto* parent = &parents_.back();
             parent->second = child_no;
             if (child_no != parent_itself) {
                 if (const auto& parent_inode = tree_.inode(parent->first); child_no >= parent_inode.children.size())
-                    return undive(dive_ref);
+                    return is_visiting_post();
                 else if (const auto child_index = parent_inode.children[child_no]; !is_leaf(child_index)) {
                     parent = &parents_.emplace_back(child_index, parent_itself);
                     child_no = parent_itself;
@@ -245,13 +245,13 @@ namespace ae::tree
         {
             auto& parent = parents_.back();
             if (parent.second == parent_itself) {
-                if (dive(0, dive))
+                if (dive(0))
                     break;
             }
             else if (const auto& parent_inode = tree_.inode(parent.first); parent.second < parent_inode.children.size()) {
                 ++parent.second;
                 if (parent.second < parent_inode.children.size()) {
-                    if (dive(parent.second, dive))
+                    if (dive(parent.second))
                         break;
                 }
                 else if (is_visiting_post())
