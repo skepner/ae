@@ -102,9 +102,9 @@ std::string ae::tree::export_json(const Tree& tree)
     const auto format_node_begin = [&text, &indent](const Node* node) {
         fmt::format_to(std::back_inserter(text), "{}{{\n{} \"I\": {},", indent, indent, node->node_id_);
         if (node->edge != 0.0)
-            fmt::format_to(std::back_inserter(text), " \"l\": {},", node->edge);
+            fmt::format_to(std::back_inserter(text), " \"l\": {:.10g},", *node->edge);
         if (node->cumulative_edge != 0.0)
-            fmt::format_to(std::back_inserter(text), " \"c\": {},", node->cumulative_edge);
+            fmt::format_to(std::back_inserter(text), " \"c\": {:.10g},", *node->cumulative_edge);
     };
 
     const auto format_node_end = [&text, &indent]() { fmt::format_to(std::back_inserter(text), "\n{}}}\n", indent); };
@@ -112,7 +112,7 @@ std::string ae::tree::export_json(const Tree& tree)
     const auto format_inode_pre = [&text, &indent, &tree, format_node_begin](const Inode* inode) {
         format_node_begin(inode);
         if (inode->node_id_ == node_index_t{0} && tree.maximum_cumulative() > 0)
-            fmt::format_to(std::back_inserter(text), " \"M\": {},", tree.maximum_cumulative());
+            fmt::format_to(std::back_inserter(text), " \"M\": {:.10g},", tree.maximum_cumulative());
         // "A": ["aa subst", "N193K"],
         // "H": <true if hidden>,
         fmt::format_to(std::back_inserter(text), "\n");
