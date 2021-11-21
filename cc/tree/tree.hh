@@ -222,13 +222,12 @@ namespace ae::tree
                 case tree_visiting::all:
                     return true;
                 case tree_visiting::inodes:
-                    return child_no == parent_itself || !is_leaf(tree_.inode(parent->first).children[parent->second]);
+                    return child_no == parent_itself;
                 case tree_visiting::leaves:
-                    return child_no != parent_itself;
                 case tree_visiting::all_post:
                     return child_no != parent_itself;
                 case tree_visiting::inodes_post:
-                    return child_no != parent_itself;
+                    return false;
             }
         };
 
