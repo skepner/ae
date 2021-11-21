@@ -60,6 +60,10 @@ ae::tree::EdgeLength ae::tree::Tree::calculate_cumulative() const
             fmt::print(">>>> all-post {}\n", ref.to_string());
         }
         fmt::print("\n\n");
+        for (const auto ref : visit(tree_visiting::inodes_post)) {
+            fmt::print(">>>> inodes-post {}\n", ref.to_string());
+        }
+        fmt::print("\n\n");
         for (const auto ref : visit(tree_visiting::leaves)) {
             fmt::print(">>>> leaves {}\n", ref.to_string());
         }

@@ -91,6 +91,7 @@ namespace ae::tree
         std::vector<std::pair<node_index_t, size_t>> parents_; // parent and index in tree.inode(parents_.back()).children, index=-1 for tree.inode(parents_.back()) itself
 
         constexpr static size_t parent_itself{static_cast<size_t>(-1)};
+        constexpr static size_t iteration_end{static_cast<size_t>(-2)};
 
         bool is_visiting_post() const
         {
@@ -200,23 +201,13 @@ namespace ae::tree
     template <lvalue_reference TREE, pointer LEAF, pointer INODE>
     inline tree_iterator_t<TREE, LEAF, INODE>::tree_iterator_t(TREE tree, tree_visiting a_visiting, _init_end) : tree_{tree}, visiting_{a_visiting}
     {
-        parents_.emplace_back(node_index_t{0}, tree.root().children.size());
+        parents_.emplace_back(node_index_t{0}, iteration_end);
     }
 
     template <lvalue_reference TREE, pointer LEAF, pointer INODE> inline tree_iterator_t<TREE, LEAF, INODE>& tree_iterator_t<TREE, LEAF, INODE>::operator++()
     {
-        // returns if suitable node found after undiving and perhaps diving into the next node
-        const auto undive = [this](auto& dive_ref) -> bool {
-            if (parents_.size() == 1)
-                return true; // end
-            parents_.pop_back();
-            // fmt::print(">>>>    undive {} {} parents_.size:{}\n", *parents_.back().first, parents_.back().second, parents_.size());
-            return dive_ref(parents_.back().second + 1);
-        };
-
         // returns if suitable node found after diving
         const auto dive = [this](size_t child_no) -> bool {
-            // fmt::print(">>>>    dive {}\n", child_no);
             auto* parent = &parents_.back();
             parent->second = child_no;
             if (child_no != parent_itself) {
@@ -233,7 +224,7 @@ namespace ae::tree
                 case tree_visiting::inodes:
                     return child_no == parent_itself || !is_leaf(tree_.inode(parent->first).children[parent->second]);
                 case tree_visiting::leaves:
-                    return child_no != parent_itself; // && is_leaf(tree_.inode(parent->first).children[parent->second]);
+                    return child_no != parent_itself;
                 case tree_visiting::all_post:
                     return child_no != parent_itself;
                 case tree_visiting::inodes_post:
@@ -241,24 +232,41 @@ namespace ae::tree
             }
         };
 
-        while (true)
-        {
-            auto& parent = parents_.back();
-            if (parent.second == parent_itself) {
+        // ----------------------------------------------------------------------
+
+        while (true) {
+            auto parent = parents_.end() - 1;
+            if (parent->second == parent_itself) {
                 if (dive(0))
                     break;
             }
-            else if (const auto& parent_inode = tree_.inode(parent.first); parent.second < parent_inode.children.size()) {
-                ++parent.second;
-                if (parent.second < parent_inode.children.size()) {
-                    if (dive(parent.second))
+            else if (const auto& parent_inode = tree_.inode(parent->first); parent->second < parent_inode.children.size()) {
+                ++parent->second;
+                if (parent->second < parent_inode.children.size()) {
+                    if (dive(parent->second))
                         break;
                 }
-                else if (is_visiting_post())
+                else if (is_visiting_post()) {
+                    break;
+                }
+            }
+            else if (parents_.size() == 1) { // *post -> end
+                parent->second = iteration_end;
+                break;
+            }
+            else { // undive
+                parents_.pop_back();
+                parent = parents_.end() - 1;
+                if (parents_.size() == 1) {
+                    if (is_visiting_post())
+                        ++parent->second; // *post -> pre-end
+                    else
+                        parent->second = iteration_end; // -> end
+                    break;
+                }
+                else if (dive(parent->second + 1))
                     break;
             }
-            else if (undive(dive))
-                break;
         }
         return *this;
     }
@@ -271,7 +279,7 @@ namespace ae::tree
             return &parent;
         else if (child_no < parent.children.size())
             return tree_.node(parent.children[child_no]);
-        else if (is_visiting_post())
+        else if (is_visiting_post() && child_no != iteration_end)
             return &parent;
         else
             throw std::runtime_error{"tree_iterator_t: derefencing at the end?"};
