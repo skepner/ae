@@ -3,6 +3,7 @@
 #include <concepts>
 
 #include "ext/fmt.hh"
+#include "utils/float.hh"
 
 // ----------------------------------------------------------------------
 
@@ -121,6 +122,9 @@ namespace ae
       public:
         using named_t<double, Tag>::named_t;
         using named_t<double, Tag>::operator=;
+
+        bool operator==(double rhs) const { return float_equal(this->get(), rhs); }
+        bool operator==(named_t<double, Tag> rhs) const { return float_equal(this->get(), rhs.get()); }
     };
 
     template <typename Tag> constexpr named_double_t<Tag> operator-(named_double_t<Tag> rhs) noexcept { return named_double_t<Tag>{-rhs.get()}; }

@@ -79,6 +79,7 @@ namespace ae::tree
 
         size_t depth() const; // max nesting level
         EdgeLength calculate_cumulative();
+        EdgeLength maximum_cumulative() const { return max_cumulative; }
 
         auto visit(tree_visiting visiting) const { return const_tree_visitor{*this, visiting}; }
         auto visit(tree_visiting visiting) { return tree_visitor{*this, visiting}; }

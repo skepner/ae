@@ -83,4 +83,80 @@ void export_inode(fmt::memory_buffer& text, const ae::tree::Inode& inode, const 
 
 } // export_inode
 
+// ======================================================================
+
+std::string ae::tree::export_json(const Tree& tree)
+{
+    using namespace fmt::literals;
+    fmt::memory_buffer text;
+    fmt::format_to(std::back_inserter(text),
+                   "{{\"_\": \"-*- js-indent-level: 1 -*-\",\n \"  version\": \"phylogenetic-tree-v3\",\n \"  date\": \"{today:%Y-%m-%d %H:%M %Z}\",\n \"v\": \"{subtype}\",\n",
+                   "today"_a = fmt::localtime(std::time(nullptr)), //
+                   "subtype"_a = ""                                //
+    );
+    // if (subtype == "B")
+    //     fmt::format_to(std::back_inserter(text), " \"l\": \"{lineage}\"\n", "lineage"_a = lineage);
+    fmt::format_to(std::back_inserter(text), " \"tree\"");
+    std::string indent{" "};
+
+    const auto format_node_begin = [&text, &indent](const Node* node) {
+        fmt::format_to(std::back_inserter(text), "{}{{\n{} \"I\": {},", indent, indent, node->node_id_);
+        if (node->edge != 0.0)
+            fmt::format_to(std::back_inserter(text), " \"l\": {},", node->edge);
+        if (node->cumulative_edge != 0.0)
+            fmt::format_to(std::back_inserter(text), " \"c\": {},", node->cumulative_edge);
+    };
+
+    const auto format_node_end = [&text, &indent]() { fmt::format_to(std::back_inserter(text), "\n{}}}\n", indent); };
+
+    const auto format_inode_pre = [&text, &indent, &tree, format_node_begin](const Inode* inode) {
+        format_node_begin(inode);
+        if (inode->node_id_ == node_index_t{0} && tree.maximum_cumulative() > 0)
+            fmt::format_to(std::back_inserter(text), " \"M\": {},", tree.maximum_cumulative());
+        // "A": ["aa subst", "N193K"],
+        // "H": <true if hidden>,
+        fmt::format_to(std::back_inserter(text), "\n");
+        fmt::format_to(std::back_inserter(text), "{} \"t\": [\n", indent);
+        indent.append(2, ' ');
+    };
+
+    const auto format_inode_post = [&text, &indent, format_node_end](const Inode*) {
+        indent.resize(indent.size() - 2);
+        fmt::format_to(std::back_inserter(text), "{} ]", indent);
+        format_node_end();
+    };
+
+    const auto format_leaf = [&text, &indent, format_node_begin, format_node_end](const Leaf* leaf) {
+        format_node_begin(leaf);
+        fmt::format_to(std::back_inserter(text), "\n{} \"n\": \"{}\"", indent, leaf->name);
+        if (!leaf->date.empty())
+            fmt::format_to(std::back_inserter(text), ", \"d\": \"{}\"", leaf->date);
+        if (!leaf->continent.empty())
+            fmt::format_to(std::back_inserter(text), ", \"C\": \"{}\"", leaf->continent);
+        if (!leaf->country.empty())
+            fmt::format_to(std::back_inserter(text), ", \"c\": \"{}\"", leaf->country);
+        if (!leaf->aa.empty())
+            fmt::format_to(std::back_inserter(text), ",\n{} \"a\": \"{}\"", indent, leaf->aa);
+        if (!leaf->nuc.empty())
+            fmt::format_to(std::back_inserter(text), ",\n{} \"N\": \"{}\"", indent, leaf->nuc);
+        // "L": ["clade", "2A1B"]
+        // "h": ["hi names"],
+        // "A": ["aa subst", "N193K"],
+        format_node_end();
+    };
+
+    for (const auto ref : tree.visit(tree_visiting::all_pre_post)) {
+        if (ref.pre())
+            ref.visit(format_inode_pre, format_leaf);
+        else
+            ref.visit(format_inode_post, format_leaf);
+    }
+    fmt::format_to(std::back_inserter(text), "}}\n");
+    return fmt::to_string(text);
+
+} // ae::tree::export_json
+
+// ----------------------------------------------------------------------
+
+
 // ----------------------------------------------------------------------

@@ -95,7 +95,7 @@ ae::tree::EdgeLength ae::tree::Tree::calculate_cumulative()
         //     fmt::print(">>>> inodes {}\n", ref.to_string());
         // }
     }
-    fmt::print(">>>> cumulative {}\n", max_cumulative);
+    // fmt::print(">>>> cumulative {}\n", max_cumulative);
     return max_cumulative;
 
 } // ae::tree::Tree::calculate_cumulative
@@ -123,6 +123,7 @@ std::shared_ptr<ae::tree::Tree> ae::tree::load(const std::filesystem::path& file
         tree = load_newick(data);
     else
         throw std::runtime_error{fmt::format("cannot load tree from \"{}\": unknown file format", filename)};
+    tree->calculate_cumulative();
     tree->set_node_id();
     return tree;
 
@@ -140,6 +141,8 @@ void ae::tree::export_tree(const Tree& tree, const std::filesystem::path& filena
     std::string data;
     if (has_suffix({".newick"sv}))
         data = export_newick(tree);
+    else if (has_suffix({".json"sv, ".tjz"sv}))
+        data = export_json(tree);
     else if (filename.native() == "-" || has_suffix({".txt"sv, ".text"sv}))
         data = export_text(tree);
     else
