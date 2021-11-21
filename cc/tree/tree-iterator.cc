@@ -10,6 +10,7 @@ ae::tree::tree_iterator_t<TREE, LEAF, INODE>::tree_iterator_t(TREE tree, tree_vi
     parents_.emplace_back(node_index_t{0}, parent_itself);
     switch (visiting_) {
         case tree_visiting::all:
+        case tree_visiting::all_pre_post:
         case tree_visiting::inodes:
             break;
         case tree_visiting::leaves:
@@ -47,6 +48,7 @@ template <ae::lvalue_reference TREE, ae::pointer LEAF, ae::pointer INODE> ae::tr
         }
         switch (visiting_) {
             case tree_visiting::all:
+            case tree_visiting::all_pre_post:
                 return true;
             case tree_visiting::inodes:
                 return child_no == parent_itself;
@@ -104,11 +106,11 @@ template <ae::lvalue_reference TREE, ae::pointer LEAF, ae::pointer INODE> typena
     auto& [parent_index, child_no] = parents_.back();
     auto& parent = tree_.inode(parent_index);
     if (child_no == parent_itself)
-        return &parent;
+        return {&parent, true};
     else if (child_no < parent.children.size())
         return tree_.node(parent.children[child_no]);
     else if (is_visiting_post() && child_no != iteration_end)
-        return &parent;
+        return {&parent, false};
     else
         throw std::runtime_error{"tree_iterator_t: derefencing at the end?"};
 }

@@ -19,17 +19,18 @@ namespace ae::tree
     class Tree;
     struct Leaf;
     struct Inode;
+    template <lvalue_reference TREE, pointer LEAF, pointer INODE> class tree_iterator_t;
 
-    template <pointer LEAF, pointer INODE> class tree_iterator_refence_t
+    template <lvalue_reference TREE, pointer LEAF, pointer INODE> class tree_iterator_refence_t
     {
       public:
-        tree_iterator_refence_t(LEAF leaf) : ref_{leaf} {}
-        tree_iterator_refence_t(INODE inode) : ref_{inode} {}
+        constexpr bool pre() const { return pre_; }
+        constexpr bool post() const { return !pre_; }
 
         std::string to_string() const
         {
             return std::visit(overload{[](LEAF leaf) { return fmt::format("<{}> \"{}\"", leaf->node_id_, leaf->name); },
-                                       [](INODE inode) { return fmt::format("<{}> children:{}", inode->node_id_, inode->children.size()); }},
+                                       [this](INODE inode) { return fmt::format("<{} {}> children:{}", inode->node_id_, pre() ? "pre" : "post", inode->children.size()); }},
                               ref_);
         }
 
@@ -37,16 +38,23 @@ namespace ae::tree
 
       private:
         std::variant<LEAF, INODE> ref_;
+        bool pre_{true};
+
+        constexpr tree_iterator_refence_t(LEAF leaf) : ref_{leaf} {}
+        constexpr tree_iterator_refence_t(INODE inode, bool a_pre = true) : ref_{inode}, pre_{a_pre} {}
+
+        friend class tree_iterator_t<TREE, LEAF, INODE>;
+        friend std::decay_t<TREE>;
     };
 
-    enum class tree_visiting { all, leaves, inodes, inodes_post, all_post };
+    enum class tree_visiting { all, leaves, inodes, inodes_post, all_pre_post, all_post };
 
     template <lvalue_reference TREE, pointer LEAF, pointer INODE> class tree_iterator_t
     {
       public:
         enum _init_end { init_end };
 
-        using reference = tree_iterator_refence_t<LEAF, INODE>;
+        using reference = tree_iterator_refence_t<TREE, LEAF, INODE>;
 
         tree_iterator_t(TREE tree, tree_visiting a_visiting);
         tree_iterator_t(TREE tree, tree_visiting a_visiting, _init_end);
@@ -69,6 +77,7 @@ namespace ae::tree
                 case tree_visiting::inodes:
                 case tree_visiting::leaves:
                     return false;
+                case tree_visiting::all_pre_post:
                 case tree_visiting::all_post:
                 case tree_visiting::inodes_post:
                     return true;
