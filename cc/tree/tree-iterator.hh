@@ -34,7 +34,7 @@ namespace ae::tree
                               ref_);
         }
 
-        template <typename... Callbacks> auto visit(Callbacks&&... callbacks) { return std::visit(overload{std::forward<Callbacks...>(callbacks)...}, ref_); }
+        template <typename... Callbacks> auto visit(Callbacks&&... callbacks) { return std::visit(overload{std::forward<Callbacks>(callbacks)...}, ref_); }
 
       private:
         std::variant<LEAF, INODE> ref_;

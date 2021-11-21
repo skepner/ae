@@ -48,7 +48,7 @@ void export_inode(fmt::memory_buffer& text, const ae::tree::Inode& inode, const 
     fmt::format_to(std::back_inserter(text), "{prefix}{edge_symbol}\\ >>>> leaves: {leaves} <{node_id}>{aa_transitions} edge: {edge} cumul: {cumul}\n", //
                    "prefix"_a = fmt::join(prefix, std::string_view{}),                                                                                  //
                    "edge_symbol"_a = std::string(edge_size, '='), "edge"_a = *inode.edge, "cumul"_a = *inode.cumulative_edge,                           //
-                   "leaves"_a = -1,                                                                                                                     // node.number_leaves_in_subtree()),
+                   "leaves"_a = inode.number_of_leaves,                                                                                                                     // node.number_leaves_in_subtree()),
                    "node_id"_a = inode.node_id_,                                                                                                        //
                    "aa_transitions"_a = "" // aa_transitions.empty() ? std::string{} : fmt::format(" [{}]", aa_transitions))
     );

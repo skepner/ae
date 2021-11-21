@@ -39,6 +39,7 @@ namespace ae::tree
     struct Inode : public Node
     {
         std::vector<node_index_t> children;
+        size_t number_of_leaves{0};
         // std::vector<std::string> aa_substs;
     };
 

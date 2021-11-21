@@ -58,10 +58,17 @@ ae::tree::EdgeLength ae::tree::Tree::calculate_cumulative()
                         cumulative = node->cumulative_edge;
                     else
                         max_cumulative = std::max(max_cumulative, node->cumulative_edge);
-                    });
+                });
             else
-                ref.visit([&cumulative]<typename Node>(const Node* node) {
-                        cumulative -= node->edge; });
+                ref.visit(
+                    [&cumulative, this](Inode* inode) {
+                        cumulative -= inode->edge;
+                        // post -> update number_of_leaves
+                        inode->number_of_leaves = 0;
+                        for (const auto child_id : inode->children)
+                            node(child_id).visit([inode](const Inode* sub_inode) { inode->number_of_leaves += sub_inode->number_of_leaves; }, [inode](const Leaf*) { ++inode->number_of_leaves; });
+                    },
+                    [](const Leaf*) {});
         }
 
         // for (const auto ref : visit(tree_visiting::all)) {
