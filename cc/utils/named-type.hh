@@ -122,6 +122,28 @@ namespace ae
         using named_t<double, Tag>::named_t;
         using named_t<double, Tag>::operator=;
     };
+
+    template <typename Tag> constexpr named_double_t<Tag> operator-(named_double_t<Tag> rhs) noexcept { return named_double_t<Tag>{-rhs.get()}; }
+    template <typename Tag> constexpr named_double_t<Tag> operator+(named_double_t<Tag> lhs, named_double_t<Tag> rhs) noexcept { return named_double_t<Tag>{lhs.get() + rhs.get()}; }
+    template <typename Tag> constexpr named_double_t<Tag> operator+(named_double_t<Tag> lhs, double rhs) noexcept { return named_double_t<Tag>{lhs.get() + rhs}; }
+    template <typename Tag> constexpr named_double_t<Tag> operator-(named_double_t<Tag> lhs, named_double_t<Tag> rhs) noexcept { return named_double_t<Tag>{lhs.get() - rhs.get()}; }
+    template <typename Tag> constexpr named_double_t<Tag> operator-(named_double_t<Tag> lhs, double rhs) noexcept { return named_double_t<Tag>{lhs.get() - rhs}; }
+    template <typename Tag> constexpr named_double_t<Tag> operator*(named_double_t<Tag> lhs, named_double_t<Tag> rhs) noexcept { return named_double_t<Tag>{lhs.get() * rhs.get()}; }
+    template <typename Tag> constexpr named_double_t<Tag> operator*(named_double_t<Tag> lhs, double rhs) noexcept { return named_double_t<Tag>{lhs.get() * rhs}; }
+    template <typename Tag> constexpr named_double_t<Tag> operator/(named_double_t<Tag> lhs, named_double_t<Tag> rhs) noexcept { return named_double_t<Tag>{lhs.get() / rhs.get()}; }
+    template <typename Tag> constexpr named_double_t<Tag> operator/(named_double_t<Tag> lhs, double rhs) noexcept { return named_double_t<Tag>{lhs.get() / rhs}; }
+
+    template <typename Tag> constexpr named_double_t<Tag>& operator+=(named_double_t<Tag>& lhs, named_double_t<Tag> rhs) noexcept { lhs.get() = lhs.get() + rhs.get(); return lhs; }
+    template <typename Tag> constexpr named_double_t<Tag>& operator+=(named_double_t<Tag>& lhs, double rhs) noexcept { lhs.get() = lhs.get() + rhs; return lhs; }
+    template <typename Tag> constexpr named_double_t<Tag>& operator-=(named_double_t<Tag>& lhs, named_double_t<Tag> rhs) noexcept { lhs.get() = lhs.get() - rhs.get(); return lhs; }
+    template <typename Tag> constexpr named_double_t<Tag>& operator-=(named_double_t<Tag>& lhs, double rhs) noexcept { lhs.get() = lhs.get() - rhs; return lhs; }
+    template <typename Tag> constexpr named_double_t<Tag>& operator*=(named_double_t<Tag>& lhs, named_double_t<Tag> rhs) noexcept { lhs.get() = lhs.get() * rhs.get(); return lhs; }
+    template <typename Tag> constexpr named_double_t<Tag>& operator*=(named_double_t<Tag>& lhs, double rhs) noexcept { lhs.get() = lhs.get() * rhs; return lhs; }
+    template <typename Tag> constexpr named_double_t<Tag>& operator/=(named_double_t<Tag>& lhs, named_double_t<Tag> rhs) noexcept { lhs.get() = lhs.get() / rhs.get(); return lhs; }
+    template <typename Tag> constexpr named_double_t<Tag>& operator/=(named_double_t<Tag>& lhs, double rhs) noexcept { lhs.get() = lhs.get() / rhs; return lhs; }
+
+    // ----------------------------------------------------------------------
+
 }
 
 // ----------------------------------------------------------------------

@@ -46,24 +46,36 @@ size_t ae::tree::Tree::depth() const
 
 // ----------------------------------------------------------------------
 
-ae::tree::EdgeLength ae::tree::Tree::calculate_cumulative() const
+ae::tree::EdgeLength ae::tree::Tree::calculate_cumulative()
 {
     if (max_cumulative < EdgeLength{0}) {
-        for (const auto ref : visit(tree_visiting::all_pre_post)) {
-            // fmt::print(">>>> calculate_cumulative {}\n", ref.to_string());
+        EdgeLength cumulative{0.0};
+        for (auto ref : visit(tree_visiting::all_pre_post)) {
+            if (ref.pre())
+                ref.visit([&cumulative, this]<typename Node>(Node* node) {
+                    node->cumulative_edge = cumulative + node->edge;
+                    if constexpr (std::is_same_v<Node, Inode>)
+                        cumulative = node->cumulative_edge;
+                    else
+                        max_cumulative = std::max(max_cumulative, node->cumulative_edge);
+                    });
+            else
+                ref.visit([&cumulative]<typename Node>(const Node* node) {
+                        cumulative -= node->edge; });
         }
-        for (const auto ref : visit(tree_visiting::all)) {
-            fmt::print(">>>> all {}\n", ref.to_string());
-        }
-        fmt::print("\n\n");
-        for (const auto ref : visit(tree_visiting::all_pre_post)) {
-            fmt::print(">>>> all-pre-post {}\n", ref.to_string());
-        }
-        fmt::print("\n\n");
-        for (const auto ref : visit(tree_visiting::all_post)) {
-            fmt::print(">>>> all-post {}\n", ref.to_string());
-        }
-        fmt::print("\n\n");
+
+        // for (const auto ref : visit(tree_visiting::all)) {
+        //     fmt::print(">>>> all {}\n", ref.to_string());
+        // }
+        // fmt::print("\n\n");
+        // for (const auto ref : visit(tree_visiting::all_pre_post)) {
+        //     fmt::print(">>>> all-pre-post {}\n", ref.to_string());
+        // }
+        // fmt::print("\n\n");
+        // for (const auto ref : visit(tree_visiting::all_post)) {
+        //     fmt::print(">>>> all-post {}\n", ref.to_string());
+        // }
+        // fmt::print("\n\n");
         // for (const auto ref : visit(tree_visiting::inodes_post)) {
         //     fmt::print(">>>> inodes-post {}\n", ref.to_string());
         // }
