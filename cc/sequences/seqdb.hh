@@ -212,49 +212,48 @@ namespace ae::sequences
         SeqdbSelected& exclude_with_issue(bool exclude = true)
         {
             if (exclude)
-                refs_.erase(std::remove_if(std::begin(refs_), std::end(refs_), [](const auto& ref) -> bool { return ref.seq->has_issues(); }), std::end(refs_));
+                erase_with_issues(*this);
             return *this;
         }
 
         SeqdbSelected& filter_dates(std::string_view first_date, std::string_view last_date)
         {
             if (!first_date.empty() || !last_date.empty())
-                refs_.erase(std::remove_if(std::begin(refs_), std::end(refs_), [first_date, last_date](const auto& ref) -> bool { return !ref.entry->date_within(first_date, last_date); }),
-                            std::end(refs_));
+                erase_if(*this, [first_date, last_date](const auto& ref) -> bool { return !ref.entry->date_within(first_date, last_date); });
             return *this;
         }
 
         SeqdbSelected& lineage(std::string_view lineage)
         {
-            refs_.erase(std::remove_if(std::begin(refs_), std::end(refs_), [lineage](const auto& ref) -> bool { return ref.entry->lineage != lineage; }), std::end(refs_));
+            erase_if(*this, [lineage](const auto& ref) -> bool { return ref.entry->lineage != lineage; });
             return *this;
         }
 
         SeqdbSelected& filter_human()
         {
-            refs_.erase(std::remove_if(std::begin(refs_), std::end(refs_), [](const auto& ref) -> bool { return !ref.entry->host.empty(); }), std::end(refs_));
+            erase_if(*this, [](const auto& ref) -> bool { return !ref.entry->host.empty(); });
             return *this;
         }
 
         SeqdbSelected& filter_host(std::string_view host)
         {
-            refs_.erase(std::remove_if(std::begin(refs_), std::end(refs_), [host](const auto& ref) -> bool { return ref.entry->host != host; }), std::end(refs_));
+            erase_if(*this, [host](const auto& ref) -> bool { return ref.entry->host != host; });
             return *this;
         }
 
         SeqdbSelected& filter_name(const std::vector<std::string>& names);
         SeqdbSelected& exclude_name(const std::vector<std::string>& names);
-        SeqdbSelected& include_name(const std::vector<std::string>& names);
+        SeqdbSelected& include_name(const std::vector<std::string>& names, bool include_with_issue_too = false);
 
         // keeps refs for which predicate returned true
         template <std::regular_invocable<const SeqdbSeqRef&> Func> SeqdbSelected& filter(Func&& predicate) {
-            refs_.erase(std::remove_if(std::begin(refs_), std::end(refs_), [&predicate](const auto& ref) -> bool { return !predicate(ref); }), std::end(refs_));
+            erase_if(*this, [&predicate](const auto& ref) -> bool { return !predicate(ref); });
             return *this;
         }
 
         // removes refs for which predicate returned true
         template <std::regular_invocable<const SeqdbSeqRef&> Func> SeqdbSelected& exclude(Func&& predicate) {
-            refs_.erase(std::remove_if(std::begin(refs_), std::end(refs_), [&predicate](const auto& ref) -> bool { return predicate(ref); }), std::end(refs_));
+            erase_if(*this, std::forward<Func>(predicate));
             return *this;
         }
 
@@ -292,6 +291,16 @@ namespace ae::sequences
       private:
         const Seqdb& seqdb_;
         std::vector<SeqdbSeqRef> refs_;
+
+        template <typename Pred> static inline void erase_if(SeqdbSelected& selected, Pred&& pred)
+        {
+            selected.refs_.erase(std::remove_if(std::begin(selected.refs_), std::end(selected.refs_), std::forward<Pred>(pred)), std::end(selected.refs_));
+        }
+
+        static inline void erase_with_issues(SeqdbSelected& selected)
+        {
+            erase_if(selected, [](const auto& ref) -> bool { return ref.seq->has_issues(); });
+        }
 
         // void remove_empty()
         // {

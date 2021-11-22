@@ -430,7 +430,7 @@ inline bool any_matcher_match(const std::vector<matcher_t>& matchers, const ae::
 ae::sequences::SeqdbSelected& ae::sequences::SeqdbSelected::filter_name(const std::vector<std::string>& names)
 {
     const auto matchers = make_matchers(names);
-    refs_.erase(std::remove_if(std::begin(refs_), std::end(refs_), [&matchers](const auto& ref) -> bool { return !any_matcher_match(matchers, ref); }), std::end(refs_));
+    erase_if(*this, [&matchers](const auto& ref) -> bool { return !any_matcher_match(matchers, ref); });
     return *this;
 
 } // ae::sequences::SeqdbSelected::filter_name
@@ -440,21 +440,21 @@ ae::sequences::SeqdbSelected& ae::sequences::SeqdbSelected::filter_name(const st
 ae::sequences::SeqdbSelected& ae::sequences::SeqdbSelected::exclude_name(const std::vector<std::string>& names)
 {
     const auto matchers = make_matchers(names);
-    refs_.erase(std::remove_if(std::begin(refs_), std::end(refs_), [&matchers](const auto& ref) -> bool { return any_matcher_match(matchers, ref); }), std::end(refs_));
+    erase_if(*this, [&matchers](const auto& ref) -> bool { return any_matcher_match(matchers, ref); });
     return *this;
 
 } // ae::sequences::SeqdbSelected::exclude_name
 
 // ----------------------------------------------------------------------
 
-ae::sequences::SeqdbSelected& ae::sequences::SeqdbSelected::include_name(const std::vector<std::string>& names)
+ae::sequences::SeqdbSelected& ae::sequences::SeqdbSelected::include_name(const std::vector<std::string>& names, bool include_with_issue_too)
 {
     auto refs_with_name = seqdb_.select_all();
     refs_with_name->filter_name(names);
-    refs_with_name->refs_.erase(
-        std::remove_if(std::begin(refs_with_name->refs_), std::end(refs_with_name->refs_),
-                       [this](const auto& ref_with_name) -> bool { return std::any_of(std::begin(refs_), std::end(refs_), [&ref_with_name](const auto& ref) { return ref_with_name == ref; }); }),
-        std::end(refs_with_name->refs_));
+    erase_if(*refs_with_name,
+             [this](const auto& ref_with_name) -> bool { return std::any_of(std::begin(refs_), std::end(refs_), [&ref_with_name](const auto& ref) { return ref_with_name == ref; }); });
+    if (!include_with_issue_too)
+        erase_with_issues(*refs_with_name);
     std::copy(std::begin(refs_with_name->refs_), std::end(refs_with_name->refs_), std::back_inserter(refs_));
     return *this;
 

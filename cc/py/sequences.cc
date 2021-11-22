@@ -146,10 +146,16 @@ void ae::py::sequences(pybind11::module_& mdl)
             "exclude_name", [](SeqdbSelected& selected, const std::string& name) -> SeqdbSelected& { return selected.exclude_name(std::vector<std::string>{name}); }, "names"_a,
             pybind11::doc("if name starts with ~ use regex matching (~ removed), if name contains _ use seq_id matching")) //
         .def(
-            "include_name", [](SeqdbSelected& selected, const std::vector<std::string>& names) -> SeqdbSelected& { return selected.include_name(names); }, "names"_a,
+            "include_name",
+            [](SeqdbSelected& selected, const std::vector<std::string>& names, bool include_with_issue_too) -> SeqdbSelected& { return selected.include_name(names, include_with_issue_too); },
+            "names"_a, "include_with_issue_too"_a = false,
             pybind11::doc("if name starts with ~ use regex matching (~ removed), if name contains _ use seq_id matching")) //
         .def(
-            "include_name", [](SeqdbSelected& selected, const std::string& name) -> SeqdbSelected& { return selected.include_name(std::vector<std::string>{name}); }, "names"_a,
+            "include_name",
+            [](SeqdbSelected& selected, const std::string& name, bool include_with_issue_too) -> SeqdbSelected& {
+                return selected.include_name(std::vector<std::string>{name}, include_with_issue_too);
+            },
+            "names"_a, "include_with_issue_too"_a = false,
             pybind11::doc("if name starts with ~ use regex matching (~ removed), if name contains _ use seq_id matching")) //
         .def(
             "filter", [](SeqdbSelected& selected, const std::function<bool(const SeqdbSeqRef&)>& predicate) { return selected.filter(predicate); }, "predicate"_a,
