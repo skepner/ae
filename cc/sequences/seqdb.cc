@@ -82,6 +82,7 @@ void ae::sequences::Seqdb::add(const RawSequence& raw_sequence)
         }
         else {
             remove(found_by_hash); // also removes corresponding hash_index_ entry
+            remove(raw_sequence.hash_nuc); // other sequence may refer to that hash, remove them too
             hash_index_.try_emplace(raw_sequence.hash_nuc, raw_sequence.name);
             keep_sequence = true;
         }
@@ -117,6 +118,28 @@ void ae::sequences::Seqdb::remove(const SeqdbSeqRef& ref)
     }
     else
         fmt::print(">> cannor remove seq by SeqdbSeqRef: no ref.seq in ref.entry \"{}\"\n", ref.entry->name);
+
+} // ae::sequences::Seqdb::remove
+
+// ----------------------------------------------------------------------
+
+void ae::sequences::Seqdb::remove(const hash_t& hash) // remove all seqs (and perhaps some entries) with that hash
+{
+    const auto do_remove = [&hash, this]() -> bool {
+        for (const auto& entry : entries_) {
+            for (const auto& seq : entry.seqs) {
+                if (seq.hash == hash) {
+                    remove(SeqdbSeqRef{.entry = &entry, .seq = &seq});
+                    return true; // iteration over seq is now invalid (entry is perhaps removed) and also it makes no sense in looking in it further
+                    // iteration over entries_ is invalid as well, has to start again
+                }
+            }
+        }
+        return false;
+    };
+
+    for (bool removed = true; removed;)
+        removed = do_remove();
 
 } // ae::sequences::Seqdb::remove
 
@@ -379,7 +402,12 @@ inline std::vector<matcher_t> make_matchers(const std::vector<std::string>& name
 {
     std::vector<matcher_t> matchers;
     matchers.reserve(names.size());
-    std::transform(names.begin(), names.end(), std::back_inserter(matchers), &make_matcher);
+    for (const auto& name : names) {
+        if (!name.empty())
+            matchers.push_back(make_matcher(name));
+        else
+            fmt::print(">> empty name to match seqdb entry against (ignored)\n");
+    }
     return matchers;
 }
 

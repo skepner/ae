@@ -5,6 +5,7 @@
 #include <vector>
 #include <algorithm>
 
+#include "utils/named-type.hh"
 #include "sequences/pos.hh"
 
 // ======================================================================
@@ -90,7 +91,7 @@ namespace ae::sequences
 
     // ----------------------------------------------------------------------
 
-    using hash_t = std::string;
+    using hash_t = ae::named_string_t<std::string, struct sequences_hash_tag>;
 
 } // namespace ae::sequences
 

@@ -94,6 +94,7 @@ namespace ae::sequences
         void load();
         void make_hash_index();
         void remove(const SeqdbSeqRef& ref);
+        void remove(const hash_t& hash); // remove all seqs (and perhaps some entries) with that hash
     };
 
     // ----------------------------------------------------------------------
