@@ -174,6 +174,21 @@ const ae::sequences::Seqdb::seq_id_index_t& ae::sequences::Seqdb::seq_id_index()
 
 // ----------------------------------------------------------------------
 
+std::vector<ae::sequences::SeqdbSeqRef> ae::sequences::Seqdb::find_all_by_hash(const hash_t& hash) const
+{
+    std::vector<ae::sequences::SeqdbSeqRef> refs;
+    for (const auto& entry : entries_) {
+        for (const auto& seq : entry.seqs) {
+            if (seq.hash == hash)
+                refs.push_back(SeqdbSeqRef{.entry = &entry, .seq = &seq});
+        }
+    }
+    return refs;
+
+} // ae::sequences::Seqdb::find_all_by_hash
+
+// ----------------------------------------------------------------------
+
 ae::sequences::SeqdbEntry::SeqdbEntry(const RawSequence& raw_sequence) : name{raw_sequence.name}
 {
     update(raw_sequence);

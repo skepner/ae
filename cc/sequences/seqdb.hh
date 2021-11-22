@@ -53,6 +53,7 @@ namespace ae::sequences
         }
 
         bool is_master() const;
+        void set_master(const Seqdb& seqdb);
         seq_id_t seq_id() const;
         std::string_view date() const;
         const sequence_aa_t& aa() const;
@@ -77,10 +78,18 @@ namespace ae::sequences
         const SeqdbEntry* find_by_name(std::string_view name) const;
         SeqdbSeqRef find_by_name_hash(std::string_view name, const hash_t& hash) const;
         SeqdbSeqRef find_by_hash(const hash_t& hash) const; // via hash_index_
-        SeqdbSeqRef find_by_seq_id(const seq_id_t& seq_id) const
+        std::vector<SeqdbSeqRef> find_all_by_hash(const hash_t& hash) const;
+
+        enum class set_master { no, yes };
+
+        SeqdbSeqRef find_by_seq_id(const seq_id_t& seq_id, set_master sm) const
         {
-            if (const auto found = seq_id_index().find(seq_id); found != seq_id_index_.end())
-                return found->second;
+            if (const auto found = seq_id_index().find(seq_id); found != seq_id_index_.end()) {
+                SeqdbSeqRef ref{found->second};
+                if (sm == set_master::yes)
+                    ref.set_master(*this);
+                return ref;
+            }
             else
                 return {};
         }
@@ -276,10 +285,8 @@ namespace ae::sequences
 
         SeqdbSelected& find_masters()
         {
-            for (auto& ref : refs_) {
-                if (!ref.is_master())
-                    ref.master = seqdb_.find_by_hash(ref.seq->hash).seq;
-            }
+            for (auto& ref : refs_)
+                ref.set_master(seqdb_);
             return *this;
         }
 
@@ -387,6 +394,12 @@ namespace ae::sequences
     }
 
     inline bool SeqdbSeqRef::is_master() const { return !seq->nuc.empty(); }
+
+    inline void SeqdbSeqRef::set_master(const Seqdb& seqdb)
+    {
+        if (!is_master())
+            master = seqdb.find_by_hash(seq->hash).seq;
+    }
 
 } // namespace ae::sequences
 

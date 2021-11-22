@@ -120,9 +120,9 @@ void ae::tree::Tree::populate_with_sequences(const virus::type_subtype_t& subtyp
 {
     const auto& seqdb = sequences::seqdb_for_subtype(subtype);
     for (auto leaf = leaves_.begin() + 1; leaf != leaves_.end(); ++leaf) {
-        if (const auto ref = seqdb.find_by_seq_id(sequences::seq_id_t{leaf->name}); ref) {
-            leaf->aa = ref.seq->aa;
-            leaf->nuc = ref.seq->nuc;
+        if (const auto ref = seqdb.find_by_seq_id(sequences::seq_id_t{leaf->name}, sequences::Seqdb::set_master::yes); ref) {
+            leaf->aa = ref.aa();
+            leaf->nuc = ref.nuc();
             leaf->date = ref.entry->date();
             leaf->continent = ref.entry->continent;
             leaf->country = ref.entry->country;
@@ -138,6 +138,27 @@ void ae::tree::Tree::populate_with_sequences(const virus::type_subtype_t& subtyp
 void ae::tree::Tree::populate_with_duplicates(const virus::type_subtype_t& subtype)
 {
     fmt::print(">> Tree::populate_with_duplicates no implemented\n");
+
+    const auto& seqdb = sequences::seqdb_for_subtype(subtype);
+
+    for (auto ref : visit(tree_visiting::all_post)) {
+        ref.visit(
+            [&seqdb, &subtype](const Leaf* leaf) {
+                if (const auto present_ref = seqdb.find_by_seq_id(sequences::seq_id_t{leaf->name}, sequences::Seqdb::set_master::yes); present_ref) {
+                    const auto refs = seqdb.find_all_by_hash(present_ref.seq->hash);
+                    fmt::print(">>>> \"{}\" duplicates: {}\n", leaf->name, refs.size());
+                }
+                else
+                    fmt::print(">> [seqdb {}] seq_id not found in seqdb: \"{}\"\n", subtype, leaf->name);
+            },
+            [this](Inode* inode) {
+                // cumulative -= inode->edge;
+                // // post -> update number_of_leaves
+                // inode->number_of_leaves = 0;
+                // for (const auto child_id : inode->children)
+                //     node(child_id).visit([inode](const Inode* sub_inode) { inode->number_of_leaves += sub_inode->number_of_leaves; }, [inode](const Leaf*) { ++inode->number_of_leaves; });
+            });
+    }
 
 } // ae::tree::Tree::populate_with_duplicates
 
