@@ -83,6 +83,9 @@ def parse_name(name: str, metadata: dict, context: Context):
     preprocessed_name = context.preprocess_virus_name(name, metadata)
     if preprocessed_name[:10] == "<no-parse>":
         metadata["name"] = preprocessed_name[10:]
+    elif preprocessed_name[:9] == "<exclude>":
+        metadata["excluded"] = preprocessed_name
+        metadata["name"] = preprocessed_name
     else:
         # print(f">>>> {preprocessed_name}", file=sys.stderr)
         result = ae_backend.virus_name_parse(preprocessed_name)
