@@ -71,6 +71,8 @@ namespace ae::sequences
         Seqdb& operator=(const Seqdb&) = delete;
         Seqdb& operator=(Seqdb&&) = delete;
 
+        constexpr const virus::type_subtype_t& subtype() const { return subtype_; }
+
         void add(const RawSequence& raw_sequence);
         void save() const;
         void save(const std::filesystem::path& filename) const;

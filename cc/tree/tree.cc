@@ -141,22 +141,30 @@ void ae::tree::Tree::populate_with_duplicates(const virus::type_subtype_t& subty
 
     const auto& seqdb = sequences::seqdb_for_subtype(subtype);
 
+    std::vector<Leaf> to_add;
     for (auto ref : visit(tree_visiting::all_post)) {
         ref.visit(
-            [&seqdb, &subtype](const Leaf* leaf) {
+            [&seqdb, &to_add](const Leaf* leaf) {
                 if (const auto present_ref = seqdb.find_by_seq_id(sequences::seq_id_t{leaf->name}, sequences::Seqdb::set_master::yes); present_ref) {
                     const auto refs = seqdb.find_all_by_hash(present_ref.seq->hash);
-                    fmt::print(">>>> \"{}\" duplicates: {}\n", leaf->name, refs.size());
+                    for (const auto ref : refs) {
+                        if (ref != present_ref)
+                            to_add.emplace_back(ref.seq_id(), leaf->edge, leaf->cumulative_edge);
+                    }
                 }
                 else
-                    fmt::print(">> [seqdb {}] seq_id not found in seqdb: \"{}\"\n", subtype, leaf->name);
+                    fmt::print(">> [seqdb {}] seq_id not found in seqdb: \"{}\"\n", seqdb.subtype(), leaf->name);
             },
-            [this](Inode* inode) {
-                // cumulative -= inode->edge;
-                // // post -> update number_of_leaves
-                // inode->number_of_leaves = 0;
-                // for (const auto child_id : inode->children)
-                //     node(child_id).visit([inode](const Inode* sub_inode) { inode->number_of_leaves += sub_inode->number_of_leaves; }, [inode](const Leaf*) { ++inode->number_of_leaves; });
+            [this, &to_add](Inode* inode) {
+                if (!to_add.empty()) {
+                    EdgeLength max_edge { 0 };
+                    for (Leaf& leaf : to_add) {
+                        max_edge = std::max(max_edge, leaf.edge);
+                    }
+                    if (max_edge > 0)
+                        fmt::print(">> added leaves (some of {}) have non-zero edge: {}\n", to_add.size(), max_edge);
+                    to_add.clear();
+                }
             });
     }
 
