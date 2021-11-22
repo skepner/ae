@@ -69,11 +69,23 @@ void ae::sequences::seqdb_save()
 void ae::sequences::Seqdb::add(const RawSequence& raw_sequence)
 {
     const auto found_by_hash = find_by_hash(raw_sequence.hash_nuc);
-    const bool keep_sequence = !found_by_hash || found_by_hash.entry->name == raw_sequence.name;
-    if (keep_sequence)
+    bool keep_sequence = !found_by_hash || found_by_hash.entry->name == raw_sequence.name;
+    if (keep_sequence) {
         hash_index_.try_emplace(raw_sequence.hash_nuc, raw_sequence.name);
-    // else
-    //     fmt::print(">>>> dont_keep_sequence \"{}\" {} -> \"{}\"\n", raw_sequence.name, raw_sequence.hash_nuc, found_by_hash.entry->name);
+    }
+    else if (raw_sequence.sequence.nuc.size() != found_by_hash.seq->nuc.size()) {
+        fmt::print(">> [seqdb {}] hash {} conflict for \"{}\" (nucs: {}) and \"{}\" (nucs: {}) (short sequence will be thrown away)\n", subtype_, raw_sequence.hash_nuc, raw_sequence.name,
+                   raw_sequence.sequence.nuc.size(), found_by_hash.entry->name, found_by_hash.seq->nuc.size());
+        if (raw_sequence.issues.any()) {
+            // do not add raw_sequence
+            return;
+        }
+        else {
+            remove(found_by_hash); // also removes corresponding hash_index_ entry
+            hash_index_.try_emplace(raw_sequence.hash_nuc, raw_sequence.name);
+            keep_sequence = true;
+        }
+    }
     const auto found = std::lower_bound(std::begin(entries_), std::end(entries_), raw_sequence.name, [](const auto& entry, std::string_view nam) { return entry.name < nam; });
     if (found != std::end(entries_) && found->name == raw_sequence.name) {
         modified_ = found->update(raw_sequence, keep_sequence);
@@ -86,6 +98,27 @@ void ae::sequences::Seqdb::add(const RawSequence& raw_sequence)
     }
 
 } // ae::sequences::Seqdb::add
+
+// ----------------------------------------------------------------------
+
+void ae::sequences::Seqdb::remove(const SeqdbSeqRef& ref)
+{
+    if (const auto seq = std::find_if(std::begin(ref.entry->seqs), std::end(ref.entry->seqs), [&ref](const auto& eseq) { return &eseq == ref.seq; }); seq != std::end(ref.entry->seqs)) {
+        if (const auto found_hash = hash_index_.find(seq->hash); found_hash != hash_index_.end() && found_hash->second == ref.entry->name)
+            hash_index_.erase(found_hash);
+        const_cast<SeqdbEntry*>(ref.entry)->seqs.erase(seq);
+        if (ref.entry->seqs.empty()) {
+            if (const auto entry_to_remove = std::find_if(std::begin(entries_), std::end(entries_), [&ref](const auto& entry) { return &entry == ref.entry; }); entry_to_remove != std::end(entries_))
+                entries_.erase(entry_to_remove);
+            else
+                fmt::print(">> cannot remove entry from seqdb (not found) \"{}\"\n", ref.entry->name);
+            // !!! invalidate seq_id_index_
+        }
+    }
+    else
+        fmt::print(">> cannor remove seq by SeqdbSeqRef: no ref.seq in ref.entry \"{}\"\n", ref.entry->name);
+
+} // ae::sequences::Seqdb::remove
 
 // ----------------------------------------------------------------------
 

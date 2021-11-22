@@ -93,6 +93,7 @@ namespace ae::sequences
         std::string export_to_string() const;
         void load();
         void make_hash_index();
+        void remove(const SeqdbSeqRef& ref);
     };
 
     // ----------------------------------------------------------------------
