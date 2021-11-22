@@ -101,8 +101,8 @@ void ae::py::sequences(pybind11::module_& mdl)
     auto seqdb_submodule = mdl.def_submodule("seqdb", "seqdb access");
 
     seqdb_submodule.def(
-        "for_subtype", [](std::string_view subtype, bool verb) -> Seqdb& { return seqdb_for_subtype(subtype, verb ? verbose::yes : verbose::no); }, "subtype"_a, "verbose"_a = false,
-        pybind11::return_value_policy::reference);
+        "for_subtype", [](std::string_view subtype, bool verb) -> Seqdb& { return seqdb_for_subtype(virus::type_subtype_t{subtype}, verb ? verbose::yes : verbose::no); }, "subtype"_a,
+        "verbose"_a = false, pybind11::return_value_policy::reference);
     seqdb_submodule.def("save", &seqdb_save);
 
     pybind11::class_<Seqdb>(seqdb_submodule, "SeqdbForSubtype") //

@@ -15,6 +15,9 @@ import ae_backend
 
 def main(args: argparse.Namespace):
     tree = ae_backend.tree.load(args.input)
+    tree.populate_with_duplicates("B")
+    tree.populate_with_sequences("B")
+    # tree.set_clades(os.environ["AC_CLADES_JSON_V2"])
     if args.output:
         ae_backend.tree.export(tree, args.output)
 

@@ -40,7 +40,7 @@ namespace ae::sequences
 
 // ----------------------------------------------------------------------
 
-ae::sequences::Seqdb& ae::sequences::seqdb_for_subtype(std::string_view subtype, verbose verb)
+ae::sequences::Seqdb& ae::sequences::seqdb_for_subtype(const virus::type_subtype_t& subtype, verbose verb)
 {
     if (auto found = std::find_if(sSeqdb.begin(), sSeqdb.end(), [subtype](const auto& en) { return en.subtype == subtype; }); found != sSeqdb.end()) {
         if (!found->db)
@@ -155,6 +155,22 @@ std::shared_ptr<ae::sequences::SeqdbSelected> ae::sequences::Seqdb::select_all()
     return selected;
 
 } // ae::sequences::Seqdb::select_all
+
+// ----------------------------------------------------------------------
+
+const ae::sequences::Seqdb::seq_id_index_t& ae::sequences::Seqdb::seq_id_index() const
+{
+    if (seq_id_index_.empty()) {
+        for (const auto& entry : entries_) {
+            for (const auto& seq : entry.seqs) {
+                SeqdbSeqRef ref{.entry = &entry, .seq = &seq};
+                seq_id_index_.try_emplace(ref.seq_id(), std::move(ref));
+            }
+        }
+    }
+    return seq_id_index_;
+
+} // ae::sequences::Seqdb::seq_id_index
 
 // ----------------------------------------------------------------------
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ext/filesystem.hh"
+#include "virus/type-subtype.hh"
 #include "sequences/sequence.hh"
 #include "tree/tree-iterator.hh"
 
@@ -87,6 +88,8 @@ namespace ae::tree
         auto visit_all() { return visit(tree_visiting::all); }
 
         void set_node_id();
+        void populate_with_sequences(const virus::type_subtype_t& subtype);
+        void populate_with_duplicates(const virus::type_subtype_t& subtype);
 
       private:
         std::vector<Inode> inodes_{Inode{}}; // root is always there

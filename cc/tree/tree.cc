@@ -1,5 +1,6 @@
-#include "tree/tree.hh"
 #include "ext/simdjson.hh"
+#include "sequences/seqdb.hh"
+#include "tree/tree.hh"
 #include "tree/newick.hh"
 #include "tree/text-export.hh"
 
@@ -112,6 +113,33 @@ void ae::tree::Tree::set_node_id()
         leaf->node_id_ = leaf_id;
 
 } // ae::tree::Tree::set_node_id
+
+// ----------------------------------------------------------------------
+
+void ae::tree::Tree::populate_with_sequences(const virus::type_subtype_t& subtype)
+{
+    const auto& seqdb = sequences::seqdb_for_subtype(subtype);
+    for (auto leaf = leaves_.begin() + 1; leaf != leaves_.end(); ++leaf) {
+        if (const auto ref = seqdb.find_by_seq_id(sequences::seq_id_t{leaf->name}); ref) {
+            leaf->aa = ref.seq->aa;
+            leaf->nuc = ref.seq->nuc;
+            leaf->date = ref.entry->date();
+            leaf->continent = ref.entry->continent;
+            leaf->country = ref.entry->country;
+        }
+        else
+            fmt::print(">> [seqdb {}] seq_id not found in seqdb: \"{}\"\n", subtype, leaf->name);
+    }
+
+} // ae::tree::Tree::populate_with_sequences
+
+// ----------------------------------------------------------------------
+
+void ae::tree::Tree::populate_with_duplicates(const virus::type_subtype_t& subtype)
+{
+    fmt::print(">> Tree::populate_with_duplicates no implemented\n");
+
+} // ae::tree::Tree::populate_with_duplicates
 
 // ----------------------------------------------------------------------
 

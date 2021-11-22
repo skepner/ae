@@ -8,6 +8,7 @@
 #include "ext/string.hh"
 #include "utils/debug.hh"
 #include "utils/string-hash.hh"
+#include "virus/type-subtype.hh"
 #include "sequences/sequence.hh"
 #include "sequences/issues.hh"
 #include "sequences/lineage.hh"
@@ -32,7 +33,7 @@ namespace ae::sequences
         template <typename... Args> Error(fmt::format_string<Args...> format, Args&&... args) : std::runtime_error{fmt::format("seqdb: {}", fmt::format(format, args...))} {}
     };
 
-    Seqdb& seqdb_for_subtype(std::string_view subtype, verbose verb = verbose::no);
+    Seqdb& seqdb_for_subtype(const virus::type_subtype_t& subtype, verbose verb = verbose::no);
     void seqdb_save();
 
     // ----------------------------------------------------------------------
@@ -63,7 +64,7 @@ namespace ae::sequences
     class Seqdb
     {
       public:
-        Seqdb(std::string_view subtype) : subtype_{subtype} { load(); }
+        Seqdb(const virus::type_subtype_t& subtype) : subtype_{subtype} { load(); }
         Seqdb(const Seqdb&) = delete;
         Seqdb(Seqdb&&) = delete;
         Seqdb& operator=(const Seqdb&) = delete;
@@ -76,6 +77,13 @@ namespace ae::sequences
         const SeqdbEntry* find_by_name(std::string_view name) const;
         SeqdbSeqRef find_by_name_hash(std::string_view name, const hash_t& hash) const;
         SeqdbSeqRef find_by_hash(const hash_t& hash) const; // via hash_index_
+        SeqdbSeqRef find_by_seq_id(const seq_id_t& seq_id) const
+        {
+            if (const auto found = seq_id_index().find(seq_id); found != seq_id_index_.end())
+                return found->second;
+            else
+                return {};
+        }
 
         std::shared_ptr<SeqdbSelected> select_all() const;
 
@@ -83,10 +91,14 @@ namespace ae::sequences
         bool is_verbose() const { return verbose_ == verbose::yes; }
 
       private:
-        std::string subtype_;
+        using hash_index_t = std::unordered_map<hash_t, std::string, ae::string_hash_for_unordered_map, std::equal_to<>>;
+        using seq_id_index_t = std::unordered_map<seq_id_t, SeqdbSeqRef, ae::string_hash_for_unordered_map, std::equal_to<>>;
+
+        virus::type_subtype_t subtype_;
         std::vector<SeqdbEntry> entries_;
         bool modified_{false};
-        std::unordered_map<hash_t, std::string, ae::string_hash_for_unordered_map, std::equal_to<>> hash_index_; // hash -> name
+        hash_index_t hash_index_; // hash -> name
+        mutable seq_id_index_t seq_id_index_;
         mutable verbose verbose_{verbose::no};
 
         std::filesystem::path filename() const;
@@ -95,6 +107,8 @@ namespace ae::sequences
         void make_hash_index();
         void remove(const SeqdbSeqRef& ref);
         void remove(const hash_t& hash); // remove all seqs (and perhaps some entries) with that hash
+        const seq_id_index_t& seq_id_index() const;
+
     };
 
     // ----------------------------------------------------------------------
