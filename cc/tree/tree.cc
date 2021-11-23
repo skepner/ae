@@ -1,5 +1,6 @@
 #include "ext/simdjson.hh"
 #include "ext/range-v3.hh"
+#include "utils/timeit.hh"
 #include "sequences/seqdb.hh"
 #include "tree/tree.hh"
 #include "tree/newick.hh"
@@ -136,6 +137,7 @@ void ae::tree::Tree::set_node_id()
 
 void ae::tree::Tree::populate_with_sequences(const virus::type_subtype_t& subtype)
 {
+    Timeit ti{"populate_with_sequences"};
     const auto& seqdb = sequences::seqdb_for_subtype(subtype);
     for (auto leaf = leaves_.begin() + 1; leaf != leaves_.end(); ++leaf) {
         if (const auto ref = seqdb.find_by_seq_id(sequences::seq_id_t{leaf->name}, sequences::Seqdb::set_master::yes); ref) {
@@ -159,6 +161,7 @@ void ae::tree::Tree::populate_with_sequences(const virus::type_subtype_t& subtyp
 
 void ae::tree::Tree::populate_with_duplicates(const virus::type_subtype_t& subtype)
 {
+    Timeit ti{"populate_with_duplicates"};
     const auto& seqdb = sequences::seqdb_for_subtype(subtype);
 
     std::vector<Inode*> parents;
@@ -239,6 +242,8 @@ ae::tree::Nodes ae::tree::Tree::select_inodes()
 
 void ae::tree::Tree::remove(const std::vector<node_index_t>& nodes)
 {
+    Timeit ti{"Tree::remove"};
+
     const auto child_empty = [this](auto child_id) { return !is_leaf(child_id) && inode(child_id).children.empty(); };
 
     for (auto ref : visit(tree_visiting::inodes_post)) {
@@ -295,6 +300,7 @@ std::shared_ptr<ae::tree::Tree> ae::tree::load(const std::filesystem::path& file
 
 void ae::tree::export_tree(const Tree& tree, const std::filesystem::path& filename)
 {
+    Timeit ti{"export_tree"};
     using namespace std::string_view_literals;
     const auto has_suffix = [filename = filename.filename().native()](std::initializer_list<std::string_view> suffixes) {
         return std::any_of(std::begin(suffixes), std::end(suffixes), [&filename](std::string_view suffix) { return filename.find(suffix) != std::string::npos; });
