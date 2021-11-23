@@ -141,31 +141,35 @@ void ae::tree::Tree::populate_with_duplicates(const virus::type_subtype_t& subty
 
     const auto& seqdb = sequences::seqdb_for_subtype(subtype);
 
-    std::vector<Leaf> to_add;
-    for (auto ref : visit(tree_visiting::all_post)) {
-        ref.visit(
-            [&seqdb, &to_add](const Leaf* leaf) {
-                if (const auto present_ref = seqdb.find_by_seq_id(sequences::seq_id_t{leaf->name}, sequences::Seqdb::set_master::yes); present_ref) {
-                    const auto refs = seqdb.find_all_by_hash(present_ref.seq->hash);
-                    for (const auto ref : refs) {
-                        if (ref != present_ref)
-                            to_add.emplace_back(ref.seq_id(), leaf->edge, leaf->cumulative_edge);
-                    }
-                }
-                else
-                    fmt::print(">> [seqdb {}] seq_id not found in seqdb: \"{}\"\n", seqdb.subtype(), leaf->name);
-            },
-            [this, &to_add](Inode* inode) {
-                if (!to_add.empty()) {
-                    EdgeLength max_edge { 0 };
-                    for (Leaf& leaf : to_add) {
-                        max_edge = std::max(max_edge, leaf.edge);
-                    }
-                    if (max_edge > 0)
-                        fmt::print(">> added leaves (some of {}) have non-zero edge: {}\n", to_add.size(), max_edge);
-                    to_add.clear();
-                }
-            });
+    std::vector<Inode*> parents;
+    std::vector<std::pair<Inode*, Leaf>> to_add;
+    for (auto ref : visit(tree_visiting::all_pre_post)) {
+        // cannot add leaves during iteration (breaks iterator)
+        if (ref.pre())
+            ref.visit([&parents](Inode* inode) { parents.push_back(inode); },
+                      [&seqdb, &parents, &to_add](const Leaf* leaf) {
+                          if (const auto present_ref = seqdb.find_by_seq_id(sequences::seq_id_t{leaf->name}, sequences::Seqdb::set_master::yes); present_ref) {
+                              const auto refs_for_hash = seqdb.find_all_by_hash(present_ref.seq->hash);
+                              for (const auto ref_for_hash : refs_for_hash) {
+                                  if (ref_for_hash != present_ref)
+                                      to_add.emplace_back(parents.back(), Leaf{ref_for_hash.seq_id(), leaf->edge, leaf->cumulative_edge});
+                              }
+                          }
+                          else
+                              fmt::print(">> [seqdb {}] seq_id not found in seqdb: \"{}\"\n", seqdb.subtype(), leaf->name);
+                      });
+        else // post
+            ref.visit([&parents](Inode*) { parents.pop_back(); }, [](Leaf*) {});
+    }
+
+    for (auto& [parent_for_new_leaf, new_leaf] : to_add) {
+        // if (new_leaf.edge > 0) {
+        //     // TODO: should replace original leaf with inode and add original leaf and new leaves to that new inode
+        //     fmt::print(">> adding leaf with non-zero edge: {} \"{}\"\n", new_leaf.edge, new_leaf.name);
+        // }
+        const node_index_t index{static_cast<node_index_base_t>(leaves_.size())};
+        parent_for_new_leaf->children.push_back(index);
+        leaves_.push_back(std::move(new_leaf));
     }
 
 } // ae::tree::Tree::populate_with_duplicates
