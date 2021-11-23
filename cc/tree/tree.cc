@@ -48,10 +48,11 @@ size_t ae::tree::Tree::depth() const
 
 // ----------------------------------------------------------------------
 
-ae::tree::EdgeLength ae::tree::Tree::calculate_cumulative()
+ae::tree::EdgeLength ae::tree::Tree::calculate_cumulative(bool force)
 {
-    if (max_cumulative < EdgeLength{0}) {
+    if (force || max_cumulative < EdgeLength{0}) {
         EdgeLength cumulative{0.0};
+        max_cumulative = 0.0;
         for (auto ref : visit(tree_visiting::all_pre_post)) {
             if (ref.pre())
                 ref.visit([&cumulative, this]<typename Node>(Node* node) {
@@ -201,7 +202,7 @@ ae::tree::Nodes ae::tree::Tree::select_all()
 {
     // have to walk the tree, because there could be unlinked nodes (after remove())
     Nodes nodes{{}, *this};
-    nodes.nodes.resize(inodes_.size() + leaves_.size());
+    nodes.nodes.reserve(inodes_.size() + leaves_.size());
     for (auto ref : visit(tree_visiting::all))
         nodes.nodes.push_back(ref.node_id());
     return nodes;
@@ -214,7 +215,7 @@ ae::tree::Nodes ae::tree::Tree::select_leaves()
 {
     // have to walk the tree, because there could be unlinked nodes (after remove())
     Nodes nodes{{}, *this};
-    nodes.nodes.resize(leaves_.size());
+    nodes.nodes.reserve(leaves_.size());
     for (auto ref : visit(tree_visiting::leaves))
         nodes.nodes.push_back(ref.node_id());
     return nodes;
@@ -227,7 +228,7 @@ ae::tree::Nodes ae::tree::Tree::select_inodes()
 {
     // have to walk the tree, because there could be unlinked nodes (after remove())
     Nodes nodes{{}, *this};
-    nodes.nodes.resize(inodes_.size());
+    nodes.nodes.reserve(inodes_.size());
     for (auto ref : visit(tree_visiting::inodes))
         nodes.nodes.push_back(ref.node_id());
     return nodes;
@@ -238,15 +239,19 @@ ae::tree::Nodes ae::tree::Tree::select_inodes()
 
 void ae::tree::Tree::remove(const std::vector<node_index_t>& nodes)
 {
+    const auto child_empty = [this](auto child_id) { return !is_leaf(child_id) && inode(child_id).children.empty(); };
+
     for (auto ref : visit(tree_visiting::inodes_post)) {
         ref.visit(
-            [&nodes](Inode* inode) {
-                inode->children.erase(std::remove_if(std::begin(inode->children), std::end(inode->children),
-                                                     [&nodes](auto child_id) { return std::find(std::begin(nodes), std::end(nodes), child_id) != std::end(nodes); }),
-                                      std::end(inode->children));
+            [&nodes, child_empty](Inode* inode) {
+                inode->children.erase(
+                    std::remove_if(std::begin(inode->children), std::end(inode->children),
+                                   [&nodes, child_empty](auto child_id) { return std::find(std::begin(nodes), std::end(nodes), child_id) != std::end(nodes) || child_empty(child_id); }),
+                    std::end(inode->children));
             },
             [](Leaf*) {});
     }
+    calculate_cumulative(true);
 
 } // ae::tree::Tree::remove
 

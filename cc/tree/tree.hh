@@ -96,7 +96,7 @@ namespace ae::tree
         std::pair<node_index_t, Leaf&> add_leaf(node_index_t parent, std::string_view name, EdgeLength edge);
 
         size_t depth() const; // max nesting level
-        EdgeLength calculate_cumulative();
+        EdgeLength calculate_cumulative(bool force = false);
         EdgeLength maximum_cumulative() const { return max_cumulative; }
 
         auto visit(tree_visiting visiting) const { return const_tree_visitor{*this, visiting}; }

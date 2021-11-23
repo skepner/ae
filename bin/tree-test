@@ -16,20 +16,26 @@ import ae_backend
 def main(args: argparse.Namespace):
     tree = ae_backend.tree.load(args.input)
 
-    # leaves_by_cumulative = tree.select_leaves()
-    # leaves_by_cumulative.sort_by_cumulative()
-    # for ind in range(20):
-    #     print(f"{leaves_by_cumulative.cumulative_edge(ind):.8f}  {leaves_by_cumulative.node_id(ind):5d} {leaves_by_cumulative.name(ind)}")
+    if args.print_cumulative:
+        leaves_by_cumulative = tree.select_leaves()
+        leaves_by_cumulative.sort_by_cumulative()
+        print(f"leaves_by_cumulative: {len(leaves_by_cumulative)}")
+        for ind in range(min(args.print_cumulative, len(leaves_by_cumulative))):
+            print(f"{leaves_by_cumulative.cumulative_edge(ind):.8f}  {leaves_by_cumulative.node_id(ind):5d} {leaves_by_cumulative.name(ind)}")
 
-    to_remove = tree.select_leaves()
-    to_remove.filter_by_cumulative_more_than(0.1)
-    for ind in range(len(to_remove)):
-        print(f"{to_remove.cumulative_edge(ind):.8f}  {to_remove.node_id(ind):5d} {to_remove.name(ind)}")
-    to_remove.remove()
+    if args.remove_if_cumulative_more_than:
+        to_remove = tree.select_leaves()
+        to_remove.filter_by_cumulative_more_than(args.remove_if_cumulative_more_than)
+        print(f"remove {len(to_remove)} leaves with cumulative > {args.remove_if_cumulative_more_than}")
+        for ind in range(len(to_remove)):
+            print(f"  {to_remove.cumulative_edge(ind):.8f}  {to_remove.node_id(ind):5d} {to_remove.name(ind)}")
+        to_remove.remove()
 
-    tree.populate_with_duplicates("B")
-    tree.populate_with_sequences("B")
-    # tree.set_clades(os.environ["AC_CLADES_JSON_V2"])
+    if args.populate:
+        tree.populate_with_duplicates("B")
+        tree.populate_with_sequences("B")
+        # tree.set_clades(os.environ["AC_CLADES_JSON_V2"])
+
     if args.output:
         ae_backend.tree.export(tree, args.output)
 
@@ -39,6 +45,9 @@ try:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("input", type=Path)
     parser.add_argument("output", nargs="?", type=Path)
+    parser.add_argument("--print-cumulative", dest="print_cumulative", type=int, default=None)
+    parser.add_argument("--remove-if-cumulative-more-than", dest="remove_if_cumulative_more_than", type=float, default=None)
+    parser.add_argument("--populate", "-p", action="store_true", default=False)
     args = parser.parse_args()
     exit_code = main(args) or 0
 except Exception as err:
