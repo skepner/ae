@@ -3,6 +3,7 @@
 #include <variant>
 #include <string>
 #include <vector>
+#include <limits>
 
 #include "ext/fmt.hh"
 #include "utils/named-type.hh"
@@ -15,6 +16,8 @@ namespace ae::tree
 {
     using node_index_base_t = int;                                                      //  signed
     using node_index_t = named_number_t<node_index_base_t, struct tree_node_index_tag>; // signed! positive - leaves_, negative - inodes_, zero - root inode
+
+    inline const node_index_t node_unlinked{std::numeric_limits<node_index_base_t>::max()}; // see Tree::remove
 
     class Tree;
     struct Leaf;

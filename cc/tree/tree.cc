@@ -236,7 +236,19 @@ ae::tree::Nodes ae::tree::Tree::select_inodes()
 
 // ----------------------------------------------------------------------
 
-void ae::tree::Tree::remove(const std::vector<node_index_t>& nodes) {} // ae::tree::Tree::remove
+void ae::tree::Tree::remove(const std::vector<node_index_t>& nodes)
+{
+    for (auto ref : visit(tree_visiting::inodes_post)) {
+        ref.visit(
+            [&nodes](Inode* inode) {
+                inode->children.erase(std::remove_if(std::begin(inode->children), std::end(inode->children),
+                                                     [&nodes](auto child_id) { return std::find(std::begin(nodes), std::end(nodes), child_id) != std::end(nodes); }),
+                                      std::end(inode->children));
+            },
+            [](Leaf*) {});
+    }
+
+} // ae::tree::Tree::remove
 
 // ----------------------------------------------------------------------
 
