@@ -50,6 +50,16 @@ namespace ae::tree
         template <typename... Callbacks> auto visit(Callbacks&&... callbacks) { return std::visit(overload{std::forward<Callbacks>(callbacks)...}, ref_); }
         template <typename... Callbacks> auto visit(Callbacks&&... callbacks) const { return std::visit(overload{std::forward<Callbacks>(callbacks)...}, ref_); }
 
+        LEAF leaf()
+        {
+            return std::visit(overload{[](LEAF leaf) -> LEAF { return leaf; }, [](INODE) -> LEAF { return nullptr; }}, ref_);
+        }
+
+        INODE inode()
+        {
+            return std::visit(overload{[](LEAF) -> INODE { return nullptr; }, [](INODE inode) -> INODE { return inode; }}, ref_);
+        }
+
       private:
         std::variant<LEAF, INODE> ref_;
         bool pre_{true};
