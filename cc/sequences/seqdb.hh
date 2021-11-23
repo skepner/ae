@@ -60,6 +60,9 @@ namespace ae::sequences
         const sequence_nuc_t& nuc() const;
     };
 
+    using SeqdbSeqRefList = std::vector<SeqdbSeqRef>;
+    extern SeqdbSeqRefList SeqdbSeqRefList_empty;
+
     // ----------------------------------------------------------------------
 
     class Seqdb
@@ -80,7 +83,13 @@ namespace ae::sequences
         const SeqdbEntry* find_by_name(std::string_view name) const;
         SeqdbSeqRef find_by_name_hash(std::string_view name, const hash_t& hash) const;
         SeqdbSeqRef find_by_hash(const hash_t& hash) const; // via hash_index_
-        std::vector<SeqdbSeqRef> find_all_by_hash(const hash_t& hash) const;
+        const SeqdbSeqRefList& find_all_by_hash(const hash_t& hash) const
+        {
+            if (const auto found = hash_index_all_.find(hash); found != hash_index_all_.end())
+                return found->second;
+            else
+                return SeqdbSeqRefList_empty;
+        }
 
         enum class set_master { no, yes };
 
@@ -103,12 +112,14 @@ namespace ae::sequences
 
       private:
         using hash_index_t = std::unordered_map<hash_t, std::string, ae::string_hash_for_unordered_map, std::equal_to<>>;
+        using hash_index_all_t = std::unordered_map<hash_t, SeqdbSeqRefList, ae::string_hash_for_unordered_map, std::equal_to<>>;
         using seq_id_index_t = std::unordered_map<seq_id_t, SeqdbSeqRef, ae::string_hash_for_unordered_map, std::equal_to<>>;
 
         virus::type_subtype_t subtype_;
         std::vector<SeqdbEntry> entries_;
         bool modified_{false};
         hash_index_t hash_index_; // hash -> name
+        hash_index_all_t hash_index_all_; // hash -> vector<ref>
         mutable seq_id_index_t seq_id_index_;
         mutable verbose verbose_{verbose::no};
 
@@ -313,7 +324,7 @@ namespace ae::sequences
 
       private:
         const Seqdb& seqdb_;
-        std::vector<SeqdbSeqRef> refs_;
+        SeqdbSeqRefList refs_;
 
         template <typename Pred> static inline void erase_if(SeqdbSelected& selected, Pred&& pred)
         {

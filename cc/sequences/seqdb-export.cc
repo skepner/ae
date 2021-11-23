@@ -1,5 +1,6 @@
 #include "ext/simdjson.hh"
 #include "utils/file.hh"
+#include "utils/timeit.hh"
 #include "sequences/seqdb.hh"
 
 // ======================================================================
@@ -122,6 +123,7 @@ inline void load_entry(ae::sequences::SeqdbEntry& entry, simdjson::ondemand::obj
 
 void ae::sequences::Seqdb::load()
 {
+    Timeit ti{fmt::format("Loading seqdb for {}", subtype_)};
     if (const auto db_filename = filename(); std::filesystem::exists(db_filename)) {
         if (is_verbose())
             fmt::print(">>>> load \"{}\" {}\n", subtype_, db_filename);
@@ -172,6 +174,7 @@ void ae::sequences::Seqdb::make_hash_index()
 {
     for (const auto& entry : entries_) {
         for (const auto& seq : entry.seqs) {
+            hash_index_all_.try_emplace(seq.hash).first->second.push_back(SeqdbSeqRef{.entry = &entry, .seq = &seq});
             if (seq.is_master())
                 hash_index_.try_emplace(seq.hash, entry.name);
         }

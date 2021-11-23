@@ -108,6 +108,7 @@ ae::tree::EdgeLength ae::tree::Tree::calculate_cumulative(bool force)
 
 void ae::tree::Tree::update_number_of_leaves_in_subtree()
 {
+    // Timeit ti{"update_number_of_leaves_in_subtree"};
     for (auto ref : visit(tree_visiting::inodes_post)) {
         ref.visit(
             [this](Inode* inode) {
@@ -163,7 +164,7 @@ void ae::tree::Tree::populate_with_sequences(const virus::type_subtype_t& subtyp
 
 void ae::tree::Tree::populate_with_duplicates(const virus::type_subtype_t& subtype)
 {
-    Timeit ti{"populate_with_duplicates"};
+    // Timeit ti{"populate_with_duplicates"};
     const auto& seqdb = sequences::seqdb_for_subtype(subtype);
 
     std::vector<Inode*> parents;

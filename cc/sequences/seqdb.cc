@@ -36,6 +36,8 @@ namespace ae::sequences
 
 } // namespace ae::sequences
 
+ae::sequences::SeqdbSeqRefList ae::sequences::SeqdbSeqRefList_empty{};
+
 #pragma GCC diagnostic pop
 
 // ----------------------------------------------------------------------
@@ -171,21 +173,6 @@ const ae::sequences::Seqdb::seq_id_index_t& ae::sequences::Seqdb::seq_id_index()
     return seq_id_index_;
 
 } // ae::sequences::Seqdb::seq_id_index
-
-// ----------------------------------------------------------------------
-
-std::vector<ae::sequences::SeqdbSeqRef> ae::sequences::Seqdb::find_all_by_hash(const hash_t& hash) const
-{
-    std::vector<ae::sequences::SeqdbSeqRef> refs;
-    for (const auto& entry : entries_) {
-        for (const auto& seq : entry.seqs) {
-            if (seq.hash == hash)
-                refs.push_back(SeqdbSeqRef{.entry = &entry, .seq = &seq});
-        }
-    }
-    return refs;
-
-} // ae::sequences::Seqdb::find_all_by_hash
 
 // ----------------------------------------------------------------------
 
