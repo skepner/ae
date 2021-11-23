@@ -142,10 +142,14 @@ void ae::tree::Tree::populate_with_sequences(const virus::type_subtype_t& subtyp
             leaf->date = ref.entry->date();
             leaf->continent = ref.entry->continent;
             leaf->country = ref.entry->country;
+            if (lineage_.empty() && !ref.entry->lineage.empty())
+                lineage_ = ref.entry->lineage;
         }
         else
             fmt::print(">> [seqdb {}] seq_id not found in seqdb: \"{}\"\n", subtype, leaf->name);
     }
+
+    subtype_ = subtype;
 
 } // ae::tree::Tree::populate_with_sequences
 

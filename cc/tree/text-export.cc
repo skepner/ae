@@ -89,13 +89,22 @@ std::string ae::tree::export_json(const Tree& tree)
 {
     using namespace fmt::literals;
     fmt::memory_buffer text;
-    fmt::format_to(std::back_inserter(text),
-                   "{{\"_\": \"-*- js-indent-level: 1 -*-\",\n \"  version\": \"phylogenetic-tree-v3\",\n \"  date\": \"{today:%Y-%m-%d %H:%M %Z}\",\n \"v\": \"{subtype}\",\n",
-                   "today"_a = fmt::localtime(std::time(nullptr)), //
-                   "subtype"_a = ""                                //
+    fmt::format_to(std::back_inserter(text), "{{\"_\": \"-*- js-indent-level: 1 -*-\",\n \"  version\": \"phylogenetic-tree-v3\",\n \"  date\": \"{today:%Y-%m-%d %H:%M %Z}\",\n",
+                   "today"_a = fmt::localtime(std::time(nullptr)) //
     );
-    // if (subtype == "B")
-    //     fmt::format_to(std::back_inserter(text), " \"l\": \"{lineage}\"\n", "lineage"_a = lineage);
+    if (!tree.subtype().empty()) {
+        fmt::format_to(std::back_inserter(text), " \"v\": \"{}\",", tree.subtype());
+        if (tree.subtype() == virus::type_subtype_t{"B"} && !tree.lineage().empty()) {
+            if (tree.lineage() == sequences::lineage_t{"V"})
+                fmt::format_to(std::back_inserter(text), " \"l\": \"VICTORIA\",");
+            else if (tree.lineage() == sequences::lineage_t{"Y"})
+                fmt::format_to(std::back_inserter(text), " \"l\": \"YAMAGATA,");
+            else
+                fmt::format_to(std::back_inserter(text), " \"l\": \"{}\",", tree.lineage());
+        }
+        fmt::format_to(std::back_inserter(text), "\n");
+    }
+
     fmt::format_to(std::back_inserter(text), " \"tree\"");
     std::string indent{" "};
 

@@ -3,6 +3,7 @@
 #include "ext/filesystem.hh"
 #include "virus/type-subtype.hh"
 #include "sequences/sequence.hh"
+#include "sequences/lineage.hh"
 #include "tree/tree-iterator.hh"
 
 // ======================================================================
@@ -54,6 +55,9 @@ namespace ae::tree
         Inode& root() { return inodes_[0]; }
         static node_index_t root_index() { return node_index_t{0}; }
 
+        constexpr const auto& subtype() const { return subtype_; }
+        constexpr const auto& lineage() const { return lineage_; }
+
         const Inode& inode(node_index_t index) const { return inodes_[-*index]; }
         Inode& inode(node_index_t index) { return inodes_[-*index]; }
         const Leaf& leaf(node_index_t index) const { return leaves_[*index]; }
@@ -93,6 +97,8 @@ namespace ae::tree
         void populate_with_duplicates(const virus::type_subtype_t& subtype);
 
       private:
+        virus::type_subtype_t subtype_;
+        sequences::lineage_t lineage_;
         std::vector<Inode> inodes_{Inode{}}; // root is always there
         std::vector<Leaf> leaves_{Leaf{}};   // first leaf is unused, node_index_t{0} is index of root inode
         mutable size_t depth_{0};
