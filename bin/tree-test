@@ -25,6 +25,7 @@ def main(args: argparse.Namespace):
     to_remove.filter_by_cumulative_more_than(0.1)
     for ind in range(len(to_remove)):
         print(f"{to_remove.cumulative_edge(ind):.8f}  {to_remove.node_id(ind):5d} {to_remove.name(ind)}")
+    to_remove.remove()
 
     tree.populate_with_duplicates("B")
     tree.populate_with_sequences("B")

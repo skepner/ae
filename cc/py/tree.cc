@@ -24,15 +24,16 @@ void ae::py::tree(pybind11::module_& mdl)
             "populate_with_sequences", [](Tree& tree, std::string_view subtype) { tree.populate_with_sequences(virus::type_subtype_t{subtype}); }, "subtype"_a) //
         .def(
             "populate_with_duplicates", [](Tree& tree, std::string_view subtype) { tree.populate_with_duplicates(virus::type_subtype_t{subtype}); }, "subtype"_a) //
-        .def("select_all", &Tree::select_all) //
-        .def("select_leaves", &Tree::select_leaves) //
-        .def("select_inodes", &Tree::select_inodes) //
+        .def("select_all", &Tree::select_all)                                                                                                                     //
+        .def("select_leaves", &Tree::select_leaves)                                                                                                               //
+        .def("select_inodes", &Tree::select_inodes)                                                                                                               //
         ;
 
-    pybind11::class_<Nodes>(tree_submodule, "Nodes")                           //
-        .def("sort_by_cumulative", &Nodes::sort_by_cumulative) //
+    pybind11::class_<Nodes>(tree_submodule, "Nodes")                                                       //
+        .def("sort_by_cumulative", &Nodes::sort_by_cumulative)                                             //
         .def("filter_by_cumulative_more_than", &Nodes::filter_by_cumulative_more_than, "min_cumulative"_a) //
-        .def("__len__", [](const Nodes& nodes) { return nodes.nodes.size(); }) //
+        .def("remove", &Nodes::remove)                                                                     //
+        .def("__len__", [](const Nodes& nodes) { return nodes.nodes.size(); })                             //
         // .def("__getitem__", [](const Nodes& nodes, size_t index) { return nodes.nodes.size(); }) //
         .def(
             "name", [](const Nodes& nodes, size_t index) { return nodes.tree.node(nodes.nodes[index]).visit([](auto* node) { return node->name; }); }, "index"_a) //

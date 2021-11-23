@@ -199,7 +199,12 @@ void ae::tree::Tree::populate_with_duplicates(const virus::type_subtype_t& subty
 
 ae::tree::Nodes ae::tree::Tree::select_all()
 {
-    return {ranges::views::iota(1 - static_cast<node_index_base_t>(inodes_.size()), static_cast<node_index_base_t>(leaves_.size())) | ranges::views::transform([](auto ind) { return node_index_t{ind}; }) | ranges::to_vector, *this};
+    // have to walk the tree, because there could be unlinked nodes (after remove())
+    Nodes nodes{{}, *this};
+    nodes.nodes.resize(inodes_.size() + leaves_.size());
+    for (auto ref : visit(tree_visiting::all))
+        nodes.nodes.push_back(ref.node_id());
+    return nodes;
 
 } // ae::tree::Tree::select_all
 
@@ -207,7 +212,12 @@ ae::tree::Nodes ae::tree::Tree::select_all()
 
 ae::tree::Nodes ae::tree::Tree::select_leaves()
 {
-    return {ranges::views::iota(1, static_cast<node_index_base_t>(leaves_.size())) | ranges::views::transform([](auto ind) { return node_index_t{ind}; }) | ranges::to_vector, *this};
+    // have to walk the tree, because there could be unlinked nodes (after remove())
+    Nodes nodes{{}, *this};
+    nodes.nodes.resize(leaves_.size());
+    for (auto ref : visit(tree_visiting::leaves))
+        nodes.nodes.push_back(ref.node_id());
+    return nodes;
 
 } // ae::tree::Tree::select_leaves
 
@@ -215,24 +225,36 @@ ae::tree::Nodes ae::tree::Tree::select_leaves()
 
 ae::tree::Nodes ae::tree::Tree::select_inodes()
 {
-    return {ranges::views::iota(0, static_cast<node_index_base_t>(inodes_.size())) | ranges::views::transform([](auto ind) { return node_index_t{-ind}; }) | ranges::to_vector, *this};
+    // have to walk the tree, because there could be unlinked nodes (after remove())
+    Nodes nodes{{}, *this};
+    nodes.nodes.resize(inodes_.size());
+    for (auto ref : visit(tree_visiting::inodes))
+        nodes.nodes.push_back(ref.node_id());
+    return nodes;
 
 } // ae::tree::Tree::select_inodes
 
 // ----------------------------------------------------------------------
 
-void ae::tree::Nodes::sort_by_cumulative()
+void ae::tree::Tree::remove(const std::vector<node_index_t>& nodes) {} // ae::tree::Tree::remove
+
+// ----------------------------------------------------------------------
+
+ae::tree::Nodes& ae::tree::Nodes::sort_by_cumulative()
 {
     const auto cumulative_edge = [this](const auto& id) { return tree.node(id).visit([](const auto* node) { return node->cumulative_edge; }); };
     ranges::sort(nodes, [cumulative_edge](const auto& id1, const auto& id2) { return cumulative_edge(id1) > cumulative_edge(id2); });
+    return *this;
 
 } // ae::tree::Nodes::sort_by_cumulative
 
 // ----------------------------------------------------------------------
 
-void ae::tree::Nodes::filter_by_cumulative_more_than(double min_cumulative)
+ae::tree::Nodes& ae::tree::Nodes::filter_by_cumulative_more_than(double min_cumulative)
 {
-    ranges::actions::remove_if(nodes, [this, min_cumulative](const auto& id) { return tree.node(id).visit([min_cumulative](const auto* node) { return node->cumulative_edge <= min_cumulative; }); });
+    ranges::actions::remove_if(nodes,
+                               [this, min_cumulative](const auto& id) { return tree.node(id).visit([min_cumulative](const auto* node) { return node->cumulative_edge <= min_cumulative; }); });
+    return *this;
 
 } // ae::tree::Nodes::filter_by_cumulative_more_than
 

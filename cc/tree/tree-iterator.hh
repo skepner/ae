@@ -32,6 +32,11 @@ namespace ae::tree
             return std::visit(overload{[](LEAF) { return false; }, [](INODE inode) { return inode->node_id_ == 0; }}, ref_);
         }
 
+        node_index_t node_id() const
+        {
+            return std::visit(overload{[](auto* node) { return node->node_id_; }}, ref_);
+        }
+
         std::string to_string() const
         {
             return std::visit(overload{[](LEAF leaf) { return fmt::format("<{}> \"{}\"", leaf->node_id_, leaf->name); },

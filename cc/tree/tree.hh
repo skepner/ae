@@ -53,8 +53,9 @@ namespace ae::tree
         std::vector<node_index_t> nodes;
         Tree& tree;
 
-        void sort_by_cumulative();
-        void filter_by_cumulative_more_than(double min_cumulative);
+        Nodes& sort_by_cumulative();
+        Nodes& filter_by_cumulative_more_than(double min_cumulative);
+        Nodes& remove();
     };
 
     // ----------------------------------------------------------------------
@@ -111,6 +112,10 @@ namespace ae::tree
         Nodes select_leaves();
         Nodes select_inodes();
 
+        // unlink passed nodes
+        // if a parent inode has no children afterwards, unlink it too
+        void remove(const std::vector<node_index_t>& nodes);
+
       private:
         virus::type_subtype_t subtype_;
         sequences::lineage_t lineage_;
@@ -128,6 +133,14 @@ namespace ae::tree
 
     std::shared_ptr<Tree> load(const std::filesystem::path& filename);
     void export_tree(const Tree& tree, const std::filesystem::path& filename);
+
+    // ----------------------------------------------------------------------
+
+    inline Nodes& Nodes::remove()
+    {
+        tree.remove(nodes);
+        return *this;
+    }
 
 } // namespace ae::tree
 
