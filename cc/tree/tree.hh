@@ -10,6 +10,8 @@
 
 namespace ae::tree
 {
+    class Tree;
+
     using EdgeLength = named_double_t<struct tree_EdgeLength_tag>;
 
     inline bool is_leaf(node_index_t index) { return index > 0; }
@@ -44,6 +46,12 @@ namespace ae::tree
         std::vector<node_index_t> children;
         size_t number_of_leaves{0};
         // std::vector<std::string> aa_substs;
+    };
+
+    struct Nodes
+    {
+        std::vector<node_index_t> nodes;
+        Tree& tree;
     };
 
     // ----------------------------------------------------------------------
@@ -95,6 +103,8 @@ namespace ae::tree
         void set_node_id();
         void populate_with_sequences(const virus::type_subtype_t& subtype);
         void populate_with_duplicates(const virus::type_subtype_t& subtype);
+
+        Nodes leaves_by_cumulative();
 
       private:
         virus::type_subtype_t subtype_;

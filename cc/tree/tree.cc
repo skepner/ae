@@ -1,4 +1,5 @@
 #include "ext/simdjson.hh"
+#include "ext/range-v3.hh"
 #include "sequences/seqdb.hh"
 #include "tree/tree.hh"
 #include "tree/newick.hh"
@@ -39,7 +40,7 @@ size_t ae::tree::Tree::depth() const
             }
         };
         descent(root(), 0, descent);
-        fmt::print(">>>> tree depth {}\n", depth_);
+        // fmt::print(">>>> tree depth {}\n", depth_);
     }
     return depth_;
 
@@ -193,6 +194,16 @@ void ae::tree::Tree::populate_with_duplicates(const virus::type_subtype_t& subty
     update_number_of_leaves_in_subtree();
 
 } // ae::tree::Tree::populate_with_duplicates
+
+// ----------------------------------------------------------------------
+
+ae::tree::Nodes ae::tree::Tree::leaves_by_cumulative()
+{
+    Nodes nodes{ranges::views::iota(1ul, leaves_.size()) | ranges::views::transform([](size_t ind) { return node_index_t{static_cast<node_index_base_t>(ind)}; }) | ranges::to_vector, *this};
+    ranges::sort(nodes.nodes, [this](const auto& id1, const auto& id2) { return leaf(id1).cumulative_edge > leaf(id2).cumulative_edge; });
+    return nodes;
+
+} // ae::tree::Tree::leaves_by_cumulative
 
 // ----------------------------------------------------------------------
 
