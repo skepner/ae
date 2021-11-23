@@ -34,15 +34,13 @@ namespace ae::tree
 
         std::string to_string() const
         {
-                return std::visit(overload{[](LEAF leaf) { return fmt::format("<{}> \"{}\"", leaf->node_id_, leaf->name); },
-                                           [this](INODE inode) { return fmt::format("<{} {}> children:{}", inode->node_id_, pre() ? "pre" : "post", inode->children.size()); }},
-                                  ref_);
+            return std::visit(overload{[](LEAF leaf) { return fmt::format("<{}> \"{}\"", leaf->node_id_, leaf->name); },
+                                       [this](INODE inode) { return fmt::format("<{} {}> children:{}", inode->node_id_, pre() ? "pre" : "post", inode->children.size()); }},
+                              ref_);
         }
 
-        template <typename... Callbacks> auto visit(Callbacks&&... callbacks) {
-                return std::visit(overload{std::forward<Callbacks>(callbacks)...}, ref_); }
-        template <typename... Callbacks> auto visit(Callbacks&&... callbacks) const {
-                return std::visit(overload{std::forward<Callbacks>(callbacks)...}, ref_); }
+        template <typename... Callbacks> auto visit(Callbacks&&... callbacks) { return std::visit(overload{std::forward<Callbacks>(callbacks)...}, ref_); }
+        template <typename... Callbacks> auto visit(Callbacks&&... callbacks) const { return std::visit(overload{std::forward<Callbacks>(callbacks)...}, ref_); }
 
       private:
         std::variant<LEAF, INODE> ref_;
@@ -53,7 +51,7 @@ namespace ae::tree
 
         friend class tree_iterator_t<TREE, LEAF, INODE>;
         friend std::decay_t<TREE>;
-        };
+    };
 
     enum class tree_visiting { all, leaves, inodes, inodes_post, all_pre_post, all_post };
 

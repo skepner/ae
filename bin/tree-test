@@ -16,9 +16,16 @@ import ae_backend
 def main(args: argparse.Namespace):
     tree = ae_backend.tree.load(args.input)
 
-    leaves_by_cumulative = tree.leaves_by_cumulative()
-    for ind in range(20):
-        print(f"{leaves_by_cumulative.cumulative_edge(ind):.8f}  {leaves_by_cumulative.node_id(ind):5d} {leaves_by_cumulative.name(ind)}")
+    # leaves_by_cumulative = tree.select_leaves()
+    # leaves_by_cumulative.sort_by_cumulative()
+    # for ind in range(20):
+    #     print(f"{leaves_by_cumulative.cumulative_edge(ind):.8f}  {leaves_by_cumulative.node_id(ind):5d} {leaves_by_cumulative.name(ind)}")
+
+    to_remove = tree.select_leaves()
+    to_remove.filter_by_cumulative_more_than(0.1)
+    for ind in range(len(to_remove)):
+        print(f"{to_remove.cumulative_edge(ind):.8f}  {to_remove.node_id(ind):5d} {to_remove.name(ind)}")
+
     tree.populate_with_duplicates("B")
     tree.populate_with_sequences("B")
     # tree.set_clades(os.environ["AC_CLADES_JSON_V2"])

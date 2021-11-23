@@ -52,6 +52,9 @@ namespace ae::tree
     {
         std::vector<node_index_t> nodes;
         Tree& tree;
+
+        void sort_by_cumulative();
+        void filter_by_cumulative_more_than(double min_cumulative);
     };
 
     // ----------------------------------------------------------------------
@@ -104,7 +107,9 @@ namespace ae::tree
         void populate_with_sequences(const virus::type_subtype_t& subtype);
         void populate_with_duplicates(const virus::type_subtype_t& subtype);
 
-        Nodes leaves_by_cumulative();
+        Nodes select_all();
+        Nodes select_leaves();
+        Nodes select_inodes();
 
       private:
         virus::type_subtype_t subtype_;

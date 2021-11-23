@@ -197,13 +197,44 @@ void ae::tree::Tree::populate_with_duplicates(const virus::type_subtype_t& subty
 
 // ----------------------------------------------------------------------
 
-ae::tree::Nodes ae::tree::Tree::leaves_by_cumulative()
+ae::tree::Nodes ae::tree::Tree::select_all()
 {
-    Nodes nodes{ranges::views::iota(1ul, leaves_.size()) | ranges::views::transform([](size_t ind) { return node_index_t{static_cast<node_index_base_t>(ind)}; }) | ranges::to_vector, *this};
-    ranges::sort(nodes.nodes, [this](const auto& id1, const auto& id2) { return leaf(id1).cumulative_edge > leaf(id2).cumulative_edge; });
-    return nodes;
+    return {ranges::views::iota(1 - static_cast<node_index_base_t>(inodes_.size()), static_cast<node_index_base_t>(leaves_.size())) | ranges::views::transform([](auto ind) { return node_index_t{ind}; }) | ranges::to_vector, *this};
 
-} // ae::tree::Tree::leaves_by_cumulative
+} // ae::tree::Tree::select_all
+
+// ----------------------------------------------------------------------
+
+ae::tree::Nodes ae::tree::Tree::select_leaves()
+{
+    return {ranges::views::iota(1, static_cast<node_index_base_t>(leaves_.size())) | ranges::views::transform([](auto ind) { return node_index_t{ind}; }) | ranges::to_vector, *this};
+
+} // ae::tree::Tree::select_leaves
+
+// ----------------------------------------------------------------------
+
+ae::tree::Nodes ae::tree::Tree::select_inodes()
+{
+    return {ranges::views::iota(0, static_cast<node_index_base_t>(inodes_.size())) | ranges::views::transform([](auto ind) { return node_index_t{-ind}; }) | ranges::to_vector, *this};
+
+} // ae::tree::Tree::select_inodes
+
+// ----------------------------------------------------------------------
+
+void ae::tree::Nodes::sort_by_cumulative()
+{
+    const auto cumulative_edge = [this](const auto& id) { return tree.node(id).visit([](const auto* node) { return node->cumulative_edge; }); };
+    ranges::sort(nodes, [cumulative_edge](const auto& id1, const auto& id2) { return cumulative_edge(id1) > cumulative_edge(id2); });
+
+} // ae::tree::Nodes::sort_by_cumulative
+
+// ----------------------------------------------------------------------
+
+void ae::tree::Nodes::filter_by_cumulative_more_than(double min_cumulative)
+{
+    ranges::actions::remove_if(nodes, [this, min_cumulative](const auto& id) { return tree.node(id).visit([min_cumulative](const auto* node) { return node->cumulative_edge <= min_cumulative; }); });
+
+} // ae::tree::Nodes::filter_by_cumulative_more_than
 
 // ----------------------------------------------------------------------
 
