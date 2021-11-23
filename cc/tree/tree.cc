@@ -137,20 +137,25 @@ void ae::tree::Tree::set_node_id()
 
 void ae::tree::Tree::populate_with_sequences(const virus::type_subtype_t& subtype)
 {
-    Timeit ti{"populate_with_sequences"};
+    // Timeit ti{"populate_with_sequences"};
     const auto& seqdb = sequences::seqdb_for_subtype(subtype);
-    for (auto leaf = leaves_.begin() + 1; leaf != leaves_.end(); ++leaf) {
-        if (const auto ref = seqdb.find_by_seq_id(sequences::seq_id_t{leaf->name}, sequences::Seqdb::set_master::yes); ref) {
-            leaf->aa = ref.aa();
-            leaf->nuc = ref.nuc();
-            leaf->date = ref.entry->date();
-            leaf->continent = ref.entry->continent;
-            leaf->country = ref.entry->country;
-            if (lineage_.empty() && !ref.entry->lineage.empty())
-                lineage_ = ref.entry->lineage;
-        }
-        else
-            fmt::print(">> [seqdb {}] seq_id not found in seqdb: \"{}\"\n", subtype, leaf->name);
+
+    for (auto leaf_ref : visit(tree_visiting::leaves)) {
+        leaf_ref.visit(
+            [&seqdb, &subtype, this](Leaf* leaf) {
+                if (const auto ref = seqdb.find_by_seq_id(sequences::seq_id_t{leaf->name}, sequences::Seqdb::set_master::yes); ref) {
+                    leaf->aa = ref.aa();
+                    leaf->nuc = ref.nuc();
+                    leaf->date = ref.entry->date();
+                    leaf->continent = ref.entry->continent;
+                    leaf->country = ref.entry->country;
+                    if (lineage_.empty() && !ref.entry->lineage.empty())
+                        lineage_ = ref.entry->lineage;
+                }
+                else
+                    fmt::print(">> [seqdb {}] seq_id not found in seqdb: \"{}\"\n", subtype, leaf->name);
+            },
+            [](Inode*) {});
     }
 
     subtype_ = subtype;
