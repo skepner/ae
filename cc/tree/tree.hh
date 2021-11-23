@@ -98,6 +98,8 @@ namespace ae::tree
         mutable size_t depth_{0};
         mutable EdgeLength max_cumulative{-1.0};
 
+        void update_number_of_leaves_in_subtree();
+
         template <lvalue_reference TREE, pointer LEAF, pointer INODE> friend class tree_iterator_t;
     };
 

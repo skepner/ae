@@ -111,8 +111,12 @@ std::string ae::tree::export_json(const Tree& tree)
 
     const auto format_inode_pre = [&text, &indent, &tree, format_node_begin](const Inode* inode) {
         format_node_begin(inode);
-        if (inode->node_id_ == node_index_t{0} && tree.maximum_cumulative() > 0)
-            fmt::format_to(std::back_inserter(text), " \"M\": {:.10g},", tree.maximum_cumulative());
+        if (inode->node_id_ == node_index_t{0}) {
+            if (tree.maximum_cumulative() > 0)
+                fmt::format_to(std::back_inserter(text), " \"M\": {:.10g},", tree.maximum_cumulative());
+            if (inode->number_of_leaves > 0)
+                fmt::format_to(std::back_inserter(text), " \"L\": {},", inode->number_of_leaves);
+        }
         // "A": ["aa subst", "N193K"],
         // "H": <true if hidden>,
         fmt::format_to(std::back_inserter(text), "\n");
@@ -134,7 +138,7 @@ std::string ae::tree::export_json(const Tree& tree)
         if (!leaf->continent.empty())
             fmt::format_to(std::back_inserter(text), ", \"C\": \"{}\"", leaf->continent);
         if (!leaf->country.empty())
-            fmt::format_to(std::back_inserter(text), ", \"c\": \"{}\"", leaf->country);
+            fmt::format_to(std::back_inserter(text), ", \"D\": \"{}\"", leaf->country);
         if (!leaf->aa.empty())
             fmt::format_to(std::back_inserter(text), ",\n{} \"a\": \"{}\"", indent, leaf->aa);
         if (!leaf->nuc.empty())

@@ -103,6 +103,22 @@ ae::tree::EdgeLength ae::tree::Tree::calculate_cumulative()
 
 // ----------------------------------------------------------------------
 
+void ae::tree::Tree::update_number_of_leaves_in_subtree()
+{
+    for (auto ref : visit(tree_visiting::inodes_post)) {
+        ref.visit(
+            [this](Inode* inode) {
+                inode->number_of_leaves = 0;
+                for (const auto child_id : inode->children)
+                    node(child_id).visit([inode](const Inode* sub_inode) { inode->number_of_leaves += sub_inode->number_of_leaves; }, [inode](const Leaf*) { ++inode->number_of_leaves; });
+            },
+            [](const Leaf*) {});
+    }
+
+} // ae::tree::Tree::update_number_of_leaves_in_subtree
+
+// ----------------------------------------------------------------------
+
 void ae::tree::Tree::set_node_id()
 {
     node_index_t inode_id{0};
@@ -137,8 +153,6 @@ void ae::tree::Tree::populate_with_sequences(const virus::type_subtype_t& subtyp
 
 void ae::tree::Tree::populate_with_duplicates(const virus::type_subtype_t& subtype)
 {
-    fmt::print(">> Tree::populate_with_duplicates no implemented\n");
-
     const auto& seqdb = sequences::seqdb_for_subtype(subtype);
 
     std::vector<Inode*> parents;
@@ -171,6 +185,8 @@ void ae::tree::Tree::populate_with_duplicates(const virus::type_subtype_t& subty
         parent_for_new_leaf->children.push_back(index);
         leaves_.push_back(std::move(new_leaf));
     }
+
+    update_number_of_leaves_in_subtree();
 
 } // ae::tree::Tree::populate_with_duplicates
 
