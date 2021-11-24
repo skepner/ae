@@ -190,26 +190,34 @@ bool ae::sequences::SeqdbEntry::update(const RawSequence& raw_sequence, bool kee
     bool updated = add_date(raw_sequence.date);
 
     if (!raw_sequence.host.empty()) {
-        if (host.empty())
+        if (host.empty()) {
             host = raw_sequence.host;
+            updated = true;
+        }
         else if (host != raw_sequence.host)
             fmt::print(">> SeqdbEntry::update \"{}\": conflicting host old:{} new:{}\n", name, host, raw_sequence.host);
     }
     if (raw_sequence.lineage) {
-        if (!lineage)
+        if (!lineage) {
             lineage = raw_sequence.lineage;
+            updated = true;
+        }
         else if (lineage != raw_sequence.lineage)
             fmt::print(">> SeqdbEntry::update \"{}\": conflicting lineage old:{} new:{}\n", name, lineage, raw_sequence.lineage);
     }
     if (!raw_sequence.continent.empty()) {
-        if (continent.empty())
+        if (continent.empty()) {
             continent = raw_sequence.continent;
+            updated = true;
+        }
         else if (continent != raw_sequence.continent)
             fmt::print(">> SeqdbEntry::update \"{}\": conflicting continent old:{} new:{}\n", name, continent, raw_sequence.continent);
     }
     if (!raw_sequence.country.empty()) {
-        if (country.empty())
+        if (country.empty()) {
             country = raw_sequence.country;
+            updated = true;
+        }
         else if (country != raw_sequence.country)
             fmt::print(">> SeqdbEntry::update \"{}\": conflicting country old:{} new:{}\n", name, country, raw_sequence.country);
     }
@@ -224,7 +232,7 @@ bool ae::sequences::SeqdbEntry::update(const RawSequence& raw_sequence, bool kee
 
     return updated;
 
-} // ae::sequences::Seqdb::update
+} // ae::sequences::SeqdbEntry::update
 
 // ----------------------------------------------------------------------
 
@@ -248,6 +256,7 @@ bool ae::sequences::SeqdbSeq::update(const RawSequence& raw_sequence, bool keep_
     bool updated{false};
     const auto update_vec = [&updated](auto& vec, std::string_view source) {
         if (!source.empty() && std::find(std::begin(vec), std::end(vec), source) == std::end(vec)) {
+            fmt::print(">>>> seq vec updated {} + {}\n", vec, source);
             vec.emplace_back(source);
             updated = true;
         }
@@ -268,8 +277,13 @@ bool ae::sequences::SeqdbSeq::update(const RawSequence& raw_sequence, bool keep_
         if (!aa.empty() || !nuc.empty())
             throw Error{"SeqdbSeq::update keep_sequence={} raw_sequence.hash={} hash={} sequence present", keep_sequence, raw_sequence.hash_nuc, hash};
         if (hash.empty()) {
-            hash = raw_sequence.hash_nuc;
-            updated = true;
+            if (!raw_sequence.hash_nuc.empty()) {
+                hash = raw_sequence.hash_nuc;
+                updated = true;
+if (updated) fmt::print(">>>> seq updated hash \"{}\" {}\n", raw_sequence.name, hash);
+            }
+            else
+                fmt::print(">> no hash \"{}\" {}\n", raw_sequence.name, raw_sequence.sequence.nuc);
         }
         else if (hash != raw_sequence.hash_nuc)
             throw Error{"SeqdbSeq::update keep_sequence={} raw_sequence.hash={} hash={} hash difference", keep_sequence, raw_sequence.hash_nuc, hash};
@@ -280,21 +294,25 @@ bool ae::sequences::SeqdbSeq::update(const RawSequence& raw_sequence, bool keep_
     update_vec(passages, raw_sequence.passage);
     updated |= issues.update(raw_sequence.issues);
     if (!raw_sequence.lab.empty()) {
-        if (auto lab = std::find_if(std::begin(lab_ids), std::end(lab_ids), [&raw_sequence](const auto& en) { return en.first == raw_sequence.lab; }); lab != std::end(lab_ids))
+        if (auto lab = std::find_if(std::begin(lab_ids), std::end(lab_ids), [&raw_sequence](const auto& en) { return en.first == raw_sequence.lab; }); lab != std::end(lab_ids)) {
             update_vec(lab->second, raw_sequence.lab_id);
-        else
+        }
+        else {
             lab_ids.emplace_back(raw_sequence.lab, lab_ids_t{raw_sequence.lab_id});
-        updated = true;
+            updated = true;
+            if (updated) fmt::print(">>>> seq updated lab_ids {} \"{}\"\n", lab_ids, raw_sequence.name);
+        }
     }
 
     update_vec(gisaid.accession_number, raw_sequence.accession_number);
     update_vec(gisaid.gisaid_dna_accession_no, raw_sequence.gisaid_dna_accession_no);
     update_vec(gisaid.gisaid_dna_insdc, raw_sequence.gisaid_dna_insdc);
     update_vec(gisaid.gisaid_identifier, raw_sequence.gisaid_identifier);
-    update_vec(gisaid.gisaid_last_modified, raw_sequence.gisaid_last_modified);
-    update_vec(gisaid.gisaid_submitter, raw_sequence.gisaid_submitter);
-    update_vec(gisaid.gisaid_originating_lab, raw_sequence.gisaid_originating_lab);
+    // update_vec(gisaid.gisaid_last_modified, raw_sequence.gisaid_last_modified);
+    // update_vec(gisaid.gisaid_submitter, raw_sequence.gisaid_submitter);
+    // update_vec(gisaid.gisaid_originating_lab, raw_sequence.gisaid_originating_lab);
 
+    // if (updated) fmt::print(">>>> seq updated end \"{}\"\n", raw_sequence.name);
     return updated;
 
 } // ae::sequences::SeqdbSeq::update

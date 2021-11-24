@@ -324,7 +324,7 @@ void ae::sequences::Seqdb::save() const
 
 void ae::sequences::Seqdb::save(const std::filesystem::path& filename) const
 {
-    fmt::print(">>> writing seqdb {} to {}\n", subtype_, filename);
+    Timeit ti{fmt::format("exporting seqdb {} to {}", subtype_, filename)};
     ae::file::write(filename, export_to_string(), ae::file::force_compression::no, ae::file::backup_file::yes);
 
 } // ae::sequences::Seqdb::save

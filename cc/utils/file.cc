@@ -2,15 +2,12 @@
 #include <unistd.h>
 #include <cerrno>
 #include <cstring>
-#include <cstdio>
-#include <cstdlib>
 #include <sys/types.h>
 #include <sys/mman.h>
 
 #include <filesystem>
 
 #include "utils/file.hh"
-// #include "acmacs-base/string-compare.hh"
 #include "ext/xz.hh"
 #include "ext/bzip2.hh"
 #include "ext/gzip.hh"
@@ -125,16 +122,14 @@ std::string ae::file::read(const std::filesystem::path& filename, size_t padding
 
 // ----------------------------------------------------------------------
 
-void ae::file::backup(const std::filesystem::path& _to_backup, const std::filesystem::path& _backup_dir, backup_move bm)
+void ae::file::backup(const std::filesystem::path& to_backup, const std::filesystem::path& backup_dir, backup_move bm)
 {
-    const std::filesystem::path to_backup{_to_backup}, backup_dir{_backup_dir};
-
     if (std::filesystem::exists(to_backup)) {
         try {
             std::filesystem::create_directory(backup_dir);
         }
         catch (std::exception& err) {
-            fmt::print(stderr, "> ERROR cannot create directory {}: {}\n", backup_dir.native(), err.what());
+            fmt::print(stderr, "> cannot create directory {}: {}\n", backup_dir.native(), err.what());
             throw;
         }
 
@@ -145,12 +140,11 @@ void ae::file::backup(const std::filesystem::path& _to_backup, const std::filesy
             extension += to_backup.extension();
             stem = stem.stem();
         }
-        const auto today = fmt::format("%Y%m%d", date::today());
+        const auto now = fmt::format("{:%Y-%m%d-%H%M%S}", std::chrono::system_clock::now());
         for (int version = 1; version < 1000; ++version) {
-            char infix[4];
-            std::sprintf(infix, "%03d", version);
-            std::filesystem::path new_name = backup_dir / (stem.string() + ".~" + today + '-' + infix + '~' + extension.string());
+            const std::filesystem::path new_name = backup_dir / fmt::format("{}.~{}{}~{}", stem.string(), now, version == 1 ? std::string{} : fmt::format("{:03d}", version), extension.string());
             if (!std::filesystem::exists(new_name) || version == 999) {
+                // fmt::print(">>>> making backup \"{}\" -> \"{}\"\n", to_backup, new_name);
                 try {
                     if (bm == backup_move::yes)
                         std::filesystem::rename(to_backup, new_name); // if new_name exists it will be removed before doing rename
@@ -158,7 +152,7 @@ void ae::file::backup(const std::filesystem::path& _to_backup, const std::filesy
                         std::filesystem::copy_file(to_backup, new_name, std::filesystem::copy_options::overwrite_existing);
                 }
                 catch (std::exception& err) {
-                    fmt::print(stderr, ">> WARNING backing up \"{}\" to \"{}\" failed: {}\n", to_backup.native(), new_name.native(), err.what());
+                    fmt::print(stderr, ">> backing up \"{}\" to \"{}\" failed: {}\n", to_backup.native(), new_name.native(), err.what());
                 }
                 break;
             }
