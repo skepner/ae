@@ -354,7 +354,7 @@ void ae::sequences::find_deletions_insertions_set_lineage(RawSequence& sequence,
             apply_deletions(deletions);
             if (sequence.sequence.aa.size() > 500)
                 messages.add(Message::unrecognized_deletions, sequence.type_subtype, fmt::format("\"{}\" {}", sequence.name, sequence.lineage),
-                             fmt::format("{}\nS:  {}\nM:  {}", deletions, sequence.sequence.aa, master_sequence_for(ae::virus::type_subtype_t{"B"})->aa));
+                             fmt::format("{}\n                S:  {}\n                M:  {}", deletions, sequence.sequence.aa, master_sequence_for(ae::virus::type_subtype_t{"B"})->aa));
         }
     }
 
