@@ -34,10 +34,10 @@ def main(args: argparse.Namespace):
                 fasta.add_metadata_to_sequence(metadata, sequence)
                 sequence_messages = ae_backend.Messages()
                 try:
-                    ae_backend.raw_sequence.translate(sequence, sequence_messages)
-                    ae_backend.raw_sequence.align(sequence, sequence_messages)
-                    ae_backend.raw_sequence.calculate_hash(sequence)
-                    sequences_by_subtype.setdefault(sequence.type_subtype, []).append(sequence)
+                    if ae_backend.raw_sequence.translate(sequence, sequence_messages) and ae_backend.raw_sequence.align(sequence, sequence_messages):
+                        # only aligned are stored
+                        ae_backend.raw_sequence.calculate_hash(sequence)
+                        sequences_by_subtype.setdefault(sequence.type_subtype, []).append(sequence)
                 except Exception as err:
                     print(f"> {err}: {sequence.name}\n    {sequence.aa}")
                 reader.context.messages_from_backend(sequence_messages)
@@ -70,7 +70,8 @@ def main(args: argparse.Namespace):
     for subtype, seqdb_subtype in sSeqdbSubtype.items():
         for seq in sequences_by_subtype.get(subtype, []):
             ae_backend.seqdb.for_subtype(seqdb_subtype).add(seq)
-    ae_backend.seqdb.save()
+    if args.save_seqdb:
+        ae_backend.seqdb.save()
 
     # print(f"Labs: {len(labs)}\n{pprint.pformat(labs)}")
     print(f"Messages: {len(messages)}")
@@ -95,6 +96,7 @@ try:
     parser.add_argument("--report-not-aligned", dest="report_not_aligned", action='store_true', default=False)
     parser.add_argument("--report-excluded", dest="report_excluded", action='store_true', default=False)
     parser.add_argument("--report-passages", dest="report_passages", action='store_true', default=False)
+    parser.add_argument("--no-save", "-n", dest="save_seqdb", action='store_false', default=True)
     args = parser.parse_args()
     exit_code = main(args) or 0
 except Exception as err:

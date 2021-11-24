@@ -256,7 +256,6 @@ bool ae::sequences::SeqdbSeq::update(const RawSequence& raw_sequence, bool keep_
     bool updated{false};
     const auto update_vec = [&updated](auto& vec, std::string_view source) {
         if (!source.empty() && std::find(std::begin(vec), std::end(vec), source) == std::end(vec)) {
-            fmt::print(">>>> seq vec updated {} + {}\n", vec, source);
             vec.emplace_back(source);
             updated = true;
         }
@@ -280,7 +279,6 @@ bool ae::sequences::SeqdbSeq::update(const RawSequence& raw_sequence, bool keep_
             if (!raw_sequence.hash_nuc.empty()) {
                 hash = raw_sequence.hash_nuc;
                 updated = true;
-if (updated) fmt::print(">>>> seq updated hash \"{}\" {}\n", raw_sequence.name, hash);
             }
             else
                 fmt::print(">> no hash \"{}\" {}\n", raw_sequence.name, raw_sequence.sequence.nuc);
@@ -300,7 +298,6 @@ if (updated) fmt::print(">>>> seq updated hash \"{}\" {}\n", raw_sequence.name, 
         else {
             lab_ids.emplace_back(raw_sequence.lab, lab_ids_t{raw_sequence.lab_id});
             updated = true;
-            if (updated) fmt::print(">>>> seq updated lab_ids {} \"{}\"\n", lab_ids, raw_sequence.name);
         }
     }
 
@@ -312,7 +309,6 @@ if (updated) fmt::print(">>>> seq updated hash \"{}\" {}\n", raw_sequence.name, 
     // update_vec(gisaid.gisaid_submitter, raw_sequence.gisaid_submitter);
     // update_vec(gisaid.gisaid_originating_lab, raw_sequence.gisaid_originating_lab);
 
-    // if (updated) fmt::print(">>>> seq updated end \"{}\"\n", raw_sequence.name);
     return updated;
 
 } // ae::sequences::SeqdbSeq::update
