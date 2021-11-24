@@ -23,7 +23,7 @@ def load(dir: Path):
             sLoaded[dir] = mod
             return mod
         else:
-            print(f">> no {mod_filename}")
+            print(f">> no {mod_filename} (ln -s ~/ac/sequences/ae.py {dir})")
             sLoaded[dir] = None
             return None
 
