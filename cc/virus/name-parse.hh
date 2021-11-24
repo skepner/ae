@@ -44,7 +44,10 @@ namespace ae::virus::name::inline v1
 
         std::string name(mark_extra me = mark_extra::no) const;
         std::string host_location_isolation_year() const;
-        bool operator==(const Parts&) const = default;
+        bool operator==(const Parts& rhs) const
+        {
+            return subtype == rhs.subtype && host == rhs.host && location == rhs.location && isolation == rhs.isolation && year == rhs.year && reassortant == rhs.reassortant && extra == rhs.extra;
+        }
     };
 
     class parse_settings

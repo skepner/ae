@@ -767,7 +767,7 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
         // A/Hanam/EL12112/145S04/2012 (gisaid)
         result.subtype = parts[0];
         std::tie(result.location, result.continent, result.country) = fix_location(parts[1], source, result, messages, message_location);
-        result.isolation = fix_isolation(fmt::format("{}-{}", parts[2], parts[3]), source, result, messages, message_location);
+        result.isolation = fix_isolation(fmt::format("{}-{}", std::string{parts[2]}, std::string{parts[3]}), source, result, messages, message_location);
         result.year = fix_year(parts[4], source, result, messages, message_location);
     }
     else
