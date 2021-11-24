@@ -376,7 +376,7 @@ namespace ae::virus::name::inline v1
         {
             // static constexpr auto ws = dsl::whitespace(dsl::ascii::blank);
             static constexpr auto hy_space = dsl::hyphen / dsl::ascii::blank;
-            static constexpr auto IVR = I + V + R;
+            static constexpr auto IVR = (I / C) + V + R; // CVR is in gisaid
             static constexpr auto CNIC = C + N + I + C;
             static constexpr auto SAN = S + A + N;
             static constexpr auto NIB = N + I + B;
@@ -680,7 +680,7 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
             // A(H3N2)/H3N2/SINGAPORE/INFIMH-16-0019/2016
             result.subtype = fmt::format("{}+{}", parts[0].head, parts[1].head);
             result.issues.add(Parts::issue::invalid_subtype);
-            messages.add(Message::invalid_subtype, fmt::format("{}/{}", parts[0].head, parts[1].head), source, message_location);
+            messages.add(Message::invalid_subtype, settings.type_subtype_hint(), fmt::format("{}/{}", parts[0].head, parts[1].head), source, message_location);
         }
         std::tie(result.location, result.continent, result.country) = fix_location(parts[2], source, result, messages, message_location);
         result.isolation = fix_isolation(parts[3], source, result, messages, message_location);
@@ -735,7 +735,7 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
             result.subtype = parts[0];
             result.location = fmt::format("{}/{}", parts[1].head, parts[2].head);
             result.issues.add(Parts::issue::unrecognized_location);
-            messages.add(Message::unrecognized_location, result.location, source, message_location);
+            messages.add(Message::unrecognized_location, settings.type_subtype_hint(), result.location, source, message_location);
             result.isolation = fix_isolation(parts[3], source, result, messages, message_location);
             result.year = fix_year(parts[4], source, result, messages, message_location);
         }
@@ -762,14 +762,15 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
         else if (type_match(parts[4], part_type::any))
             result.extra = parts[4];
     }
-    // IVR-153 (A/CALIFORNIA/07/2009)
-    // (H3N2) at the end
-    // A/swine/Chachoengsao/2003
-    // A/chicken/Iran221/2001
-    // A/chicken/Yunnan/Kunming/2007 -> A/chicken/Yunnan Kunming/?/2007
-    // extra at the end
+    else if (types_match(parts, {part_type::type_subtype, part_type::letters_only, part_type::any, part_type::any, part_type::digits_hyphens})) {
+        // A/Hanam/EL12112/145S04/2012 (gisaid)
+        result.subtype = parts[0];
+        std::tie(result.location, result.continent, result.country) = fix_location(parts[1], source, result, messages, message_location);
+        result.isolation = fix_isolation(fmt::format("{}-{}", parts[2], parts[3]), source, result, messages, message_location);
+        result.year = fix_year(parts[4], source, result, messages, message_location);
+    }
     else
-        messages.add(Message::unhandled_virus_name, fmt::format("{}", parts), source, message_location);
+        messages.add(Message::unhandled_virus_name, settings.type_subtype_hint(), fmt::format("{}", parts), source, message_location);
     // if (source == "A(H1N1)/NIB/4/1988")
     //     fmt::print(">>>> parsing \"{}\" -> \"{}\" \"{}\"\n", source, result.name(), result.reassortant);
     return result;

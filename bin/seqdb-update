@@ -84,8 +84,8 @@ def main(args: argparse.Namespace):
     if args.print_messages and messages:
         message_types = args.print_messages.lower()
         for msg in messages:
-            if msg.type_matches(message_types) and msg.type_subtype() in [None, "A(H1N1)", "A(H1)", "A(H3N2)", "A(H3)", "B"]:
-                print(f"  {msg.report()}")
+            if msg.type_matches(message_types): # and msg.type_subtype() in [None, "A(H1N1)", "A(H1)", "A(H3N2)", "A(H3)", "B"]:
+                print(f"  {msg.type_subtype() or '?':8s}  {msg.report()}")
         if unrecognized_locations and "l" in message_types or "a" in message_types:
             print(f"Unrecognized locations: {len(unrecognized_locations)}")
             for loc in unrecognized_locations:

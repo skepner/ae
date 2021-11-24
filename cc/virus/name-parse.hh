@@ -3,6 +3,7 @@
 #include <bitset>
 
 #include "ext/fmt.hh"
+#include "virus/type-subtype.hh"
 
 // ======================================================================
 
@@ -51,12 +52,15 @@ namespace ae::virus::name::inline v1
       public:
         enum class tracing { no, yes };
 
-        parse_settings(tracing a_trace = tracing::no) : tracing_{a_trace} {}
+        parse_settings(tracing a_trace = tracing::no, std::string_view type_subtype_hint = {}) : tracing_{a_trace}, type_subtype_hint_{type_subtype_hint} {}
+        parse_settings(std::string_view type_subtype_hint) : type_subtype_hint_{type_subtype_hint} {}
 
         constexpr bool trace() const { return tracing_ == tracing::yes; }
+        const virus::type_subtype_t& type_subtype_hint() const { return type_subtype_hint_; }
 
       private:
         tracing tracing_{tracing::no};
+        virus::type_subtype_t type_subtype_hint_;
     };
 
     Parts parse(std::string_view source, parse_settings& settings, Messages& messages, const MessageLocation& location);

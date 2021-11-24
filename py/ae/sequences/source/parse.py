@@ -91,7 +91,7 @@ def parse_name(name: str, metadata: dict, context: Context):
         metadata["name"] = preprocessed_name
     else:
         # print(f">>>> {preprocessed_name}", file=sys.stderr)
-        result = ae_backend.virus_name_parse(preprocessed_name)
+        result = ae_backend.virus_name_parse(preprocessed_name, type_subtype=metadata.get("type_subtype", ""), filename=context.filename, line_no=context.line_no)
         if result.good():
             metadata["name"] = result.parts.host_location_isolation_year()
             metadata["host"] = result.parts.host
