@@ -67,9 +67,13 @@ def main(args: argparse.Namespace):
     print(f">>> {num_seqs} sequences read\n  ", "\n  ".join(f"{subtype:8s} {len(seqs):6d} {seqs[0].date:>10s}..{seqs[-1].date:10s}" for subtype, seqs in sorted(sequences_by_subtype.items(), key=subtype_order) if subtype in sSubtypeOrder), sep="")
 
     sSeqdbSubtype = {"B": "B", "A(H1N1)": "A(H1N1)", "A(H1)": "A(H1N1)", "A(H3N2)": "A(H3N2)", "A(H3)": "A(H3N2)"}
+    print("Sequences added:")
     for subtype, seqdb_subtype in sSeqdbSubtype.items():
+        num_added = 0
         for seq in sequences_by_subtype.get(subtype, []):
-            ae_backend.seqdb.for_subtype(seqdb_subtype).add(seq)
+            if ae_backend.seqdb.for_subtype(seqdb_subtype).add(seq):
+                num_added += 1
+        print(f"{seqdb:7s} -> {seqdb_subtype:7s}: {num_added:5d} (of {len(sequences_by_subtype.get(subtype, [])):5d})")
     if args.save_seqdb:
         ae_backend.seqdb.save()
 

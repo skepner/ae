@@ -105,8 +105,8 @@ void ae::py::sequences(pybind11::module_& mdl)
         "verbose"_a = false, pybind11::return_value_policy::reference);
     seqdb_submodule.def("save", &seqdb_save);
 
-    pybind11::class_<Seqdb>(seqdb_submodule, "SeqdbForSubtype") //
-        .def("add", &Seqdb::add, "raw_sequence"_a)              //
+    pybind11::class_<Seqdb>(seqdb_submodule, "SeqdbForSubtype")                                      //
+        .def("add", &Seqdb::add, "raw_sequence"_a, pybind11::doc{"returns if sequence was added."}) //
         .def(
             "save", [](const Seqdb& seqdb, pybind11::object filename) { seqdb.save(std::string{pybind11::str(filename)}); }, "filename"_a) //
         .def("select_all", &Seqdb::select_all)                                                                                             //

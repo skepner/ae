@@ -68,8 +68,9 @@ void ae::sequences::seqdb_save()
 
 // ----------------------------------------------------------------------
 
-void ae::sequences::Seqdb::add(const RawSequence& raw_sequence)
+bool ae::sequences::Seqdb::add(const RawSequence& raw_sequence)
 {
+    bool added { false };
     const auto found_by_hash = find_by_hash(raw_sequence.hash_nuc);
     bool keep_sequence = !found_by_hash || found_by_hash.entry->name == raw_sequence.name;
     if (keep_sequence) {
@@ -80,7 +81,7 @@ void ae::sequences::Seqdb::add(const RawSequence& raw_sequence)
                    raw_sequence.sequence.nuc.size(), found_by_hash.entry->name, found_by_hash.seq->nuc.size());
         if (raw_sequence.issues.any()) {
             // do not add raw_sequence
-            return;
+            return added;
         }
         else {
             remove(found_by_hash); // also removes corresponding hash_index_ entry
@@ -91,14 +92,17 @@ void ae::sequences::Seqdb::add(const RawSequence& raw_sequence)
     }
     const auto found = std::lower_bound(std::begin(entries_), std::end(entries_), raw_sequence.name, [](const auto& entry, std::string_view nam) { return entry.name < nam; });
     if (found != std::end(entries_) && found->name == raw_sequence.name) {
-        modified_ = found->update(raw_sequence, keep_sequence);
+        added = found->update(raw_sequence, keep_sequence);
+        modified_ |= added;
     }
     else {
-        const auto added = entries_.emplace(found, raw_sequence);
+        const auto it_added = entries_.emplace(found, raw_sequence);
         if (!keep_sequence)
-            added->find_by_hash(raw_sequence.hash_nuc)->dont_keep_sequence();
+            it_added->find_by_hash(raw_sequence.hash_nuc)->dont_keep_sequence();
         modified_ = true;
+        added = true;
     }
+    return added;
 
 } // ae::sequences::Seqdb::add
 

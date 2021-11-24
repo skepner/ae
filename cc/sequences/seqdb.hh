@@ -76,7 +76,7 @@ namespace ae::sequences
 
         constexpr const virus::type_subtype_t& subtype() const { return subtype_; }
 
-        void add(const RawSequence& raw_sequence);
+        bool add(const RawSequence& raw_sequence); // returns if sequence was added
         void save() const;
         void save(const std::filesystem::path& filename) const;
 
