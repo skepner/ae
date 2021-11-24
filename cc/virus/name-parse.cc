@@ -565,6 +565,31 @@ namespace ae::virus::name::inline v1
         return reassortant;
     }
 
+    // ----------------------------------------------------------------------
+
+    struct report_error
+    {
+        struct error_sink
+        {
+            std::string_view text_to_parse;
+            std::size_t _count{0};
+            using return_type = std::size_t;
+
+            template <typename Production, typename Input, typename Reader, typename Tag>
+            void operator()(const lexy::error_context<Production, Input>& /*context*/, const lexy::error<Reader, Tag>& /*error*/)
+            {
+                fmt::print(stderr, "> parsing failed: \"{}\"\n", text_to_parse);
+                ++_count;
+            }
+
+            return_type finish() && { return _count; }
+        };
+
+        constexpr auto sink() const { return error_sink{text_to_parse}; }
+
+        std::string_view text_to_parse;
+    };
+
 } // namespace ae::virus::name::inline v1
 
 // ----------------------------------------------------------------------
@@ -573,10 +598,10 @@ namespace ae::virus::name::inline v1
 
 inline void format_or(fmt::memory_buffer& out, std::string_view field, std::string_view alt, std::string_view sep)
 {
-        if (!field.empty())
-            fmt::format_to(std::back_inserter(out), "{}{}", sep, field);
-        else if (!alt.empty())
-            fmt::format_to(std::back_inserter(out), "{}{}", sep, alt);
+    if (!field.empty())
+        fmt::format_to(std::back_inserter(out), "{}{}", sep, field);
+    else if (!alt.empty())
+        fmt::format_to(std::back_inserter(out), "{}{}", sep, alt);
 }
 
 // ----------------------------------------------------------------------
@@ -632,7 +657,7 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
         fmt::print(">>> parsing \"{}\"\n", source);
         lexy::trace<grammar::parts>(stderr, lexy::string_input<lexy::utf8_encoding>{source});
     }
-    const auto parsing_result = lexy::parse<grammar::parts>(lexy::string_input<lexy::utf8_encoding>{source}, lexy_ext::report_error);
+    const auto parsing_result = lexy::parse<grammar::parts>(lexy::string_input<lexy::utf8_encoding>{source}, report_error{source});
     const auto parts = parsing_result.value();
     // if (source == "A(H1N1)/NIB/4/1988")
     //     fmt::print(">>>> parsing \"{}\" -> {}\n", source, parts);
