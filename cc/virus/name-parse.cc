@@ -380,7 +380,8 @@ namespace ae::virus::name::inline v1
             static constexpr auto CNIC = C + N + I + C;
             static constexpr auto SAN = S + A + N;
             static constexpr auto NIB = N + I + B;
-            static constexpr auto prefix = dsl::peek(IVR + hy_space) | dsl::peek(CNIC + hy_space) | dsl::peek(SAN + hy_space) | dsl::peek(NIB + hy_space);
+            static constexpr auto VI = V + I;
+            static constexpr auto prefix = dsl::peek(IVR + hy_space) | dsl::peek(CNIC + hy_space) | dsl::peek(SAN + hy_space) | dsl::peek(NIB + hy_space) | dsl::peek(VI + hy_space);
 
             static constexpr auto rule = (nymc_x_bx::peek >> dsl::p<nymc_x_bx>) //
                                          | (cber::peek >> dsl::p<cber>)         //

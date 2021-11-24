@@ -315,7 +315,7 @@ void ae::sequences::find_deletions_insertions_set_lineage(RawSequence& sequence,
     const auto apply_lineage = [&sequence, &messages](std::string_view lineage) {
         if (!sequence.lineage)
             sequence.lineage = lineage;
-        else if (sequence.lineage != lineage) {
+        else if (sequence.lineage != lineage_t{lineage}) {
             if (sequence.sequence.aa.size() > 500)
                 messages.add(Message::lineage_mismatch, sequence.type_subtype, fmt::format("detected: {} provided: {}", lineage, sequence.lineage),
                              fmt::format("lineage difference \"{}\" provided:{} detected:{}\nS:  {}", sequence.name, sequence.lineage, lineage, sequence.sequence.aa));
