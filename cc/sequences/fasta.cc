@@ -6,6 +6,8 @@
 
 ae::sequences::fasta::Reader::iterator& ae::sequences::fasta::Reader::iterator::operator++()
 {
+    using namespace std::string_view_literals;
+
     while (next_ != data_.end() && *next_ == '\n') {
         ++next_;
         ++line_no_;
@@ -34,11 +36,16 @@ ae::sequences::fasta::Reader::iterator& ae::sequences::fasta::Reader::iterator::
             throw std::runtime_error{fmt::format("invalid format at {}", line_no_)};
 
         // read sequence
-        while (next_ != data_.end() && *next_ != '>') {
+        for (size_t seq_line_no = 0; next_ != data_.end() && *next_ != '>'; ++seq_line_no) {
             const auto line_start = next_;
             next_ = std::find(next_, data_.end(), '\n');
             if (next_ != data_.end()) {
-                value_.sequence->raw_sequence.append(line_start, *std::prev(next_) == '\r' ? std::prev(next_) : next_);
+                const auto line_end = *std::prev(next_) == '\r' ? std::prev(next_) : next_;
+                const auto line_size = static_cast<size_t>(line_end - line_start);
+                if (seq_line_no == 0 && std::string_view{line_start, line_size}.find_first_of("/|_"sv) != std::string_view::npos) // gisaid sometimes have name split into two lines
+                    value_.sequence->raw_name = std::string_view{name_start, static_cast<size_t>(line_end - name_start)};
+                else
+                    value_.sequence->raw_sequence.append(line_start, line_end);
                 ++next_;
                 ++line_no_;
             }

@@ -77,6 +77,9 @@ class Context:
         else:
             return passage
 
+    def file_line(self):
+        return f"{self.filename}:{self.line_no}"
+
 # ======================================================================
 
 def parse_name(name: str, metadata: dict, context: Context):

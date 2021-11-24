@@ -96,7 +96,7 @@ def gisaid_name_parser(name: str, context: Context) -> str:
         # manually excluded
         return {"excluded": fields[-2][2:], **gisaid_extract_fields(fields[:-2] + [""], context=context)}
     else:
-        raise Error(f"Invalid number of fields in the gisaid-like name: {len(fields)}: \"{name}\"")
+        raise Error(f"Invalid number of fields ({len(fields)}) in the gisaid-like name: \"{name}\" @@ {context.file_line()}")
 
 # ----------------------------------------------------------------------
 
