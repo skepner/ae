@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 """
-Reading tree test
+Read tree from newick, remove long branches, populate, set clades, export to json
 """
 
 import os, sys, re, collections, pprint, argparse, traceback
@@ -21,14 +21,16 @@ def main(args: argparse.Namespace):
         leaves_by_cumulative.sort_by_cumulative()
         print(f"leaves_by_cumulative: {len(leaves_by_cumulative)}")
         for ind in range(min(args.print_cumulative, len(leaves_by_cumulative))):
-            print(f"{leaves_by_cumulative.cumulative_edge(ind):.8f}  {leaves_by_cumulative.node_id(ind):5d} {leaves_by_cumulative.name(ind)}")
+            leaf = leaves_by_cumulative[ind]
+            print(f"{leaf.cumulative_edge():.8f}  {leaf.node_id():5d} {leaf.name()}")
 
     if args.remove_if_cumulative_more_than:
         to_remove = tree.select_leaves()
         to_remove.filter_by_cumulative_more_than(args.remove_if_cumulative_more_than)
         print(f"remove {len(to_remove)} leaves with cumulative > {args.remove_if_cumulative_more_than}")
         for ind in range(len(to_remove)):
-            print(f"  {to_remove.cumulative_edge(ind):.8f}  {to_remove.node_id(ind):5d} {to_remove.name(ind)}")
+            leaf = to_remove[ind]
+            print(f"  {leaf.cumulative_edge():.8f}  {leaf.node_id():5d} {leaf.name()}")
         to_remove.remove()
 
     if args.populate:

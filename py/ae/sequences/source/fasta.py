@@ -39,6 +39,12 @@ class reader:
 
 # ----------------------------------------------------------------------
 
+def read_names(filename: Path):
+    """return list of names read from fasta file"""
+    return [en.raw_name for en in ae_backend.raw_sequence.FastaReader(filename)]
+
+# ----------------------------------------------------------------------
+
 sRePassageAtEnd = re.compile(r"^(.+)_(E|EGG|CELL|SIAT|MDCK|OR)$", re.I)
 
 def regular_name_parser(name: str, lab_hint: str, context: Context):

@@ -1,0 +1,43 @@
+#! /usr/bin/env python3
+"""
+Read test from newick, remove leaves not found in fasta, populate with new sequences from fasta, export to newick
+"""
+
+import os, sys, re, collections, pprint, argparse, traceback
+from pathlib import Path
+if os.environ.get("DYLD_INSERT_LIBRARIES"):
+    sys.path[:0] = [str(Path(os.environ["AE_ROOT"], dir)) for dir in ["build.debug", "py"]]
+else:
+    sys.path[:0] = [str(Path(os.environ["AE_ROOT"], dir)) for dir in ["build", "py"]]
+import ae_backend
+from ae.sequences.source import fasta
+
+# ----------------------------------------------------------------------
+
+def main(args: argparse.Namespace):
+    tree = ae_backend.tree.load(args.input_tree)
+    seq_ids = frozenset(fasta.read_names(args.input_fasta))
+
+    # find seq_id in tree not found in fasta, remove corresponding leaves from the tree
+    leaves_to_remove = [leaf for leaf in tree.select_leaves() if leaf.name() not in seq_ids]
+    print([leaf.name() for leaf in leaves_to_remove])
+    tree.remove(leaves_to_remove)
+
+    if args.output_tree:
+        ae_backend.tree.export(tree, args.output_tree)
+
+# ----------------------------------------------------------------------
+
+try:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("input_tree", type=Path)
+    parser.add_argument("input_fasta", type=Path)
+    parser.add_argument("output_tree", nargs="?", type=Path)
+    args = parser.parse_args()
+    exit_code = main(args) or 0
+except Exception as err:
+    print(f"> {err}\n{traceback.format_exc()}", file=sys.stderr)
+    exit_code = 1
+exit(exit_code)
+
+# ======================================================================
