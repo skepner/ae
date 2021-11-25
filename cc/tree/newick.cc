@@ -238,30 +238,9 @@ std::shared_ptr<ae::tree::Tree> ae::tree::load_newick(const std::string& source)
 
 std::string ae::tree::export_newick(const Tree& tree)
 {
-    Timeit ti{"tree::export_newick", std::chrono::milliseconds{0}};
-    using namespace fmt::literals;
+    Timeit ti{"tree::export_newick", std::chrono::milliseconds{100}};
 
     fmt::memory_buffer text;
-
-    // fmt::format_to(std::back_inserter(text), "{{\"_\": \"-*- js-indent-level: 1 -*-\",\n \"  version\": \"phylogenetic-tree-v3\",\n \"  date\": \"{today:%Y-%m-%d %H:%M %Z}\",\n",
-    //                "today"_a = fmt::localtime(std::time(nullptr)) //
-    // );
-    // if (!tree.subtype().empty()) {
-    //     fmt::format_to(std::back_inserter(text), " \"v\": \"{}\",", tree.subtype());
-    //     if (tree.subtype() == virus::type_subtype_t{"B"} && !tree.lineage().empty()) {
-    //         if (tree.lineage() == sequences::lineage_t{"V"})
-    //             fmt::format_to(std::back_inserter(text), " \"l\": \"VICTORIA\",");
-    //         else if (tree.lineage() == sequences::lineage_t{"Y"})
-    //             fmt::format_to(std::back_inserter(text), " \"l\": \"YAMAGATA,");
-    //         else
-    //             fmt::format_to(std::back_inserter(text), " \"l\": \"{}\",", tree.lineage());
-    //     }
-    //     fmt::format_to(std::back_inserter(text), "\n");
-    // }
-
-    // fmt::format_to(std::back_inserter(text), " \"tree\"");
-    // std::string indent{" "};
-
     std::vector<bool> commas{false};
     commas.reserve(tree.depth());
 
