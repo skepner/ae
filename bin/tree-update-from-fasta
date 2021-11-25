@@ -26,8 +26,6 @@ def main(args: argparse.Namespace):
 
     # find seq_id in fasta that are not in the tree
     new_seq_ids = set(fasta_data) - set(leaf.name() for leaf in tree.select_leaves())
-    print(f"To add {len(new_seq_ids)}")
-    # pprint.pprint(new_seq_ids)
     closest_data = find_closest(tree=tree, all_sequences=fasta_data, new_seq_ids=new_seq_ids)
     for name, en in closest_data.items():
         en.add_sibling_leaf(name)
@@ -39,10 +37,11 @@ def main(args: argparse.Namespace):
 
 def find_closest(tree: ae_backend.tree.Tree, all_sequences: dict, new_seq_ids: set):
     data = {} # name -> leaf (Node_Ref)
+    print(f"Adding {len(new_seq_ids)} leaves:")
     for name in new_seq_ids:
         order = sorted(([ae_backend.raw_sequence.hamming_distance_raw_sequence(all_sequences[name], all_sequences[leaf.name()]), leaf] for leaf in tree.select_leaves()), key=lambda en: en[0] * 100.0 - en[1].cumulative_edge())
         data[name] = order[0][1]
-        print(f"> {name} <- {order[0][0]} -> {order[0][1].name()}")
+        print(f"    {name:50s} <- {order[0][0]:3d} -> {order[0][1].name()}")
         # print(f"> {name} (ham:{order[0][0]}) {data[name].node_id()}") # \n{all_sequences[name].raw}\n{all_sequences[order[0][1].name()].raw}")
     return data
 

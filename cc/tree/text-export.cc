@@ -109,8 +109,18 @@ std::string ae::tree::export_json(const Tree& tree)
 
     fmt::format_to(std::back_inserter(text), " \"tree\"");
     std::string indent{" "};
+    std::vector<bool> commas{false};
+    commas.reserve(tree.depth());
 
-    const auto format_node_begin = [&text, &indent](const Node* node) {
+    const auto format_node_begin = [&text, &indent, &commas](const Node* node) {
+        if (commas.back()) {
+            fmt::format_to(std::back_inserter(text), ",\n");
+        }
+        else {
+            commas.back() = true;
+            fmt::format_to(std::back_inserter(text), "\n");
+        }
+
         fmt::format_to(std::back_inserter(text), "{}{{\n{} \"I\": {},", indent, indent, node->node_id_);
         if (node->edge != 0.0)
             fmt::format_to(std::back_inserter(text), " \"l\": {:.10g},", *node->edge);
@@ -118,9 +128,9 @@ std::string ae::tree::export_json(const Tree& tree)
             fmt::format_to(std::back_inserter(text), " \"c\": {:.10g},", *node->cumulative_edge);
     };
 
-    const auto format_node_end = [&text, &indent]() { fmt::format_to(std::back_inserter(text), "\n{}}}\n", indent); };
+    const auto format_node_end = [&text, &indent]() { fmt::format_to(std::back_inserter(text), "\n{}}}", indent); };
 
-    const auto format_inode_pre = [&text, &indent, &tree, format_node_begin](const Inode* inode) {
+    const auto format_inode_pre = [&text, &indent, &tree, &commas, format_node_begin](const Inode* inode) {
         format_node_begin(inode);
         if (inode->node_id_ == node_index_t{0}) {
             if (tree.maximum_cumulative() > 0)
@@ -131,13 +141,15 @@ std::string ae::tree::export_json(const Tree& tree)
         // "A": ["aa subst", "N193K"],
         // "H": <true if hidden>,
         fmt::format_to(std::back_inserter(text), "\n");
-        fmt::format_to(std::back_inserter(text), "{} \"t\": [\n", indent);
+        fmt::format_to(std::back_inserter(text), "{} \"t\": [", indent);
         indent.append(2, ' ');
+        commas.push_back(false);
     };
 
-    const auto format_inode_post = [&text, &indent, format_node_end](const Inode*) {
+    const auto format_inode_post = [&text, &indent, &commas, format_node_end](const Inode*) {
         indent.resize(indent.size() - 2);
-        fmt::format_to(std::back_inserter(text), "{} ]", indent);
+        commas.pop_back();
+        fmt::format_to(std::back_inserter(text), "\n{} ]", indent);
         format_node_end();
     };
 
