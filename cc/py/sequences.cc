@@ -10,6 +10,7 @@
 #include "sequences/translate.hh"
 #include "sequences/align.hh"
 #include "sequences/seqdb.hh"
+#include "sequences/hamming-distance.hh"
 
 #include "py/module.hh"
 
@@ -105,7 +106,7 @@ void ae::py::sequences(pybind11::module_& mdl)
         "verbose"_a = false, pybind11::return_value_policy::reference);
     seqdb_submodule.def("save", &seqdb_save);
 
-    pybind11::class_<Seqdb>(seqdb_submodule, "SeqdbForSubtype")                                      //
+    pybind11::class_<Seqdb>(seqdb_submodule, "SeqdbForSubtype")                                     //
         .def("add", &Seqdb::add, "raw_sequence"_a, pybind11::doc{"returns if sequence was added."}) //
         .def(
             "save", [](const Seqdb& seqdb, pybind11::object filename) { seqdb.save(std::string{pybind11::str(filename)}); }, "filename"_a) //
@@ -280,7 +281,7 @@ void ae::py::sequences(pybind11::module_& mdl)
             [](RawSequence& seq, std::string_view type_subtype) { seq.type_subtype = ae::virus::type_subtype_t{type_subtype}; })                                                    //
         .def_property_readonly("aa", [](const RawSequence& sequence) { return sequence.sequence.aa.get(); })                                                                        //
         .def_property_readonly("nuc", [](const RawSequence& sequence) { return sequence.sequence.nuc.get(); })                                                                      //
-        .def_property_readonly("raw", [](const RawSequence& sequence) { return sequence.raw_sequence; })                                                                      //
+        .def_property_readonly("raw", [](const RawSequence& sequence) { return sequence.raw_sequence; })                                                                            //
         .def("is_aligned", [](const RawSequence& sequence) { return !sequence.issues.is_set(issue::not_aligned); })                                                                 //
         .def("is_translated", [](const RawSequence& sequence) { return !sequence.issues.is_set(issue::not_translated); })                                                           //
         .def("is_translated_not_aligned", [](const RawSequence& sequence) { return !sequence.issues.is_set(issue::not_translated) && sequence.issues.is_set(issue::not_aligned); }) //
@@ -304,6 +305,8 @@ void ae::py::sequences(pybind11::module_& mdl)
     raw_sequence_submodule.def("translate", &translate, "sequence"_a, "messages"_a);
     raw_sequence_submodule.def("align", &align, "sequence"_a, "messages"_a);
     raw_sequence_submodule.def("calculate_hash", &calculate_hash, "sequence"_a);
+    raw_sequence_submodule.def(
+        "hamming_distance_raw_sequence", [](const RawSequence& seq1, const RawSequence& seq2) { return ae::sequences::hamming_distance(seq1.raw_sequence, seq2.raw_sequence); }, "seq1"_a, "seq2"_a);
 
     // ----------------------------------------------------------------------
 }
