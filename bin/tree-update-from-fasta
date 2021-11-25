@@ -29,6 +29,8 @@ def main(args: argparse.Namespace):
     print(f"To add {len(new_seq_ids)}")
     # pprint.pprint(new_seq_ids)
     closest_data = find_closest(tree=tree, all_sequences=fasta_data, new_seq_ids=new_seq_ids)
+    for name, en in closest_data.items():
+        en.add_sibling_leaf(name)
 
     if args.output_tree:
         ae_backend.tree.export(tree, args.output_tree)
@@ -40,9 +42,8 @@ def find_closest(tree: ae_backend.tree.Tree, all_sequences: dict, new_seq_ids: s
     for name in new_seq_ids:
         order = sorted(([ae_backend.raw_sequence.hamming_distance_raw_sequence(all_sequences[name], all_sequences[leaf.name()]), leaf] for leaf in tree.select_leaves()), key=lambda en: en[0] * 100.0 - en[1].cumulative_edge())
         data[name] = order[0][1]
-        print(f"> {name} (ham:{order[0][0]}) {data[name].node_id()}") # \n{all_sequences[name].raw}\n{all_sequences[order[0][1].name()].raw}")
-        # pprint.pprint([{k:v for k,v in en.items() if k != "p"} for en in order[:5]], width=150)
-        # print()
+        print(f"> {name} <- {order[0][0]} -> {order[0][1].name()}")
+        # print(f"> {name} (ham:{order[0][0]}) {data[name].node_id()}") # \n{all_sequences[name].raw}\n{all_sequences[order[0][1].name()].raw}")
     return data
 
 # ----------------------------------------------------------------------

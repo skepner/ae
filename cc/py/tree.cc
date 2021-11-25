@@ -105,6 +105,17 @@ void ae::py::tree(pybind11::module_& mdl)
         .def("cumulative_edge", &Node_Ref::cumulative_edge) //
         .def("node_id", &Node_Ref::node_id)                 //
         .def("parent", &Node_Ref::parent)                   //
+        .def(
+            "add_leaf",
+            [](Node_Ref& parent, std::string_view name, double edge) {
+                if (ae::tree::is_leaf(parent.node_index))
+                    throw std::invalid_argument{"cannot add leaf to leaf (as parent)"};
+                parent.tree.add_leaf(parent.node_index, name, EdgeLength{edge});
+            },
+            "name"_a, "edge"_a = 0.0, pybind11::doc("insert leaf into the tree as a child of self")) //
+        .def(
+            "add_sibling_leaf", [](Node_Ref& leaf, std::string_view name, double edge) { leaf.tree.add_leaf(leaf.tree.parent(leaf.node_index), name, EdgeLength{edge}); }, "name"_a, "edge"_a = 0.0,
+            pybind11::doc("insert leaf into the tree as a child of the parent of self")) //
         ;
 
     tree_submodule.def(
