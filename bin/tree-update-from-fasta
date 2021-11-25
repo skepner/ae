@@ -27,10 +27,23 @@ def main(args: argparse.Namespace):
     # find seq_id in fasta that are not in the tree
     new_seq_ids = set(fasta_data) - set(leaf.name() for leaf in tree.select_leaves())
     print(f"To add {len(new_seq_ids)}")
-    pprint.pprint(new_seq_ids)
+    # pprint.pprint(new_seq_ids)
+    closest_data = find_closest(tree=tree, all_sequences=fasta_data, new_seq_ids=new_seq_ids)
 
     if args.output_tree:
         ae_backend.tree.export(tree, args.output_tree)
+
+# ----------------------------------------------------------------------
+
+def find_closest(tree: ae_backend.tree.Tree, all_sequences: dict, new_seq_ids: set):
+    data = {} # name -> leaf (Node_Ref)
+    for name in new_seq_ids:
+        order = sorted(([hamming_distance(all_sequences[name].raw, all_sequences[leaf.name()].raw), leaf] for leaf in tree.select_leaves()), key=lambda en: en[0] * 100.0 - en[1].cumulative_edge())
+        data[name] = order[0][1]
+        print(f"> {name} (ham:{order[0][0]}) {data[name].node_id()}") # \n{all_sequences[name].raw}\n{all_sequences[order[0][1].name()].raw}")
+        # pprint.pprint([{k:v for k,v in en.items() if k != "p"} for en in order[:5]], width=150)
+        # print()
+    return data
 
 # ----------------------------------------------------------------------
 
