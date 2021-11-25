@@ -1,6 +1,6 @@
 #include "utils/timeit.hh"
 #include "tree/tree.hh"
-#include "tree/text-export.hh"
+#include "tree/export.hh"
 
 // ======================================================================
 
@@ -88,7 +88,8 @@ void export_inode(fmt::memory_buffer& text, const ae::tree::Inode& inode, const 
 
 std::string ae::tree::export_json(const Tree& tree)
 {
-    // Timeit ti{"tree::export_json"};
+    Timeit ti{"tree::export_json", std::chrono::milliseconds{100}};
+
     using namespace fmt::literals;
     fmt::memory_buffer text;
     fmt::format_to(std::back_inserter(text), "{{\"_\": \"-*- js-indent-level: 1 -*-\",\n \"  version\": \"phylogenetic-tree-v3\",\n \"  date\": \"{today:%Y-%m-%d %H:%M %Z}\",\n",
@@ -173,7 +174,7 @@ std::string ae::tree::export_json(const Tree& tree)
     };
 
     const auto format_leaf_post = [](const Leaf* leaf) {
-        fmt::print("> format_leaf_post \"{}\"\n", leaf->name);
+        fmt::print("> export_json format_leaf_post \"{}\"\n", leaf->name);
     };
 
     for (const auto ref : tree.visit(tree_visiting::all_pre_post)) {

@@ -4,7 +4,7 @@
 #include "sequences/seqdb.hh"
 #include "tree/tree.hh"
 #include "tree/newick.hh"
-#include "tree/text-export.hh"
+#include "tree/export.hh"
 
 // ======================================================================
 

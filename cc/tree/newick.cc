@@ -1,10 +1,11 @@
 #include <vector>
 #include <stack>
 
-#include "tree/newick.hh"
-#include "tree/tree.hh"
 #include "ext/from_chars.hh"
 #include "ext/lexy.hh"
+#include "utils/timeit.hh"
+#include "tree/newick.hh"
+#include "tree/tree.hh"
 
 // https://en.wikipedia.org/wiki/Newick_format
 
@@ -237,7 +238,76 @@ std::shared_ptr<ae::tree::Tree> ae::tree::load_newick(const std::string& source)
 
 std::string ae::tree::export_newick(const Tree& tree)
 {
-    return {};
+    Timeit ti{"tree::export_newick", std::chrono::milliseconds{0}};
+    using namespace fmt::literals;
+
+    fmt::memory_buffer text;
+
+    // fmt::format_to(std::back_inserter(text), "{{\"_\": \"-*- js-indent-level: 1 -*-\",\n \"  version\": \"phylogenetic-tree-v3\",\n \"  date\": \"{today:%Y-%m-%d %H:%M %Z}\",\n",
+    //                "today"_a = fmt::localtime(std::time(nullptr)) //
+    // );
+    // if (!tree.subtype().empty()) {
+    //     fmt::format_to(std::back_inserter(text), " \"v\": \"{}\",", tree.subtype());
+    //     if (tree.subtype() == virus::type_subtype_t{"B"} && !tree.lineage().empty()) {
+    //         if (tree.lineage() == sequences::lineage_t{"V"})
+    //             fmt::format_to(std::back_inserter(text), " \"l\": \"VICTORIA\",");
+    //         else if (tree.lineage() == sequences::lineage_t{"Y"})
+    //             fmt::format_to(std::back_inserter(text), " \"l\": \"YAMAGATA,");
+    //         else
+    //             fmt::format_to(std::back_inserter(text), " \"l\": \"{}\",", tree.lineage());
+    //     }
+    //     fmt::format_to(std::back_inserter(text), "\n");
+    // }
+
+    // fmt::format_to(std::back_inserter(text), " \"tree\"");
+    // std::string indent{" "};
+
+    std::vector<bool> commas{false};
+    commas.reserve(tree.depth());
+
+    const auto format_comma = [&text, &commas]() {
+        if (commas.back())
+            fmt::format_to(std::back_inserter(text), ",");
+        else
+            commas.back() = true;
+    };
+
+    const auto format_edge = [&text](auto edge) {
+        if (edge != 0.0)
+            fmt::format_to(std::back_inserter(text), ":{:.10g}", *edge);
+    };
+
+    const auto format_inode_pre = [&text, &commas, format_comma](const Inode*) {
+        format_comma();
+        fmt::format_to(std::back_inserter(text), "(");
+        commas.push_back(false);
+    };
+
+    const auto format_inode_post = [&text, &commas, format_edge](const Inode* inode) {
+        commas.pop_back();
+        fmt::format_to(std::back_inserter(text), ")");
+        format_edge(inode->edge);
+    };
+
+    const auto format_leaf = [&text, format_comma, format_edge](const Leaf* leaf) {
+        format_comma();
+        fmt::format_to(std::back_inserter(text), "{}", leaf->name);
+        format_edge(leaf->edge);
+    };
+
+    const auto format_leaf_post = [](const Leaf* leaf) {
+        fmt::print("> export_newick format_leaf_post \"{}\"\n", leaf->name);
+    };
+
+    for (const auto ref : tree.visit(tree_visiting::all_pre_post)) {
+        if (ref.pre())
+            ref.visit(format_inode_pre, format_leaf);
+        else
+            ref.visit(format_inode_post, format_leaf_post);
+    }
+    fmt::format_to(std::back_inserter(text), ";");
+
+    return fmt::to_string(text);
 
 } // ae::tree::export_newick
 
