@@ -11,6 +11,7 @@ else:
     sys.path[:0] = [str(Path(os.environ["AE_ROOT"], dir)) for dir in ["build", "py"]]
 import ae_backend
 from ae.sequences.source import fasta
+from ae.sequences.utils import hamming_distance
 
 # ----------------------------------------------------------------------
 

@@ -26,6 +26,8 @@ namespace ae::tree
         {
             return tree.node(node_index).visit([](const auto* node) -> node_index_base_t { return node->node_id_.get(); });
         }
+
+        Node_Ref parent() const { return Node_Ref{tree.parent(node_index), tree}; }
     };
 
     struct Nodes_Iterator
@@ -102,6 +104,7 @@ void ae::py::tree(pybind11::module_& mdl)
         .def("edge", &Node_Ref::edge)                       //
         .def("cumulative_edge", &Node_Ref::cumulative_edge) //
         .def("node_id", &Node_Ref::node_id)                 //
+        .def("parent", &Node_Ref::parent)                   //
         ;
 
     tree_submodule.def(

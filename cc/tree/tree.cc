@@ -243,6 +243,20 @@ ae::tree::Nodes ae::tree::Tree::select_inodes()
 
 // ----------------------------------------------------------------------
 
+ae::tree::node_index_t ae::tree::Tree::parent(node_index_t child) const
+{
+    if (child == node_index_t{0})
+        throw std::out_of_range{"no parent for the root node"};
+    for (auto inode_it = inodes_.begin(); inode_it != inodes_.end(); ++inode_it) {
+        if (const auto found = std::find(std::begin(inode_it->children), std::end(inode_it->children), child); found != std::end(inode_it->children))
+            return node_index_t{static_cast<node_index_base_t>(inodes_.begin() - inode_it)}; // negative!
+    }
+    throw std::invalid_argument{"child not found in the tree"};
+
+} // ae::tree::Tree::parent
+
+// ----------------------------------------------------------------------
+
 void ae::tree::Tree::remove(const std::vector<node_index_t>& nodes)
 {
     Timeit ti{"Tree::remove"};
