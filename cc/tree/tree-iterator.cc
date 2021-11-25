@@ -60,9 +60,22 @@ template <ae::lvalue_reference TREE, ae::pointer LEAF, ae::pointer INODE> ae::tr
         }
     };
 
+    [[maybe_unused]] const auto debug_print_current = [this](std::string_view prefix) {
+            auto& [parent_index, child_no] = parents_.back();
+            auto& parent = tree_.inode(parent_index);
+            if (child_no == parent_itself)
+                fmt::print(">>>> {} ++ <{}> parents:{} self\n", prefix, parents_.back().first, parents_.size());
+            else if (child_no < parent.children.size())
+                fmt::print(">>>> {} ++ <{}> parents:{} child_no:{} {}\n", prefix, parents_.back().first, parents_.size(), parents_.back().second, tree_.node(parent.children[child_no]).to_string());
+            else if (is_visiting_post() && child_no != iteration_end)
+                fmt::print(">>>> {} ++ <{}> self post\n", prefix, parents_.back().first);
+            // fmt::print(">>>> ++ <{}> {} visiting:{}\n", parents_.back().first, parents_.back().second, static_cast<int>(visiting_));
+    };
+
     // ----------------------------------------------------------------------
 
     while (true) {
+        // debug_print_current("while");
         auto parent = parents_.end() - 1;
         if (parent->second == parent_itself) {
             if (dive(0))
@@ -85,14 +98,8 @@ template <ae::lvalue_reference TREE, ae::pointer LEAF, ae::pointer INODE> ae::tr
         else { // undive
             parents_.pop_back();
             parent = parents_.end() - 1;
-            if (parents_.size() == 1) {
-                if (is_visiting_post())
-                    ++parent->second; // *post -> pre-end
-                else
-                    parent->second = iteration_end; // -> end
-                break;
-            }
-            else if (dive(parent->second + 1))
+            // debug_print_current("undive1");
+            if (dive(parent->second + 1))
                 break;
         }
     }

@@ -28,6 +28,11 @@ namespace ae::tree
         }
 
         Node_Ref parent() const { return Node_Ref{tree.parent(node_index), tree}; }
+
+        size_t number_of_children() const
+        {
+            return tree.node(node_index).visit([](const Inode* inode) { return inode->children.size(); }, [](const Leaf*) { return 0ul; });
+        }
     };
 
     struct Nodes_Iterator
@@ -99,12 +104,13 @@ void ae::py::tree(pybind11::module_& mdl)
         .def("__next__", &Nodes_Iterator::next)                                    //
         ;
 
-    pybind11::class_<Node_Ref>(tree_submodule, "Node_Ref")  //
-        .def("name", &Node_Ref::name)                       //
-        .def("edge", &Node_Ref::edge)                       //
-        .def("cumulative_edge", &Node_Ref::cumulative_edge) //
-        .def("node_id", &Node_Ref::node_id)                 //
-        .def("parent", &Node_Ref::parent)                   //
+    pybind11::class_<Node_Ref>(tree_submodule, "Node_Ref")        //
+        .def("name", &Node_Ref::name)                             //
+        .def("edge", &Node_Ref::edge)                             //
+        .def("cumulative_edge", &Node_Ref::cumulative_edge)       //
+        .def("node_id", &Node_Ref::node_id)                       //
+        .def("parent", &Node_Ref::parent)                         //
+        .def("number_of_children", &Node_Ref::number_of_children) //
         .def(
             "add_leaf",
             [](Node_Ref& parent, std::string_view name, double edge) {

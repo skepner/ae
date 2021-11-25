@@ -24,8 +24,12 @@ def main(args: argparse.Namespace):
     print([leaf.name() for leaf in leaves_to_remove])
     tree.remove(leaves_to_remove)
 
+    names_in_tree = set(leaf.name() for leaf in tree.select_leaves())
+    print(f"names in tree: {len(names_in_tree)}")
+    print(f"VICTORIA/830/2013_MDCK2_84978971 in tree: {'VICTORIA/830/2013_MDCK2_84978971' in names_in_tree}", [leaf.name() for leaf in tree.select_leaves()][-1])
+
     # find seq_id in fasta that are not in the tree
-    new_seq_ids = set(fasta_data) - set(leaf.name() for leaf in tree.select_leaves())
+    new_seq_ids = set(fasta_data) - names_in_tree
     closest_data = find_closest(tree=tree, all_sequences=fasta_data, new_seq_ids=new_seq_ids)
     for name, en in closest_data.items():
         en.add_sibling_leaf(name)

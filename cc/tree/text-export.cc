@@ -172,13 +172,17 @@ std::string ae::tree::export_json(const Tree& tree)
         format_node_end();
     };
 
+    const auto format_leaf_post = [](const Leaf* leaf) {
+        fmt::print("> format_leaf_post \"{}\"\n", leaf->name);
+    };
+
     for (const auto ref : tree.visit(tree_visiting::all_pre_post)) {
         if (ref.pre())
             ref.visit(format_inode_pre, format_leaf);
         else
-            ref.visit(format_inode_post, format_leaf);
+            ref.visit(format_inode_post, format_leaf_post);
     }
-    fmt::format_to(std::back_inserter(text), "}}\n");
+    fmt::format_to(std::back_inserter(text), "\n}}\n");
     return fmt::to_string(text);
 
 } // ae::tree::export_json
