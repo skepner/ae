@@ -259,7 +259,7 @@ ae::tree::node_index_t ae::tree::Tree::parent(node_index_t child) const
 
 void ae::tree::Tree::remove(const std::vector<node_index_t>& nodes)
 {
-    Timeit ti{"Tree::remove"};
+    Timeit ti{"Tree::remove", std::chrono::milliseconds{100}};
 
     const auto child_empty = [this](auto child_id) { return !is_leaf(child_id) && inode(child_id).children.empty(); };
 
@@ -317,7 +317,7 @@ std::shared_ptr<ae::tree::Tree> ae::tree::load(const std::filesystem::path& file
 
 void ae::tree::export_tree(const Tree& tree, const std::filesystem::path& filename)
 {
-    Timeit ti{"export_tree"};
+    Timeit ti{"export_tree", std::chrono::milliseconds{100}};
     using namespace std::string_view_literals;
     const auto has_suffix = [filename = filename.filename().native()](std::initializer_list<std::string_view> suffixes) {
         return std::any_of(std::begin(suffixes), std::end(suffixes), [&filename](std::string_view suffix) { return filename.find(suffix) != std::string::npos; });

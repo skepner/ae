@@ -21,24 +21,24 @@ namespace ae
     class Timeit
     {
       public:
-        Timeit(std::string_view msg, report_time report = report_time::yes)
-            : message_{msg}, report_{report}, start_{clock_t::now()}
-        {
-        }
+        Timeit(std::string_view msg, report_time report = report_time::yes) : message_{msg}, report_{report} {}
+        template <typename Threshold> Timeit(std::string_view msg, Threshold threshold) : message_{msg}, threshold_{threshold} {}
         ~Timeit() { report(); }
 
         void report() const
         {
             if (report_ == report_time::yes) {
-                fmt::print(">>> {}: {:%H:%M:%S}\n", message_, elapsed(start_));
+                if (const auto elap = elapsed(start_); elap >= threshold_)
+                    fmt::print(">>> {}: {:%H:%M:%S}\n", message_, elap);
                 report_ = report_time::no;
             }
         }
 
       private:
         std::string message_;
-        mutable report_time report_;
-        timestamp_t start_;
+        mutable report_time report_{report_time::yes};
+        timestamp_t start_{clock_t::now()};
+        duration_t threshold_{0};
     };
 
 } // namespace ae
