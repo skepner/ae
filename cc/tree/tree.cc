@@ -263,13 +263,22 @@ void ae::tree::Tree::remove(const std::vector<node_index_t>& nodes)
 
     const auto child_empty = [this](auto child_id) { return !is_leaf(child_id) && inode(child_id).children.empty(); };
 
+    bool single_child_inode{false};
     for (auto ref : visit(tree_visiting::inodes_post)) {
         ref.visit(
-            [&nodes, child_empty](Inode* inode) {
+            [&nodes, &single_child_inode, child_empty](Inode* inode) {
                 inode->children.erase(
                     std::remove_if(std::begin(inode->children), std::end(inode->children),
                                    [&nodes, child_empty](auto child_id) { return std::find(std::begin(nodes), std::end(nodes), child_id) != std::end(nodes) || child_empty(child_id); }),
                     std::end(inode->children));
+                if (single_child_inode) {
+                    fmt::print(">>> child of {} is a single child inode\n", inode->node_id_);
+                    single_child_inode = false;
+                }
+                if (inode->children.size() == 1) {
+                    single_child_inode = true;
+                    fmt::print(">> single child inode left: {}\n", inode->node_id_);
+                }
             },
             [](Leaf*) {});
     }
