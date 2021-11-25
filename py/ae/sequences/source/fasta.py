@@ -39,6 +39,10 @@ class reader:
 
 # ----------------------------------------------------------------------
 
+def read(filename: Path):
+    """return dict(name: sequence) from fasta file"""
+    return {en.raw_name: en.sequence for en in ae_backend.raw_sequence.FastaReader(filename)}
+
 def read_names(filename: Path):
     """return list of names read from fasta file"""
     return [en.raw_name for en in ae_backend.raw_sequence.FastaReader(filename)]
