@@ -122,7 +122,7 @@ std::string ae::tree::export_json(const Tree& tree)
             fmt::format_to(std::back_inserter(text), "\n");
         }
 
-        fmt::format_to(std::back_inserter(text), "{}{{\n{} \"I\": {},", indent, indent, node->node_id_);
+        fmt::format_to(std::back_inserter(text), "{}{{\n{} \"I\": {},", indent, indent, node->node_id_.get());
         if (node->edge != 0.0)
             fmt::format_to(std::back_inserter(text), " \"l\": {:.10g},", *node->edge);
         if (node->cumulative_edge != 0.0)
