@@ -190,8 +190,25 @@ ae::sequences::SeqdbEntry::SeqdbEntry(const RawSequence& raw_sequence) : name{ra
 
 bool ae::sequences::SeqdbEntry::update(const RawSequence& raw_sequence, bool keep_sequence)
 {
+    bool updated{false};
+
+    if (raw_sequence.lineage) {
+        if (!lineage) {
+            lineage = raw_sequence.lineage;
+            updated = true;
+        }
+        else if (lineage != raw_sequence.lineage) {
+            const auto old_lineage = lineage;
+            if (lineage == lineage_t{"V"} || lineage == lineage_t{"Y"})
+                lineage = "VY";
+            else
+                lineage = static_cast<const std::string&>(lineage) + static_cast<const std::string&>(raw_sequence.lineage);
+            fmt::print(">> \"{}\": conflicting lineage, will be set to \"{}\" old:{} ({}) new:{} (\"{}\")\n", name, lineage, old_lineage, labs(), raw_sequence.lineage, raw_sequence.lab);
+        }
+    }
+
     // fmt::print("SeqdbEntry::update {}\n", raw_sequence.name);
-    bool updated = add_date(raw_sequence.date);
+    updated |= add_date(raw_sequence.date);
 
     if (!raw_sequence.host.empty()) {
         if (host.empty()) {
@@ -200,14 +217,6 @@ bool ae::sequences::SeqdbEntry::update(const RawSequence& raw_sequence, bool kee
         }
         else if (host != raw_sequence.host)
             fmt::print(">> SeqdbEntry::update \"{}\": conflicting host old:{} new:{}\n", name, host, raw_sequence.host);
-    }
-    if (raw_sequence.lineage) {
-        if (!lineage) {
-            lineage = raw_sequence.lineage;
-            updated = true;
-        }
-        else if (lineage != raw_sequence.lineage)
-            fmt::print(">> SeqdbEntry::update \"{}\": conflicting lineage old:{} new:{}\n", name, lineage, raw_sequence.lineage);
     }
     if (!raw_sequence.continent.empty()) {
         if (continent.empty()) {
@@ -252,6 +261,21 @@ bool ae::sequences::SeqdbEntry::add_date(std::string_view date)
     return added;
 
 } // ae::sequences::SeqdbEntry::add_date
+
+// ----------------------------------------------------------------------
+
+std::vector<std::string> ae::sequences::SeqdbEntry::labs() const
+{
+    std::vector<std::string> labs;
+    for (const auto& seq : seqs) {
+        for (const auto& [lab, lab_id] : seq.lab_ids) {
+            if (std::find(std::begin(labs), std::end(labs), lab) == std::end(labs))
+                labs.push_back(lab);
+        }
+    }
+    return labs;
+
+} // ae::sequences::SeqdbEntry::labs
 
 // ----------------------------------------------------------------------
 

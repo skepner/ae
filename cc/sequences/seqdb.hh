@@ -185,6 +185,8 @@ namespace ae::sequences
 
         std::string_view date() const { return dates.empty() ? std::string_view{} : std::string_view{dates.back()}; }
 
+        std::vector<std::string> labs() const;
+
         // std::string host() const;
         // bool date_within(std::string_view start, std::string_view end) const { return !dates.empty() && (start.empty() || dates.front() >= start) && (end.empty() ||
         // dates.front() < end); } std::string_view date() const; bool has_date(std::string_view date) const { return std::find(std::begin(dates), std::end(dates), date)
