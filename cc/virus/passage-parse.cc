@@ -143,8 +143,8 @@ namespace ae::virus::passage
             static constexpr auto prefix = P + A + S + S + A + G + E;
             static constexpr auto prefix_details = D + E + T + A + I + L + S;
             static constexpr auto cond = dsl::peek(prefix);
-            static constexpr auto rule = prefix + WS + dsl::opt(dsl::peek(prefix_details) >> prefix_details + WS) + dsl::colon + WS;
-            static constexpr auto value = lexy::callback<lexy::nullopt>([](lexy::nullopt) { return lexy::nullopt{}; }, []() { return lexy::nullopt{}; });
+            static constexpr auto rule = prefix + (WS / dsl::hyphen) + dsl::opt(dsl::peek(prefix_details) >> prefix_details + WS) + dsl::opt(dsl::peek(dsl::colon) >> dsl::colon) + WS;
+            static constexpr auto value = lexy::callback<lexy::nullopt>([](auto...) { return lexy::nullopt{}; });
         };
 
         struct part
