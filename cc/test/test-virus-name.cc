@@ -125,6 +125,9 @@ size_t virus_name_parsing_test(bool verbose)
         TD{"A/Lisboa/SU17+/2010", CT{.subtype = "A", .location = "LISBOA", .isolation = "SU17+", .year = "2010"}},
         TD{"A/India/LKO_TAH398(a)/2015", CT{.subtype = "A", .location = "INDIA", .isolation = "LKO_TAH398(A)", .year = "2015"}},
 
+        TD{"NYMC-X-307A", CT{.reassortant = "NYMC-307A"}},
+        TD{"NYMC/X-307A", CT{.reassortant = "NYMC-307A"}},
+
         // TD{"A/Flu-Bangkok/24/19",                                                CT{}}, // CT{A,               H, "BANGKOK", "24", "2019", R, P, E}},
         // TD{"A(H1)//ARGENTINA/FLE0116/2009",                                      CT{}}, // CT{typ{"A(H1)"},    H, "ARGENTINA", "FLE0116", "2009", R, P, E}},
         // TD{"A/FriuliVeneziaGiuliaPN/230/2019",                                   CT{}}, // CT{A,               H, "FRIULI-VENEZIA GIULIA PN", "230", "2019", R, P, E}},

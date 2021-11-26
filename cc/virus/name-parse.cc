@@ -336,20 +336,20 @@ namespace ae::virus::name::inline v1
 
         struct nymc_x_bx
         {
-            // NYMC-307A, X-307A, BX-11, NYMC-X-307A, NYMC-X307A, NYMC X-307A,
-            static constexpr auto peek_nymc = dsl::peek(N + Y + M + C + dsl::hyphen / dsl::ascii::blank / dsl::digit<>);
+            // NYMC-307A, X-307A, BX-11, NYMC-X-307A, NYMC-X307A, NYMC X-307A, NYMC/X-307A
+            static constexpr auto peek_nymc = dsl::peek(N + Y + M + C + dsl::hyphen / dsl::ascii::blank / dsl::slash / dsl::digit<>);
             static constexpr auto peek_bx = dsl::peek(B + X + dsl::hyphen / dsl::ascii::blank / dsl::digit<>);
             static constexpr auto peek_x = dsl::peek(X + dsl::hyphen / dsl::ascii::blank / dsl::digit<>);
             static constexpr auto peek = peek_nymc | peek_bx | peek_x;
-            static constexpr auto nymc = peek_nymc                                  //
-                                         >> dsl::while_(dsl::ascii::alpha)          //
-                                                + (dsl::hyphen / dsl::ascii::blank) //
-                + dsl::opt(dsl::peek(X / B) >> dsl::while_(dsl::ascii::alpha) + dsl::while_(dsl::hyphen / dsl::ascii::blank));
+            static constexpr auto nymc = peek_nymc                                               //
+                                         >> dsl::while_(dsl::ascii::alpha)                       //
+                                                + (dsl::hyphen / dsl::ascii::blank / dsl::slash) //
+                                                + dsl::opt(dsl::peek(X / B) >> dsl::while_(dsl::ascii::alpha) + dsl::while_(dsl::hyphen / dsl::ascii::blank));
             static constexpr auto xbx = (peek_x | peek_bx) >> dsl::while_(dsl::ascii::alpha) + dsl::hyphen / dsl::ascii::blank;
 
-            static constexpr auto rule = (nymc | xbx) + dsl::capture(dsl::while_(dsl::digit<> / dsl::ascii::alpha/ dsl::hyphen / PLUS)) //
-                + dsl::whitespace(dsl::ascii::blank) //
-                + dsl::opt(dsl::peek(C + L + dsl::hyphen) >> dsl::capture(C + L + dsl::hyphen + dsl::digits<>));
+            static constexpr auto rule = (nymc | xbx) + dsl::capture(dsl::while_(dsl::digit<> / dsl::ascii::alpha / dsl::hyphen / PLUS)) //
+                                         + dsl::whitespace(dsl::ascii::blank)                                                            //
+                                         + dsl::opt(dsl::peek(C + L + dsl::hyphen) >> dsl::capture(C + L + dsl::hyphen + dsl::digits<>));
             static constexpr auto value = lexy::callback<parts_t>( //
                 [](lexy::nullopt, auto lex, lexy::nullopt) {
                     return parts_t{part_t{"NYMC-" + uppercase_strip(lex), part_type::reassortant}};
