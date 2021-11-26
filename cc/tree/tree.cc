@@ -263,22 +263,37 @@ void ae::tree::Tree::remove(const std::vector<node_index_t>& nodes)
 
     const auto child_empty = [this](auto child_id) { return !is_leaf(child_id) && inode(child_id).children.empty(); };
 
-    bool single_child_inode{false};
+    // normally just one entry in the collection, but there could be meore in complcated cases: multiple single_child_inodes (direct and indirect children) for the same parent
+    std::vector<Inode*> single_child_inodes;
     for (auto ref : visit(tree_visiting::inodes_post)) {
         ref.visit(
-            [&nodes, &single_child_inode, child_empty](Inode* inode) {
+            [&nodes, &single_child_inodes, child_empty, this](Inode* inode) {
                 inode->children.erase(
                     std::remove_if(std::begin(inode->children), std::end(inode->children),
                                    [&nodes, child_empty](auto child_id) { return std::find(std::begin(nodes), std::end(nodes), child_id) != std::end(nodes) || child_empty(child_id); }),
                     std::end(inode->children));
-                if (single_child_inode) {
-                    fmt::print(">>> child of {} is a single child inode\n", inode->node_id_);
-                    single_child_inode = false;
+                if (!single_child_inodes.empty()) {
+                    // fmt::print(">>>> single_child_inodes {}\n", single_child_inodes[0]->node_id_);
+                    decltype(single_child_inodes)::iterator single_child_inode;
+                    if (const auto child = std::find_if(std::begin(inode->children), std::end(inode->children),
+                                                        [&single_child_inodes, &single_child_inode](const auto child_id) {
+                                                            single_child_inode = std::find_if(std::begin(single_child_inodes), std::end(single_child_inodes),
+                                                                                              [child_id](const Inode* sci) { return child_id == sci->node_id_; });
+                                                            return single_child_inode != std::end(single_child_inodes);
+                                                        });
+                        child != std::end(inode->children)) {
+                        // one of the single_child_inodes is emong inode->children
+                        // fmt::print(">>> child of {} is a single child inode {}\n", inode->node_id_, single_child_inode->node_id_);
+                        // add to edge of single_child_inode->children[0] edge of single_child_inode
+                        node((*single_child_inode)->children[0]).visit([parent_edge = (*single_child_inode)->edge](auto* node) { node->edge += parent_edge; });
+                        // replace single_child_inode in the children of this with single_child_inode->children[0]
+                        *child = (*single_child_inode)->children[0];
+                        // remove fixed single_child_inode from the list
+                        single_child_inodes.erase(single_child_inode);
+                    }
                 }
-                if (inode->children.size() == 1) {
-                    single_child_inode = true;
-                    fmt::print(">> single child inode left: {}\n", inode->node_id_);
-                }
+                if (inode->children.size() == 1)
+                    single_child_inodes.push_back(inode);
             },
             [](Leaf*) {});
     }
