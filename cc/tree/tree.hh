@@ -109,6 +109,7 @@ namespace ae::tree
         void set_node_id();
         void populate_with_sequences(const virus::type_subtype_t& subtype);
         void populate_with_duplicates(const virus::type_subtype_t& subtype);
+        void set_clades(const std::filesystem::path& clades_json_file, const virus::type_subtype_t& subtype);
 
         Nodes select_all();
         Nodes select_leaves();

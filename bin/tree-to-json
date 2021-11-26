@@ -36,7 +36,7 @@ def main(args: argparse.Namespace):
     if args.populate:
         tree.populate_with_duplicates("B")
         tree.populate_with_sequences("B")
-        # tree.set_clades(os.environ["AC_CLADES_JSON_V2"])
+        tree.set_clades(os.environ["AC_CLADES_JSON_V2"], "B/Vic")
 
     if args.output:
         ae_backend.tree.export(tree, args.output)

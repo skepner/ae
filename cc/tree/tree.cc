@@ -138,7 +138,7 @@ void ae::tree::Tree::set_node_id()
 
 void ae::tree::Tree::populate_with_sequences(const virus::type_subtype_t& subtype)
 {
-    // Timeit ti{"populate_with_sequences"};
+    Timeit ti{"populate_with_sequences", std::chrono::milliseconds{100}};
     const auto& seqdb = sequences::seqdb_for_subtype(subtype);
 
     for (auto leaf_ref : visit(tree_visiting::leaves)) {
@@ -164,7 +164,7 @@ void ae::tree::Tree::populate_with_sequences(const virus::type_subtype_t& subtyp
 
 void ae::tree::Tree::populate_with_duplicates(const virus::type_subtype_t& subtype)
 {
-    // Timeit ti{"populate_with_duplicates"};
+    Timeit ti{"populate_with_duplicates", std::chrono::milliseconds{100}};
     const auto& seqdb = sequences::seqdb_for_subtype(subtype);
 
     std::vector<Inode*> parents;
@@ -201,6 +201,14 @@ void ae::tree::Tree::populate_with_duplicates(const virus::type_subtype_t& subty
     update_number_of_leaves_in_subtree();
 
 } // ae::tree::Tree::populate_with_duplicates
+
+// ----------------------------------------------------------------------
+
+void ae::tree::Tree::set_clades(const std::filesystem::path& clades_json_file, const virus::type_subtype_t& subtype)
+{
+    Timeit ti{"set_clades", std::chrono::milliseconds{100}};
+
+} // ae::tree::Tree::set_clades
 
 // ----------------------------------------------------------------------
 
