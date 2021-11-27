@@ -210,10 +210,8 @@ void ae::tree::Tree::set_clades(const std::filesystem::path& clades_json_file)
     Timeit ti{"set_clades", std::chrono::milliseconds{100}};
     const sequences::Clades clades{clades_json_file};
     for (auto leaf_ref : visit(tree_visiting::leaves)) {
-        if (Leaf* leaf = leaf_ref.leaf(); !leaf->aa.empty() || !leaf->nuc.empty()) {
-            const auto clades_for_leaf = clades.clades(leaf->aa, leaf->nuc, subtype_, lineage_);
-            fmt::print(">>>> \"{}\" {}\n", leaf->name, clades_for_leaf);
-        }
+        if (Leaf* leaf = leaf_ref.leaf(); !leaf->aa.empty() || !leaf->nuc.empty())
+            leaf->clades = clades.clades(leaf->aa, leaf->nuc, subtype_, lineage_);
     }
 
 } // ae::tree::Tree::set_clades

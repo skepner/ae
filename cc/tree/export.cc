@@ -167,7 +167,8 @@ std::string ae::tree::export_json(const Tree& tree)
             fmt::format_to(std::back_inserter(text), ",\n{} \"a\": \"{}\"", indent, leaf->aa);
         if (!leaf->nuc.empty())
             fmt::format_to(std::back_inserter(text), ",\n{} \"N\": \"{}\"", indent, leaf->nuc);
-        // "L": ["clade", "2A1B"]
+        if (!leaf->clades.empty())
+            fmt::format_to(std::back_inserter(text), ",\n{} \"L\": [\"{}\"]", indent, fmt::join(leaf->clades, "\", \""));
         // "h": ["hi names"],
         // "A": ["aa subst", "N193K"],
         format_node_end();
