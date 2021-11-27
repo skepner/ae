@@ -68,12 +68,11 @@ void ae::py::tree(pybind11::module_& mdl)
         .def(
             "populate_with_duplicates", [](Tree& tree, std::string_view subtype) { tree.populate_with_duplicates(virus::type_subtype_t{subtype}); }, "subtype"_a) //
         .def(
-            "set_clades",                                                                                                                                                              //
-            [](Tree& tree, std::string_view clades_json_file, std::string_view subtype) { tree.set_clades(std::filesystem::path{clades_json_file}, virus::type_subtype_t{subtype}); }, //
-            "clades_json"_a, "subtype"_a)                                                                                                                                              //
-        .def("select_all", &Tree::select_all)                                                                                                                                          //
-        .def("select_leaves", &Tree::select_leaves)                                                                                                                                    //
-        .def("select_inodes", &Tree::select_inodes)                                                                                                                                    //
+            "set_clades",                                                                                                                     //
+            [](Tree& tree, std::string_view clades_json_file) { tree.set_clades(std::filesystem::path{clades_json_file}); }, "clades_json"_a) //
+        .def("select_all", &Tree::select_all)                                                                                                 //
+        .def("select_leaves", &Tree::select_leaves)                                                                                           //
+        .def("select_inodes", &Tree::select_inodes)                                                                                           //
         .def(
             "remove",
             [](Tree& tree, std::vector<Node_Ref>& nodes) {

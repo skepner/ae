@@ -2,6 +2,7 @@
 #include "ext/range-v3.hh"
 #include "utils/timeit.hh"
 #include "sequences/seqdb.hh"
+#include "sequences/clades.hh"
 #include "tree/tree.hh"
 #include "tree/newick.hh"
 #include "tree/export.hh"
@@ -204,9 +205,11 @@ void ae::tree::Tree::populate_with_duplicates(const virus::type_subtype_t& subty
 
 // ----------------------------------------------------------------------
 
-void ae::tree::Tree::set_clades(const std::filesystem::path& clades_json_file, const virus::type_subtype_t& subtype)
+void ae::tree::Tree::set_clades(const std::filesystem::path& clades_json_file)
 {
     Timeit ti{"set_clades", std::chrono::milliseconds{100}};
+    sequences::Clades clades{clades_json_file};
+    const auto clade_set = clades.get(subtype_, lineage_);
 
 } // ae::tree::Tree::set_clades
 

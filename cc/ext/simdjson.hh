@@ -27,6 +27,7 @@
 
 #pragma GCC diagnostic pop
 
+#include "ext/fmt.hh"
 #include "utils/file.hh"
 
 // ----------------------------------------------------------------------
@@ -56,5 +57,16 @@ namespace ae::simdjson
         decltype(parser_.iterate(json_, json_.capacity())) doc_;
     };
 } // namespace ae::simdjson
+
+
+// ----------------------------------------------------------------------
+
+template <typename RT> struct fmt::formatter<simdjson::simdjson_result<RT>> : fmt::formatter<std::string_view>
+{
+    template <typename FormatCtx> constexpr auto format(const simdjson::simdjson_result<RT>& value, FormatCtx& ctx)
+    {
+        return fmt::formatter<std::string_view>::format(static_cast<std::string_view>(simdjson::to_json_string(value)), ctx);
+    }
+};
 
 // ----------------------------------------------------------------------

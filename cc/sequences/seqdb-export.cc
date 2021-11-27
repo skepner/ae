@@ -123,7 +123,7 @@ inline void load_entry(ae::sequences::SeqdbEntry& entry, simdjson::ondemand::obj
 
 void ae::sequences::Seqdb::load()
 {
-    Timeit ti{fmt::format("Loading seqdb for {}", subtype_)};
+    Timeit ti{fmt::format("Loading seqdb for {}", subtype_), std::chrono::milliseconds{100}};
     if (const auto db_filename = filename(); std::filesystem::exists(db_filename)) {
         if (is_verbose())
             fmt::print(">>>> load \"{}\" {}\n", subtype_, db_filename);
@@ -136,8 +136,7 @@ void ae::sequences::Seqdb::load()
                     const std::string_view key = field.unescaped_key();
                     // fmt::print(">>>> key \"{}\"\n", key);
                     if (key == "  version") {
-                        if (const std::string_view ver{field.value()}; ver != "sequence-database-v4"
-                                                                              "")
+                        if (const std::string_view ver{field.value()}; ver != "sequence-database-v4")
                             throw Error{"unsupported version: \"{}\"", ver};
                     }
                     else if (key == "size") {
@@ -152,7 +151,7 @@ void ae::sequences::Seqdb::load()
                             throw Error{"wrong subtype: \"{}\"", subtype};
                     }
                     else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
-                        fmt::print(">> seqdb: unhandled \"{}\"\n", key);
+                        fmt::print(">> [seqdb] unhandled \"{}\"\n", key);
                 }
             }
             catch (simdjson_error& err) {
