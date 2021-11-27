@@ -110,15 +110,20 @@ namespace ae::sequences
 
     // ----------------------------------------------------------------------
 
-    template <typename Seq, typename ARG> inline bool matches_all(const Seq& seq, ARG data)
+    template <typename Seq, typename ARG> inline bool matches_all(const Seq& seq, ARG&& data)
     {
         using namespace ae::sequences;
         const auto matches = [&seq](const auto& en) {
             const auto eq = seq[std::get<pos1_t>(en)] == std::get<char>(en);
             return std::get<bool>(en) == eq;
         };
-        const auto elts = extract_aa_nuc_at_pos1_eq_list(data);
-        return std::all_of(std::begin(elts), std::end(elts), matches);
+        if constexpr (std::is_same_v<std::decay_t<ARG>, amino_acid_at_pos1_eq_list_t>) {
+            return std::all_of(std::begin(data), std::end(data), matches);
+        }
+        else {
+            const auto elts = extract_aa_nuc_at_pos1_eq_list(data);
+            return std::all_of(std::begin(elts), std::end(elts), matches);
+        }
     }
 
 } // namespace ae::sequences

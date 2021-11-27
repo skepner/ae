@@ -8,7 +8,7 @@
 #include "ext/string.hh"
 #include "virus/type-subtype.hh"
 #include "sequences/lineage.hh"
-#include "sequences/pos.hh"
+#include "sequences/sequence.hh"
 
 // ======================================================================
 
@@ -29,6 +29,7 @@ namespace ae::sequences
 
         Clades(const std::filesystem::path& clades_file) { load(clades_file); }
 
+        std::vector<std::string> clades(const sequence_aa_t& aa, const sequence_nuc_t& nuc, const ae::virus::type_subtype_t& subtype, const lineage_t& lineage, std::string_view set = {}) const;
         subset_t get(const ae::virus::type_subtype_t& subtype, const lineage_t& lineage, std::string_view set = {}) const;
 
       private:
@@ -36,6 +37,7 @@ namespace ae::sequences
         std::unordered_map<std::string, entries_t> data_;
 
         void load(const std::filesystem::path& clades_file);
+        std::string subtype_key(const ae::virus::type_subtype_t& subtype, const lineage_t& lineage) const;
     };
 
 } // namespace ae::sequences

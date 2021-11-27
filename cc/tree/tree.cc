@@ -208,8 +208,13 @@ void ae::tree::Tree::populate_with_duplicates(const virus::type_subtype_t& subty
 void ae::tree::Tree::set_clades(const std::filesystem::path& clades_json_file)
 {
     Timeit ti{"set_clades", std::chrono::milliseconds{100}};
-    sequences::Clades clades{clades_json_file};
-    const auto clade_set = clades.get(subtype_, lineage_);
+    const sequences::Clades clades{clades_json_file};
+    for (auto leaf_ref : visit(tree_visiting::leaves)) {
+        if (Leaf* leaf = leaf_ref.leaf(); !leaf->aa.empty() || !leaf->nuc.empty()) {
+            const auto clades_for_leaf = clades.clades(leaf->aa, leaf->nuc, subtype_, lineage_);
+            fmt::print(">>>> \"{}\" {}\n", leaf->name, clades_for_leaf);
+        }
+    }
 
 } // ae::tree::Tree::set_clades
 
