@@ -8,6 +8,7 @@
 #include "ext/string.hh"
 #include "virus/type-subtype.hh"
 #include "sequences/lineage.hh"
+#include "sequences/pos.hh"
 
 // ======================================================================
 
@@ -19,8 +20,8 @@ namespace ae::sequences
         struct entry_t
         {
             std::string name;
-            std::string aa;
-            std::string nuc;
+            amino_acid_at_pos1_eq_list_t aa;
+            amino_acid_at_pos1_eq_list_t nuc;
             std::string set;
         };
 

@@ -32,9 +32,9 @@ void ae::sequences::Clades::load(const std::filesystem::path& clades_file)
                                     if (entry_key == "N"sv)
                                         entry.name = static_cast<std::string_view>(entry_field.value());
                                     else if (entry_key == "aa"sv)
-                                        entry.aa = static_cast<std::string_view>(entry_field.value());
+                                        entry.aa = extract_aa_nuc_at_pos1_eq_list(entry_field.value()); // static_cast<std::string_view>(entry_field.value());
                                     else if (entry_key == "nuc"sv)
-                                        entry.nuc = static_cast<std::string_view>(entry_field.value());
+                                        entry.nuc = extract_aa_nuc_at_pos1_eq_list(entry_field.value()); // static_cast<std::string_view>(entry_field.value());
                                     else if (entry_key == "set"sv)
                                         entry.set = static_cast<std::string_view>(entry_field.value());
                                     else if (!entry_key.empty() && entry_key[0] != '?') // not a comment
@@ -86,7 +86,7 @@ ae::sequences::Clades::subset_t ae::sequences::Clades::get(const ae::virus::type
             std::transform(std::begin(full_set->second), std::end(full_set->second), std::back_inserter(subset), [](const auto& en) { return &en; });
     }
     for (const auto* en : subset)
-        fmt::print(">>>> \"{}\" \"{}\" \"{}\"\n", en->name, en->aa, en->set);
+        fmt::print(">>>> \"{}\" {} \"{}\"\n", en->name, en->aa, en->set);
     return subset;
 
 } // ae::sequences::Clades::get

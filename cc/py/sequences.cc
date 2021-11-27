@@ -1,11 +1,9 @@
 #include <cctype>
 #include <stdexcept>
-#include <charconv>
 #include <limits>
 
 #include "utils/enum.hh"
 #include "utils/messages.hh"
-#include "utils/string.hh"
 #include "sequences/fasta.hh"
 #include "sequences/translate.hh"
 #include "sequences/align.hh"
@@ -13,81 +11,6 @@
 #include "sequences/hamming-distance.hh"
 
 #include "py/module.hh"
-
-// ======================================================================
-
-namespace ae::sequences
-{
-    namespace detail
-    {
-        inline size_t from_chars(std::string_view src)
-        {
-            size_t result;
-            if (const auto [p, ec] = std::from_chars(&*src.begin(), &*src.end(), result); ec == std::errc{} && p == &*src.end())
-                return result;
-            else
-                return std::numeric_limits<size_t>::max();
-        }
-
-    } // namespace detail
-
-    class extract_at_pos_error : public std::runtime_error
-    {
-      public:
-        using std::runtime_error::runtime_error;
-    };
-
-    struct aa_nuc_at_pos1_eq_t : public std::tuple<pos1_t, char, bool> // pos (1-based), aa, equal/not-equal
-    {
-        using std::tuple<pos1_t, char, bool>::tuple;
-        constexpr aa_nuc_at_pos1_eq_t() : std::tuple<pos1_t, char, bool>{pos1_t{0}, ' ', false} {}
-    };
-
-    using amino_acid_at_pos1_eq_list_t = std::vector<aa_nuc_at_pos1_eq_t>;
-
-    template <size_t MIN_SIZE, size_t MAX_SIZE> inline aa_nuc_at_pos1_eq_t extract_aa_nuc_at_pos1_eq(std::string_view source)
-    {
-        if (source.size() >= MIN_SIZE && source.size() <= MAX_SIZE && std::isdigit(source.front()) && (std::isalpha(source.back()) || source.back() == '-'))
-            return {pos1_t{detail::from_chars(source.substr(0, source.size() - 1))}, source.back(), true};
-        else if (source.size() >= (MIN_SIZE + 1) && source.size() <= (MAX_SIZE + 1) && source.front() == '!' && std::isdigit(source[1]) && (std::isalpha(source.back()) || source.back() == '-'))
-            return {pos1_t{detail::from_chars(source.substr(1, source.size() - 2))}, source.back(), false};
-        else
-            throw extract_at_pos_error{fmt::format("invalid aa/nuc-pos: \"{}\" (expected 183P or !183P)", source)};
-    }
-
-    template <size_t MIN_SIZE, size_t MAX_SIZE> inline amino_acid_at_pos1_eq_list_t extract_aa_nuc_at_pos1_eq_list(std::string_view source)
-    {
-        const auto fields = ae::string::split(source, ae::string::split_emtpy::remove);
-        amino_acid_at_pos1_eq_list_t pos1_aa_eq(fields.size());
-        std::transform(std::begin(fields), std::end(fields), std::begin(pos1_aa_eq), [](std::string_view field) { return extract_aa_nuc_at_pos1_eq<MIN_SIZE, MAX_SIZE>(field); });
-        return pos1_aa_eq;
-
-    } // acmacs::seqdb::v3::extract_aa_at_pos_eq_list
-
-    inline amino_acid_at_pos1_eq_list_t extract_aa_nuc_at_pos1_eq_list(const std::vector<std::string>& source)
-    {
-        amino_acid_at_pos1_eq_list_t list(source.size());
-        std::transform(std::begin(source), std::end(source), std::begin(list), [](const auto& en) { return extract_aa_nuc_at_pos1_eq<2, 4>(en); });
-        return list;
-
-    } // acmacs::seqdb::v3::extract_aa_at_pos1_eq_list
-
-    inline amino_acid_at_pos1_eq_list_t extract_aa_nuc_at_pos1_eq_list(std::string_view source) { return extract_aa_nuc_at_pos1_eq_list<2, 4>(source); }
-
-    // ----------------------------------------------------------------------
-
-    template <typename Seq, typename ARG> inline static bool matches_all(const Seq& seq, ARG data)
-    {
-        using namespace ae::sequences;
-        const auto matches = [&seq](const auto& en) {
-            const auto eq = seq[std::get<pos1_t>(en)] == std::get<char>(en);
-            return std::get<bool>(en) == eq;
-        };
-        const auto elts = extract_aa_nuc_at_pos1_eq_list(data);
-        return std::all_of(std::begin(elts), std::end(elts), matches);
-    }
-
-} // namespace ae::sequences
 
 // ======================================================================
 
