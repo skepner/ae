@@ -11,7 +11,7 @@ else:
     sys.path[:0] = [str(Path(os.environ["AE_ROOT"], dir)) for dir in ["build", "py"]]
 import ae_backend
 
-sSubtypes = {"H3": "A(H3N2)", "H1": "A(H1N1)"}
+sSubtypes = {"H3": "A(H3N2)", "H1": "A(H1N1)", "BVIC": "B", "BYAM": "B"}
 
 # ----------------------------------------------------------------------
 
