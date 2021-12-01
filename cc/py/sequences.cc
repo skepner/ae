@@ -64,6 +64,13 @@ void ae::py::sequences(pybind11::module_& mdl)
             "filter_name", [](SeqdbSelected& selected, const std::string& name) -> SeqdbSelected& { return selected.filter_name(std::vector<std::string>{name}); }, "names"_a,
             pybind11::doc("if name starts with ~ use regex matching (~ removed), if name contains _ use seq_id matching")) //
         .def(
+            "filter_name",
+            [](SeqdbSelected& selected, std::string_view name, std::string_view reassortant, std::string_view passage) -> SeqdbSelected& {
+                return selected.filter_name(name, reassortant, passage);
+            },
+            "name"_a, "reassortant"_a, "passage"_a,
+            pybind11::doc("")) //
+        .def(
             "exclude_name", [](SeqdbSelected& selected, const std::vector<std::string>& names) -> SeqdbSelected& { return selected.exclude_name(names); }, "names"_a,
             pybind11::doc("if name starts with ~ use regex matching (~ removed), if name contains _ use seq_id matching")) //
         .def(

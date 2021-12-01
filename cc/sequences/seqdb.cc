@@ -522,6 +522,15 @@ ae::sequences::SeqdbSelected& ae::sequences::SeqdbSelected::include_name(const s
 
 // ----------------------------------------------------------------------
 
+ae::sequences::SeqdbSelected& ae::sequences::SeqdbSelected::filter_name(std::string_view name, std::string_view reassortants, std::string_view passage)
+{
+    erase_if(*this, [name](const auto& ref) -> bool { return ref.entry->name != name; });
+    return *this;
+
+} // ae::sequences::SeqdbSelected::filter_name
+
+// ----------------------------------------------------------------------
+
 ae::sequences::SeqdbSelected& ae::sequences::SeqdbSelected::sort(order ord)
 {
     switch (ord) {

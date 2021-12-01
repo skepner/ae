@@ -283,6 +283,8 @@ namespace ae::sequences
         SeqdbSelected& exclude_name(const std::vector<std::string>& names);
         SeqdbSelected& include_name(const std::vector<std::string>& names, bool include_with_issue_too = false);
 
+        SeqdbSelected& filter_name(std::string_view name, std::string_view reassortants, std::string_view passage);
+
         // keeps refs for which predicate returned true
         template <std::regular_invocable<const SeqdbSeqRef&> Func> SeqdbSelected& filter(Func&& predicate) {
             erase_if(*this, [&predicate](const auto& ref) -> bool { return !predicate(ref); });
