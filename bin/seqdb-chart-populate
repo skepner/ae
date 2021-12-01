@@ -16,7 +16,22 @@ import ae.utils.open_file
 
 def main(args: argparse.Namespace):
     data = json.load(ae.utils.open_file.open_file(args.input_chart))
-    pprint.pprint(data)
+    # pprint.pprint(data)
+    if not (subtype := data["c"].get("i", {}).get("V")):
+        raise RuntimeError("Subtype is not specified in the chart")
+    seqdb = ae_backend.seqdb.for_subtype(subtype)
+    subtype_prefix = f"{subtype}/"
+    num_found = 0
+    for antigen in data["c"]["a"]:
+        name = antigen["N"]
+        if name[:len(subtype_prefix)] == subtype_prefix:
+            name = name[len(subtype_prefix):]
+        selected = seqdb.select_all().filter_name(name=name, reassortant=antigen.get("R", ""), passage=antigen.get("P", ""))
+        if selected:
+            num_found += 1
+        # print(name, antigen.get("R", ""), antigen.get("P", ""))
+        # print(name, len(selected))
+    print(f"matched antigens: {num_found} of {len(data['c']['a'])}")
 
 # ----------------------------------------------------------------------
 
