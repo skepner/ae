@@ -3,7 +3,6 @@
 
 #include "ext/lexy.hh"
 #include "utils/named-type.hh"
-#include "utils/messages.hh"
 #include "virus/passage-parse.hh"
 
 // ======================================================================
@@ -251,7 +250,7 @@ namespace ae::virus::passage
 
 // ======================================================================
 
-ae::virus::passage::passage_deconstructed_t ae::virus::passage::parse(std::string_view source, parse_settings& settings, Messages& messages, const MessageLocation& message_location)
+ae::virus::passage::passage_deconstructed_t ae::virus::passage::parse(std::string_view source, const parse_settings& settings, Messages& messages, const MessageLocation& message_location)
 {
     // fmt::print(">>> parsing \"{}\"\n", source);
     if (settings.trace()) {
@@ -269,7 +268,7 @@ ae::virus::passage::passage_deconstructed_t ae::virus::passage::parse(std::strin
         // fmt::print(">> not parsed: {} <- \"{}\"\n", err.what(), source);
         messages.add(Message::unrecognized_passage, err.what(), source, message_location);
         passage_deconstructed_t result;
-        result.elements.push_back(passage_deconstructed_t::element_t{.name = fmt::format("*{}", source)});
+        result.elements.push_back(passage_deconstructed_t::element_t{.name{source}}); // store original passage without any modifications!
         return result;
     }
 

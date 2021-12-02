@@ -2,15 +2,10 @@
 
 #include <string_view>
 
+#include "utils/messages.hh"
 #include "virus/passage.hh"
 
 // ======================================================================
-
-namespace ae
-{
-    class Messages;
-    struct MessageLocation;
-}
 
 namespace ae::virus::passage
 {
@@ -27,7 +22,13 @@ namespace ae::virus::passage
         tracing tracing_{tracing::no};
     };
 
-    passage_deconstructed_t parse(std::string_view source, parse_settings& settings, Messages& messages, const MessageLocation& location);
+    passage_deconstructed_t parse(std::string_view source, const parse_settings& settings, Messages& messages, const MessageLocation& location);
+
+    inline passage_deconstructed_t parse(std::string_view source)
+    {
+        Messages messages;
+        return parse(source, parse_settings{}, messages, MessageLocation{});
+    }
 
 } // namespace ae::virus::passage
 

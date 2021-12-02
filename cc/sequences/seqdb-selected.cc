@@ -1,5 +1,6 @@
 #include <regex>
 
+#include "virus/passage-parse.hh"
 #include "sequences/seqdb-selected.hh"
 
 // ======================================================================
@@ -120,10 +121,31 @@ ae::sequences::SeqdbSelected& ae::sequences::SeqdbSelected::filter_name(std::str
 {
     erase_if(*this, [name](const auto& ref) -> bool { return ref.entry->name != name; });
     if (size() > 1) {
-        const auto rank = [reassortant, passage](const SeqdbSeqRef& ref) -> size_t {
+        const auto passage_parsed = virus::passage::parse(passage);
+        const auto rank_passage = [passage_parsed](std::string_view seq_passage) -> size_t {
+            const auto seq_passage_parsed = virus::passage::parse(seq_passage);
+            if (passage_parsed == seq_passage_parsed)
+                return 0;
+            else if (passage_parsed.empty() || seq_passage_parsed.empty())
+                return 90;
+            else if (passage_parsed.last() == seq_passage_parsed.last())
+                return 10;
+            else if (passage_parsed.last().name == seq_passage_parsed.last().name)
+                return 20;
+            else if (passage_parsed.egg() == seq_passage_parsed.egg())
+                return 50;
+            else
+                return 90;
+        };
+
+        const auto rank = [reassortant, rank_passage](const SeqdbSeqRef& ref) -> size_t {
             size_t rnk{0};
             if ((!reassortant.empty() && std::find(std::begin(ref.seq->reassortants), std::end(ref.seq->reassortants), reassortant) == std::end(ref.seq->reassortants)) || (reassortant.empty() && !ref.seq->reassortants.empty()))
                 rnk += 100;
+            size_t passage_rank{99};
+            for (const auto& seq_passage : ref.seq->passages)
+                passage_rank = std::min(passage_rank, rank_passage(seq_passage));
+            rnk += passage_rank;
             return rnk;
         };
 
