@@ -22,28 +22,38 @@ def main(args: argparse.Namespace):
     seqdb = ae_backend.seqdb.for_subtype(subtype)
     subtype_prefix = f"{subtype}/"
 
-    num_found = sum(find_seqdb_ref(seqdb, antigen, subtype_prefix=subtype_prefix) for antigen in data["c"]["a"])
-    print(f"matched antigens: {num_found} of {len(data['c']['a'])}")
-    num_found = sum(find_seqdb_ref(seqdb, serum, subtype_prefix=subtype_prefix) for serum in data["c"]["s"])
-    print(f"matched sera: {num_found} of {len(data['c']['s'])}")
+    num_antigens_found = sum(find_seqdb_ref(seqdb, antigen, subtype_prefix=subtype_prefix, verbose=args.verbose) for antigen in data["c"]["a"])
+    antigens_with_sequences = sum(1 for antigen in data["c"]["a"] if antigen.get("A"))
+    num_sera_found = sum(find_seqdb_ref(seqdb, serum, subtype_prefix=subtype_prefix, verbose=args.verbose) for serum in data["c"]["s"])
+    sera_with_sequences = sum(1 for serum in data["c"]["s"] if serum.get("A"))
+    print(f">>> {Path(sys.argv[0]).name}: antigens: new:{num_antigens_found} sequenced:{antigens_with_sequences} total:{len(data['c']['a'])}  sera: new:{num_sera_found} sequenced:{sera_with_sequences} total:{len(data['c']['s'])}")
 
-    data.pop("_", None)
-    data["?created"] = f"ae {Path(sys.argv[0]).name} on {datetime.datetime.now():%Y-%m-%d %H:%M %Z}"
-    with ae.utils.open_file.for_writing(args.output_chart or args.input_chart) as file:
-        file.write(json.dumps(data, indent=1).encode("utf-8"))
+    if args.output_chart or (num_antigens_found + num_sera_found) > 0: # replace only if updated
+        data.pop("_", None)
+        data["?created"] = f"ae {Path(sys.argv[0]).name} on {datetime.datetime.now():%Y-%m-%d %H:%M %Z}"
+        with ae.utils.open_file.for_writing(args.output_chart or args.input_chart) as file:
+            file.write(json.dumps(data, indent=1).encode("utf-8"))
 
 # ----------------------------------------------------------------------
 
-def find_seqdb_ref(seqdb: ae_backend.seqdb.SeqdbForSubtype, ag_sr: dict, subtype_prefix: str) -> int:
+def find_seqdb_ref(seqdb: ae_backend.seqdb.SeqdbForSubtype, ag_sr: dict, subtype_prefix: str, verbose: bool) -> int:
     "return 1 if match found"
+    if ag_sr.get("A"):
+        return 0                # already matched
     name = ag_sr["N"]
     if name[:len(subtype_prefix)] == subtype_prefix:
         name = name[len(subtype_prefix):]
-    selected = seqdb.select_all().filter_name(name=name, reassortant=ag_sr.get("R", ""), passage=ag_sr.get("P", ""))
+    reassortant = ag_sr.get("R", "")
+    passage = ag_sr.get("P", "")
+    if verbose:
+        print(f">>>> \"{name}\" R:\"{reassortant}\" P:\"{passage}\"")
+    selected = seqdb.select_all().filter_name(name=name, reassortant=reassortant, passage=passage)
     if selected:
         selected.find_masters()
         ag_sr["A"] = str(selected[0].aa)
         ag_sr["B"] = str(selected[0].nuc)
+        if verbose:
+            print(f">>>>     \"{selected[0].seq_id()}\"")
         return 1
     else:
         return 0
@@ -54,6 +64,7 @@ try:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("input_chart", type=Path)
     parser.add_argument("output_chart", nargs='?', type=Path)
+    parser.add_argument("-v", "--verbose", action="store_true", default=False)
     args = parser.parse_args()
     exit_code = main(args) or 0
 except Exception as err:

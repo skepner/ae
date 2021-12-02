@@ -1,5 +1,6 @@
 #include <regex>
 
+#include "utils/string-hash.hh"
 #include "virus/passage-parse.hh"
 #include "sequences/seqdb-selected.hh"
 
@@ -124,6 +125,7 @@ ae::sequences::SeqdbSelected& ae::sequences::SeqdbSelected::filter_name(std::str
         const auto passage_parsed = virus::passage::parse(passage);
         const auto rank_passage = [passage_parsed](std::string_view seq_passage) -> size_t {
             const auto seq_passage_parsed = virus::passage::parse(seq_passage);
+            // fmt::print(">>>> {}{} vs. {}{}\n", passage_parsed.last().name, passage_parsed.last().count, seq_passage_parsed.last().name, seq_passage_parsed.last().count);
             if (passage_parsed == seq_passage_parsed)
                 return 0;
             else if (passage_parsed.empty() || seq_passage_parsed.empty())
@@ -140,7 +142,8 @@ ae::sequences::SeqdbSelected& ae::sequences::SeqdbSelected::filter_name(std::str
 
         const auto rank = [reassortant, rank_passage](const SeqdbSeqRef& ref) -> size_t {
             size_t rnk{0};
-            if ((!reassortant.empty() && std::find(std::begin(ref.seq->reassortants), std::end(ref.seq->reassortants), reassortant) == std::end(ref.seq->reassortants)) || (reassortant.empty() && !ref.seq->reassortants.empty()))
+            if ((!reassortant.empty() && std::find(std::begin(ref.seq->reassortants), std::end(ref.seq->reassortants), reassortant) == std::end(ref.seq->reassortants)) ||
+                (reassortant.empty() && !ref.seq->reassortants.empty()))
                 rnk += 100;
             size_t passage_rank{99};
             for (const auto& seq_passage : ref.seq->passages)
@@ -149,9 +152,9 @@ ae::sequences::SeqdbSelected& ae::sequences::SeqdbSelected::filter_name(std::str
             return rnk;
         };
 
-        std::unordered_map<const SeqdbSeqRef*, size_t> ranks;
-        std::transform(begin(), end(), std::inserter(ranks, ranks.end()), [rank](const auto& en) { return std::pair{&en, rank(en)}; });
-        std::sort(begin(), end(), [&ranks](const auto& en1, const auto& en2) { return ranks.find(&en1)->second < ranks.find(&en2)->second; });
+        std::unordered_map<seq_id_t, size_t, ae::string_hash_for_unordered_map, std::equal_to<>> ranks;
+        std::transform(begin(), end(), std::inserter(ranks, ranks.end()), [rank](const auto& en) { return std::pair{en.seq_id(), rank(en)}; });
+        std::sort(begin(), end(), [&ranks](const auto& en1, const auto& en2) { return ranks.find(en1.seq_id())->second < ranks.find(en2.seq_id())->second; });
     }
     return *this;
 
