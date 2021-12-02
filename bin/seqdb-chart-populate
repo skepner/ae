@@ -21,18 +21,23 @@ def main(args: argparse.Namespace):
         raise RuntimeError("Subtype is not specified in the chart")
     seqdb = ae_backend.seqdb.for_subtype(subtype)
     subtype_prefix = f"{subtype}/"
-    num_found = 0
-    for antigen in data["c"]["a"]:
-        name = antigen["N"]
-        if name[:len(subtype_prefix)] == subtype_prefix:
-            name = name[len(subtype_prefix):]
-        selected = seqdb.select_all().filter_name(name=name, reassortant=antigen.get("R", ""), passage=antigen.get("P", ""))
-        if selected:
-            num_found += 1
-        print(name, antigen.get("R", ""), antigen.get("P", ""), "-->", len(selected))
-        for en in selected:
-            print("   ", en.seq_id())
+    num_found = sum(find_seqdb_ref(seqdb, antigen, subtype_prefix=subtype_prefix) for antigen in data["c"]["a"])
     print(f"matched antigens: {num_found} of {len(data['c']['a'])}")
+
+# ----------------------------------------------------------------------
+
+def find_seqdb_ref(seqdb: ae_backend.seqdb.SeqdbForSubtype, ag_sr: dict, subtype_prefix: str) -> int:
+    "return 1 if match found"
+    name = ag_sr["N"]
+    if name[:len(subtype_prefix)] == subtype_prefix:
+        name = name[len(subtype_prefix):]
+    selected = seqdb.select_all().filter_name(name=name, reassortant=ag_sr.get("R", ""), passage=ag_sr.get("P", ""))
+    if selected:
+        ag_sr["A"] = str(selected[0].aa)
+        ag_sr["B"] = str(selected[0].nuc)
+        return 1
+    else:
+        return 0
 
 # ----------------------------------------------------------------------
 

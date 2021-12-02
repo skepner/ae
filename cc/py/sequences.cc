@@ -41,7 +41,18 @@ void ae::py::sequences(pybind11::module_& mdl)
         .def("__len__", [](const SeqdbSelected& selected) { return selected.size(); })           //
         .def(
             "__iter__", [](const SeqdbSelected& selected) { return pybind11::make_iterator(selected.begin(), selected.end()); }, pybind11::keep_alive<0, 1>()) //
-        .def("exclude_with_issue", &SeqdbSelected::exclude_with_issue, "exclude"_a = true)                                                                     //
+        .def(
+            "__getitem__",
+            [](const SeqdbSelected& selected, ssize_t index) {
+                if (static_cast<size_t>(std::abs(index)) >= selected.size())
+                    throw pybind11::index_error{fmt::format("SeqdbSelected index ({}) is out of range -{}..{}", index, selected.size() - 1, selected.size() - 1)};
+                if (index >= 0)
+                    return selected[static_cast<size_t>(index)];
+                else
+                    return selected[selected.size() - static_cast<size_t>(index)];
+            },
+            "index"_a, pybind11::keep_alive<0, 1>())                                       //
+        .def("exclude_with_issue", &SeqdbSelected::exclude_with_issue, "exclude"_a = true) //
         .def(
             "filter_dates", [](SeqdbSelected& selected, std::string_view first, std::string_view last) -> SeqdbSelected& { return selected.filter_dates(first, last); }, "first"_a = std::string_view{},
             "last"_a = std::string_view{}) //
@@ -66,9 +77,7 @@ void ae::py::sequences(pybind11::module_& mdl)
             pybind11::doc("if name starts with ~ use regex matching (~ removed), if name contains _ use seq_id matching")) //
         .def(
             "filter_name",
-            [](SeqdbSelected& selected, std::string_view name, std::string_view reassortant, std::string_view passage) -> SeqdbSelected& {
-                return selected.filter_name(name, reassortant, passage);
-            },
+            [](SeqdbSelected& selected, std::string_view name, std::string_view reassortant, std::string_view passage) -> SeqdbSelected& { return selected.filter_name(name, reassortant, passage); },
             "name"_a, "reassortant"_a, "passage"_a,
             pybind11::doc("")) //
         .def(

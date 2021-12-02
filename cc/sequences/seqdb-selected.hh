@@ -16,6 +16,7 @@ namespace ae::sequences
         auto end() const { return refs_.end(); }
         auto begin() { return refs_.begin(); }
         auto end() { return refs_.end(); }
+        const auto& operator[](size_t index) const { return refs_[index]; }
 
         SeqdbSelected& exclude_with_issue(bool exclude = true)
         {
