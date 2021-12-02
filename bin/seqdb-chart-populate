@@ -29,8 +29,9 @@ def main(args: argparse.Namespace):
         selected = seqdb.select_all().filter_name(name=name, reassortant=antigen.get("R", ""), passage=antigen.get("P", ""))
         if selected:
             num_found += 1
-        # print(name, antigen.get("R", ""), antigen.get("P", ""))
-        # print(name, len(selected))
+        print(name, antigen.get("R", ""), antigen.get("P", ""), "-->", len(selected))
+        for en in selected:
+            print("   ", en.seq_id())
     print(f"matched antigens: {num_found} of {len(data['c']['a'])}")
 
 # ----------------------------------------------------------------------

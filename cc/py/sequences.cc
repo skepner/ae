@@ -8,6 +8,7 @@
 #include "sequences/translate.hh"
 #include "sequences/align.hh"
 #include "sequences/seqdb.hh"
+#include "sequences/seqdb-selected.hh"
 #include "sequences/hamming-distance.hh"
 
 #include "py/module.hh"
