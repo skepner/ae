@@ -128,8 +128,10 @@ void ae::py::sequences(pybind11::module_& mdl)
             "move_name_to_beginning", [](SeqdbSelected& selected, const std::string& name) -> SeqdbSelected& { return selected.move_name_to_beginning(std::vector<std::string>{name}); }, "names"_a,
             pybind11::doc("if name starts with ~ use regex matching (~ removed), if name contains _ use seq_id matching")) //
         .def("find_masters", &SeqdbSelected::find_masters)                                                                 //
-        .def("remove_hash_duplicates", &SeqdbSelected::remove_hash_duplicates)                                             //
-        .def("replace_with_master", &SeqdbSelected::replace_with_master)                                                   //
+        .def(
+            "find_clades", [](SeqdbSelected& selected, pybind11::object path) { return selected.find_clades(std::string{pybind11::str(path)}); }, "clades_file"_a) //
+        .def("remove_hash_duplicates", &SeqdbSelected::remove_hash_duplicates)                                                           //
+        .def("replace_with_master", &SeqdbSelected::replace_with_master)                                                                 //
         ;
 
     pybind11::class_<SeqdbSeqRef>(seqdb_submodule, "SeqdbSeqRef")                                        //
@@ -138,6 +140,7 @@ void ae::py::sequences(pybind11::module_& mdl)
         .def_property_readonly("aa", &SeqdbSeqRef::aa)                                                   //
         .def_property_readonly("nuc", &SeqdbSeqRef::nuc)                                                 //
         .def("lineage", [](const SeqdbSeqRef& ref) -> const std::string& { return ref.entry->lineage; }) //
+        .def_readonly("clades", &SeqdbSeqRef::clades)                                                    //
         .def("has_issues", [](const SeqdbSeqRef& ref) { return ref.seq->issues.has_issues(); })          //
         .def("issues", [](const SeqdbSeqRef& ref) { return ref.seq->issues.to_strings(); })              //
         ;

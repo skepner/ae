@@ -43,6 +43,7 @@ namespace ae::sequences
         const SeqdbEntry* entry{nullptr};
         const SeqdbSeq* seq{nullptr};
         const SeqdbSeq* master{nullptr};
+        std::vector<std::string> clades{};
 
         constexpr bool operator==(const SeqdbSeqRef& rhs) const { return seq == rhs.seq; }
         constexpr operator bool() const { return entry != nullptr && seq != nullptr; }

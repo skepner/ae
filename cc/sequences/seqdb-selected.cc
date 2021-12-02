@@ -3,6 +3,7 @@
 #include "utils/string-hash.hh"
 #include "virus/passage-parse.hh"
 #include "sequences/seqdb-selected.hh"
+#include "sequences/clades.hh"
 
 // ======================================================================
 
@@ -209,5 +210,19 @@ ae::sequences::SeqdbSelected& ae::sequences::SeqdbSelected::move_name_to_beginni
     return *this;
 
 } // ae::sequences::SeqdbSelected::move_name_to_beginning
+
+// ----------------------------------------------------------------------
+
+ae::sequences::SeqdbSelected& ae::sequences::SeqdbSelected::find_clades(std::string_view clades_json_file)
+{
+    if (!empty()) {
+        Clades clades{clades_json_file};
+        find_masters();
+        for (auto& ref : refs_)
+            ref.clades = clades.clades(ref.aa(), ref.nuc(), seqdb_.subtype(), ref.entry->lineage);
+    }
+    return *this;
+
+} // ae::sequences::SeqdbSelected::find_clades
 
 // ----------------------------------------------------------------------

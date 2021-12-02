@@ -12,6 +12,7 @@ namespace ae::sequences
         SeqdbSelected(const Seqdb& seqdb) : seqdb_{seqdb} {}
 
         auto size() const { return refs_.size(); }
+        auto empty() const { return refs_.empty(); }
         auto begin() const { return refs_.begin(); }
         auto end() const { return refs_.end(); }
         auto begin() { return refs_.begin(); }
@@ -79,6 +80,8 @@ namespace ae::sequences
                 ref.set_master(seqdb_);
             return *this;
         }
+
+        SeqdbSelected& find_clades(std::string_view clades_json_file);
 
         SeqdbSelected& remove_hash_duplicates() // keep most recent
         {
