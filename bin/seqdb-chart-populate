@@ -3,7 +3,7 @@
 Reading seqdb test
 """
 
-import sys, os, argparse, traceback, json, pprint
+import sys, os, argparse, traceback, json, pprint, datetime
 from pathlib import Path
 if os.environ.get("DYLD_INSERT_LIBRARIES"):
     sys.path[:0] = [str(Path(os.environ["AE_ROOT"], dir)) for dir in ["build.debug", "py"]]
@@ -15,14 +15,22 @@ import ae.utils.open_file
 # ----------------------------------------------------------------------
 
 def main(args: argparse.Namespace):
-    data = json.load(ae.utils.open_file.open_file(args.input_chart))
+    data = json.load(ae.utils.open_file.for_reading(args.input_chart))
     # pprint.pprint(data)
     if not (subtype := data["c"].get("i", {}).get("V")):
         raise RuntimeError("Subtype is not specified in the chart")
     seqdb = ae_backend.seqdb.for_subtype(subtype)
     subtype_prefix = f"{subtype}/"
+
     num_found = sum(find_seqdb_ref(seqdb, antigen, subtype_prefix=subtype_prefix) for antigen in data["c"]["a"])
     print(f"matched antigens: {num_found} of {len(data['c']['a'])}")
+    num_found = sum(find_seqdb_ref(seqdb, serum, subtype_prefix=subtype_prefix) for serum in data["c"]["s"])
+    print(f"matched sera: {num_found} of {len(data['c']['s'])}")
+
+    data.pop("_", None)
+    data["?created"] = f"ae {Path(sys.argv[0]).name} on {datetime.datetime.now():%Y-%m-%d %H:%M %Z}"
+    with ae.utils.open_file.for_writing(args.output_chart or args.input_chart) as file:
+        file.write(json.dumps(data, indent=1).encode("utf-8"))
 
 # ----------------------------------------------------------------------
 
@@ -33,6 +41,7 @@ def find_seqdb_ref(seqdb: ae_backend.seqdb.SeqdbForSubtype, ag_sr: dict, subtype
         name = name[len(subtype_prefix):]
     selected = seqdb.select_all().filter_name(name=name, reassortant=ag_sr.get("R", ""), passage=ag_sr.get("P", ""))
     if selected:
+        selected.find_masters()
         ag_sr["A"] = str(selected[0].aa)
         ag_sr["B"] = str(selected[0].nuc)
         return 1
