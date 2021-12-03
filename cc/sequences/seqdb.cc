@@ -200,7 +200,7 @@ bool ae::sequences::SeqdbEntry::update(const RawSequence& raw_sequence, bool kee
         }
         else if (lineage != raw_sequence.lineage) {
             const auto old_lineage = lineage;
-            if (lineage == lineage_t{"V"} || lineage == lineage_t{"Y"})
+            if ((lineage == lineage_t{"V"} || lineage == lineage_t{"Y"} || lineage == lineage_t{"VY"}) && (raw_sequence.lineage == lineage_t{"V"} || raw_sequence.lineage == lineage_t{"Y"}))
                 lineage = "VY";
             else
                 lineage = static_cast<const std::string&>(lineage) + static_cast<const std::string&>(raw_sequence.lineage);
