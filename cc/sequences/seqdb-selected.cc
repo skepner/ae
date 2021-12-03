@@ -98,6 +98,7 @@ ae::sequences::SeqdbSelected& ae::sequences::SeqdbSelected::exclude_name(const s
 {
     const auto matchers = make_matchers(names);
     erase_if(*this, [&matchers](const auto& ref) -> bool { return any_matcher_match(matchers, ref); });
+    // erase_if(*this, [&matchers](const auto& ref) -> bool { const auto matched = any_matcher_match(matchers, ref); if (matched) fmt::print(">>>> excluded {}\n", ref.seq_id()); return matched; });
     return *this;
 
 } // ae::sequences::SeqdbSelected::exclude_name

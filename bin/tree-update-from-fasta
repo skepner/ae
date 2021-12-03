@@ -21,7 +21,7 @@ def main(args: argparse.Namespace):
 
     # find seq_id in tree not found in fasta, remove corresponding leaves from the tree
     leaves_to_remove = [leaf for leaf in tree.select_leaves() if leaf.name() not in fasta_data]
-    print([leaf.name() for leaf in leaves_to_remove])
+    print(f"Removing {len(leaves_to_remove)} leaves:\n    ", "\n    ".join(leaf.name() for leaf in leaves_to_remove), sep="")
     tree.remove(leaves_to_remove)
 
     # find seq_id in fasta that are not in the tree
