@@ -32,6 +32,7 @@ namespace ae::virus::passage
 
             bool egg() const { return name == "E" || name == "SPFCE"; }
             bool cell() const { return name == "MDCK" || name == "SIAT" || name == "HCK" || name == "SPFCK"; }
+            bool good() const { return !name.empty() && (name == "OR" || !count.empty()); }
         };
 
         std::vector<element_t> elements{};
@@ -69,8 +70,7 @@ namespace ae::virus::passage
 
         bool good() const
         {
-            return !elements.empty() && !elements.front().name.empty() && !elements.front().count.empty() &&
-                   std::count_if(std::begin(elements), std::end(elements), [](const auto& elt) { return elt.count.empty() || elt.count[0] == '?'; }) < 2;
+            return !elements.empty() && elements.front().good() && std::count_if(std::begin(elements), std::end(elements), [](const auto& elt) { return !elt.good() || elt.count[0] == '?'; }) < 2;
         }
     };
 
