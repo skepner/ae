@@ -53,7 +53,7 @@ def find(subtype: str, names: list[str], args: argparse.Namespace):
     if args.fasta_nuc:
         fasta.write(args.fasta_nuc, selected, aa=False, wrap_pos=80 if args.wrap else 0, name=lambda ref: ref.seq_id())
         print_names = False
-    print(f"{subtype:7s} {len(selected)}")
+    print(f">>> {subtype:7s} {len(selected)}")
     if print_names:
         if clades_file := os.environ.get("AC_CLADES_JSON_V2"):
             selected.find_clades(clades_file)
@@ -64,7 +64,7 @@ def find(subtype: str, names: list[str], args: argparse.Namespace):
             else:
                 display_clades = ""
             issues = f" issues:{seq.issues()}" if seq.has_issues() else ""
-            print(f"> {seq.seq_id()} [{seq.date()}]{display_clades}{issues}")
+            print(f"{seq.seq_id()} [{seq.date()}]{display_clades}{issues}")
             if max_names and no >= max_names:
                 break
 

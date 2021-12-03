@@ -124,6 +124,7 @@ size_t virus_name_parsing_test(bool verbose)
         // gisaid
         TD{"A/Lisboa/SU17+/2010", CT{.subtype = "A", .location = "LISBOA", .isolation = "SU17+", .year = "2010"}},
         TD{"A/India/LKO_TAH398(a)/2015", CT{.subtype = "A", .location = "INDIA", .isolation = "LKO_TAH398(A)", .year = "2015"}},
+        TD{"A/Netherlands/10370-1a/2020", CT{.subtype = "A", .location = "NETHERLANDS", .isolation = "10370-1A", .year = "2020"}},
 
         TD{"NYMC-X-307A", CT{.reassortant = "NYMC-307A"}},
         TD{"NYMC/X-307A", CT{.reassortant = "NYMC-307A"}},
@@ -173,6 +174,20 @@ size_t virus_name_parsing_test(bool verbose)
             }
             else if (result != entry.expected) {
                 fmt::print("> {:60s} <-- \"{}\"  expected: \"{}\"\n", fmt::format("\"{}\"", result), entry.raw_name, entry.expected);
+                if (result.subtype != entry.expected.subtype)
+                    fmt::print(">    subtypes differ: \"{}\" vs \"{}\"\n", result.subtype, entry.expected.subtype);
+                if (result.host != entry.expected.host)
+                    fmt::print(">    hosts differ: \"{}\" vs \"{}\"\n", result.host, entry.expected.host);
+                if (result.location != entry.expected.location)
+                    fmt::print(">    locations differ: \"{}\" vs \"{}\"\n", result.location, entry.expected.location);
+                if (result.isolation != entry.expected.isolation)
+                    fmt::print(">    isolations differ: \"{}\" vs \"{}\"\n", result.isolation, entry.expected.isolation);
+                if (result.year != entry.expected.year)
+                    fmt::print(">    years differ: \"{}\" vs \"{}\"\n", result.year, entry.expected.year);
+                if (result.reassortant != entry.expected.reassortant)
+                    fmt::print(">    reassortants differ: \"{}\" vs \"{}\"\n", result.reassortant, entry.expected.reassortant);
+                if (result.extra != entry.expected.extra)
+                    fmt::print(">    extras differ: \"{}\" vs \"{}\"\n", result.extra, entry.expected.extra);
                 ++errors;
             }
             else if (verbose)

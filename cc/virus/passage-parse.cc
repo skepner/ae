@@ -205,11 +205,17 @@ namespace ae::virus::passage
 
             static constexpr auto value = lexy::callback<passage_deconstructed_t>(
                 [](const passage_deconstructed_t& passages, const std::string& date) {
-                    return passage_deconstructed_t{passages.elements, date};
-                },                                                                               //
-                [](const passage_deconstructed_t& passages, lexy::nullopt) { return passages; }, //
-                [](lexy::nullopt) { return passage_deconstructed_t{}; },                          //
-                []() { return passage_deconstructed_t{}; }                          //
+                    passage_deconstructed_t result{passages.elements, date};
+                    result.uppercase();
+                    return result;
+                }, //
+                [](const passage_deconstructed_t& passages, lexy::nullopt) {
+                    passage_deconstructed_t result{passages};
+                    result.uppercase();
+                    return result;
+                },                                                       //
+                [](lexy::nullopt) { return passage_deconstructed_t{}; }, //
+                []() { return passage_deconstructed_t{}; }               //
             );
         };
 
@@ -269,6 +275,7 @@ ae::virus::passage::passage_deconstructed_t ae::virus::passage::parse(std::strin
         messages.add(Message::unrecognized_passage, err.what(), source, message_location);
         passage_deconstructed_t result;
         result.elements.push_back(passage_deconstructed_t::element_t{.name{source}}); // store original passage without any modifications!
+        result.uppercase();
         return result;
     }
 

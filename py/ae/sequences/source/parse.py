@@ -85,7 +85,7 @@ class Context:
 def parse_name(name: str, metadata: dict, context: Context):
     preprocessed_name = context.preprocess_virus_name(name, metadata)
     if preprocessed_name[:10] == "<no-parse>":
-        metadata["name"] = preprocessed_name[10:]
+        metadata["name"] = preprocessed_name[10:].upper()
     elif preprocessed_name[:9] == "<exclude>":
         metadata["excluded"] = preprocessed_name
         metadata["name"] = preprocessed_name
@@ -98,7 +98,7 @@ def parse_name(name: str, metadata: dict, context: Context):
             metadata["continent"] = result.parts.continent
             metadata["country"] = result.parts.country
         else:
-            metadata["name"] = preprocessed_name
+            metadata["name"] = preprocessed_name.upper()
             if preprocessed_name != name:
                 value = f"{preprocessed_name} (original: {name})"
             else:
@@ -138,6 +138,6 @@ def parse_passage(passage: str, metadata: dict, context: Context):
     if result.good():
         return result.passage()
     else:
-        return "*" + passage
+        return passage.upper()
 
 # ======================================================================

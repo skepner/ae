@@ -58,6 +58,15 @@ namespace ae::virus::passage
             return result;
         }
 
+        auto& uppercase()
+        {
+            for (auto& elt : elements) {
+                string::uppercase_in_place(elt.name);
+                string::uppercase_in_place(elt.count);
+            }
+            return *this;
+        }
+
         bool good() const
         {
             return !elements.empty() && !elements.front().name.empty() && !elements.front().count.empty() &&
