@@ -161,6 +161,7 @@ namespace ae::virus::passage
                     result.count.append(1, '?');
                 if constexpr (!std::is_same_v<decltype(separator), lexy::nullopt>)
                     result.new_lab = true;
+                // fmt::print(">>>> [passage-parse] part \"{}\" \"{}\"\n", result.name, result.count);
                 return result;
             });
         };
@@ -193,6 +194,7 @@ namespace ae::virus::passage
                 else {
                     target.elements.push_back(val);
                 }
+                // fmt::print(">>>> [passage-parse] passages \"{}\"\n", target.construct());
                 return target;
             });
 
@@ -212,6 +214,7 @@ namespace ae::virus::passage
                 [](const passage_deconstructed_t& passages, lexy::nullopt) {
                     passage_deconstructed_t result{passages};
                     result.uppercase();
+                    // fmt::print(">>>> [passage-parse] whole \"{}\" <- \"{}\"\n", result.construct(), passages.construct());
                     return result;
                 },                                                       //
                 [](lexy::nullopt) { return passage_deconstructed_t{}; }, //
@@ -266,8 +269,9 @@ ae::virus::passage::passage_deconstructed_t ae::virus::passage::parse(std::strin
 
     try {
         const auto parsing_result = lexy::parse<grammar::whole>(lexy::string_input<lexy::utf8_encoding>{source}, report_error{messages, message_location});
+        // fmt::print(">>>> [passage-parse] parsing_result \"{}\" good:{}\n", parsing_result.value().construct(), parsing_result.value().good());
         if (!parsing_result.value().good())
-            throw grammar::invalid_input{"invalid result"};
+            throw grammar::invalid_input{fmt::format("invalid result: \"{}\"", parsing_result.value().construct())};
         return parsing_result.value();
     }
     catch (grammar::invalid_input& err) {
