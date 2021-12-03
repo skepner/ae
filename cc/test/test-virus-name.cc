@@ -62,6 +62,7 @@ size_t virus_name_parsing_test(bool verbose)
         TD{"NYMC X-181", CT{.reassortant = "NYMC-181"}}, TD{"NYMC X-157 CL-3", CT{.reassortant = "NYMC-157", .extra = "CL-3"}},
         TD{"NIB 79 (A/VICTORIA/361/2011", CT{.subtype = "A", .location = "VICTORIA", .isolation = "361", .year = "2011", .reassortant = "NIB-79"}},
         TD{"A/Kansas/14/2017 CBER-22B CDC19A", CT{.subtype = "A", .location = "KANSAS", .isolation = "14", .year = "2017", .reassortant = "CBER-22B", .extra = "CDC19A"}},
+        TD{"NIB 79 [A/VICTORIA/361/2011]", CT{.subtype = "A", .location = "VICTORIA", .isolation = "361", .year = "2011", .reassortant = "NIB-79"}},
 
         // TD{"A/SINGAPORE/INFIMH-16-0019/2016 CL2  X-307A", CT{.subtype = "A", .location = "SINGAPORE", .isolation = "INFIMH-16-0019", .year = "2016", .reassortant = "NYMC-307A", .extra =
         // "CL2"}}, TD{"A/SINGAPORE/INFIMH-16-0019/2016-06-14", CT{.subtype = "A", .location = "SINGAPORE", .isolation = "INFIMH-16-0019", .year = "2016"}}, TD{"A/SINGAPORE/INFIMH-16-0019/2016

@@ -280,7 +280,9 @@ namespace ae::virus::name::inline v1
         // static constexpr auto Z = dsl::lit_c<'Z'> / dsl::lit_c<'z'>;
 
         static constexpr auto OPEN = dsl::lit_c<'('>;
+        static constexpr auto OPEN2 = dsl::lit_c<'('> / dsl::lit_c<'['>;
         static constexpr auto CLOSE = dsl::lit_c<')'>;
+        static constexpr auto CLOSE2 = dsl::lit_c<')'> / dsl::lit_c<']'>;;
         static constexpr auto PLUS = dsl::lit_c<'+'>;
         static constexpr auto OPT_SPACES = dsl::while_(dsl::ascii::blank);
 
@@ -382,7 +384,8 @@ namespace ae::virus::name::inline v1
             static constexpr auto SAN = S + A + N;
             static constexpr auto NIB = N + I + B;
             static constexpr auto VI = V + I;
-            static constexpr auto prefix = dsl::peek(IVR + hy_space) | dsl::peek(CNIC + hy_space) | dsl::peek(SAN + hy_space) | dsl::peek(NIB + hy_space) | dsl::peek(VI + hy_space);
+            static constexpr auto ARIV = A + R + I + V; // NIBSC H5N3 A/duck/Singapore-Q/F119-3/1997 ARIV-1
+            static constexpr auto prefix = dsl::peek(IVR + hy_space) | dsl::peek(CNIC + hy_space) | dsl::peek(SAN + hy_space) | dsl::peek(NIB + hy_space) | dsl::peek(VI + hy_space) | dsl::peek(ARIV + hy_space);
 
             static constexpr auto rule = (nymc_x_bx::peek >> dsl::p<nymc_x_bx>) //
                                          | (cber::peek >> dsl::p<cber>)         //
@@ -488,7 +491,7 @@ namespace ae::virus::name::inline v1
         struct parts
         {
             static constexpr auto rule =
-                ((dsl::p<reassortant> >> dsl::opt(dsl::peek(OPT_SPACES + OPEN) >> OPT_SPACES + OPEN + dsl::p<virus_name> + dsl::if_(CLOSE)))
+                ((dsl::p<reassortant> >> dsl::opt(dsl::peek(OPT_SPACES + OPEN2) >> OPT_SPACES + OPEN2 + dsl::p<virus_name> + dsl::if_(CLOSE2)))
                  | (dsl::else_ >> dsl::p<virus_name> + dsl::opt(dsl::p<reassortant>) + dsl::p<rest>))
                 + dsl::eof;
             static constexpr auto value = lexy::callback<parts_t>(
