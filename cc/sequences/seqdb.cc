@@ -389,7 +389,7 @@ inline ae::sequences::seq_id_t make_seq_id(std::string_view designation)
     return ae::sequences::seq_id_t{
         designation
         | ranges::views::remove_if(to_remove)
-        | ranges::views::replace('?', 'x')
+        | ranges::views::replace('?', 'X')
         | ranges::views::replace_if(to_replace_with_slash, '/') // usually in passages
         | ranges::views::replace_if(to_replace_with_underscore, '_')
         | ranges::views::adjacent_remove_if([](char left, char right) { return left == '_' && right == '_'; })
