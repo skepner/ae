@@ -177,7 +177,7 @@ void ae::tree::Tree::populate_with_duplicates(const virus::type_subtype_t& subty
                       [&seqdb, &parents, &to_add](const Leaf* leaf) {
                           if (const auto present_ref = seqdb.find_by_seq_id(sequences::seq_id_t{leaf->name}, sequences::Seqdb::set_master::yes); present_ref) {
                               const auto refs_for_hash = seqdb.find_all_by_hash(present_ref.seq->hash);
-                              for (const auto ref_for_hash : refs_for_hash) {
+                              for (const auto& ref_for_hash : refs_for_hash) {
                                   if (ref_for_hash != present_ref)
                                       to_add.emplace_back(parents.back(), Leaf{ref_for_hash.seq_id(), leaf->edge, leaf->cumulative_edge});
                               }
@@ -334,6 +334,17 @@ ae::tree::Nodes& ae::tree::Nodes::filter_by_cumulative_more_than(double min_cumu
     return *this;
 
 } // ae::tree::Nodes::filter_by_cumulative_more_than
+
+// ----------------------------------------------------------------------
+
+ae::tree::Nodes& ae::tree::Nodes::filter_seq_id(const std::vector<std::string>& seq_ids)
+{
+    ranges::actions::remove_if(nodes, [this, &seq_ids](const auto& id) {
+        return tree.node(id).visit([&seq_ids](const auto* node) { return std::find(std::begin(seq_ids), std::end(seq_ids), node->name) == std::end(seq_ids); });
+    });
+    return *this;
+
+} // ae::tree::Nodes::filter_seq_id
 
 // ----------------------------------------------------------------------
 

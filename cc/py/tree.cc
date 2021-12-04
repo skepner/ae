@@ -90,6 +90,7 @@ void ae::py::tree(pybind11::module_& mdl)
     pybind11::class_<Nodes>(tree_submodule, "Nodes")                                                       //
         .def("sort_by_cumulative", &Nodes::sort_by_cumulative)                                             //
         .def("filter_by_cumulative_more_than", &Nodes::filter_by_cumulative_more_than, "min_cumulative"_a) //
+        .def("filter_seq_id", &Nodes::filter_seq_id, "seq_ids"_a) //
         .def("remove", &Nodes::remove)                                                                     //
         .def("__len__", [](const Nodes& nodes) { return nodes.nodes.size(); })                             //
         .def(

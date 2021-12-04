@@ -35,6 +35,15 @@ def main(args: argparse.Namespace):
             print(f"  {leaf.cumulative_edge():.8f}  {leaf.node_id():5d} {leaf.name()}")
         to_remove.remove()
 
+    if args.remove_seq_id:
+        to_remove = tree.select_leaves()
+        to_remove.filter_seq_id(args.remove_seq_id.split(","))
+        print(f"remove {len(to_remove)} leaves by seq_id")
+        for ind in range(len(to_remove)):
+            leaf = to_remove[ind]
+            print(f"  {leaf.cumulative_edge():.8f}  {leaf.node_id():5d} {leaf.name()}")
+        to_remove.remove()
+
     if args.populate:
         subtype = sSubtypes.get(args.subtype.upper(), args.subtype.upper())
         tree.populate_with_duplicates(subtype)
@@ -53,6 +62,7 @@ try:
     parser.add_argument("-s", "--subtype", type=str, default="B")
     parser.add_argument("--print-cumulative", dest="print_cumulative", type=int, default=None)
     parser.add_argument("--remove-if-cumulative-more-than", dest="remove_if_cumulative_more_than", type=float, default=None)
+    parser.add_argument("--remove-seq-id", dest="remove_seq_id", default=None, help="comma separated list of seq_id to remove")
     parser.add_argument("--populate", "-p", action="store_true", default=False)
     args = parser.parse_args()
     exit_code = main(args) or 0

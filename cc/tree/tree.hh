@@ -55,6 +55,7 @@ namespace ae::tree
 
         Nodes& sort_by_cumulative();
         Nodes& filter_by_cumulative_more_than(double min_cumulative);
+        Nodes& filter_seq_id(const std::vector<std::string>& seq_ids);
         Nodes& remove();
     };
 
