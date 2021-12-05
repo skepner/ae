@@ -88,6 +88,7 @@ namespace ae::virus::passage
         {
             static constexpr auto just_or = O + R;
             static constexpr auto ori = just_or + I;
+            static constexpr auto org = just_or + G; // ORG - gisaid, B/Yam Chile
             static constexpr auto just_cs = C + S;
             static constexpr auto cli = C + L + I;
             static constexpr auto dir = D + I + R;
@@ -95,6 +96,7 @@ namespace ae::virus::passage
 
             static constexpr auto rule = //
                 (dsl::peek(ori) >> ori + dsl::any) //
+                | (dsl::peek(org) >> org) //
                 | (dsl::peek(just_or) >> just_or) //
                 | (dsl::peek(cli) >> cli + dsl::any) //
                 | (dsl::peek(just_cs) >> just_cs) //
