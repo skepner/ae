@@ -101,7 +101,7 @@ std::string ae::tree::export_json(const Tree& tree)
             if (tree.lineage() == sequences::lineage_t{"V"})
                 fmt::format_to(std::back_inserter(text), " \"l\": \"VICTORIA\",");
             else if (tree.lineage() == sequences::lineage_t{"Y"})
-                fmt::format_to(std::back_inserter(text), " \"l\": \"YAMAGATA,");
+                fmt::format_to(std::back_inserter(text), " \"l\": \"YAMAGATA\",");
             else
                 fmt::format_to(std::back_inserter(text), " \"l\": \"{}\",", tree.lineage());
         }
