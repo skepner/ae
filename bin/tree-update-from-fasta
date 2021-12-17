@@ -19,6 +19,14 @@ def main(args: argparse.Namespace):
     tree = ae_backend.tree.load(args.input_tree)
     fasta_data = fasta.read(args.input_fasta)
 
+    # find seq_id in the tree and fasta that are different in case only
+    fasta_names_upper = {name.upper(): name for name in fasta_data}
+    max_name = max(len(name) for name in fasta_names_upper)
+    leaves_tree_to_fasta = {leaf: fasta_names_upper[leaf.name().upper()] for leaf in tree.select_leaves() if leaf.name().upper() in fasta_names_upper and leaf.name() not in fasta_data}
+    print(f"renaming in the tree (case changed) ({len(leaves_tree_to_fasta)})\n", "\n".join(f"   {leaf.name():{max_name}s}  ->  {fasta_name}" for leaf, fasta_name in leaves_tree_to_fasta.items()), sep="")
+    for leaf, fasta_name in leaves_tree_to_fasta.items():
+        leaf.name(fasta_name)
+
     # find seq_id in tree not found in fasta, remove corresponding leaves from the tree
     leaves_to_remove = [leaf for leaf in tree.select_leaves() if leaf.name() not in fasta_data]
     print(f"Removing {len(leaves_to_remove)} leaves:\n    ", "\n    ".join(leaf.name() for leaf in leaves_to_remove), sep="")

@@ -14,6 +14,10 @@ namespace ae::tree
         {
             return tree.node(node_index).visit([](const auto* node) { return node->name; });
         }
+        void set_name(std::string_view new_name)
+        {
+            tree.node(node_index).visit([new_name](auto* node) { node->name = new_name; });
+        }
         double edge() const
         {
             return tree.node(node_index).visit([](const auto* node) -> double { return node->edge.get(); });
@@ -110,6 +114,7 @@ void ae::py::tree(pybind11::module_& mdl)
 
     pybind11::class_<Node_Ref>(tree_submodule, "Node_Ref")        //
         .def("name", &Node_Ref::name)                             //
+        .def("name", &Node_Ref::set_name)                         //
         .def("edge", &Node_Ref::edge)                             //
         .def("cumulative_edge", &Node_Ref::cumulative_edge)       //
         .def("node_id", &Node_Ref::node_id)                       //
