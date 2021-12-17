@@ -85,6 +85,3 @@ template <> struct fmt::formatter<eu::fmt_helper::default_formatter>
 
 
 // ----------------------------------------------------------------------
-/// Local Variables:
-/// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
-/// End:
