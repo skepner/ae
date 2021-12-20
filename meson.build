@@ -44,6 +44,8 @@ zlib = dependency('zlib', version : '>=1.2.8')
 xz = dependency('liblzma')
 bzip2 = meson.get_compiler('cpp').find_library('bz2', required : false)
 
+alglib = dependency('alglib')
+
 # websocketpp
 # asio
 # apache module
