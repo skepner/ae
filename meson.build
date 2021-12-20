@@ -54,6 +54,9 @@ alglib = dependency('alglib')
 
 sources_locdb_v3 = ['cc/locdb/v3/locdb.cc']
 
+sources_chart_v2 = [
+]
+
 sources_virus = ['cc/virus/name-parse.cc', 'cc/virus/passage-parse.cc']
 sources_sequences = ['cc/sequences/seqdb.cc', 'cc/sequences/seqdb-selected.cc', 'cc/sequences/seqdb-export.cc', 'cc/sequences/fasta.cc', 'cc/sequences/clades.cc',
                      'cc/sequences/translate.cc', 'cc/sequences/align.cc', 'cc/sequences/master.cc', 'cc/sequences/deletions.cc']
@@ -111,9 +114,10 @@ python3 = import('python').find_installation('python3')
 
 ae_lib = python3.extension_module(
   'ae_backend',
-  sources : sources_py + sources_virus + sources_sequences + sources_tree + sources_locdb_v3 + sources_utlis,
+  sources : sources_py + sources_virus + sources_sequences + sources_tree + sources_utlis +
+            sources_locdb_v3 + sources_chart_v2,
   include_directories : include_directories('./cc'),
-  dependencies : [dependency('python3'), pybind11, fmt, simdjson, range_v3, bzip2, zlib, xz, lexy, xxhash],
+  dependencies : [dependency('python3'), pybind11, fmt, simdjson, range_v3, bzip2, zlib, xz, lexy, xxhash, alglib],
   install : true)
 
 # https://gabmus.org/posts/python-unittest-meson/
