@@ -1,0 +1,60 @@
+# Time-stamp: <2020-04-12 15:58:11 eu>
+* Introduction
+People have different opinions on what are "overlay", "fzozen"
+etc. merges and what was really implemented in lispmds, also their
+opinions change depending on their current work. To avoid infinite
+discussions and renaming, merge types are now just numbered.
+
+See also [[https://github.com/acorg/acmacs.r/issues/5][github issue]]
+
+* Merge type 1
+Tables are merged. Projections in the source charts are ignored. The
+merge has *no projections*.
+
+* Merge type 2
+Tables are merged. The best projection of the first chart is
+copied. Projections of the second chart are ignored. Coordinates of
+non-commong points of the second chart are set to NaN. The merge has
+just one projection. If the first chart has no projections, error is
+raised. Resulting projection is *not relaxed*.
+
+relax_incremental() can be used to relax the merge.
+
+If you want to freeze primary map (projection of the first chart in
+the merge) and randomize and relax just points found in the secondary
+table (merged in), use 
+relax_incremental(number_of_optimizations, "unmovable-primary-points")
+
+* Merge type 3
+Tables are merged. The best projection of the second chart orieneted
+to the best projection of the first chart using procrustes.
+Coordinates of the non-common points are copied to the resulting
+layout from their source layouts. Coordinates of each common point are
+set to the middle between coordinates of that point in the source
+projections. Resulting projection is *not relaxed*.
+
+* Merge type 4
+Merge type 3 is performed. Then the points of the first chart
+(including common points) are fixed and the merge is *relaxed*,
+i.e. points found only in the second chart are allowed to move.
+
+* Merge type 5
+Tables are merged. The best projection of the second chart orieneted
+to the best projection of the first chart using procrustes.
+Coordinates of all points of the first chart and coordinates of
+the non-common points of the second chart are copied to the resulting
+layout from their source layouts. Then the points of the first chart
+(including common points) are fixed and the merge is *relaxed*,
+i.e. points found only in the second chart are allowed to move.
+
+* COMMENT ---- local vars
+:PROPERTIES:
+:VISIBILITY: folded
+:END:
+#+OPTIONS: toc:nil
+#+STARTUP: showall indent
+# ======================================================================
+### Local Variables:
+### eval: (add-hook 'before-save-hook 'time-stamp)
+### eval: (flyspell-mode)
+### End:
