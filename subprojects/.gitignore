@@ -6,3 +6,4 @@ range-v3-*
 pybind11-*
 lexy
 xxHash-*
+alglib-cpp
