@@ -50,11 +50,12 @@ bzip2 = meson.get_compiler('cpp').find_library('bz2', required : false)
 
 # ----------------------------------------------------------------------
 
+sources_locdb_v3 = ['cc/locdb/v3/locdb.cc']
+
 sources_virus = ['cc/virus/name-parse.cc', 'cc/virus/passage-parse.cc']
 sources_sequences = ['cc/sequences/seqdb.cc', 'cc/sequences/seqdb-selected.cc', 'cc/sequences/seqdb-export.cc', 'cc/sequences/fasta.cc', 'cc/sequences/clades.cc',
                      'cc/sequences/translate.cc', 'cc/sequences/align.cc', 'cc/sequences/master.cc', 'cc/sequences/deletions.cc']
 sources_tree = ['cc/tree/tree.cc', 'cc/tree/tree-iterator.cc', 'cc/tree/newick.cc', 'cc/tree/export.cc']
-sources_locdb = ['cc/locdb/locdb.cc']
 sources_utlis = ['cc/utils/file.cc', 'cc/utils/messages.cc', 'cc/ext/date.cc']
 sources_py = ['cc/py/module.cc', 'cc/py/virus.cc', 'cc/py/sequences.cc', 'cc/py/tree.cc', 'cc/py/utils.cc']
 
@@ -69,7 +70,7 @@ test('ae test basic', test_basic)
 
 test_virus_name = executable(
   'test-virus-name',
-  ['cc/test/test-virus-name.cc'] + sources_virus + sources_locdb + sources_utlis,
+  ['cc/test/test-virus-name.cc'] + sources_virus + sources_locdb_v3 + sources_utlis,
   include_directories : include_directories('./cc'),
   dependencies : [fmt, simdjson, range_v3, bzip2, zlib, xz, lexy],
   install : true)
@@ -108,7 +109,7 @@ python3 = import('python').find_installation('python3')
 
 ae_lib = python3.extension_module(
   'ae_backend',
-  sources : sources_py + sources_virus + sources_sequences + sources_tree + sources_locdb + sources_utlis,
+  sources : sources_py + sources_virus + sources_sequences + sources_tree + sources_locdb_v3 + sources_utlis,
   include_directories : include_directories('./cc'),
   dependencies : [dependency('python3'), pybind11, fmt, simdjson, range_v3, bzip2, zlib, xz, lexy, xxhash],
   install : true)

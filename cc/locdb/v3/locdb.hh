@@ -1,5 +1,3 @@
-// #include <string>
-// #include <string_view>
 #include <map>
 #include <vector>
 
@@ -7,7 +5,7 @@
 
 // ----------------------------------------------------------------------
 
-namespace ae::locationdb::inline v1
+namespace ae::locdb::inline v3
 {
     class error : public std::runtime_error { public: using std::runtime_error::runtime_error; };
 

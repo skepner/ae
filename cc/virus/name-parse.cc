@@ -9,7 +9,7 @@
 #include "utils/string.hh"
 #include "utils/messages.hh"
 #include "virus/name-parse.hh"
-#include "locdb/locdb.hh"
+#include "locdb/v3/locdb.hh"
 
 // ======================================================================
 
@@ -510,7 +510,7 @@ namespace ae::virus::name::inline v1
     // return source unchanged, if location not found but add message
     inline std::tuple<std::string_view, std::string_view, std::string_view> fix_location(const std::string& location, std::string_view source, Parts& parts, Messages& messages, const MessageLocation& message_location)
     {
-        const auto& locdb = locationdb::get();
+        const auto& locdb = locdb::v3::get();
         if (const auto [fixed, location_data] = locdb.find(location); !fixed.empty()) {
             return {fixed, locdb.continent(location_data->country), location_data->country};
         }
@@ -654,7 +654,7 @@ std::string ae::virus::name::v1::Parts::host_location_isolation_year() const
 
 ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, parse_settings& settings, Messages& messages, const MessageLocation& message_location)
 {
-    const auto& locdb = locationdb::get();
+    const auto& locdb = locdb::get();
     Parts result;
 
     // fmt::print(">>>> parsing \"{}\"\n", source);

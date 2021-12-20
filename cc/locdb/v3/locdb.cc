@@ -3,12 +3,12 @@
 #include <memory>
 #include <cstdlib>
 
-#include "locdb/locdb.hh"
+#include "locdb/v3/locdb.hh"
 #include "ext/fmt.hh"
 
 // ----------------------------------------------------------------------
 
-namespace ae::locationdb::inline v1::detail
+namespace ae::locdb::inline v3::detail
 {
     static Db* db{nullptr};
 
@@ -26,45 +26,45 @@ namespace ae::locationdb::inline v1::detail
 
 // ----------------------------------------------------------------------
 
-const ae::locationdb::v1::Db& ae::locationdb::v1::get()
+const ae::locdb::v3::Db& ae::locdb::v3::get()
 {
     if (!detail::db)
         detail::db = new Db(detail::get_db_path());
     return *detail::db;
 
-} // ae::locationdb::v1::get
+} // ae::locdb::v3::get
 
 // ----------------------------------------------------------------------
 
-void ae::locationdb::v1::db_path(const std::filesystem::path& path)
+void ae::locdb::v3::db_path(const std::filesystem::path& path)
 {
     detail::db_path = path;
 
-} // ae::locationdb::v1::db_path
+} // ae::locdb::v3::db_path
 
 // ----------------------------------------------------------------------
 
-const std::filesystem::path& ae::locationdb::v1::detail::get_db_path()
+const std::filesystem::path& ae::locdb::v3::detail::get_db_path()
 {
     if (db_path.empty()) {
-        if (const char* ldb2_path = std::getenv("LOCATIONDB_V2"); ldb2_path)
+        if (const char* ldb2_path = std::getenv("LOCDB_V2"); ldb2_path)
             db_path = ldb2_path;
         else
-            throw error{"\nenv LOCATIONDB_V2 is not set\n"};
+            throw error{"\nenv LOCDB_V2 is not set\n"};
     }
     return db_path;
 
-} // ae::locationdb::v1::detail::get_db_path
+} // ae::locdb::v3::detail::get_db_path
 
 // ----------------------------------------------------------------------
 
-ae::locationdb::v1::Db::Db(const std::filesystem::path& path)
+ae::locdb::v3::Db::Db(const std::filesystem::path& path)
     : parser_{path}
 {
     for(auto field : parser_.doc().get_object()) {
         const std::string_view key = field.unescaped_key();
         if (key == "  version") {
-            if (const std::string_view ver{field.value()}; ver != "locationdb-v2")
+            if (const std::string_view ver{field.value()}; ver != "locdb-v2")
                 throw std::runtime_error{fmt::format("locdb: unsupported version: \"{}\"", ver)};
         }
         else if (key == "cdc_abbreviations") {
@@ -99,11 +99,11 @@ ae::locationdb::v1::Db::Db(const std::filesystem::path& path)
             fmt::print(">> locdb: unhandled \"{}\"\n", key);
     }
 
-} // ae::locationdb::v1::Db::Db
+} // ae::locdb::v3::Db::Db
 
 // ----------------------------------------------------------------------
 
-std::string_view ae::locationdb::v1::Db::continent(std::string_view country) const
+std::string_view ae::locdb::v3::Db::continent(std::string_view country) const
 {
     if (const auto found = countries_.find(country); found != countries_.end())
         return continents_[found->second];
@@ -112,11 +112,11 @@ std::string_view ae::locationdb::v1::Db::continent(std::string_view country) con
         return {};
     }
 
-} // ae::locationdb::v1::Db::continent
+} // ae::locdb::v3::Db::continent
 
 // ----------------------------------------------------------------------
 
-std::pair<std::string_view, const ae::locationdb::v1::Db::location*> ae::locationdb::v1::Db::find(std::string_view look_for) const
+std::pair<std::string_view, const ae::locdb::v3::Db::location*> ae::locdb::v3::Db::find(std::string_view look_for) const
 {
     if (const auto name_found = names_.find(look_for); name_found != names_.end())
         return {name_found->first, &locations_.find(name_found->second)->second};
@@ -125,6 +125,6 @@ std::pair<std::string_view, const ae::locationdb::v1::Db::location*> ae::locatio
 
     return {{}, nullptr};
 
-} // ae::locationdb::v1::Db::find
+} // ae::locdb::v3::Db::find
 
 // ----------------------------------------------------------------------

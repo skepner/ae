@@ -2,7 +2,7 @@
 
 ## Dependencies
 
-- clang 13 or g++-11
+- clang-13 or g++-11
 - ninja
 - meson
 - zlib (brew install zlib)
