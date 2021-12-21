@@ -28,7 +28,7 @@ namespace ae::chart::v2
 
         void extend(const PointCoordinates& point)
         {
-            for (auto dim : range_from_0_to(num_dim())) {
+            for (number_of_dimensions_t dim{0};  dim < num_dim(); ++dim) {
                 min[dim] = std::min(point[dim], min[dim]);
                 max[dim] = std::max(point[dim], max[dim]);
             }
@@ -36,8 +36,8 @@ namespace ae::chart::v2
 
         double area() const
         {
-            double result = max.x() - min.x();
-            for (auto dim : range_from_1_to(num_dim()))
+            double result{1.0};
+            for (number_of_dimensions_t dim{0};  dim < num_dim(); ++dim)
                 result *= max[dim] - min[dim];
             return result;
         }
@@ -54,7 +54,7 @@ namespace ae::chart::v2
 
             void set_max(const PointCoordinates& a_max)
                 {
-                    for (auto dim : range_from_0_to(a_max.number_of_dimensions()))
+                    for (number_of_dimensions_t dim{0};  dim < a_max.number_of_dimensions(); ++dim)
                         max_[dim] = min_[dim] + std::ceil((a_max[dim] - min_[dim]) / step_) * step_;
                 }
 
@@ -76,7 +76,7 @@ namespace ae::chart::v2
             const Iterator& operator++()
                 {
                     if (current_.x() <= max_.x()) {
-                        for (auto dim : range_from_0_to(current_.number_of_dimensions())) {
+                        for (number_of_dimensions_t dim{0};  dim < current_.number_of_dimensions(); ++dim) {
                             current_[dim] += step_;
                             if (current_[dim] <= max_[dim]) {
                                 std::copy(min_.begin(), min_.begin() + static_cast<size_t>(dim), current_.begin());
@@ -208,7 +208,7 @@ namespace ae::chart::v2
         {
             assert(point_no < number_of_points());
             assert(point.number_of_dimensions() == number_of_dimensions());
-            for (auto dim : range_from_0_to(number_of_dimensions()))
+            for (number_of_dimensions_t dim{0};  dim < number_of_dimensions(); ++dim)
                 coordinate(point_no, dim) = point[dim];
         }
 
@@ -242,7 +242,7 @@ namespace ae::chart::v2
         double distance(size_t p1, size_t p2, double no_distance = std::numeric_limits<double>::quiet_NaN()) const
         {
             if (const auto c1 = operator[](p1), c2 = operator[](p2); c1.exists() && c2.exists())
-                return ae::distance(c1, c2);
+                return ae::draw::v1::distance(c1, c2);
             else
                 return no_distance;
         }

@@ -818,7 +818,7 @@ int acmacs::color::test_find_color_by_name()
             find_color_by_name(en.first);
         }
         catch (std::exception& err ) {
-            AD_WARNING("cannot find color \"{}\": {}", en.first, err);
+            AD_WARNING("cannot find color \"{}\": {}", en.first, err.what());
             ++errors;
         }
     }

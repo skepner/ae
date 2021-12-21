@@ -27,7 +27,7 @@ std::pair<std::vector<size_t>, std::vector<size_t>> ae::chart::v2::Layout::min_m
     for (; point_no < number_of_points(); ++point_no) {
         const auto point = operator[](point_no);
         if (point.exists()) {
-            for (auto dim : range_from_to(num_dim)) {
+            for (number_of_dimensions_t dim{0}; dim < num_dim; ++dim) {
                 if (point[dim] < min_coordinates[dim]) {
                     min_coordinates[dim] = point[dim];
                     min_points[*dim] = point_no;
@@ -139,24 +139,24 @@ std::vector<std::pair<double, double>> ae::chart::v2::Layout::minmax() const
     auto it = Vec::begin();
     while (it != Vec::end()) {
         number_of_dimensions_t valid_dims{0};
-        for (auto dim : range_from_0_to(number_of_dimensions_)) {
+        for (number_of_dimensions_t dim{0}; dim < number_of_dimensions_; ++dim) {
             if (!std::isnan(*it)) {
                 result[*dim] = std::pair(*it, *it);
                 ++valid_dims;
             }
             ++it;
         }
-        if (valid_dims == number_of_dimensions_)
-            break;
+                if (valid_dims == number_of_dimensions_)
+                    break;
     }
     while (it != Vec::end()) {
-        for (auto dim : range_from_0_to(number_of_dimensions_)) {
-            if (!std::isnan(*it)) {
-                result[*dim].first = std::min(result[*dim].first, *it);
-                result[*dim].second = std::max(result[*dim].second, *it);
-            }
-            ++it;
-        }
+                for (number_of_dimensions_t dim{0}; dim < number_of_dimensions_; ++dim) {
+                    if (!std::isnan(*it)) {
+                        result[*dim].first = std::min(result[*dim].first, *it);
+                        result[*dim].second = std::max(result[*dim].second, *it);
+                    }
+                    ++it;
+                    }
     }
     return result;
 

@@ -67,6 +67,8 @@ namespace ae
     template <std::integral T, typename Tag> class named_number_t : public named_t<T, Tag>
     {
       public:
+        // using difference_type = long; // named_number_t<T, Tag>;
+
         using named_t<T, Tag>::named_t;
         using named_t<T, Tag>::operator=;
         using named_t<T, Tag>::operator==;
@@ -78,9 +80,9 @@ namespace ae
             return *this;
         }
 
-        constexpr auto operator++(int)
+        constexpr named_number_t<T, Tag> operator++(int)
         {
-            const auto saved{*this};
+            const named_number_t saved{*this};
             ++this->get();
             return saved;
         }
@@ -123,6 +125,7 @@ namespace ae
         using named_number_t<size_t, Tag>::operator=;
         using named_number_t<size_t, Tag>::operator==;
         using named_number_t<size_t, Tag>::operator<=>;
+        using named_number_t<size_t, Tag>::operator++;
     };
 
     // ----------------------------------------------------------------------
@@ -176,6 +179,11 @@ template <typename T, typename Tag> struct fmt::formatter<ae::named_string_t<T, 
 template <typename T, typename Tag> struct fmt::formatter<ae::named_number_t<T, Tag>> : fmt::formatter<T>
 {
     template <typename FormatCtx> auto format(const ae::named_number_t<T, Tag>& nt, FormatCtx& ctx) const { return fmt::formatter<T>::format(static_cast<T>(nt), ctx); }
+};
+
+template <typename Tag> struct fmt::formatter<ae::named_size_t<Tag>> : fmt::formatter<size_t>
+{
+    template <typename FormatCtx> auto format(const ae::named_size_t<Tag>& nt, FormatCtx& ctx) const { return fmt::formatter<size_t>::format(static_cast<size_t>(nt), ctx); }
 };
 
 template <typename Tag> struct fmt::formatter<ae::named_double_t<Tag>> : fmt::formatter<double>

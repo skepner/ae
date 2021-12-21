@@ -14,6 +14,7 @@ project('ae', ['cpp'],
 if meson.get_compiler('cpp').get_id() == 'clang'
   add_project_arguments('-Weverything',
                         '-Wno-weak-vtables', '-Wno-padded', '-Wno-c++98-compat', '-Wno-c++98-c++11-compat', '-Wno-c++98-compat-pedantic',
+                        '-Wno-ambiguous-reversed-operator', # ISO C++20 considers use of overloaded operator '<=' to be ambiguous despite there being a unique best viable function
                         language : 'cpp')
 endif
 
@@ -86,6 +87,8 @@ sources_ad = [
 
 sources_chart_v2 = [
   'cc/chart/v2/alglib.cc',
+  'cc/chart/v2/chart.cc',
+  'cc/chart/v2/chart-modify.cc',
   'cc/chart/v2/column-bases.cc',
   'cc/chart/v2/layout.cc',
   'cc/chart/v2/optimize.cc',
