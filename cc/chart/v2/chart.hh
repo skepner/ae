@@ -13,6 +13,7 @@
 #include "chart/v2/iterator.hh"
 #include "utils/regex.hh"
 #include "utils/named-vector.hh"
+#include "sequences/lineage.hh"
 // #include "acmacs-virus/virus-name.hh"
 #include "chart/v2/name-format.hh"
 // #include "chart/v2/annotations.hh"
@@ -192,9 +193,9 @@ namespace ae::chart::v2
 #endif
         }
 
-        operator acmacs::virus::lineage_t() const
+        operator ae::sequences::lineage_t() const
         {
-            return acmacs::virus::lineage_t{to_string()};
+            return ae::sequences::lineage_t{to_string()};
         }
 
         operator Lineage() const { return mLineage; }
@@ -221,7 +222,7 @@ namespace ae::chart::v2
 
         LabIds(const rjson::value& src) : ae::named_vector_t<std::string, struct chart_LabIds_tag_t>::named_vector_t(src.size()) { rjson::copy(src, begin()); }
 
-        std::string join() const { return string::join(acmacs::string::join_space, begin(), end()); }
+        std::string join() const { return fmt::format("{}", fmt::join(*this, " ")); }
 
     }; // class LabIds
 
@@ -233,17 +234,17 @@ namespace ae::chart::v2
 
     }; // class Clades
 
-    class SerumId : public ae::named_string_t<struct chart_SerumId_tag_t>
+    class SerumId : public ae::named_string_t<std::string, struct chart_SerumId_tag_t>
     {
       public:
-        using ae::named_string_t<struct chart_SerumId_tag_t>::named_string_t;
+        using ae::named_string_t<std::string, struct chart_SerumId_tag_t>::named_string_t;
 
     }; // class SerumId
 
-    class SerumSpecies : public ae::named_string_t<struct chart_SerumSpecies_tag_t>
+    class SerumSpecies : public ae::named_string_t<std::string, struct chart_SerumSpecies_tag_t>
     {
       public:
-        using ae::named_string_t<struct chart_SerumSpecies_tag_t>::named_string_t;
+        using ae::named_string_t<std::string, struct chart_SerumSpecies_tag_t>::named_string_t;
 
     }; // class SerumSpecies
 
@@ -924,7 +925,7 @@ namespace ae::chart::v2
 
         std::shared_ptr<Antigen> antigen(size_t aAntigenNo) const { return antigens()->operator[](aAntigenNo); }
         std::shared_ptr<Serum> serum(size_t aSerumNo) const { return sera()->operator[](aSerumNo); }
-        acmacs::virus::lineage_t lineage() const;
+        ae::sequences::lineage_t lineage() const;
 
         std::string make_info(size_t max_number_of_projections_to_show = 20, unsigned inf = info_data::column_bases|info_data::tables) const;
         std::string make_name(std::optional<size_t> aProjectionNo = {}) const;
