@@ -2,8 +2,8 @@
 #include "ad/enumerate.hh"
 #include "ext/range-v3.hh"
 #include "ad/counter.hh"
-#include "acmacs-virus/virus-name-v1.hh"
-#include "acmacs-whocc-data/labs.hh"
+// #include "acmacs-virus/virus-name-v1.hh"
+// #include "acmacs-whocc-data/labs.hh"
 #include "chart/v2/chart.hh"
 #include "chart/v2/serum-circle.hh"
 

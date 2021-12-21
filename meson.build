@@ -92,6 +92,7 @@ sources_chart_v2 = [
   'cc/chart/v2/column-bases.cc',
   'cc/chart/v2/layout.cc',
   'cc/chart/v2/optimize.cc',
+  'cc/chart/v2/serum-circle.cc',
   'cc/chart/v2/stress.cc',
   'cc/chart/v2/titers.cc',
 ]
