@@ -91,41 +91,41 @@ namespace acmacs
         [[nodiscard]] bool operator!=(const PointStyle& rhs) const noexcept { return !operator==(rhs); }
 
         virtual bool shown() const noexcept { return shown_; }
-        virtual Color fill() const noexcept { return fill_; }
-        virtual Color outline() const noexcept { return outline_; }
-        virtual Pixels outline_width() const noexcept { return outline_width_; }
-        virtual Pixels size() const noexcept { return size_; }
-        virtual Scaled diameter() const noexcept { return diameter_; } // drawi: use it if >0
-        virtual Rotation rotation() const noexcept { return rotation_; }
-        virtual Aspect aspect() const noexcept { return aspect_; }
+        virtual ae::draw::v1::Color fill() const noexcept { return fill_; }
+        virtual ae::draw::v1::Color outline() const noexcept { return outline_; }
+        virtual ae::draw::v1::Pixels outline_width() const noexcept { return outline_width_; }
+        virtual ae::draw::v1::Pixels size() const noexcept { return size_; }
+        virtual ae::draw::v1::Scaled diameter() const noexcept { return diameter_; } // drawi: use it if >0
+        virtual ae::draw::v1::Rotation rotation() const noexcept { return rotation_; }
+        virtual ae::draw::v1::Aspect aspect() const noexcept { return aspect_; }
         virtual PointShape shape() const noexcept { return shape_; }
         virtual const LabelStyle& label() const noexcept { return label_; }
         virtual std::string_view label_text() const noexcept { return label_text_; }
 
-        virtual void fill(Color a_fill) noexcept { fill_ = a_fill; }
+        virtual void fill(ae::draw::v1::Color a_fill) noexcept { fill_ = a_fill; }
         virtual void fill(const acmacs::color::Modifier& a_fill) noexcept { acmacs::color::modify(fill_, a_fill); }
         virtual void outline(Color a_outline) noexcept { outline_ = a_outline; }
         virtual void outline(const acmacs::color::Modifier& a_outline) noexcept { acmacs::color::modify(outline_, a_outline); }
 
         virtual void shown(bool a_shown) noexcept { shown_ = a_shown; }
-        virtual void outline_width(Pixels a_outline_width) noexcept { outline_width_ = a_outline_width; }
-        virtual void size(Pixels a_size) noexcept { size_ = a_size; }
-        virtual void radius(Scaled a_radius) noexcept { diameter_ = a_radius * 2.0; }
-        virtual void rotation(Rotation a_rotation) noexcept { rotation_ = a_rotation; }
-        virtual void aspect(Aspect a_aspect) noexcept { aspect_ = a_aspect; }
+        virtual void outline_width(ae::draw::v1::Pixels a_outline_width) noexcept { outline_width_ = a_outline_width; }
+        virtual void size(ae::draw::v1::Pixels a_size) noexcept { size_ = a_size; }
+        virtual void radius(ae::draw::v1::Scaled a_radius) noexcept { diameter_ = a_radius * 2.0; }
+        virtual void rotation(ae::draw::v1::Rotation a_rotation) noexcept { rotation_ = a_rotation; }
+        virtual void aspect(ae::draw::v1::Aspect a_aspect) noexcept { aspect_ = a_aspect; }
         virtual void shape(PointShape a_shape) noexcept { shape_ = a_shape; }
         virtual LabelStyle& label() noexcept { return label_; }
         virtual void label_text(std::string_view a_label_text) noexcept { label_text_.assign(a_label_text); }
 
       private:
         bool shown_{true};
-        Color fill_{TRANSPARENT};
-        Color outline_{BLACK};
-        Pixels outline_width_{1.0};
-        Pixels size_{5.0};
-        Scaled diameter_{0.0}; // drawi: use it if >0
-        Rotation rotation_{NoRotation};
-        Aspect aspect_{AspectNormal};
+        ae::draw::v1::Color fill_{TRANSPARENT};
+        ae::draw::v1::Color outline_{BLACK};
+        ae::draw::v1::Pixels outline_width_{1.0};
+        ae::draw::v1::Pixels size_{5.0};
+        ae::draw::v1::Scaled diameter_{0.0}; // drawi: use it if >0
+        ae::draw::v1::Rotation rotation_{NoRotation};
+        ae::draw::v1::Aspect aspect_{AspectNormal};
         PointShape shape_;
         LabelStyle label_;
         std::string label_text_;
@@ -153,17 +153,17 @@ namespace acmacs
         void fill(const acmacs::color::Modifier& a_fill) noexcept override { fill_modifier_.add(a_fill); }
         void outline(const acmacs::color::Modifier& a_outline) noexcept override { outline_modifier_.add(a_outline); }
 
-        Color fill() const noexcept override { auto fl = PointStyle::fill(); return acmacs::color::modify(fl, fill_modifier_); }
-        Color outline() const noexcept override { auto outl = PointStyle::outline(); return acmacs::color::modify(outl, outline_modifier_); }
+        ae::draw::v1::Color fill() const noexcept override { auto fl = PointStyle::fill(); return acmacs::color::modify(fl, fill_modifier_); }
+        ae::draw::v1::Color outline() const noexcept override { auto outl = PointStyle::outline(); return acmacs::color::modify(outl, outline_modifier_); }
 
         constexpr const auto& fill_modifier() const { return fill_modifier_; }
         constexpr const auto& outline_modifier() const { return outline_modifier_; }
 
         void shown(bool a_shown) noexcept override { PointStyle::shown(a_shown); modified_shown_ = true; }
-        void outline_width(Pixels a_outline_width) noexcept override { PointStyle::outline_width(a_outline_width); modified_outline_width_ = true; }
-        void size(Pixels a_size) noexcept override { PointStyle::size(a_size); modified_size_ = true; }
-        void rotation(Rotation a_rotation) noexcept override { PointStyle::rotation(a_rotation); modified_rotation_ = true; }
-        void aspect(Aspect a_aspect) noexcept override { PointStyle::aspect(a_aspect); modified_aspect_ = true; }
+        void outline_width(ae::draw::v1::Pixels a_outline_width) noexcept override { PointStyle::outline_width(a_outline_width); modified_outline_width_ = true; }
+        void size(ae::draw::v1::Pixels a_size) noexcept override { PointStyle::size(a_size); modified_size_ = true; }
+        void rotation(ae::draw::v1::Rotation a_rotation) noexcept override { PointStyle::rotation(a_rotation); modified_rotation_ = true; }
+        void aspect(ae::draw::v1::Aspect a_aspect) noexcept override { PointStyle::aspect(a_aspect); modified_aspect_ = true; }
         void shape(PointShape a_shape) noexcept override { PointStyle::shape(a_shape); modified_shape_ = true; }
         LabelStyle& label() noexcept override { modified_label_ = true; return PointStyle::label(); }
         void label_text(std::string_view a_label_text) noexcept override { PointStyle::label_text(a_label_text); modified_label_text_ = true; }
@@ -247,7 +247,7 @@ namespace acmacs
 
 // ----------------------------------------------------------------------
 
-template <> struct fmt::formatter<acmacs::PointShape> : fmt::formatter<acmacs::fmt_helper::default_formatter> {
+template <> struct fmt::formatter<acmacs::PointShape> : fmt::formatter<ae::fmt_helper::default_formatter> {
     template <typename FormatCtx> auto format(const acmacs::PointShape& shape, FormatCtx& ctx)
     {
         switch (shape.get()) {
@@ -266,7 +266,7 @@ template <> struct fmt::formatter<acmacs::PointShape> : fmt::formatter<acmacs::f
     }
 };
 
-template <> struct fmt::formatter<acmacs::PointStyle> : fmt::formatter<acmacs::fmt_helper::default_formatter> {
+template <> struct fmt::formatter<acmacs::PointStyle> : fmt::formatter<ae::fmt_helper::default_formatter> {
     template <typename FormatCtx> auto format(const acmacs::PointStyle& style, FormatCtx& ctx)
     {
         return format_to(ctx.out(), R"({{"shape": {}, "shown": {}, "fill": "{}", "outline": "{}", "outline_width": {}, "size": {}, "aspect": {}, "rotation": {}, "label": {}, "label_text": "{}"}})",

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <string_view>
 
 #include "ad/sfinae.hh"
 #include "draw/v1/size.hh"
@@ -107,7 +108,7 @@ namespace acmacs
         [[nodiscard]] bool operator!=(const LabelStyle& rhs) const { return !operator==(rhs); }
 
         bool shown{true};
-        Offset offset{0, 1};
+        ae::draw::v1::Offset offset{0, 1};
         ae::draw::v1::Pixels size{10.0};
         color::Modifier color{BLACK};
         ae::draw::v1::Rotation rotation{ae::draw::v1::NoRotation};
