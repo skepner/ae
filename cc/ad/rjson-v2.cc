@@ -83,8 +83,7 @@ namespace rjson
                 virtual ~SymbolHandler() = default;
 
                 [[noreturn]] void unexpected(std::string_view::value_type aSymbol, Parser& aParser) const {
-                    throw parse_error(aParser.line(), aParser.column(),
-                                      fmt::format("unexpected symbol: '{}' ({})", aSymbol, acmacs::to_hex_string(static_cast<unsigned char>(aSymbol), acmacs::ShowBase, acmacs::Uppercase)));
+                    throw parse_error(aParser.line(), aParser.column(), fmt::format("unexpected symbol: '{}' (0x{:X})", aSymbol, aSymbol));
                 }
 
                     [[noreturn]] void error(Parser& aParser, std::string_view aMessage) const
