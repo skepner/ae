@@ -106,12 +106,12 @@ bool rjson::v3::read_bool(const rjson::v3::value& source, bool dflt)
 
 // ----------------------------------------------------------------------
 
-std::optional<acmacs::PointCoordinates> rjson::v3::read_point_coordinates(const rjson::v3::value& source)
+std::optional<ae::draw::v1::PointCoordinates> rjson::v3::read_point_coordinates(const rjson::v3::value& source)
 {
-    return source.visit([]<typename Val>(const Val& point_coordinates) -> std::optional<acmacs::PointCoordinates> {
+    return source.visit([]<typename Val>(const Val& point_coordinates) -> std::optional<ae::draw::v1::PointCoordinates> {
         if constexpr (std::is_same_v<Val, rjson::v3::detail::array>) {
             if (point_coordinates.size() == 2)
-                return acmacs::PointCoordinates{point_coordinates[0].template to<double>(), point_coordinates[1].template to<double>()};
+                return ae::draw::v1::PointCoordinates{point_coordinates[0].template to<double>(), point_coordinates[1].template to<double>()};
             else
                 throw error{fmt::format("unrecognized: {} (expected array of two numbers)", point_coordinates)};
         }

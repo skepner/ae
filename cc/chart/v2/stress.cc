@@ -32,7 +32,7 @@ namespace std
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::Stress acmacs::chart::stress_factory(const acmacs::chart::Projection& projection, acmacs::chart::multiply_antigen_titer_until_column_adjust mult)
+ae::chart::v2::Stress ae::chart::v2::stress_factory(const Projection& projection, multiply_antigen_titer_until_column_adjust mult)
 {
     Stress stress(projection, mult);
     auto cb = projection.forced_column_bases();
@@ -41,11 +41,11 @@ acmacs::chart::Stress acmacs::chart::stress_factory(const acmacs::chart::Project
     projection.chart().titers()->update(stress.table_distances(), *cb, stress.parameters());
     return stress;
 
-} // acmacs::chart::stress_factory
+} // ae::chart::v2::stress_factory
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::Stress acmacs::chart::stress_factory(const Projection& projection, size_t antigen_no, double logged_avidity_adjust, multiply_antigen_titer_until_column_adjust mult)
+ae::chart::v2::Stress ae::chart::v2::stress_factory(const Projection& projection, size_t antigen_no, double logged_avidity_adjust, multiply_antigen_titer_until_column_adjust mult)
 {
     Stress stress(projection, mult);
     stress.parameters().avidity_adjusts.set_logged(antigen_no, logged_avidity_adjust);
@@ -55,11 +55,11 @@ acmacs::chart::Stress acmacs::chart::stress_factory(const Projection& projection
     projection.chart().titers()->update(stress.table_distances(), *cb, stress.parameters());
     return stress;
 
-} // acmacs::chart::stress_factory
+} // ae::chart::v2::stress_factory
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::Stress acmacs::chart::stress_factory(const acmacs::chart::Chart& chart, number_of_dimensions_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, multiply_antigen_titer_until_column_adjust mult, dodgy_titer_is_regular a_dodgy_titer_is_regular)
+ae::chart::v2::Stress ae::chart::v2::stress_factory(const Chart& chart, number_of_dimensions_t number_of_dimensions, MinimumColumnBasis minimum_column_basis, multiply_antigen_titer_until_column_adjust mult, dodgy_titer_is_regular a_dodgy_titer_is_regular)
 {
     Stress stress(number_of_dimensions, chart.number_of_points(), mult, a_dodgy_titer_is_regular);
     auto cb = chart.forced_column_bases(minimum_column_basis);
@@ -68,11 +68,11 @@ acmacs::chart::Stress acmacs::chart::stress_factory(const acmacs::chart::Chart& 
     chart.titers()->update(stress.table_distances(), *cb, stress.parameters());
     return stress;
 
-} // acmacs::chart::stress_factory
+} // ae::chart::v2::stress_factory
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::TableDistances acmacs::chart::table_distances(const acmacs::chart::Chart& chart, MinimumColumnBasis minimum_column_basis, dodgy_titer_is_regular a_dodgy_titer_is_regular)
+ae::chart::v2::TableDistances ae::chart::v2::table_distances(const Chart& chart, MinimumColumnBasis minimum_column_basis, dodgy_titer_is_regular a_dodgy_titer_is_regular)
 {
     Stress stress(number_of_dimensions_t{2}, chart.number_of_points(), multiply_antigen_titer_until_column_adjust::yes, a_dodgy_titer_is_regular);
     auto cb = chart.forced_column_bases(minimum_column_basis);
@@ -80,7 +80,7 @@ acmacs::chart::TableDistances acmacs::chart::table_distances(const acmacs::chart
         cb = chart.column_bases(minimum_column_basis);
     return chart.titers()->table_distances(*cb, stress.parameters());
 
-} // acmacs::chart::table_distances
+} // ae::chart::v2::table_distances
 
 // ----------------------------------------------------------------------
 
@@ -88,7 +88,7 @@ constexpr inline double non_zero(double value) { return float_zero(value) ? 1e-5
 
 // ----------------------------------------------------------------------
 
-static inline double map_distance(const double* first, size_t point_1, size_t point_2, acmacs::number_of_dimensions_t number_of_dimensions)
+static inline double map_distance(const double* first, size_t point_1, size_t point_2, number_of_dimensions_t number_of_dimensions)
 {
     using diff_t = typename std::vector<double>::difference_type;
     return ae::chart::v2::vector_math::distance(
@@ -100,7 +100,7 @@ static inline double map_distance(const double* first, size_t point_1, size_t po
 
 // ----------------------------------------------------------------------
 
-static inline double map_distance(const double* first, const typename acmacs::chart::TableDistances::Entry& entry, acmacs::number_of_dimensions_t number_of_dimensions)
+static inline double map_distance(const double* first, const typename ae::chart::v2::TableDistances::Entry& entry, number_of_dimensions_t number_of_dimensions)
 {
     return map_distance(first, entry.point_1, entry.point_2, number_of_dimensions);
 
@@ -108,52 +108,52 @@ static inline double map_distance(const double* first, const typename acmacs::ch
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::Stress::Stress(const Projection& projection, acmacs::chart::multiply_antigen_titer_until_column_adjust mult)
+ae::chart::v2::Stress::Stress(const Projection& projection, multiply_antigen_titer_until_column_adjust mult)
     : number_of_dimensions_(projection.number_of_dimensions()),
       parameters_(projection.number_of_points(), projection.unmovable(), projection.disconnected(), projection.unmovable_in_the_last_dimension(),
                   mult, projection.avidity_adjusts(), projection.dodgy_titer_is_regular())
 {
-} // acmacs::chart::Stress::Stress
+} // ae::chart::v2::Stress::Stress
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::Stress::Stress(number_of_dimensions_t number_of_dimensions, size_t number_of_points, multiply_antigen_titer_until_column_adjust mult, dodgy_titer_is_regular a_dodgy_titer_is_regular)
+ae::chart::v2::Stress::Stress(number_of_dimensions_t number_of_dimensions, size_t number_of_points, multiply_antigen_titer_until_column_adjust mult, dodgy_titer_is_regular a_dodgy_titer_is_regular)
     : number_of_dimensions_(number_of_dimensions),
       parameters_(number_of_points, mult, a_dodgy_titer_is_regular)
 {
 
-} // acmacs::chart::Stress::Stress
+} // ae::chart::v2::Stress::Stress
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::Stress::Stress(number_of_dimensions_t number_of_dimensions, size_t number_of_points)
+ae::chart::v2::Stress::Stress(number_of_dimensions_t number_of_dimensions, size_t number_of_points)
     : number_of_dimensions_(number_of_dimensions),
       parameters_(number_of_points)
 {
 
-} // acmacs::chart::Stress::Stress
+} // ae::chart::v2::Stress::Stress
 
 // ----------------------------------------------------------------------
 
-inline double contribution_regular(size_t point_1, size_t point_2, double table_distance, const double* first, acmacs::number_of_dimensions_t num_dim)
+inline double contribution_regular(size_t point_1, size_t point_2, double table_distance, const double* first, ae::chart::v2::number_of_dimensions_t num_dim)
 {
     const double diff = table_distance - map_distance(first, point_1, point_2, num_dim);
     return diff * diff;
 }
 
-inline double contribution_less_than(size_t point_1, size_t point_2, double table_distance, const double* first, acmacs::number_of_dimensions_t num_dim)
+inline double contribution_less_than(size_t point_1, size_t point_2, double table_distance, const double* first, ae::chart::v2::number_of_dimensions_t num_dim)
 {
     const double diff = table_distance - map_distance(first, point_1, point_2, num_dim) + 1;
-    return diff * diff * ae::chart::v2::sigmoid(diff * acmacs::chart::SigmoidMutiplier());
+    return diff * diff * ae::chart::v2::sigmoid(diff * ae::chart::v2::SigmoidMutiplier());
 }
 
-// inline double contribution_regular(const typename acmacs::chart::TableDistances::Entry& entry, const double* first, acmacs::number_of_dimensions_t num_dim)
+// inline double contribution_regular(const typename ae::chart::v2::TableDistances::Entry& entry, const double* first, ae::chart::v2::number_of_dimensions_t num_dim)
 // {
 //     const double diff = entry.table_distance - map_distance(first, entry, num_dim);
 //     return diff * diff;
 // }
 
-// inline double contribution_less_than(const typename acmacs::chart::TableDistances::Entry& entry, const double* first, acmacs::number_of_dimensions_t num_dim)
+// inline double contribution_less_than(const typename ae::chart::v2::TableDistances::Entry& entry, const double* first, ae::chart::v2::number_of_dimensions_t num_dim)
 // {
 //     const double diff = entry.table_distance - map_distance(first, entry, num_dim) + 1;
 //     return diff * diff * ae::chart::v2::sigmoid(diff * SigmoidMutiplier());
@@ -161,45 +161,45 @@ inline double contribution_less_than(size_t point_1, size_t point_2, double tabl
 
 // ----------------------------------------------------------------------
 
-double acmacs::chart::Stress::value(const double* first, const double*) const
+double ae::chart::v2::Stress::value(const double* first, const double*) const
 {
     return std::transform_reduce(table_distances().regular().begin(), table_distances().regular().end(), double{0}, std::plus<>(),
                                  [first, num_dim = number_of_dimensions_](const auto& entry) { return contribution_regular(entry.point_1, entry.point_2, entry.distance, first, num_dim); }) +
            std::transform_reduce(table_distances().less_than().begin(), table_distances().less_than().end(), double{0}, std::plus<>(),
                                  [first, num_dim = number_of_dimensions_](const auto& entry) { return contribution_less_than(entry.point_1, entry.point_2, entry.distance, first, num_dim); });
 
-} // acmacs::chart::Stress::value
+} // ae::chart::v2::Stress::value
 
 // ----------------------------------------------------------------------
 
-double acmacs::chart::Stress::value(const acmacs::Layout& aLayout) const
+double ae::chart::v2::Stress::value(const Layout& aLayout) const
 {
     return value(aLayout.as_flat_vector_double().data());
 
-} // acmacs::chart::Stress::value
+} // ae::chart::v2::Stress::value
 
 // ----------------------------------------------------------------------
 
-double acmacs::chart::Stress::contribution(size_t point_no, const double* first) const
+double ae::chart::v2::Stress::contribution(size_t point_no, const double* first) const
 {
     return std::transform_reduce(table_distances().begin_regular_for(point_no), table_distances().end_regular_for(point_no), double{0}, std::plus<>(),
                                  [first, num_dim = number_of_dimensions_](const auto& entry) { return contribution_regular(entry.point_1, entry.point_2, entry.distance, first, num_dim); }) +
            std::transform_reduce(table_distances().begin_less_than_for(point_no), table_distances().end_less_than_for(point_no), double{0}, std::plus<>(),
                                  [first, num_dim = number_of_dimensions_](const auto& entry) { return contribution_less_than(entry.point_1, entry.point_2, entry.distance, first, num_dim); });
 
-} // acmacs::chart::Stress::contribution
+} // ae::chart::v2::Stress::contribution
 
 // ----------------------------------------------------------------------
 
-double acmacs::chart::Stress::contribution(size_t point_no, const acmacs::Layout& aLayout) const
+double ae::chart::v2::Stress::contribution(size_t point_no, const Layout& aLayout) const
 {
     return contribution(point_no, aLayout.as_flat_vector_double().data());
 
-} // acmacs::chart::Stress::contribution
+} // ae::chart::v2::Stress::contribution
 
 // ----------------------------------------------------------------------
 
-double acmacs::chart::Stress::contribution(size_t point_no, const TableDistancesForPoint& table_distances_for_point, const double* first) const
+double ae::chart::v2::Stress::contribution(size_t point_no, const TableDistancesForPoint& table_distances_for_point, const double* first) const
 {
     return std::transform_reduce(
                table_distances_for_point.regular.begin(), table_distances_for_point.regular.end(), double{0}, std::plus<>(),
@@ -208,58 +208,58 @@ double acmacs::chart::Stress::contribution(size_t point_no, const TableDistances
                table_distances_for_point.less_than.begin(), table_distances_for_point.less_than.end(), double{0}, std::plus<>(),
                [point_no, first, num_dim = number_of_dimensions_](const auto& entry) { return contribution_less_than(point_no, entry.another_point, entry.distance, first, num_dim); });
 
-} // acmacs::chart::Stress::contribution
+} // ae::chart::v2::Stress::contribution
 
 // ----------------------------------------------------------------------
 
-double acmacs::chart::Stress::contribution(size_t point_no, const TableDistancesForPoint& table_distances_for_point, const acmacs::Layout& aLayout) const
+double ae::chart::v2::Stress::contribution(size_t point_no, const TableDistancesForPoint& table_distances_for_point, const Layout& aLayout) const
 {
     return contribution(point_no, table_distances_for_point, aLayout.as_flat_vector_double().data());
 
-} // acmacs::chart::Stress::contribution
+} // ae::chart::v2::Stress::contribution
 
 // ----------------------------------------------------------------------
 
-std::vector<double> acmacs::chart::Stress::gradient(const double* first, const double* last) const
+std::vector<double> ae::chart::v2::Stress::gradient(const double* first, const double* last) const
 {
     std::vector<double> result(static_cast<size_t>(last - first), 0);
     gradient(first, last, result.data());
     return result;
 
-} // acmacs::chart::Stress::gradient
+} // ae::chart::v2::Stress::gradient
 
 // ----------------------------------------------------------------------
 
-std::vector<double> acmacs::chart::Stress::gradient(const acmacs::Layout& aLayout) const
+std::vector<double> ae::chart::v2::Stress::gradient(const Layout& aLayout) const
 {
     const auto& arg = aLayout.as_flat_vector_double();
     return gradient(arg.data(), arg.data() + arg.size());
 
-} // acmacs::chart::Stress::gradient
+} // ae::chart::v2::Stress::gradient
 
 // ----------------------------------------------------------------------
 
-void acmacs::chart::Stress::gradient(const double* first, const double* last, double* gradient_first) const
+void ae::chart::v2::Stress::gradient(const double* first, const double* last, double* gradient_first) const
 {
     if (parameters_.unmovable->empty() && parameters_.unmovable_in_the_last_dimension->empty())
         gradient_plain(first, last, gradient_first);
     else
         gradient_with_unmovable(first, last, gradient_first);
 
-} // acmacs::chart::Stress::gradient
+} // ae::chart::v2::Stress::gradient
 
 // ----------------------------------------------------------------------
 
-double acmacs::chart::Stress::value_gradient(const double* first, const double* last, double* gradient_first) const
+double ae::chart::v2::Stress::value_gradient(const double* first, const double* last, double* gradient_first) const
 {
     gradient(first, last, gradient_first);
     return value(first, last);
 
-} // acmacs::chart::Stress::value_gradient
+} // ae::chart::v2::Stress::value_gradient
 
 // ----------------------------------------------------------------------
 
-void acmacs::chart::Stress::gradient_plain(const double* first, const double* last, double* gradient_first) const
+void ae::chart::v2::Stress::gradient_plain(const double* first, const double* last, double* gradient_first) const
 {
     std::for_each(gradient_first, gradient_first + (last - first), [](double& val) { val = 0; });
 
@@ -292,11 +292,11 @@ void acmacs::chart::Stress::gradient_plain(const double* first, const double* la
     std::for_each(table_distances().regular().begin(), table_distances().regular().end(), contribution_regular);
     std::for_each(table_distances().less_than().begin(), table_distances().less_than().end(), contribution_less_than);
 
-} // acmacs::chart::Stress::gradient_plain
+} // ae::chart::v2::Stress::gradient_plain
 
 // ----------------------------------------------------------------------
 
-void acmacs::chart::Stress::gradient_with_unmovable(const double* first, const double* last, double* gradient_first) const
+void ae::chart::v2::Stress::gradient_with_unmovable(const double* first, const double* last, double* gradient_first) const
 {
     std::vector<bool> unmovable(parameters_.number_of_points, false);
     for (const auto p_no: parameters_.unmovable)
@@ -340,11 +340,11 @@ void acmacs::chart::Stress::gradient_with_unmovable(const double* first, const d
     std::for_each(table_distances().regular().begin(), table_distances().regular().end(), contribution_regular);
     std::for_each(table_distances().less_than().begin(), table_distances().less_than().end(), contribution_less_than);
 
-} // acmacs::chart::Stress::gradient_with_unmovable
+} // ae::chart::v2::Stress::gradient_with_unmovable
 
 // ----------------------------------------------------------------------
 
-void acmacs::chart::Stress::set_coordinates_of_disconnected(double* first, [[maybe_unused]] size_t num_args, double value, number_of_dimensions_t number_of_dimensions) const
+void ae::chart::v2::Stress::set_coordinates_of_disconnected(double* first, [[maybe_unused]] size_t num_args, double value, number_of_dimensions_t number_of_dimensions) const
 {
     // do not use number_of_dimensions_! after pca its value is wrong!
     for (auto p_no : parameters_.disconnected) {
@@ -359,6 +359,6 @@ void acmacs::chart::Stress::set_coordinates_of_disconnected(double* first, [[may
     //     }
     // }
 
-} // acmacs::chart::Stress::set_coordinates_of_disconnected
+} // ae::chart::v2::Stress::set_coordinates_of_disconnected
 
 // ----------------------------------------------------------------------

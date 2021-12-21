@@ -44,15 +44,15 @@ namespace ae::chart::v2
         Stress(number_of_dimensions_t number_of_dimensions, size_t number_of_points);
 
         double value(const double* first, const double* /* unused */ = nullptr) const;
-        double value(const acmacs::Layout& aLayout) const;
+        double value(const Layout& aLayout) const;
         double contribution(size_t point_no, const double* first) const;
-        double contribution(size_t point_no, const acmacs::Layout& aLayout) const;
+        double contribution(size_t point_no, const Layout& aLayout) const;
         double contribution(size_t point_no, const TableDistancesForPoint& table_distances_for_point, const double* first) const;
-        double contribution(size_t point_no, const TableDistancesForPoint& table_distances_for_point, const acmacs::Layout& aLayout) const;
+        double contribution(size_t point_no, const TableDistancesForPoint& table_distances_for_point, const Layout& aLayout) const;
         std::vector<double> gradient(const double* first, const double* last) const;
         void gradient(const double* first, const double* last, double* gradient_first) const;
         double value_gradient(const double* first, const double* last, double* gradient_first) const;
-        std::vector<double> gradient(const acmacs::Layout& aLayout) const;
+        std::vector<double> gradient(const Layout& aLayout) const;
         constexpr auto number_of_dimensions() const { return number_of_dimensions_; }
         void change_number_of_dimensions(number_of_dimensions_t num_dim) { number_of_dimensions_ = num_dim; }
 
