@@ -9,7 +9,7 @@
 
 // ----------------------------------------------------------------------
 
-namespace acmacs::chart
+namespace ae::chart::v2
 {
     class Stress;
 
@@ -56,7 +56,7 @@ namespace acmacs::chart
             : layout(number_of_dimensions, first, first + layout_size), stress{a_stress}
         {
         }
-        const acmacs::Layout layout;
+        const Layout layout;
         const double stress;
     };
 
@@ -104,18 +104,18 @@ namespace acmacs::chart
     struct OptimiserCallbackData
     {
         OptimiserCallbackData(const Stress& a_stress) : stress{a_stress}, intermediate_layouts{nullptr} {}
-        OptimiserCallbackData(const Stress& a_stress, acmacs::chart::IntermediateLayouts& a_intermediate_layouts) : stress{a_stress}, intermediate_layouts{&a_intermediate_layouts} {}
-        const acmacs::chart::Stress& stress;
-        acmacs::chart::IntermediateLayouts* intermediate_layouts{nullptr};
+        OptimiserCallbackData(const Stress& a_stress, IntermediateLayouts& a_intermediate_layouts) : stress{a_stress}, intermediate_layouts{&a_intermediate_layouts} {}
+        const Stress& stress;
+        IntermediateLayouts* intermediate_layouts{nullptr};
         size_t iteration_no{0};
     };
 
-} // namespace acmacs::chart
+} // namespace ae::chart::v2
 
 // ----------------------------------------------------------------------
 
-template <> struct fmt::formatter<acmacs::chart::optimization_status> : fmt::formatter<acmacs::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(const acmacs::chart::optimization_status& status, FormatCtx& ctx)
+template <> struct fmt::formatter<ae::chart::v2::optimization_status> : fmt::formatter<ae::fmt_helper::default_formatter> {
+    template <typename FormatCtx> auto format(const ae::chart::v2::optimization_status& status, FormatCtx& ctx)
     {
         return format_to(ctx.out(), "{} {:.12f} <- {:.12f}\n time: {}\n iter: {}\n nstress: {}", status.method, status.final_stress, status.initial_stress, status.time, status.number_of_iterations, status.number_of_stress_calculations);
     }

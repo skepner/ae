@@ -794,3 +794,12 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
 }
 
 // ----------------------------------------------------------------------
+
+ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source)
+{
+    parse_settings settings;
+    Messages messages;
+    return parse(source, settings, messages, MessageLocation{});
+}
+
+// ----------------------------------------------------------------------

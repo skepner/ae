@@ -47,6 +47,14 @@ namespace ae::chart::v2
         for (auto index : indexes)
             data.erase(data.begin() + static_cast<ReverseSortedIndexes::difference_type>(index) + base_index);
     }
+
+    inline Indexes filled_with_indexes(size_t aSize)
+    {
+        Indexes result(aSize);
+        std::iota(result.begin(), result.end(), 0);
+        return result;
+    }
+
 }
 
 // ----------------------------------------------------------------------

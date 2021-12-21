@@ -18,6 +18,7 @@
 #include <variant>
 #include <string_view>
 #include <typeinfo>
+#include <optional>
 
 #include "utils/log.hh"
 #include "utils/float.hh"

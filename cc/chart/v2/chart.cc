@@ -175,7 +175,7 @@ acmacs::virus::lineage_t ae::chart::v2::Chart::lineage() const
 
 // ----------------------------------------------------------------------
 
-void ae::chart::v2::Chart::set_homologous(find_homologous options, SeraP aSera, acmacs::debug dbg) const
+void ae::chart::v2::Chart::set_homologous(find_homologous options, SeraP aSera, ae::debug dbg) const
 {
     if (!aSera)
         aSera = sera();
@@ -522,7 +522,7 @@ bool ae::chart::v2::Annotations::match_antigen_serum(const Annotations& antigen,
 
 // ----------------------------------------------------------------------
 
-ae::chart::v2::Sera::homologous_canditates_t ae::chart::v2::Sera::find_homologous_canditates(const Antigens& aAntigens, acmacs::debug dbg) const
+ae::chart::v2::Sera::homologous_canditates_t ae::chart::v2::Sera::find_homologous_canditates(const Antigens& aAntigens, ae::debug dbg) const
 {
     const auto match_passage = [](acmacs::virus::Passage antigen_passage, acmacs::virus::Passage serum_passage, const Serum& serum) -> bool {
         if (serum_passage.empty()) // NIID has passage type data in serum_id
@@ -560,7 +560,7 @@ ae::chart::v2::Sera::homologous_canditates_t ae::chart::v2::Sera::find_homologou
 
 // ----------------------------------------------------------------------
 
-void ae::chart::v2::Sera::set_homologous(find_homologous options, const Antigens& aAntigens, acmacs::debug dbg)
+void ae::chart::v2::Sera::set_homologous(find_homologous options, const Antigens& aAntigens, ae::debug dbg)
 {
     const auto match_passage_strict = [](acmacs::virus::Passage antigen_passage, acmacs::virus::Passage serum_passage, const Serum& serum) -> bool {
         if (serum_passage.empty()) // NIID has passage type data in serum_id

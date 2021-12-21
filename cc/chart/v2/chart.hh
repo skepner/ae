@@ -9,17 +9,17 @@
 #include "ad/point-style.hh"
 #include "chart/v2/layout.hh"
 #include "utils/log.hh"
-#include "acmacs-base/lab.hh"
-#include "acmacs-base/iterator.hh"
+#include "chart/v2/lab.hh"
+#include "chart/v2/iterator.hh"
 #include "utils/regex.hh"
-#include "acmacs-virus/virus-name.hh"
-#include "locationdb/locdb.hh"
+#include "utils/named-vector.hh"
+// #include "acmacs-virus/virus-name.hh"
 #include "chart/v2/name-format.hh"
-#include "chart/v2/annotations.hh"
+// #include "chart/v2/annotations.hh"
 #include "chart/v2/titers.hh"
 #include "chart/v2/stress.hh"
 #include "chart/v2/optimize.hh"
-#include "chart/v2/blobs.hh"
+// #include "chart/v2/blobs.hh"
 
 // ----------------------------------------------------------------------
 
@@ -49,16 +49,16 @@ namespace ae::chart::v2
 
     // ----------------------------------------------------------------------
 
-    class Virus : public acmacs::named_string_t<struct chart_virus_tag_t>
+    class Virus : public ae::named_string_t<std::string, struct chart_virus_tag_t>
     {
       public:
-        using acmacs::named_string_t<struct chart_virus_tag_t>::named_string_t;
+        using ae::named_string_t<std::string, struct chart_virus_tag_t>::named_string_t;
     };
 
-    class Assay : public acmacs::named_string_t<struct chart_assay_tag_t>
+    class Assay : public ae::named_string_t<std::string, struct chart_assay_tag_t>
     {
       public:
-        using acmacs::named_string_t<struct chart_assay_tag_t>::named_string_t;
+        using ae::named_string_t<std::string, struct chart_assay_tag_t>::named_string_t;
         enum class no_hi { no, yes };
 
         std::string hi_or_neut(no_hi nh = no_hi::no) const
@@ -98,10 +98,10 @@ namespace ae::chart::v2
         }
     };
 
-    class RbcSpecies : public acmacs::named_string_t<struct chart_rbc_species_tag_t>
+    class RbcSpecies : public ae::named_string_t<std::string, struct chart_rbc_species_tag_t>
     {
       public:
-        using acmacs::named_string_t<struct chart_rbc_species_tag_t>::named_string_t;
+        using ae::named_string_t<std::string, struct chart_rbc_species_tag_t>::named_string_t;
     };
 
     inline std::string assay_rbc_short(const Assay& assay, const RbcSpecies& rbc)
@@ -112,16 +112,16 @@ namespace ae::chart::v2
             return assay.short_name();
     }
 
-    class TableDate : public acmacs::named_string_t<struct chart_table_date_tag_t>
+    class TableDate : public ae::named_string_t<std::string, struct chart_table_date_tag_t>
     {
       public:
-        using acmacs::named_string_t<struct chart_table_date_tag_t>::named_string_t;
+        using ae::named_string_t<std::string, struct chart_table_date_tag_t>::named_string_t;
     };
 
-    class Date : public acmacs::named_string_t<struct chart_date_tag_t>
+    class Date : public ae::named_string_t<std::string, struct chart_date_tag_t>
     {
       public:
-        using acmacs::named_string_t<struct chart_date_tag_t>::named_string_t;
+        using ae::named_string_t<std::string, struct chart_date_tag_t>::named_string_t;
 
         bool within_range(std::string_view first_date, std::string_view after_last_date) const
         {
@@ -207,51 +207,51 @@ namespace ae::chart::v2
 
     }; // class BLineage
 
-    class Continent : public acmacs::named_string_t<struct chart_continent_tag_t>
+    class Continent : public ae::named_string_t<std::string, struct chart_continent_tag_t>
     {
       public:
-        using acmacs::named_string_t<struct chart_continent_tag_t>::named_string_t;
+        using ae::named_string_t<std::string, struct chart_continent_tag_t>::named_string_t;
 
     }; // class Continent
 
-    class LabIds : public acmacs::named_vector_t<std::string, struct chart_LabIds_tag_t>
+    class LabIds : public ae::named_vector_t<std::string, struct chart_LabIds_tag_t>
     {
       public:
-        using acmacs::named_vector_t<std::string, struct chart_LabIds_tag_t>::named_vector_t;
+        using ae::named_vector_t<std::string, struct chart_LabIds_tag_t>::named_vector_t;
 
-        LabIds(const rjson::value& src) : acmacs::named_vector_t<std::string, struct chart_LabIds_tag_t>::named_vector_t(src.size()) { rjson::copy(src, begin()); }
+        LabIds(const rjson::value& src) : ae::named_vector_t<std::string, struct chart_LabIds_tag_t>::named_vector_t(src.size()) { rjson::copy(src, begin()); }
 
         std::string join() const { return string::join(acmacs::string::join_space, begin(), end()); }
 
     }; // class LabIds
 
-    class Clades : public acmacs::named_vector_t<std::string, struct chart_Clades_tag_t>
+    class Clades : public ae::named_vector_t<std::string, struct chart_Clades_tag_t>
     {
       public:
-        using acmacs::named_vector_t<std::string, struct chart_Clades_tag_t>::named_vector_t;
-        Clades(const rjson::value& src) : acmacs::named_vector_t<std::string, struct chart_Clades_tag_t>::named_vector_t(src.size()) { rjson::copy(src, begin()); }
+        using ae::named_vector_t<std::string, struct chart_Clades_tag_t>::named_vector_t;
+        Clades(const rjson::value& src) : ae::named_vector_t<std::string, struct chart_Clades_tag_t>::named_vector_t(src.size()) { rjson::copy(src, begin()); }
 
     }; // class Clades
 
-    class SerumId : public acmacs::named_string_t<struct chart_SerumId_tag_t>
+    class SerumId : public ae::named_string_t<struct chart_SerumId_tag_t>
     {
       public:
-        using acmacs::named_string_t<struct chart_SerumId_tag_t>::named_string_t;
+        using ae::named_string_t<struct chart_SerumId_tag_t>::named_string_t;
 
     }; // class SerumId
 
-    class SerumSpecies : public acmacs::named_string_t<struct chart_SerumSpecies_tag_t>
+    class SerumSpecies : public ae::named_string_t<struct chart_SerumSpecies_tag_t>
     {
       public:
-        using acmacs::named_string_t<struct chart_SerumSpecies_tag_t>::named_string_t;
+        using ae::named_string_t<struct chart_SerumSpecies_tag_t>::named_string_t;
 
     }; // class SerumSpecies
 
-    class DrawingOrder : public acmacs::named_vector_t<size_t, struct chart_DrawingOrder_tag_t>
+    class DrawingOrder : public ae::named_vector_t<size_t, struct chart_DrawingOrder_tag_t>
     {
       public:
-        using acmacs::named_vector_t<size_t, struct chart_DrawingOrder_tag_t>::named_vector_t;
-        DrawingOrder(const rjson::value& src) : acmacs::named_vector_t<size_t, struct chart_DrawingOrder_tag_t>::named_vector_t(src.size()) { rjson::copy(src, begin()); }
+        using ae::named_vector_t<size_t, struct chart_DrawingOrder_tag_t>::named_vector_t;
+        DrawingOrder(const rjson::value& src) : ae::named_vector_t<size_t, struct chart_DrawingOrder_tag_t>::named_vector_t(src.size()) { rjson::copy(src, begin()); }
 
         size_t index_of(size_t aValue) const { return static_cast<size_t>(std::find(begin(), end(), aValue) - begin()); }
 
@@ -279,8 +279,10 @@ namespace ae::chart::v2
 
         void fill_if_empty(size_t aSize)
         {
-            if (get().empty())
-                acmacs::fill_with_indexes(get(), aSize);
+            if (get().empty()) {
+                get().resize(aSize);
+                std::iota(begin(), end(), 0);
+            }
         }
 
         void insert(size_t before)
@@ -445,7 +447,7 @@ namespace ae::chart::v2
         virtual SerumId serum_id() const = 0;
         virtual SerumSpecies serum_species() const = 0;
         virtual PointIndexList homologous_antigens() const = 0;
-        virtual void set_homologous(const std::vector<size_t>&, acmacs::debug) const {}
+        virtual void set_homologous(const std::vector<size_t>&, ae::debug) const {}
 
         using detail::AntigenSerum::format;
             // returns if collapsable spaces inserted
@@ -494,7 +496,7 @@ namespace ae::chart::v2
             iterator begin() const { return {*this, 0}; }
             iterator end() const { return {*this, size()}; }
 
-            Indexes all_indexes() const { return Indexes{acmacs::filled_with_indexes(size())}; }
+            Indexes all_indexes() const { return filled_with_indexes(size()); }
 
             // call func for each antigen and select ag/sr if func returns true
             template <typename F> Indexes indexes(F&& func, std::shared_ptr<Titers> titers) const { return make_indexes(std::forward<F>(func), titers); }
@@ -763,12 +765,12 @@ namespace ae::chart::v2
             remove(aIndexes, [&re_serum_id](const auto& entry) -> bool { return !std::regex_search(*entry.serum_id(), re_serum_id); });
         }
 
-        void set_homologous(find_homologous options, const Antigens& aAntigens, acmacs::debug dbg = acmacs::debug::no);
+        void set_homologous(find_homologous options, const Antigens& aAntigens, ae::debug dbg = ae::debug::no);
 
       private:
         using homologous_canditate_t = Indexes;                              // indexes of antigens
         using homologous_canditates_t = std::vector<homologous_canditate_t>; // for each serum
-        homologous_canditates_t find_homologous_canditates(const Antigens& aAntigens, acmacs::debug dbg) const;
+        homologous_canditates_t find_homologous_canditates(const Antigens& aAntigens, ae::debug dbg) const;
 
     }; // class Sera
 
@@ -935,7 +937,7 @@ namespace ae::chart::v2
         }
         std::vector<acmacs::PointStyle> default_all_styles() const;
 
-        void set_homologous(find_homologous options, std::shared_ptr<Sera> aSera = nullptr, acmacs::debug dbg = acmacs::debug::no) const;
+        void set_homologous(find_homologous options, std::shared_ptr<Sera> aSera = nullptr, ae::debug dbg = ae::debug::no) const;
 
         Stress make_stress(const Projection& projection, multiply_antigen_titer_until_column_adjust mult = multiply_antigen_titer_until_column_adjust::yes) const
         {
@@ -1029,64 +1031,21 @@ namespace ae::chart::v2
 
 // ----------------------------------------------------------------------
 
-// namespace acmacs
-// {
-//     inline std::string to_string(const acmacs::chart::duplicates_t& dups)
-//     {
-//         if (dups.empty())
-//             return {};
-//         std::string result{"DUPS:["};
-//         for (const auto& entry : dups)
-//             result += to_string(entry) + ", ";
-//         result.replace(result.size() - 2, 2, "]");
-//         return result;
-//     }
-// }
-
-// ----------------------------------------------------------------------
-
-#ifndef __clang__
-
-template <> struct std::iterator_traits<acmacs::chart::Antigens::iterator>
-{
-    using reference = typename acmacs::chart::Antigens::iterator::reference;
-    using iterator_category = typename acmacs::chart::Antigens::iterator::iterator_category;
-    using difference_type = typename acmacs::chart::Antigens::iterator::difference_type;
+template <> struct fmt::formatter<ae::chart::v2::BLineage> : fmt::formatter<ae::fmt_helper::default_formatter> {
+    template <typename FormatCtx> auto format(const ae::chart::v2::BLineage& lineage, FormatCtx& ctx) const { return format_to(ctx.out(), "{}", lineage.to_string()); }
 };
 
-template <> struct std::iterator_traits<acmacs::chart::Sera::iterator>
-{
-    using reference = typename acmacs::chart::Sera::iterator::reference;
-    using iterator_category = typename acmacs::chart::Sera::iterator::iterator_category;
-    using difference_type = typename acmacs::chart::Sera::iterator::difference_type;
-};
-
-template <> struct std::iterator_traits<acmacs::chart::Projections::iterator>
-{
-    using reference = typename acmacs::chart::Projections::iterator::reference;
-    using iterator_category = typename acmacs::chart::Projections::iterator::iterator_category;
-    using difference_type = typename acmacs::chart::Projections::iterator::difference_type;
-};
-
-#endif
-
-// ----------------------------------------------------------------------
-
-template <> struct fmt::formatter<acmacs::chart::BLineage> : fmt::formatter<acmacs::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(const acmacs::chart::BLineage& lineage, FormatCtx& ctx) const { return format_to(ctx.out(), "{}", lineage.to_string()); }
-};
-
-template <> struct fmt::formatter<acmacs::chart::Antigen> : fmt::formatter<acmacs::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(const acmacs::chart::Antigen& antigen, FormatCtx& ctx) const
+template <> struct fmt::formatter<ae::chart::v2::Antigen> : fmt::formatter<ae::fmt_helper::default_formatter> {
+    template <typename FormatCtx> auto format(const ae::chart::v2::Antigen& antigen, FormatCtx& ctx) const
     {
-        return fmt::format_to(ctx.out(), fmt::runtime(antigen.format("{name_full} [{date}]{ }{lab_ids}{ }{lineage}", acmacs::chart::collapse_spaces_t::yes)));
+        return fmt::format_to(ctx.out(), fmt::runtime(antigen.format("{name_full} [{date}]{ }{lab_ids}{ }{lineage}", ae::chart::v2::collapse_spaces_t::yes)));
     }
 };
 
-template <> struct fmt::formatter<acmacs::chart::Serum> : fmt::formatter<acmacs::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(const acmacs::chart::Serum& serum, FormatCtx& ctx) const
+template <> struct fmt::formatter<ae::chart::v2::Serum> : fmt::formatter<ae::fmt_helper::default_formatter> {
+    template <typename FormatCtx> auto format(const ae::chart::v2::Serum& serum, FormatCtx& ctx) const
     {
-        return fmt::format_to(ctx.out(), fmt::runtime(serum.format("{name_full}{ }{lineage}{ }{species}", acmacs::chart::collapse_spaces_t::yes)));
+        return fmt::format_to(ctx.out(), fmt::runtime(serum.format("{name_full}{ }{lineage}{ }{species}", ae::chart::v2::collapse_spaces_t::yes)));
     }
 };
 

@@ -58,6 +58,7 @@ namespace ae
         constexpr bool empty() const { return this->get().empty(); }
         constexpr size_t size() const { return this->get().size(); }
         void clear() { this->get().clear(); }
+        auto operator[](size_t pos) const { return this->get().operator[](pos); }
 
         operator std::string_view() const { return this->get(); }
     };

@@ -264,7 +264,7 @@ namespace ae::chart::v2
         SerumId serum_id() const override { return serum_id_; }
         SerumSpecies serum_species() const override { return serum_species_; }
         PointIndexList homologous_antigens() const override { return homologous_antigens_; }
-        void set_homologous(const std::vector<size_t>& ags, acmacs::debug) const override { homologous_antigens_ = PointIndexList{ags}; }
+        void set_homologous(const std::vector<size_t>& ags, ae::debug) const override { homologous_antigens_ = PointIndexList{ags}; }
         bool sequenced() const override { return !sequence_aa_.empty(); }
         std::string sequence_aa() const override { return sequence_aa_; }
         std::string sequence_nuc() const override { return sequence_nuc_; }

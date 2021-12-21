@@ -91,8 +91,8 @@ namespace acmacs
         [[nodiscard]] bool operator!=(const PointStyle& rhs) const noexcept { return !operator==(rhs); }
 
         virtual bool shown() const noexcept { return shown_; }
-        virtual ae::draw::v1::Color fill() const noexcept { return fill_; }
-        virtual ae::draw::v1::Color outline() const noexcept { return outline_; }
+        virtual Color fill() const noexcept { return fill_; }
+        virtual Color outline() const noexcept { return outline_; }
         virtual ae::draw::v1::Pixels outline_width() const noexcept { return outline_width_; }
         virtual ae::draw::v1::Pixels size() const noexcept { return size_; }
         virtual ae::draw::v1::Scaled diameter() const noexcept { return diameter_; } // drawi: use it if >0
@@ -102,7 +102,7 @@ namespace acmacs
         virtual const LabelStyle& label() const noexcept { return label_; }
         virtual std::string_view label_text() const noexcept { return label_text_; }
 
-        virtual void fill(ae::draw::v1::Color a_fill) noexcept { fill_ = a_fill; }
+        virtual void fill(Color a_fill) noexcept { fill_ = a_fill; }
         virtual void fill(const acmacs::color::Modifier& a_fill) noexcept { acmacs::color::modify(fill_, a_fill); }
         virtual void outline(Color a_outline) noexcept { outline_ = a_outline; }
         virtual void outline(const acmacs::color::Modifier& a_outline) noexcept { acmacs::color::modify(outline_, a_outline); }
@@ -119,13 +119,13 @@ namespace acmacs
 
       private:
         bool shown_{true};
-        ae::draw::v1::Color fill_{TRANSPARENT};
-        ae::draw::v1::Color outline_{BLACK};
+        Color fill_{TRANSPARENT};
+        Color outline_{BLACK};
         ae::draw::v1::Pixels outline_width_{1.0};
         ae::draw::v1::Pixels size_{5.0};
         ae::draw::v1::Scaled diameter_{0.0}; // drawi: use it if >0
-        ae::draw::v1::Rotation rotation_{NoRotation};
-        ae::draw::v1::Aspect aspect_{AspectNormal};
+        ae::draw::v1::Rotation rotation_{ae::draw::v1::NoRotation};
+        ae::draw::v1::Aspect aspect_{ae::draw::v1::AspectNormal};
         PointShape shape_;
         LabelStyle label_;
         std::string label_text_;
@@ -153,8 +153,8 @@ namespace acmacs
         void fill(const acmacs::color::Modifier& a_fill) noexcept override { fill_modifier_.add(a_fill); }
         void outline(const acmacs::color::Modifier& a_outline) noexcept override { outline_modifier_.add(a_outline); }
 
-        ae::draw::v1::Color fill() const noexcept override { auto fl = PointStyle::fill(); return acmacs::color::modify(fl, fill_modifier_); }
-        ae::draw::v1::Color outline() const noexcept override { auto outl = PointStyle::outline(); return acmacs::color::modify(outl, outline_modifier_); }
+        Color fill() const noexcept override { auto fl = PointStyle::fill(); return acmacs::color::modify(fl, fill_modifier_); }
+        Color outline() const noexcept override { auto outl = PointStyle::outline(); return acmacs::color::modify(outl, outline_modifier_); }
 
         constexpr const auto& fill_modifier() const { return fill_modifier_; }
         constexpr const auto& outline_modifier() const { return outline_modifier_; }

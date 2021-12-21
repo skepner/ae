@@ -17,19 +17,14 @@ namespace ae::virus::name::inline v1
 {
     struct Parts
     {
-        enum class issue {
-            unrecognized_location,
-            invalid_year,
-            invalid_subtype,
-            size_
-        };
+        enum class issue { unrecognized_location, invalid_year, invalid_subtype, size_ };
 
         struct issues_t : public std::bitset<static_cast<size_t>(issue::size_)>
         {
             void add(issue iss) { set(static_cast<size_t>(iss)); }
         };
 
-        issues_t issues {};
+        issues_t issues{};
         std::string subtype{};
         std::string host{};
         std::string location{};
@@ -67,7 +62,11 @@ namespace ae::virus::name::inline v1
     };
 
     Parts parse(std::string_view source, parse_settings& settings, Messages& messages, const MessageLocation& location);
-}
+    Parts parse(std::string_view source);
+
+    inline std::string location(std::string_view name) { return parse(name).location; }
+
+} // namespace ae::virus::name::inline v1
 
 // ----------------------------------------------------------------------
 

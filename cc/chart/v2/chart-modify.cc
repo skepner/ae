@@ -4,14 +4,14 @@
 #include <algorithm>
 
 #include "utils/log.hh"
-#include "acmacs-base/omp.hh"
+#include "ext/omp.hh"
 #include "ad/flat-set.hh"
 #include "ext/range-v3.hh"
 #include "ad/enumerate.hh"
 #include "utils/string.hh"
-#include "acmacs-virus/virus-name-v1.hh"
-#include "acmacs-base/statistics.hh"
-#include "locationdb/locdb.hh"
+#include "virus/name-parse.hh"
+#include "ad/statistics.hh"
+#include "locdb/v3/locdb.hh"
 #include "chart/v2/chart-modify.hh"
 #include "chart/v2/log.hh"
 
@@ -814,9 +814,9 @@ void AntigenModify::update_with(const Antigen& main)
 void AntigenModify::set_continent()
 {
     if (continent().empty()) {
-        if (const auto& locdb = acmacs::locationdb::get(); locdb) {
+        if (const auto& locdb = acmacs::locdb::v3::get(); locdb) {
             try {
-                continent(locdb.continent(::virus_name::location(name())));
+                continent(locdb.continent(ae::virus::name::location(name())));
             }
             catch (std::exception& err) {
                 AD_WARNING("cannot figure out continent for \"{}\": {}", *name(), err);
