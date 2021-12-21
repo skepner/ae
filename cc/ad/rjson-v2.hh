@@ -762,13 +762,13 @@ namespace rjson::inline v2
 
     template <typename S> inline const value& object::get(S key) const noexcept
     {
-        if (const auto found = content_.find(acmacs::to_string(key)); found != content_.end())
+        if (const auto found = content_.find(fmt::format("{}", key)); found != content_.end())
             return found->second;
         else
             return ConstNull;
     }
 
-    template <typename S> inline value& object::operator[](S key) noexcept { return content_.emplace(acmacs::to_string(key), value{}).first->second; }
+    template <typename S> inline value& object::operator[](S key) noexcept { return content_.emplace(fmt::format("{}", key), value{}).first->second; }
 
     inline size_t object::max_index() const // assumes keys are size_t
     {
@@ -780,11 +780,11 @@ namespace rjson::inline v2
 
     inline void object::insert(value&& aKey, value&& aValue) { content_.emplace(to<std::string>(aKey), std::move(aValue)); }
 
-    template <typename S> inline void object::insert(S aKey, const value& aValue) { content_.emplace(acmacs::to_string(aKey), aValue); }
+    template <typename S> inline void object::insert(S key, const value& aValue) { content_.emplace(fmt::format("{}", key), aValue); }
 
     template <typename S> inline void object::remove(S key)
     {
-        if (const auto found = content_.find(acmacs::to_string(key)); found != content_.end())
+        if (const auto found = content_.find(fmt::format("{}", key)); found != content_.end())
             content_.erase(found);
     }
 
@@ -1394,7 +1394,7 @@ namespace rjson::inline v2
     inline void set_field_if_not_default(value & target, std::string_view field_name, double aValue, double aDefault, size_t precision)
     {
         if (!detail::equal(aValue, aDefault))
-            target[field_name] = number(acmacs::to_string(aValue, precision));
+            target[field_name] = number(fmt::format("{:.{}g}", aValue, precision));
     }
 
     template <typename Iterator> inline void set_array_field_if_not_empty(value & target, std::string_view key, Iterator first, Iterator last)

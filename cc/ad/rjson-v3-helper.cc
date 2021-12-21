@@ -125,7 +125,7 @@ std::optional<acmacs::PointCoordinates> rjson::v3::read_point_coordinates(const 
 
 // ----------------------------------------------------------------------
 
-acmacs::PointCoordinates rjson::v3::read_point_coordinates(const rjson::v3::value& source, const acmacs::PointCoordinates& dflt)
+ae::draw::v1::PointCoordinates rjson::v3::read_point_coordinates(const rjson::v3::value& source, const ae::draw::v1::PointCoordinates& dflt)
 {
     if (auto pc = read_point_coordinates(source); pc.has_value())
         return *pc;

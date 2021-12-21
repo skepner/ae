@@ -48,14 +48,14 @@ namespace rjson::v3
 
     extern template size_t   read_number<size_t>(const rjson::v3::value&, size_t);
     extern template double   read_number<double>(const rjson::v3::value&, double);
-    extern template ae::draw::v1::Pixels   read_number<ae::draw::v1::Pixels>(const rjson::v3::value&, Pixels);
-    extern template ae::draw::v1::Scaled   read_number<ae::draw::v1::Scaled>(const rjson::v3::value&, Scaled);
-    extern template ae::draw::v1::Aspect   read_number<ae::draw::v1::Aspect>(const rjson::v3::value&, Aspect);
+    extern template ae::draw::v1::Pixels   read_number<ae::draw::v1::Pixels>(const rjson::v3::value&, ae::draw::v1::Pixels);
+    extern template ae::draw::v1::Scaled   read_number<ae::draw::v1::Scaled>(const rjson::v3::value&, ae::draw::v1::Scaled);
+    extern template ae::draw::v1::Aspect   read_number<ae::draw::v1::Aspect>(const rjson::v3::value&, ae::draw::v1::Aspect);
 
     template <> inline ae::draw::v1::Rotation read_number<ae::draw::v1::Rotation>(const rjson::v3::value& source, ae::draw::v1::Rotation dflt)
     {
         if (const auto angle = read_number<double>(source); angle.has_value())
-            return RotationRadiansOrDegrees(*angle);
+            return ae::draw::v1::RotationRadiansOrDegrees(*angle);
         else
             return dflt;
     }
@@ -71,8 +71,8 @@ namespace rjson::v3
 
     bool read_bool(const rjson::v3::value& source, bool dflt);
 
-    std::optional<acmacs::PointCoordinates> read_point_coordinates(const rjson::v3::value& source);
-    acmacs::PointCoordinates read_point_coordinates(const rjson::v3::value& source, const acmacs::PointCoordinates& dflt);
+    std::optional<ae::draw::v1::PointCoordinates> read_point_coordinates(const rjson::v3::value& source);
+    ae::draw::v1::PointCoordinates read_point_coordinates(const rjson::v3::value& source, const ae::draw::v1::PointCoordinates& dflt);
 
     // ----------------------------------------------------------------------
 
@@ -81,7 +81,7 @@ namespace rjson::v3
         source.visit([&]<typename Val>(const Val& value) -> void {
             if constexpr (std::is_same_v<Val, rjson::v3::detail::boolean> && std::is_same_v<Target, bool>)
                 callback(value.template to<Target>());
-            else if constexpr (std::is_same_v<Val, rjson::v3::detail::number> && (std::is_same_v<Target, double> || std::is_same_v<Target, Pixels>))
+            else if constexpr (std::is_same_v<Val, rjson::v3::detail::number> && (std::is_same_v<Target, double> || std::is_same_v<Target, ae::draw::v1::Pixels>))
                 callback(value.template to<Target>());
             else if constexpr (std::is_same_v<Val, rjson::v3::detail::string> && (std::is_same_v<Target, std::string_view> || std::is_same_v<Target, std::string>))
                 callback(value.template to<Target>());
@@ -90,7 +90,7 @@ namespace rjson::v3
                     if (const auto color = read_color(source); color.has_value())
                         callback(*color);
                 }
-                else if constexpr (std::is_same_v<Target, acmacs::PointCoordinates>) {
+                else if constexpr (std::is_same_v<Target, ae::draw::v1::PointCoordinates>) {
                     if (const auto coord = read_point_coordinates(source); coord.has_value())
                         callback(*coord);
                 }
@@ -103,6 +103,3 @@ namespace rjson::v3
 } // namespace rjson::v3
 
 // ----------------------------------------------------------------------
-/// Local Variables:
-/// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
-/// End:
