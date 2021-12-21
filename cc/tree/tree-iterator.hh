@@ -137,7 +137,7 @@ namespace ae::tree
 
 // ----------------------------------------------------------------------
 
-template <> struct fmt::formatter<ae::tree::node_index_t> : fmt::formatter<eu::fmt_helper::default_formatter> {
+template <> struct fmt::formatter<ae::tree::node_index_t> : fmt::formatter<ae::fmt_helper::default_formatter> {
     template <typename FormatCtx> auto format(const ae::tree::node_index_t& nind, FormatCtx& ctx)
     {
         return format_to(ctx.out(), "<{}>", nind.get());

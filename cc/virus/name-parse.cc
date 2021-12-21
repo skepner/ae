@@ -122,7 +122,7 @@ namespace ae::virus::name::inline v1
 
 // ======================================================================
 
-template <> struct fmt::formatter<ae::virus::name::part_t::type_t> : fmt::formatter<eu::fmt_helper::default_formatter> {
+template <> struct fmt::formatter<ae::virus::name::part_t::type_t> : fmt::formatter<ae::fmt_helper::default_formatter> {
     template <typename FormatCtx> auto format(const ae::virus::name::part_t::type_t& value, FormatCtx& ctx)
     {
         using namespace ae::virus::name;
@@ -176,7 +176,7 @@ template <> struct fmt::formatter<ae::virus::name::part_t::type_t> : fmt::format
     }
 };
 
-template <> struct fmt::formatter<ae::virus::name::part_t> : fmt::formatter<eu::fmt_helper::default_formatter> {
+template <> struct fmt::formatter<ae::virus::name::part_t> : fmt::formatter<ae::fmt_helper::default_formatter> {
     template <typename FormatCtx> auto format(const ae::virus::name::part_t& value, FormatCtx& ctx)
     {
         if (value.type.any())

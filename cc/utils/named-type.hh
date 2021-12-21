@@ -69,7 +69,7 @@ namespace ae
       public:
         using named_t<T, Tag>::named_t;
         using named_t<T, Tag>::operator=;
-        // using named_t<T, Tag>::operator==;
+        using named_t<T, Tag>::operator==;
         using named_t<T, Tag>::operator<=>;
 
         constexpr auto& operator++()
@@ -116,9 +116,19 @@ namespace ae
     template <std::integral Number, typename Tag> constexpr named_number_t<Number, Tag>& operator*=(named_number_t<Number, Tag>& lhs, Number rhs) noexcept { lhs.get() = lhs.get() * rhs; return lhs; }
     // no operator/
 
+    template <typename Tag> class named_size_t : public named_number_t<size_t, Tag>
+    {
+      public:
+        using named_number_t<size_t, Tag>::named_number_t;
+        using named_number_t<size_t, Tag>::operator=;
+        using named_number_t<size_t, Tag>::operator==;
+        using named_number_t<size_t, Tag>::operator<=>;
+    };
+
     // ----------------------------------------------------------------------
 
-    template <typename Tag> class named_double_t : public named_t<double, Tag>
+    template <typename Tag>
+    class named_double_t : public named_t<double, Tag>
     {
       public:
         using named_t<double, Tag>::named_t;
@@ -126,6 +136,7 @@ namespace ae
 
         bool operator==(double rhs) const { return float_equal(this->get(), rhs); }
         bool operator==(named_t<double, Tag> rhs) const { return float_equal(this->get(), rhs.get()); }
+        bool operator==(named_double_t rhs) const { return float_equal(this->get(), rhs.get()); }
     };
 
     template <typename Tag> constexpr named_double_t<Tag> operator-(named_double_t<Tag> rhs) noexcept { return named_double_t<Tag>{-rhs.get()}; }

@@ -125,7 +125,7 @@ namespace ae::sequences
 
 // ======================================================================
 
-template <> struct fmt::formatter<ae::sequences::issue> : fmt::formatter<eu::fmt_helper::default_formatter> {
+template <> struct fmt::formatter<ae::sequences::issue> : fmt::formatter<ae::fmt_helper::default_formatter> {
     template <typename FormatCtx> auto format(ae::sequences::issue issue, FormatCtx& ctx)
     {
         using namespace ae::sequences;
@@ -161,7 +161,7 @@ template <> struct fmt::formatter<ae::sequences::issue> : fmt::formatter<eu::fmt
     }
 };
 
-template <> struct fmt::formatter<ae::sequences::seqdb_issues_t> : fmt::formatter<eu::fmt_helper::default_formatter> {
+template <> struct fmt::formatter<ae::sequences::seqdb_issues_t> : fmt::formatter<ae::fmt_helper::default_formatter> {
     template <typename FormatCtx> auto format(const ae::sequences::seqdb_issues_t& seqdb_issues, FormatCtx& ctx)
     {
         return format_to(ctx.out(), "{{{}}}", seqdb_issues.data_);

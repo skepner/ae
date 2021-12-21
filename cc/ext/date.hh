@@ -39,7 +39,7 @@ namespace ae::date
 
 // ----------------------------------------------------------------------
 
-template <> struct fmt::formatter<std::chrono::year_month_day> : fmt::formatter<eu::fmt_helper::default_formatter> {
+template <> struct fmt::formatter<std::chrono::year_month_day> : fmt::formatter<ae::fmt_helper::default_formatter> {
     template <typename FormatCtx> auto format(const std::chrono::year_month_day& date, FormatCtx& ctx) const
     {
         return format_to(ctx.out(), "{:04d}-{:02d}-{:02d}", static_cast<int>(date.year()), static_cast<unsigned>(date.month()), static_cast<unsigned>(date.day()));

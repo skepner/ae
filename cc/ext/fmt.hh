@@ -25,7 +25,7 @@
 
 // ======================================================================
 
-namespace eu::fmt_helper
+namespace ae::fmt_helper
 {
     struct default_formatter
     {
@@ -34,11 +34,12 @@ namespace eu::fmt_helper
     struct float_formatter
     {
     };
-} // namespace eu::fmt_helper
+
+} // namespace ae::fmt_helper
 
 // ----------------------------------------------------------------------
 
-template <> struct fmt::formatter<eu::fmt_helper::default_formatter>
+template <> struct fmt::formatter<ae::fmt_helper::default_formatter>
 {
     template <typename ParseContext> constexpr auto parse(ParseContext& ctx)
     {
@@ -46,35 +47,35 @@ template <> struct fmt::formatter<eu::fmt_helper::default_formatter>
     }
 };
 
-// template <> struct fmt::formatter<eu::fmt_helper::float_formatter>
-// {
-//     template <typename ParseContext> constexpr auto parse(ParseContext& ctx)
-//     {
-//         auto it = ctx.begin();
-//         if (it != ctx.end() && *it == ':')
-//             ++it;
-//         const auto end = std::find(it, ctx.end(), '}');
-//         format_ = fmt::format("{{:{}}}", std::string_view(it, static_cast<size_t>(end - it)));
-//         return end;
-//     }
+template <> struct fmt::formatter<ae::fmt_helper::float_formatter>
+{
+    template <typename ParseContext> constexpr auto parse(ParseContext& ctx)
+    {
+        auto it = ctx.begin();
+        if (it != ctx.end() && *it == ':')
+            ++it;
+        const auto end = std::find(it, ctx.end(), '}');
+        format_ = fmt::format("{{:{}}}", std::string_view(it, static_cast<size_t>(end - it)));
+        return end;
+    }
 
-//     template <typename Val> std::string format_val(Val&& val) const
-//     {
-//         return fmt::format(fmt::runtime(format_), std::forward<Val>(val));
-//     }
+    template <typename Val> std::string format_val(Val&& val) const
+    {
+        return fmt::format(fmt::runtime(format_), std::forward<Val>(val));
+    }
 
-//     template <typename Val, typename FormatContext> auto format_val(Val&& val, FormatContext& ctx) const
-//     {
-//         return format_to(ctx.out(), fmt::runtime(format_), std::forward<Val>(val));
-//     }
+    template <typename Val, typename FormatContext> auto format_val(Val&& val, FormatContext& ctx) const
+    {
+        return format_to(ctx.out(), fmt::runtime(format_), std::forward<Val>(val));
+    }
 
-//   private:
-//     std::string format_;
-// };
+  private:
+    std::string format_;
+};
 
 // ----------------------------------------------------------------------
 
-// template <> struct fmt::formatter<###> : fmt::formatter<eu::fmt_helper::default_formatter> {
+// template <> struct fmt::formatter<###> : fmt::formatter<ae::fmt_helper::default_formatter> {
 //     template <typename FormatCtx> auto format(const ###& value, FormatCtx& ctx)
 //     {
 //         format_to(ctx.out(), "{} {}", );

@@ -18,6 +18,8 @@ if meson.get_compiler('cpp').get_id() == 'clang'
 endif
 
 # ----------------------------------------------------------------------
+# external dependencies
+# ----------------------------------------------------------------------
 
 cmake = import('cmake')
 lexy = cmake.subproject('lexy').dependency('lexy_core')
@@ -51,19 +53,48 @@ alglib = dependency('alglib')
 # apache module
 
 # ----------------------------------------------------------------------
+# ae
+# ----------------------------------------------------------------------
+
+sources_utlis = ['cc/utils/file.cc', 'cc/utils/log.cc', 'cc/utils/messages.cc', 'cc/ext/date.cc']
 
 sources_locdb_v3 = ['cc/locdb/v3/locdb.cc']
-
-sources_chart_v2 = [
-]
 
 sources_virus = ['cc/virus/name-parse.cc', 'cc/virus/passage-parse.cc']
 sources_sequences = ['cc/sequences/seqdb.cc', 'cc/sequences/seqdb-selected.cc', 'cc/sequences/seqdb-export.cc', 'cc/sequences/fasta.cc', 'cc/sequences/clades.cc',
                      'cc/sequences/translate.cc', 'cc/sequences/align.cc', 'cc/sequences/master.cc', 'cc/sequences/deletions.cc']
 sources_tree = ['cc/tree/tree.cc', 'cc/tree/tree-iterator.cc', 'cc/tree/newick.cc', 'cc/tree/export.cc']
-sources_utlis = ['cc/utils/file.cc', 'cc/utils/messages.cc', 'cc/ext/date.cc']
 sources_py = ['cc/py/module.cc', 'cc/py/virus.cc', 'cc/py/sequences.cc', 'cc/py/tree.cc', 'cc/py/utils.cc']
 
+# ----------------------------------------------------------------------
+# rjson
+# ----------------------------------------------------------------------
+
+sources_ad = [
+  'cc/ad/rjson-v2.cc',
+  'cc/ad/rjson-v3.cc',
+  'cc/ad/rjson-v3-helper.cc',
+  'cc/ad/color.cc',
+  'cc/ad/color-modifier.cc',
+  'cc/ad/color-gradient.cc',
+  'cc/ad/color-hsv.cc',
+]
+
+# ----------------------------------------------------------------------
+# chart 
+# ----------------------------------------------------------------------
+
+sources_chart_v2 = [
+  'cc/chart/v2/alglib.cc',
+  'cc/chart/v2/column-bases.cc',
+  'cc/chart/v2/layout.cc',
+  'cc/chart/v2/optimize.cc',
+  'cc/chart/v2/stress.cc',
+  'cc/chart/v2/titers.cc',
+]
+
+# ----------------------------------------------------------------------
+# tests ae
 # ----------------------------------------------------------------------
 
 test_basic = executable('test-basic', 'cc/test/basic.cc',
@@ -115,7 +146,7 @@ python3 = import('python').find_installation('python3')
 ae_lib = python3.extension_module(
   'ae_backend',
   sources : sources_py + sources_virus + sources_sequences + sources_tree + sources_utlis +
-            sources_locdb_v3 + sources_chart_v2,
+            sources_locdb_v3 + sources_chart_v2 + sources_ad,
   include_directories : include_directories('./cc'),
   dependencies : [dependency('python3'), pybind11, fmt, simdjson, range_v3, bzip2, zlib, xz, lexy, xxhash, alglib],
   install : true)

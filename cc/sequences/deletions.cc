@@ -57,14 +57,14 @@ struct deletions_insertions_t
 
 }; // struct deletions_insertions_t
 
-template <> struct fmt::formatter<deletions_insertions_t::pos_num_t> : fmt::formatter<eu::fmt_helper::default_formatter> {
+template <> struct fmt::formatter<deletions_insertions_t::pos_num_t> : fmt::formatter<ae::fmt_helper::default_formatter> {
     template <typename FormatCtx> auto format(const deletions_insertions_t::pos_num_t& value, FormatCtx& ctx)
     {
         return format_to(ctx.out(), "{}:{}", value.pos, value.num);
     }
 };
 
-template <> struct fmt::formatter<deletions_insertions_t> : fmt::formatter<eu::fmt_helper::default_formatter> {
+template <> struct fmt::formatter<deletions_insertions_t> : fmt::formatter<ae::fmt_helper::default_formatter> {
     template <typename FormatCtx> auto format(const deletions_insertions_t& value, FormatCtx& ctx)
     {
         if (value.empty())

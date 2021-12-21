@@ -24,30 +24,35 @@
 
 // ----------------------------------------------------------------------
 
-// template <typename T> inline auto range_from_to(T begin, T end)
-// {
-//     return ranges::views::iota(begin, end);
-// }
+template <typename T> inline auto range_from_to(T begin, T end)
+{
+    return ranges::views::iota(begin, end);
+}
 
-// template <typename T> inline auto range_from_to(const std::pair<T, T>& rng)
-// {
-//     return ranges::views::iota(rng.first, rng.second);
-// }
+template <typename T> inline auto range_from_to(const std::pair<T, T>& rng)
+{
+    return ranges::views::iota(rng.first, rng.second);
+}
 
-// template <typename T> inline auto range_from_0_to(T end)
-// {
-//     return range_from_to(T{0}, end);
-// }
+template <typename T> inline auto range_from_0_to(T end)
+{
+    return range_from_to(T{0}, end);
+}
 
-// template <typename T> inline auto range_from_0_to_including(T end)
-// {
-//     return ranges::views::closed_iota(T{0}, end);
-// }
+template <typename T> inline auto range_from_1_to(T end)
+{
+    return range_from_to(T{1}, end);
+}
 
-// template <typename T> inline auto range_from_1_to_including(T end)
-// {
-//     return ranges::views::closed_iota(T{1}, end);
-// }
+template <typename T> inline auto range_from_0_to_including(T end)
+{
+    return ranges::views::closed_iota(T{0}, end);
+}
+
+template <typename T> inline auto range_from_1_to_including(T end)
+{
+    return ranges::views::closed_iota(T{1}, end);
+}
 
 // // ----------------------------------------------------------------------
 
@@ -57,6 +62,3 @@
 // }
 
 // ----------------------------------------------------------------------
-/// Local Variables:
-/// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
-/// End:

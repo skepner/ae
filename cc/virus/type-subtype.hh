@@ -76,7 +76,7 @@ namespace ae::virus
 
 // ----------------------------------------------------------------------
 
-template <> struct fmt::formatter<ae::virus::type_subtype_t> : public fmt::formatter<eu::fmt_helper::default_formatter>
+template <> struct fmt::formatter<ae::virus::type_subtype_t> : public fmt::formatter<ae::fmt_helper::default_formatter>
 {
     template <typename FormatContext> auto format(const ae::virus::type_subtype_t& ts, FormatContext& ctx) { return format_to(ctx.out(), "{}", static_cast<std::string_view>(ts)); }
 };
