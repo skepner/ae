@@ -62,7 +62,7 @@ template <typename AgSr> static std::string fields(const AgSr& ag_sr)
             fmt::format_to(std::back_inserter(output), " serum_id=\"{}\"", *value);
     }
     if (const auto value = ag_sr.passage(); !value.empty())
-        fmt::format_to(std::back_inserter(output), " passage=\"{}\" ptype={}", *value, value.passage_type());
+        fmt::format_to(std::back_inserter(output), " passage=\"{}\" ptype={}", value, value.passage_type());
     if constexpr (std::is_same_v<AgSr, ae::chart::v2::Antigen>) {
         if (const auto value = ag_sr.date(); !value.empty())
             fmt::format_to(std::back_inserter(output), " date={}", *value);
@@ -428,7 +428,7 @@ std::string ae::chart::v2::format_antigen(std::string_view pattern, const Chart&
         return ae::chart::v2::collapse_spaces(substituted, cs);
     }
     catch (fmt::format_error& err) {
-        AD_ERROR("format_error in {}: {}", ag_formatted, err);
+        AD_ERROR("format_error in {}: {}", ag_formatted, err.what());
         throw;
     }
 

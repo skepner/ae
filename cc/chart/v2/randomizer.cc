@@ -1,6 +1,7 @@
 #include "utils/string.hh"
 #include "chart/v2/randomizer.hh"
 #include "chart/v2/chart-modify.hh"
+#include "draw/v1/line.hh"
 
 static std::shared_ptr<ae::chart::v2::LayoutRandomizer> randomizer_plain_from_sample_optimization_internal(ae::chart::v2::ProjectionModifyNew&& projection, const ae::chart::v2::Stress& stress,
                                                                                                            double diameter_multiplier, ae::chart::v2::LayoutRandomizer::seed_t seed);
@@ -30,7 +31,7 @@ std::shared_ptr<ae::chart::v2::LayoutRandomizer> ae::chart::v2::randomizer_plain
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<ae::chart::v2::LayoutRandomizer> ae::chart::v2::randomizer_border_with_current_layout_area(const ProjectionModify& projection, double diameter_multiplier, const ae:;draw::v1::LineSide& line_side, LayoutRandomizer::seed_t seed)
+std::shared_ptr<ae::chart::v2::LayoutRandomizer> ae::chart::v2::randomizer_border_with_current_layout_area(const ProjectionModify& projection, double diameter_multiplier, const ae::draw::v1::LineSide& line_side, LayoutRandomizer::seed_t seed)
 {
     const auto mm = projection.layout_modified()->minmax();
     auto sq = [](double v) { return v*v; };

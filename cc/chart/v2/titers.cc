@@ -135,7 +135,7 @@ size_t ae::chart::v2::Titer::value_for_sorting() const
       case DontCare:
           return 0;
       case Regular:
-          return from_chars<size_t>(*this);
+          return from_chars<size_t>(get());
       case LessThan:
           return from_chars<size_t>(get().substr(1)) - 1;
       case MoreThan:
@@ -175,7 +175,7 @@ size_t ae::chart::v2::Titer::value_with_thresholded() const
       case DontCare:
           return 0;
       case Regular:
-          return from_chars<size_t>(*this);
+          return from_chars<size_t>(get());
       case LessThan:
           return from_chars<size_t>(get().substr(1)) / 2;
       case MoreThan:
