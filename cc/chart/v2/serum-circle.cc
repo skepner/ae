@@ -170,7 +170,7 @@ void ae::chart::v2::detail::serum_circle_empirical(const SerumCircle& circle_dat
         else
             return false;
     };
-    PointIndexList antigens_by_distances(acmacs::index_iterator(0UL), acmacs::index_iterator(titers.number_of_antigens()));
+    PointIndexList antigens_by_distances(index_iterator(0UL), index_iterator(titers.number_of_antigens()));
     std::sort(antigens_by_distances.begin(), antigens_by_distances.end(), antigens_by_distances_sorting);
     if (verbose == ae::verbose::yes) {
         AD_INFO("antigens_by_distances");

@@ -722,7 +722,7 @@ template <typename Field, typename Func> static inline Field info_modify_make_fi
         return field;
 
     std::set<std::string> composition;
-    std::transform(acmacs::index_iterator(0UL), acmacs::index_iterator(info.number_of_sources()), std::inserter(composition, composition.begin()),
+    std::transform(index_iterator(0UL), index_iterator(info.number_of_sources()), std::inserter(composition, composition.begin()),
                    [&info,&func](size_t index) { return static_cast<std::string>(std::invoke(func, *info.source(index), ae::chart::v2::Info::Compute::No)); });
     return Field{acmacs::string::join(acmacs::string::join_sep_t{"+"}, composition)};
 }
@@ -743,7 +743,7 @@ TableDate InfoModify::date(Compute aCompute) const
     if (number_of_sources() == 0)
         return {};
     std::vector<std::string> composition{number_of_sources()};
-    std::transform(acmacs::index_iterator(0UL), acmacs::index_iterator(number_of_sources()), composition.begin(), [this](size_t index) { return source(index)->date(); });
+    std::transform(index_iterator(0UL), index_iterator(number_of_sources()), composition.begin(), [this](size_t index) { return source(index)->date(); });
     return table_date_from_sources(std::move(composition));
 
 } // InfoModify::date

@@ -815,7 +815,7 @@ namespace ae::chart::v2
 
         void set_projection_no()
         {
-            std::for_each(acmacs::index_iterator(0UL), acmacs::index_iterator(projections_.size()), [this](auto index) { this->projections_[index]->set_projection_no(index); });
+            std::for_each(index_iterator(0UL), index_iterator(projections_.size()), [this](auto index) { this->projections_[index]->set_projection_no(index); });
         }
 
         friend class ChartModify;

@@ -3,7 +3,7 @@
 #include "utils/log.hh"
 #include "chart/v2/common.hh"
 
-using namespace acmacs::chart;
+using namespace ae::chart::v2;
 
 // ----------------------------------------------------------------------
 
@@ -379,9 +379,9 @@ template <typename AgSrEntry> std::vector<CommonAntigensSera::Impl::MatchEntry> 
 template <typename AgSrEntry> std::pair<std::vector<size_t>, std::vector<size_t>> CommonAntigensSera::Impl::ChartData<AgSrEntry>::find_unique(const std::vector<MatchEntry>& common) const
 {
     std::vector<size_t> unique_in_primary(primary_.size() - common.size()), unique_in_secondary(secondary_.size() - common.size());
-    std::copy_if(acmacs::index_iterator(0UL), acmacs::index_iterator(primary_.size()), unique_in_primary.begin(),
+    std::copy_if(index_iterator(0UL), index_iterator(primary_.size()), unique_in_primary.begin(),
                  [&common](size_t index) { return std::find_if(std::begin(common), std::end(common), [index](const auto& cmn) { return cmn.primary_index == index; }) == std::end(common); });
-    std::copy_if(acmacs::index_iterator(0UL), acmacs::index_iterator(secondary_.size()), unique_in_secondary.begin(),
+    std::copy_if(index_iterator(0UL), index_iterator(secondary_.size()), unique_in_secondary.begin(),
                  [&common](size_t index) { return std::find_if(std::begin(common), std::end(common), [index](const auto& cmn) { return cmn.secondary_index == index; }) == std::end(common); });
     return {unique_in_primary, unique_in_secondary};
 }

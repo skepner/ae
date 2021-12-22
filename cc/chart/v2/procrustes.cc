@@ -2,6 +2,7 @@
 #include "utils/float.hh"
 #include "chart/v2/procrustes.hh"
 #include "chart/v2/chart.hh"
+#include "chart/v2/index-iterator.hh"
 
 #pragma GCC diagnostic push
 #ifdef __clang__
@@ -14,7 +15,7 @@
 
 #pragma GCC diagnostic pop
 
-using namespace acmacs::chart;
+using namespace ae::chart::v2;
 
 using aint_t = alglib::ae_int_t;
 template <typename T> constexpr inline aint_t cint(T src) { return static_cast<aint_t>(src); };
@@ -123,7 +124,7 @@ ae::chart::v2::ProcrustesData ae::chart::v2::procrustes(const Projection& primar
     x.setlength(cint(common_without_disconnected.size()), cint(number_of_dimensions));
     y.setlength(cint(common_without_disconnected.size()), cint(number_of_dimensions));
     for (size_t point_no = 0; point_no < common_without_disconnected.size(); ++point_no) {
-        for (auto dim : acmacs::range(number_of_dimensions)) {
+        for (number_of_dimensions_t dim{0}; dim < number_of_dimensions; ++dim) {
             x(cint(point_no), cint(dim)) = primary_layout->coordinate(common_without_disconnected[point_no].primary, dim);
             y(cint(point_no), cint(dim)) = secondary_layout->coordinate(common_without_disconnected[point_no].secondary, dim);
         }
@@ -166,12 +167,12 @@ ae::chart::v2::ProcrustesData ae::chart::v2::procrustes(const Projection& primar
         // calculate optimal scale parameter
         const auto denominator = multiply_left_transposed(y, m1);
         const auto trace_denominator =
-            std::accumulate(acmacs::index_iterator<aint_t>(0), acmacs::index_iterator(cint(number_of_dimensions)), 0.0, [&denominator](double sum, auto i) { return sum + denominator(i, i); });
+            std::accumulate(index_iterator<aint_t>(0), index_iterator(cint(number_of_dimensions)), 0.0, [&denominator](double sum, auto i) { return sum + denominator(i, i); });
         const auto m3 = multiply(y, transformation);
         const auto m4 = multiply(j, m3);
         const auto numerator = multiply_left_transposed(x, m4);
         const auto trace_numerator =
-            std::accumulate(acmacs::index_iterator<aint_t>(0), acmacs::index_iterator(cint(number_of_dimensions)), 0.0, [&numerator](double sum, auto i) { return sum + numerator(i, i); });
+            std::accumulate(index_iterator<aint_t>(0), index_iterator(cint(number_of_dimensions)), 0.0, [&numerator](double sum, auto i) { return sum + numerator(i, i); });
         const auto scale = trace_numerator / trace_denominator;
         multiply(transformation, scale);
         result.scale = scale;
@@ -182,7 +183,7 @@ ae::chart::v2::ProcrustesData ae::chart::v2::procrustes(const Projection& primar
     auto m5 = multiply(y, transformation);
     multiply_add(m5, -1, x);
     for (auto dim : acmacs::range(number_of_dimensions)) {
-        const auto t_i = std::accumulate(acmacs::index_iterator<aint_t>(0), acmacs::index_iterator(cint(common_without_disconnected.size())), 0.0,
+        const auto t_i = std::accumulate(index_iterator<aint_t>(0), index_iterator(cint(common_without_disconnected.size())), 0.0,
                                          [&m5, dim = cint(dim)](auto sum, auto row) { return sum + m5(row, dim); });
         result.transformation.translation(dim) = t_i / static_cast<double>(common_without_disconnected.size());
     }
@@ -195,7 +196,7 @@ ae::chart::v2::ProcrustesData ae::chart::v2::procrustes(const Projection& primar
         if (const auto pc = primary_layout->at(cp.primary), sc = result.secondary_transformed->at(cp.secondary); pc.exists() && sc.exists()) {
             ++num_rows;
             const auto make_rms_inc = [&pc, &sc](auto sum, auto dim) { return sum + square(pc[dim] - sc[dim]); };
-            result.rms = std::accumulate(acmacs::index_iterator<number_of_dimensions_t>(0UL), acmacs::index_iterator(number_of_dimensions), result.rms, make_rms_inc);
+            result.rms = std::accumulate(index_iterator<number_of_dimensions_t>(0UL), index_iterator(number_of_dimensions), result.rms, make_rms_inc);
             // std::cerr << cp.primary << ' ' << cp.secondary << ' ' << result.rms << '\n';
         }
     }
@@ -211,17 +212,17 @@ ae::chart::v2::ProcrustesData ae::chart::v2::procrustes(const Projection& primar
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<acmacs::Layout> ae::chart::v2::ProcrustesData::apply(const acmacs::Layout& source) const
+std::shared_ptr<ae::chart::v2::Layout> ae::chart::v2::ProcrustesData::apply(const acmacs::Layout& source) const
 {
     assert(source.number_of_dimensions() == transformation.number_of_dimensions);
-    auto result = std::make_shared<acmacs::Layout>(source.number_of_points(), source.number_of_dimensions());
+    auto result = std::make_shared<Layout>(source.number_of_points(), source.number_of_dimensions());
 
     // multiply source by transformation
     for (size_t row_no = 0; row_no < source.number_of_points(); ++row_no) {
         if (const auto row = source[row_no]; row.exists()) {
-            for (auto dim : acmacs::range(transformation.number_of_dimensions)) {
+            for (number_of_dimensions_t dim{0}; dim < transformation.number_of_dimensions; ++dim) {
                 auto sum_squares = [&source, this, row_no, dim](auto sum, auto index) { return sum + source(row_no, index) * this->transformation(index, dim); };
-                result->coordinate(row_no, dim) = std::accumulate(acmacs::index_iterator<number_of_dimensions_t>(0UL), acmacs::index_iterator(source.number_of_dimensions()), 0.0, sum_squares) + transformation.translation(dim);
+                result->coordinate(row_no, dim) = std::accumulate(index_iterator<number_of_dimensions_t>(0UL), index_iterator(source.number_of_dimensions()), 0.0, sum_squares) + transformation.translation(dim);
             }
         }
         else {
@@ -242,7 +243,7 @@ alglib::real_2d_array multiply(const MatrixJ& left, const alglib::real_2d_array&
     result.setlength(left.rows(), right.cols());
     for (aint_t row = 0; row < left.rows(); ++row) {
         for (aint_t column = 0; column < right.cols(); ++column) {
-            result(row, column) = std::accumulate(acmacs::index_iterator<aint_t>(0), acmacs::index_iterator(left.cols()), 0.0,
+            result(row, column) = std::accumulate(index_iterator<aint_t>(0), index_iterator(left.cols()), 0.0,
                                                   [&left,&right,row,column](double sum, auto i) { return sum + left(row, i) * right(i, column); });
         }
     }

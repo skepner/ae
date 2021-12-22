@@ -4,7 +4,7 @@
 
 // ----------------------------------------------------------------------
 
-namespace acmacs::chart
+namespace ae::chart::v2
 {
     namespace common
     {
@@ -32,8 +32,8 @@ namespace acmacs::chart
             virtual std::string full_name() const = 0; // for make_orig()
 
             size_t index;
-            acmacs::virus::name_t name;
-            acmacs::virus::Reassortant reassortant;
+            ae::virus::Name name;
+            ae::virus::Reassortant reassortant;
             Annotations annotations;
             std::string orig_full_name_;
 
@@ -57,7 +57,7 @@ namespace acmacs::chart
             }
             std::string full_name() const override
             {
-                auto fname = acmacs::string::join(acmacs::string::join_space, name, reassortant, acmacs::string::join(acmacs::string::join_space, annotations), passage);
+                auto fname = ae::string::join(" ", {name, reassortant, ae::string::join(" ", annotations), passage});
                 if (!orig_full_name_.empty())
                     fname += fmt::format(" (orig: {})", orig_full_name_);
                 return fname;
@@ -76,7 +76,7 @@ namespace acmacs::chart
                 return lhs.passage.compare(rhs.passage);
             }
 
-            acmacs::virus::Passage passage;
+            ae::virus::Passage passage;
 
         }; // class AntigenEntry
 
@@ -92,7 +92,7 @@ namespace acmacs::chart
             }
             std::string full_name() const override
             {
-                auto fname = acmacs::string::join(acmacs::string::join_space, name, reassortant, acmacs::string::join(acmacs::string::join_space, annotations), serum_id, passage);
+                auto fname = ae::string::join(" ", {name, reassortant, ae::string::join(" ", annotations), serum_id, passage});
                 if (!orig_full_name_.empty())
                     fname += fmt::format(" (orig: {})", orig_full_name_);
                 return fname;
@@ -112,7 +112,7 @@ namespace acmacs::chart
             }
 
             SerumId serum_id;
-            acmacs::virus::Passage passage;
+            ae::virus::Passage passage;
 
         }; // class SerumEntry
 
@@ -181,13 +181,13 @@ namespace acmacs::chart
 
     }; // class CommonAntigensSera
 
-} // namespace acmacs::chart
+} // namespace ae::chart::v2
 
 // ----------------------------------------------------------------------
 
-template <> struct fmt::formatter<acmacs::chart::CommonAntigensSera::common_t> : public fmt::formatter<acmacs::fmt_helper::default_formatter>
+template <> struct fmt::formatter<ae::chart::v2::CommonAntigensSera::common_t> : public fmt::formatter<ae::fmt_helper::default_formatter>
 {
-    template <typename FormatContext> auto format(const acmacs::chart::CommonAntigensSera::common_t& common, FormatContext& ctx)
+    template <typename FormatContext> auto format(const ae::chart::v2::CommonAntigensSera::common_t& common, FormatContext& ctx)
     {
         return format_to(ctx.out(), "{{{},{}}}", common.primary, common.secondary);
     }
