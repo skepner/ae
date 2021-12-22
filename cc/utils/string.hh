@@ -253,6 +253,19 @@ namespace ae::string
         return result;
     }
 
+    // ----------------------------------------------------------------------
+
+    inline std::string replace_spaces(std::string_view source, char replacement)
+    {
+        std::string result(source.size(), replacement);
+        std::transform(source.begin(), source.end(), result.begin(), [replacement](char c) {
+            if (std::isspace(c))
+                c = replacement;
+            return c;
+        });
+        return result;
+    }
+
 } // namespace ae::string
 
 // ----------------------------------------------------------------------
