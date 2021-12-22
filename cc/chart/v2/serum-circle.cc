@@ -120,9 +120,9 @@ class TiterDistance
 // If there are multiple optima with equal sums of 2 and 3, then the
 // radius is a mean of optimal radii.
 
-void ae::chart::v2::detail::serum_circle_empirical(const SerumCircle& circle_data, detail::SerumCirclePerAntigen& per_antigen, const Layout& layout, const Titers& titers, double fold, acmacs::verbose verbose)
+void ae::chart::v2::detail::serum_circle_empirical(const SerumCircle& circle_data, detail::SerumCirclePerAntigen& per_antigen, const Layout& layout, const Titers& titers, double fold, ae::verbose verbose)
 {
-    if (verbose == acmacs::verbose::yes) {
+    if (verbose == ae::verbose::yes) {
         AD_INFO("======================================================================");
         AD_INFO("Serum circle empirical for SR {}  AG {}  homologous titer {}", circle_data.serum_no(), per_antigen.antigen_no, per_antigen.titer);
         AD_INFO("======================================================================");
@@ -157,7 +157,7 @@ void ae::chart::v2::detail::serum_circle_empirical(const SerumCircle& circle_dat
         return;
     }
 
-    if (verbose == acmacs::verbose::yes)
+    if (verbose == ae::verbose::yes)
         AD_INFO("serum_circle_radius_empirical protection_boundary_titer: {}", protection_boundary_titer);
 
     // sort antigen indices by antigen distance from serum, closest first
@@ -172,7 +172,7 @@ void ae::chart::v2::detail::serum_circle_empirical(const SerumCircle& circle_dat
     };
     PointIndexList antigens_by_distances(acmacs::index_iterator(0UL), acmacs::index_iterator(titers.number_of_antigens()));
     std::sort(antigens_by_distances.begin(), antigens_by_distances.end(), antigens_by_distances_sorting);
-    if (verbose == acmacs::verbose::yes) {
+    if (verbose == ae::verbose::yes) {
         AD_INFO("antigens_by_distances");
         fmt::print(stderr, "  AG    distance   titer   simil   fsimil\n");
         for (auto ag_no : antigens_by_distances) {
@@ -188,7 +188,7 @@ void ae::chart::v2::detail::serum_circle_empirical(const SerumCircle& circle_dat
     size_t previous = None;
     double sum_radii = 0;
     size_t num_radii = 0;
-    if (verbose == acmacs::verbose::yes)
+    if (verbose == ae::verbose::yes)
         fmt::print(stderr, ">>> AG   radius    dist  protected-outside     not-protected-inside  sum   best-sum\n                         theoretically only      empirically only\n");
     for (size_t ag_no : antigens_by_distances) {
         if (!titers_and_distances[ag_no])
@@ -219,13 +219,13 @@ void ae::chart::v2::detail::serum_circle_empirical(const SerumCircle& circle_dat
                     best_sum = summa;
                 }
             }
-            if (verbose == acmacs::verbose::yes)
+            if (verbose == ae::verbose::yes)
                 fmt::print(stderr, "  {:4d}  {:7.4f}  {:7.4f}       {:3d}                  {:3d}              {:3d}   {:3d}\n", ag_no, radius, titers_and_distances[ag_no].distance, protected_outside, not_protected_inside, summa, best_sum);
             previous = ag_no;
         }
     }
     per_antigen.radius = sum_radii / static_cast<double>(num_radii);
-    if (verbose == acmacs::verbose::yes)
+    if (verbose == ae::verbose::yes)
         fmt::print(stderr, "\n>>> Radius: {}\n\n", *per_antigen.radius);
 
 } // ae::chart::v2::detail::serum_circle_empirical
@@ -243,7 +243,7 @@ ae::chart::v2::SerumCircle ae::chart::v2::serum_circle_empirical(const PointInde
 
 // ----------------------------------------------------------------------
 
-ae::chart::v2::SerumCircle ae::chart::v2::serum_circle_empirical(size_t antigen_no, size_t serum_no, const Layout& layout, double column_basis, const Titers& titers, double fold, acmacs::verbose verbose)
+ae::chart::v2::SerumCircle ae::chart::v2::serum_circle_empirical(size_t antigen_no, size_t serum_no, const Layout& layout, double column_basis, const Titers& titers, double fold, ae::verbose verbose)
 {
     SerumCircle circle_data(antigen_no, serum_no, column_basis, titers.titer(antigen_no, serum_no), fold);
     if (circle_data.failure_reason() == serum_circle_failure_reason::not_calculated)
@@ -254,7 +254,7 @@ ae::chart::v2::SerumCircle ae::chart::v2::serum_circle_empirical(size_t antigen_
 
 // ----------------------------------------------------------------------
 
-ae::chart::v2::SerumCircle ae::chart::v2::serum_circle_empirical(const PointIndexList& antigens, size_t serum_no, const Layout& layout, double column_basis, const Titers& titers, double fold, acmacs::verbose verbose)
+ae::chart::v2::SerumCircle ae::chart::v2::serum_circle_empirical(const PointIndexList& antigens, size_t serum_no, const Layout& layout, double column_basis, const Titers& titers, double fold, ae::verbose verbose)
 {
     SerumCircle circle_data(antigens, serum_no, column_basis, titers, fold);
     for (auto& per_antigen : circle_data.per_antigen_) {
@@ -322,7 +322,7 @@ ae::chart::v2::SerumCircle ae::chart::v2::serum_circle_theoretical(const PointIn
 
 // ----------------------------------------------------------------------
 
-ae::chart::v2::SerumCircle ae::chart::v2::serum_circle_empirical(const PointIndexList& antigens, Titer homologous_titer, size_t serum_no, const Chart& chart, size_t aProjectionNo, double fold, acmacs::verbose verbose)
+ae::chart::v2::SerumCircle ae::chart::v2::serum_circle_empirical(const PointIndexList& antigens, Titer homologous_titer, size_t serum_no, const Chart& chart, size_t aProjectionNo, double fold, ae::verbose verbose)
 {
     return serum_circle_empirical(antigens, homologous_titer, serum_no, *chart.projection(aProjectionNo)->layout(), chart.column_basis(serum_no, aProjectionNo), *chart.titers(), fold, verbose);
 
@@ -330,7 +330,7 @@ ae::chart::v2::SerumCircle ae::chart::v2::serum_circle_empirical(const PointInde
 
 // ----------------------------------------------------------------------
 
-ae::chart::v2::SerumCircle ae::chart::v2::serum_circle_empirical(size_t aAntigenNo, size_t aSerumNo, const Chart& chart, size_t aProjectionNo, double fold, acmacs::verbose verbose)
+ae::chart::v2::SerumCircle ae::chart::v2::serum_circle_empirical(size_t aAntigenNo, size_t aSerumNo, const Chart& chart, size_t aProjectionNo, double fold, ae::verbose verbose)
 {
     return serum_circle_empirical(aAntigenNo, aSerumNo, *chart.projection(aProjectionNo)->layout(), chart.column_basis(aSerumNo, aProjectionNo), *chart.titers(), fold, verbose);
 
@@ -338,7 +338,7 @@ ae::chart::v2::SerumCircle ae::chart::v2::serum_circle_empirical(size_t aAntigen
 
 // ----------------------------------------------------------------------
 
-ae::chart::v2::SerumCircle ae::chart::v2::serum_circle_empirical(const PointIndexList& antigens, size_t serum_no, const Chart& chart, size_t aProjectionNo, double fold, acmacs::verbose verbose)
+ae::chart::v2::SerumCircle ae::chart::v2::serum_circle_empirical(const PointIndexList& antigens, size_t serum_no, const Chart& chart, size_t aProjectionNo, double fold, ae::verbose verbose)
 {
     return serum_circle_empirical(antigens, serum_no, *chart.projection(aProjectionNo)->layout(), chart.column_basis(serum_no, aProjectionNo), *chart.titers(), fold, verbose);
 
@@ -346,7 +346,7 @@ ae::chart::v2::SerumCircle ae::chart::v2::serum_circle_empirical(const PointInde
 
 // ----------------------------------------------------------------------
 
-ae::chart::v2::SerumCircle ae::chart::v2::serum_circle_theoretical(const PointIndexList& antigens, Titer homologous_titer, size_t serum_no, const Chart& chart, size_t aProjectionNo, double fold, acmacs::verbose /*verbose*/)
+ae::chart::v2::SerumCircle ae::chart::v2::serum_circle_theoretical(const PointIndexList& antigens, Titer homologous_titer, size_t serum_no, const Chart& chart, size_t aProjectionNo, double fold, ae::verbose /*verbose*/)
 {
     return serum_circle_theoretical(antigens, homologous_titer, serum_no, chart.column_basis(serum_no, aProjectionNo), fold);
 
@@ -354,7 +354,7 @@ ae::chart::v2::SerumCircle ae::chart::v2::serum_circle_theoretical(const PointIn
 
 // ----------------------------------------------------------------------
 
-ae::chart::v2::SerumCircle ae::chart::v2::serum_circle_theoretical(size_t aAntigenNo, size_t aSerumNo, const Chart& chart, size_t aProjectionNo, double fold, acmacs::verbose /*verbose*/)
+ae::chart::v2::SerumCircle ae::chart::v2::serum_circle_theoretical(size_t aAntigenNo, size_t aSerumNo, const Chart& chart, size_t aProjectionNo, double fold, ae::verbose /*verbose*/)
 {
     return serum_circle_theoretical(aAntigenNo, aSerumNo, chart.column_basis(aSerumNo, aProjectionNo), *chart.titers(), fold);
 
@@ -362,7 +362,7 @@ ae::chart::v2::SerumCircle ae::chart::v2::serum_circle_theoretical(size_t aAntig
 
 // ----------------------------------------------------------------------
 
-ae::chart::v2::SerumCircle ae::chart::v2::serum_circle_theoretical(const PointIndexList& antigens, size_t serum_no, const Chart& chart, size_t aProjectionNo, double fold, acmacs::verbose /*verbose*/)
+ae::chart::v2::SerumCircle ae::chart::v2::serum_circle_theoretical(const PointIndexList& antigens, size_t serum_no, const Chart& chart, size_t aProjectionNo, double fold, ae::verbose /*verbose*/)
 {
     return serum_circle_theoretical(antigens, serum_no, chart.column_basis(serum_no, aProjectionNo), *chart.titers(), fold);
 

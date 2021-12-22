@@ -12,45 +12,45 @@
 std::string ae::chart::v2::Chart::make_info(size_t max_number_of_projections_to_show, unsigned inf) const
 {
     fmt::memory_buffer text;
-    fmt::format_to_mb(text, "{}\nAntigens: {}   Sera: {}\n", info()->make_info(), number_of_antigens(), number_of_sera());
+    fmt::format_to(std::back_inserter(text), "{}\nAntigens: {}   Sera: {}\n", info()->make_info(), number_of_antigens(), number_of_sera());
     if (const auto layers = titers()->number_of_layers(); layers)
-        fmt::format_to_mb(text, "Number of layers: {}\n", layers);
+        fmt::format_to(std::back_inserter(text), "Number of layers: {}\n", layers);
     if (const auto having_too_few_numeric_titers = titers()->having_too_few_numeric_titers(); !having_too_few_numeric_titers->empty())
-        fmt::format_to_mb(text, "Points having too few numeric titers:{} {}\n", having_too_few_numeric_titers->size(), having_too_few_numeric_titers);
+        fmt::format_to(std::back_inserter(text), "Points having too few numeric titers:{} {}\n", having_too_few_numeric_titers->size(), having_too_few_numeric_titers);
 
     if (inf & info_data::column_bases) {
         auto cb = computed_column_bases(MinimumColumnBasis{});
-        fmt::format_to_mb(text, fmt::runtime("computed column bases:                 {:5.2f}\n"), *cb);
+        fmt::format_to(std::back_inserter(text), fmt::runtime("computed column bases:                 {:5.2f}\n"), *cb);
         for (auto projection_no : range_from_0_to(std::min(number_of_projections(), max_number_of_projections_to_show))) {
             if (auto fcb = projection(projection_no)->forced_column_bases(); fcb) {
-                fmt::format_to_mb(text, fmt::runtime("forced column bases for projection {:2d}: {:5.2f}\n"), projection_no, *fcb);
-                fmt::format_to_mb(text, "                                 diff: [");
+                fmt::format_to(std::back_inserter(text), fmt::runtime("forced column bases for projection {:2d}: {:5.2f}\n"), projection_no, *fcb);
+                fmt::format_to(std::back_inserter(text), "                                 diff: [");
                 for (const auto sr_no : range_from_0_to(cb->size())) {
                     if (float_equal(cb->column_basis(sr_no), fcb->column_basis(sr_no)))
-                        fmt::format_to_mb(text, "  .   ");
+                        fmt::format_to(std::back_inserter(text), "  .   ");
                     else
-                        fmt::format_to_mb(text, "{:5.2f} ", cb->column_basis(sr_no) - fcb->column_basis(sr_no));
+                        fmt::format_to(std::back_inserter(text), "{:5.2f} ", cb->column_basis(sr_no) - fcb->column_basis(sr_no));
                 }
-                fmt::format_to_mb(text, "]\n");
+                fmt::format_to(std::back_inserter(text), "]\n");
             }
         }
     }
 
-    fmt::format_to_mb(text, "{}\n", projections()->make_info(max_number_of_projections_to_show));
+    fmt::format_to(std::back_inserter(text), "{}\n", projections()->make_info(max_number_of_projections_to_show));
 
     if (inf & info_data::tables && info()->number_of_sources() > 0) {
-        fmt::format_to_mb(text, "\nTables:\n");
+        fmt::format_to(std::back_inserter(text), "\nTables:\n");
         for (const auto src_no : range_from_0_to(info()->number_of_sources()))
-            fmt::format_to_mb(text, "{:3d} {}\n", src_no, info()->source(src_no)->make_name());
+            fmt::format_to(std::back_inserter(text), "{:3d} {}\n", src_no, info()->source(src_no)->make_name());
     }
 
     if (inf & info_data::tables_for_sera && info()->number_of_sources() > 0) {
         auto titers = this->titers();
         auto sera = this->sera();
         for (auto [sr_no, serum] : acmacs::enumerate(*sera)) {
-            fmt::format_to_mb(text, "SR {:3d} {}\n", sr_no, serum->format("{name_full_passage}"));
+            fmt::format_to(std::back_inserter(text), "SR {:3d} {}\n", sr_no, serum->format("{name_full_passage}"));
             for (const auto layer_no : titers->layers_with_serum(sr_no))
-                fmt::format_to_mb(text, "    {:3d} {}\n", layer_no, info()->source(layer_no)->make_name());
+                fmt::format_to(std::back_inserter(text), "    {:3d} {}\n", layer_no, info()->source(layer_no)->make_name());
         }
     }
 
@@ -63,9 +63,9 @@ std::string ae::chart::v2::Chart::make_info(size_t max_number_of_projections_to_
             else
                 dates.count("*empty*");
         }
-        fmt::format_to_mb(text, "Antigen dates ({})\n", dates.size());
+        fmt::format_to(std::back_inserter(text), "Antigen dates ({})\n", dates.size());
         for (const auto& [date, count] : dates.counter())
-            fmt::format_to_mb(text, "    {:7s} {:4d}\n", date, count);
+            fmt::format_to(std::back_inserter(text), "    {:7s} {:4d}\n", date, count);
     }
 
     return fmt::to_string(text);
@@ -77,12 +77,12 @@ std::string ae::chart::v2::Chart::make_info(size_t max_number_of_projections_to_
 std::string ae::chart::v2::Chart::make_name(std::optional<size_t> aProjectionNo) const
 {
     fmt::memory_buffer name;
-    fmt::format_to_mb(name, "{}", info()->make_name());
+    fmt::format_to(std::back_inserter(name), "{}", info()->make_name());
     if (auto prjs = projections(); !prjs->empty() && (!aProjectionNo || *aProjectionNo < prjs->size())) {
         auto prj = (*prjs)[aProjectionNo ? *aProjectionNo : 0];
-        fmt::format_to_mb(name, " {}", prj->minimum_column_basis().format(">={}", MinimumColumnBasis::use_none::no));
+        fmt::format_to(std::back_inserter(name), " {}", prj->minimum_column_basis().format(">={}", MinimumColumnBasis::use_none::no));
         if (const auto stress = prj->stress(); !std::isnan(stress))
-            fmt::format_to_mb(name, " {:.4f}", stress);
+            fmt::format_to(std::back_inserter(name), " {:.4f}", stress);
     }
     return fmt::to_string(name);
 
@@ -93,18 +93,18 @@ std::string ae::chart::v2::Chart::make_name(std::optional<size_t> aProjectionNo)
 std::string ae::chart::v2::Chart::description() const
 {
     fmt::memory_buffer desc;
-    fmt::format_to_mb(desc, "{}", info()->make_name());
+    fmt::format_to(std::back_inserter(desc), "{}", info()->make_name());
     if (auto prjs = projections(); !prjs->empty()) {
         auto prj = (*prjs)[0];
-        fmt::format_to_mb(desc, "{}", prj->minimum_column_basis().format(">={}", MinimumColumnBasis::use_none::yes));
+        fmt::format_to(std::back_inserter(desc), "{}", prj->minimum_column_basis().format(">={}", MinimumColumnBasis::use_none::yes));
         if (const auto stress = prj->stress(); !std::isnan(stress))
-            fmt::format_to_mb(desc, " {:.4f}", stress);
+            fmt::format_to(std::back_inserter(desc), " {:.4f}", stress);
     }
-    if (info()->virus_type() == acmacs::virus::type_subtype_t{"B"})
-        fmt::format_to_mb(desc, " {}", lineage());
-    fmt::format_to_mb(desc, " AG:{} Sr:{}", number_of_antigens(), number_of_sera());
+    if (info()->virus_type() == ae::virus::type_subtype_t{"B"})
+        fmt::format_to(std::back_inserter(desc), " {}", lineage());
+    fmt::format_to(std::back_inserter(desc), " AG:{} Sr:{}", number_of_antigens(), number_of_sera());
     if (const auto layers = titers()->number_of_layers(); layers > 1)
-        fmt::format_to_mb(desc, " ({} source tables)", layers);
+        fmt::format_to(std::back_inserter(desc), " ({} source tables)", layers);
     return fmt::to_string(desc);
 
 } // ae::chart::v2::Chart::description
@@ -153,7 +153,7 @@ double ae::chart::v2::Chart::column_basis(size_t serum_no, size_t projection_no)
 
 // ----------------------------------------------------------------------
 
-acmacs::virus::lineage_t ae::chart::v2::Chart::lineage() const
+ae::virus::lineage_t ae::chart::v2::Chart::lineage() const
 {
     std::map<BLineage, size_t> lineages;
     auto ags = antigens();
@@ -192,17 +192,17 @@ acmacs::PointStyle ae::chart::v2::Chart::default_style(PointType aPointType) con
     switch (aPointType) {
       case PointType::TestAntigen:
           style.shape(acmacs::PointShape::Circle);
-          style.size(Pixels{5.0});
+          style.size(ae::draw::v1::Pixels{5.0});
           style.fill(GREEN);
           break;
       case PointType::ReferenceAntigen:
           style.shape(acmacs::PointShape::Circle);
-          style.size(Pixels{8.0});
+          style.size(ae::draw::v1::Pixels{8.0});
           style.fill(TRANSPARENT);
           break;
       case PointType::Serum:
           style.shape(acmacs::PointShape::Box);
-          style.size(Pixels{6.5});
+          style.size(ae::draw::v1::Pixels{6.5});
           style.fill(TRANSPARENT);
           break;
     }
@@ -248,26 +248,26 @@ std::string ae::chart::v2::Chart::show_table(std::optional<size_t> layer_no) con
 
     const auto max_ag_name = static_cast<int>(max_full_name(*ags));
 
-    fmt::format_to_mb(output, "{:>{}s}Serum full names are under the table\n{:>{}s}", "", max_ag_name + 6, "", max_ag_name);
+    fmt::format_to(std::back_inserter(output), "{:>{}s}Serum full names are under the table\n{:>{}s}", "", max_ag_name + 6, "", max_ag_name);
     for (auto sr_ind : range_from_0_to(serum_indexes->size()))
-        fmt::format_to_mb(output, "{:>7d}", sr_label(sr_ind));
-    fmt::format_to_mb(output, "\n");
+        fmt::format_to(std::back_inserter(output), "{:>7d}", sr_label(sr_ind));
+    fmt::format_to(std::back_inserter(output), "\n");
 
-    fmt::format_to_mb(output, "{:{}s}", "", max_ag_name + 2);
+    fmt::format_to(std::back_inserter(output), "{:{}s}", "", max_ag_name + 2);
     for (auto sr_no : serum_indexes)
-        fmt::format_to_mb(output, "{:>7s}", srs->at(sr_no)->format("{location_abbreviated}/{year2}"));
-    fmt::format_to_mb(output, "\n");
+        fmt::format_to(std::back_inserter(output), "{:>7s}", srs->at(sr_no)->format("{location_abbreviated}/{year2}"));
+    fmt::format_to(std::back_inserter(output), "\n");
 
     for (auto ag_no : antigen_indexes) {
-        fmt::format_to_mb(output, "{:<{}s}", ags->at(ag_no)->name_full(), max_ag_name + 2);
+        fmt::format_to(std::back_inserter(output), "{:<{}s}", ags->at(ag_no)->name_full(), max_ag_name + 2);
         for (auto sr_no : serum_indexes)
-            fmt::format_to_mb(output, "{:>7s}", *tt->titer(ag_no, sr_no));
-        fmt::format_to_mb(output, "\n");
+            fmt::format_to(std::back_inserter(output), "{:>7s}", *tt->titer(ag_no, sr_no));
+        fmt::format_to(std::back_inserter(output), "\n");
     }
-    fmt::format_to_mb(output, "\n");
+    fmt::format_to(std::back_inserter(output), "\n");
 
     for (auto [sr_ind, sr_no] : acmacs::enumerate(serum_indexes))
-        fmt::format_to_mb(output, "{:3d} {} {}\n", sr_label(sr_ind), srs->at(sr_no)->format("{location_abbreviated}/{year2}"), srs->at(sr_no)->name_full());
+        fmt::format_to(std::back_inserter(output), "{:3d} {} {}\n", sr_label(sr_ind), srs->at(sr_no)->format("{location_abbreviated}/{year2}"), srs->at(sr_no)->name_full());
 
     return fmt::to_string(output);
 
@@ -328,8 +328,8 @@ ae::chart::v2::BLineage::Lineage ae::chart::v2::BLineage::from(std::string_view 
 std::string ae::chart::v2::Info::make_info() const
 {
     const auto n_sources = number_of_sources();
-    return acmacs::string::join(acmacs::string::join_space, name(), *virus(Compute::Yes), lab(Compute::Yes), virus_type(Compute::Yes), subset(Compute::Yes), assay(Compute::Yes), rbc_species(Compute::Yes),
-                                date(Compute::Yes), n_sources ? ("(" + std::to_string(n_sources) + " tables)") : std::string{});
+    return ae::string::join(" ", {name(), *virus(Compute::Yes), lab(Compute::Yes), virus_type(Compute::Yes), subset(Compute::Yes), assay(Compute::Yes), rbc_species(Compute::Yes), date(Compute::Yes),
+                                  n_sources ? ("(" + std::to_string(n_sources) + " tables)") : std::string{}});
 
 } // ae::chart::v2::Info::make_info
 
@@ -340,8 +340,8 @@ std::string ae::chart::v2::Info::make_name() const
     std::string n = name(Compute::No);
     if (n.empty()) {
         const auto vt = virus_type(Compute::Yes);
-        n = acmacs::string::join(acmacs::string::join_space, lab(Compute::Yes), *virus_not_influenza(Compute::Yes), vt, subset(Compute::Yes), assay(Compute::Yes).HI_or_Neut(Assay::no_hi::yes),
-                                 rbc_species(Compute::Yes), date(Compute::Yes));
+        n = ae::string::join(
+            " ", {lab(Compute::Yes), *virus_not_influenza(Compute::Yes), vt, subset(Compute::Yes), assay(Compute::Yes).HI_or_Neut(Assay::no_hi::yes), rbc_species(Compute::Yes), date(Compute::Yes)});
     }
     return n;
 
@@ -384,13 +384,13 @@ std::string ae::chart::v2::Projection::make_info() const
 {
     fmt::memory_buffer result;
     auto lt = layout();
-    fmt::format_to_mb(result, "{:.14f} {}d", stress(), lt->number_of_dimensions());
+    fmt::format_to(std::back_inserter(result), "{:.14f} {}d", stress(), lt->number_of_dimensions());
     if (auto cmt = comment(); !cmt.empty())
-        fmt::format_to_mb(result, " <{}>", cmt);
+        fmt::format_to(std::back_inserter(result), " <{}>", cmt);
     if (auto fcb = forced_column_bases(); fcb)
-        fmt::format_to_mb(result, " forced-column-bases"); // fcb
+        fmt::format_to(std::back_inserter(result), " forced-column-bases"); // fcb
     else
-        fmt::format_to_mb(result, " >={}", minimum_column_basis());
+        fmt::format_to(std::back_inserter(result), " >={}", minimum_column_basis());
     return fmt::to_string(result);
 
 } // ae::chart::v2::Projection::make_info
@@ -452,9 +452,9 @@ ae::chart::v2::Blobs ae::chart::v2::Projection::blobs(double stress_diff, const 
 std::string ae::chart::v2::Projections::make_info(size_t max_number_of_projections_to_show) const
 {
     fmt::memory_buffer text;
-    fmt::format_to_mb(text, "Projections: {}", size());
+    fmt::format_to(std::back_inserter(text), "Projections: {}", size());
     for (auto projection_no: range_from_0_to(std::min(max_number_of_projections_to_show, size())))
-        fmt::format_to_mb(text, "\n{:3d} {}", projection_no, operator[](projection_no)->make_info());
+        fmt::format_to(std::back_inserter(text), "\n{:3d} {}", projection_no, operator[](projection_no)->make_info());
     return fmt::to_string(text);
 
 } // ae::chart::v2::Projections::make_info

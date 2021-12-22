@@ -186,7 +186,7 @@ namespace ae::string
     // ----------------------------------------------------------------------
 
     // join collection using separator, empty elements in collection are omitted
-    template <typename Collection> inline std::string join(std::string_view separator, const Collection& collection)
+    template <typename Collection> inline std::string join(std::string_view separator, Collection&& collection)
     {
         fmt::memory_buffer out;
         bool sep{false};

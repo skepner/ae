@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ext/fmt.hh"
+#include "ext/string.hh"
 #include "utils/string.hh"
 
 // ----------------------------------------------------------------------

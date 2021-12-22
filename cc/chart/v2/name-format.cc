@@ -290,12 +290,12 @@ namespace fmt
             static_assert(std::is_same_v<std::decay_t<decltype(std::get<0>(key_value))>, const char*>);
             if constexpr (std::tuple_size<std::decay_t<decltype(key_value)>>::value == 2) {
                 if constexpr (std::is_invocable_v<decltype(std::get<1>(key_value))>)
-                    format_to_mb(output, fmt::runtime(pattern_arg), arg(std::get<0>(key_value), std::invoke(std::get<1>(key_value))));
+                    format_to(std::back_inserter(output), fmt::runtime(pattern_arg), arg(std::get<0>(key_value), std::invoke(std::get<1>(key_value))));
                 else
-                    format_to_mb(output, fmt::runtime(pattern_arg), arg(std::get<0>(key_value), std::get<1>(key_value)));
+                    format_to(std::back_inserter(output), fmt::runtime(pattern_arg), arg(std::get<0>(key_value), std::get<1>(key_value)));
             }
             else if constexpr (std::tuple_size<std::decay_t<decltype(key_value)>>::value == 4) {
-                format_to_mb(output, fmt::runtime(pattern_arg), arg(std::get<0>(key_value), std::get<1>(key_value)), arg(std::get<2>(key_value), std::get<3>(key_value)));
+                format_to(std::back_inserter(output), fmt::runtime(pattern_arg), arg(std::get<0>(key_value), std::get<1>(key_value)), arg(std::get<2>(key_value), std::get<3>(key_value)));
             }
             else
                 static_assert(
