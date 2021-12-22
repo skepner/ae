@@ -22,7 +22,7 @@ namespace ae::virus::inline v2
         std::string_view operator*() const { return value_; }
 
         bool operator==(const Name& rhs) const = default;
-        bool operator<=>(const Name& rhs) const = default;
+        auto operator<=>(const Name& rhs) const = default;
 
         bool empty() const { return value_.empty(); }
         size_t size() const { return value_.size(); }

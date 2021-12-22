@@ -153,7 +153,7 @@ double ae::chart::v2::Chart::column_basis(size_t serum_no, size_t projection_no)
 
 // ----------------------------------------------------------------------
 
-ae::virus::lineage_t ae::chart::v2::Chart::lineage() const
+ae::sequences::lineage_t ae::chart::v2::Chart::lineage() const
 {
     std::map<BLineage, size_t> lineages;
     auto ags = antigens();
@@ -328,8 +328,8 @@ ae::chart::v2::BLineage::Lineage ae::chart::v2::BLineage::from(std::string_view 
 std::string ae::chart::v2::Info::make_info() const
 {
     const auto n_sources = number_of_sources();
-    return ae::string::join(" ", {name(), *virus(Compute::Yes), lab(Compute::Yes), virus_type(Compute::Yes), subset(Compute::Yes), assay(Compute::Yes), rbc_species(Compute::Yes), date(Compute::Yes),
-                                  n_sources ? ("(" + std::to_string(n_sources) + " tables)") : std::string{}});
+    return ae::string::join(" ", name(), virus(Compute::Yes), lab(Compute::Yes), virus_type(Compute::Yes), subset(Compute::Yes), assay(Compute::Yes), rbc_species(Compute::Yes), date(Compute::Yes),
+                                  n_sources ? ("(" + std::to_string(n_sources) + " tables)") : std::string{});
 
 } // ae::chart::v2::Info::make_info
 
@@ -340,8 +340,8 @@ std::string ae::chart::v2::Info::make_name() const
     std::string n = name(Compute::No);
     if (n.empty()) {
         const auto vt = virus_type(Compute::Yes);
-        n = ae::string::join(
-            " ", {lab(Compute::Yes), *virus_not_influenza(Compute::Yes), vt, subset(Compute::Yes), assay(Compute::Yes).HI_or_Neut(Assay::no_hi::yes), rbc_species(Compute::Yes), date(Compute::Yes)});
+        n = ae::string::join(" ", lab(Compute::Yes), virus_not_influenza(Compute::Yes), vt, subset(Compute::Yes), assay(Compute::Yes).HI_or_Neut(Assay::no_hi::yes), rbc_species(Compute::Yes),
+                             date(Compute::Yes));
     }
     return n;
 
@@ -362,18 +362,18 @@ size_t ae::chart::v2::Info::max_source_name() const
 
 // ----------------------------------------------------------------------
 
-acmacs::Lab ae::chart::v2::Info::fix_lab_name(Lab source, FixLab fix) const
+ae::chart::v2::Lab ae::chart::v2::Info::fix_lab_name(Lab source, FixLab /*fix*/) const
 {
-    switch (fix) {
-        case FixLab::no:
-            break;
-        case FixLab::yes:
-            source = acmacs::whocc::lab_name_normalize(source);
-            break;
-        case FixLab::reverse:
-            source = acmacs::whocc::lab_name_old(source);
-            break;
-    }
+    // switch (fix) {
+    //     case FixLab::no:
+    //         break;
+    //     case FixLab::yes:
+    //         source = acmacs::whocc::lab_name_normalize(source);
+    //         break;
+    //     case FixLab::reverse:
+    //         source = acmacs::whocc::lab_name_old(source);
+    //         break;
+    // }
     return source;
 
 } // ae::chart::v2::Info::fix_lab_name
@@ -421,7 +421,7 @@ double ae::chart::v2::Projection::stress(RecalculateStress recalculate) const
 
 double ae::chart::v2::Projection::stress_with_moved_point(size_t point_no, const PointCoordinates& move_to) const
 {
-    acmacs::Layout new_layout(*layout());
+    Layout new_layout(*layout());
     new_layout.update(point_no, move_to);
     return stress_factory(*this, multiply_antigen_titer_until_column_adjust::yes).value(new_layout);
 
@@ -492,9 +492,15 @@ std::vector<ae::chart::v2::Date> ae::chart::v2::Antigens::all_dates(include_refe
 
 // ----------------------------------------------------------------------
 
-#include "acmacs-base/global-constructors-push.hh"
+#pragma GCC diagnostic push
+#ifdef __clang__
+#pragma GCC diagnostic ignored "-Wglobal-constructors"
+#pragma GCC diagnostic ignored "-Wexit-time-destructors"
+#endif
+
 static const std::regex sAnntotationToIgnore{"(CONC|RDE@|BOOST|BLEED|LAIV|^CDC$)"};
-#include "acmacs-base/diagnostics-pop.hh"
+
+#pragma GCC diagnostic pop
 
 bool ae::chart::v2::Annotations::match_antigen_serum(const Annotations& antigen, const Annotations& serum)
 {

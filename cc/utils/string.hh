@@ -202,6 +202,39 @@ namespace ae::string
         return fmt::to_string(out);
     }
 
+    namespace detail
+    {
+        inline std::string_view stringify(std::string_view source) { return source; }
+        inline std::string_view stringify(const char* source) { return source; }
+        inline const std::string& stringify(const std::string& source) { return source; }
+        template <typename Arg> requires(!std::is_same_v<Arg, std::string>) inline std::string stringify(const Arg& arg) { return fmt::format("{}", arg); }
+
+    } // namespace detail
+
+    template <typename Arg1, typename Arg2, typename... Args> inline std::string join(std::string_view separator, Arg1&& arg1, Arg2&& arg2, Args&&... rest)
+    {
+        if constexpr (sizeof...(rest) == 0) {
+            const auto as1{detail::stringify(arg1)};
+            const auto as2{detail::stringify(arg2)};
+            if (!as1.empty()) {
+                if (!as2.empty()) {
+                    std::string res(as1.size() + as2.size() + separator.size(), '#');
+                    std::copy(as1.begin(), as1.end(), res.begin());
+                    std::copy(separator.begin(), separator.end(), std::next(res.begin(), static_cast<ssize_t>(as1.size())));
+                    std::copy(as2.begin(), as2.end(), std::next(res.begin(), static_cast<ssize_t>(as1.size() + separator.size())));
+                    return res;
+                }
+                else
+                    return std::string{as1};
+            }
+            else
+                return std::string{as2};
+        }
+        else {
+            return join(separator, join(separator, std::forward<Arg1>(arg1), std::forward<Arg2>(arg2)), std::forward<Args>(rest)...);
+        }
+    }
+
     // ----------------------------------------------------------------------
 
     inline std::string first_letter_of_words(std::string_view source)

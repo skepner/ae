@@ -46,7 +46,7 @@ namespace ae::virus::passage
         // deconstructed_t(std::string_view not_parsed) : elements{element_t{.name{not_parsed}}} {}
 
         bool operator==(const deconstructed_t& rhs) const = default;
-        // bool operator<=>(const deconstructed_t& rhs) const = default;
+        auto operator<=>(const deconstructed_t& rhs) const { return construct() <=> rhs.construct(); }
 
         bool empty() const { return elements.empty(); }
         const element_t& last() const { return elements.back(); }
@@ -129,7 +129,7 @@ namespace ae::virus
         Passage& operator=(Passage&&) = default;
 
         bool operator==(const Passage& rhs) const = default;
-        // bool operator<=>(const Passage& rhs) const = default;
+        auto operator<=>(const Passage& rhs) const { return static_cast<std::string>(*this) <=> static_cast<std::string>(rhs); }
 
         bool good() const { return deconstructed_.good(); }
         bool empty() const { return deconstructed_.empty(); }
@@ -137,6 +137,7 @@ namespace ae::virus
         bool is_cell() const { return deconstructed_.cell(); }
         std::string without_date() const { return deconstructed_.construct(passage::deconstructed_t::with_date::no); }
         operator std::string() const { return deconstructed_.construct(); }
+        size_t size() const { return deconstructed_.construct().size(); }
 
         // std::string_view last_number() const; // E2/E3 -> 3, X? -> ?
         // std::string_view last_type() const; // MDCK3/SITA1 -> SIAT

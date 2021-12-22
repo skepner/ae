@@ -18,16 +18,16 @@ namespace ae::chart::v2
             CoreEntry& operator=(const CoreEntry&) = default;
             CoreEntry& operator=(CoreEntry&&) = default;
 
-            static inline int compare(const CoreEntry& lhs, const CoreEntry& rhs)
+            static inline auto compare(const CoreEntry& lhs, const CoreEntry& rhs)
             {
-                if (auto n_c = lhs.name.compare(rhs.name); n_c != 0)
+                if (auto n_c = lhs.name <=> rhs.name; n_c != std::strong_ordering::equal)
                     return n_c;
-                if (auto r_c = lhs.reassortant.compare(rhs.reassortant); r_c != 0)
+                if (auto r_c = lhs.reassortant <=> rhs.reassortant; r_c != std::strong_ordering::equal)
                     return r_c;
-                return ::string::compare(fmt::format("{: }", lhs.annotations), fmt::format("{: }", rhs.annotations));
+                return fmt::format("{: }", lhs.annotations) <=> fmt::format("{: }", rhs.annotations);
             }
 
-            static inline bool less(const CoreEntry& lhs, const CoreEntry& rhs) { return compare(lhs, rhs) < 0; }
+            static inline bool less(const CoreEntry& lhs, const CoreEntry& rhs) { return compare(lhs, rhs) == std::strong_ordering::less; }
 
             virtual std::string full_name() const = 0; // for make_orig()
 
@@ -57,7 +57,7 @@ namespace ae::chart::v2
             }
             std::string full_name() const override
             {
-                auto fname = ae::string::join(" ", {name, reassortant, ae::string::join(" ", annotations), passage});
+                auto fname = ae::string::join(" ", name, reassortant, ae::string::join(" ", annotations), passage);
                 if (!orig_full_name_.empty())
                     fname += fmt::format(" (orig: {})", orig_full_name_);
                 return fname;
@@ -67,14 +67,15 @@ namespace ae::chart::v2
                 return name.size() + reassortant.size() + annotations.total_length() + passage.size() + 1 + (reassortant.empty() ? 0 : 1) + annotations->size() +
                        (orig_full_name_.empty() ? 0 : orig_full_name_.size() + 9);
             }
-            bool operator<(const AntigenEntry& rhs) const { return compare(*this, rhs) < 0; }
 
-            static inline int compare(const AntigenEntry& lhs, const AntigenEntry& rhs)
+            static inline auto compare(const AntigenEntry& lhs, const AntigenEntry& rhs)
             {
-                if (auto np_c = CoreEntry::compare(lhs, rhs); np_c != 0)
+                if (auto np_c = CoreEntry::compare(lhs, rhs); np_c != std::strong_ordering::equal)
                     return np_c;
-                return lhs.passage.compare(rhs.passage);
+                return lhs.passage <=> rhs.passage;
             }
+
+            bool operator<(const AntigenEntry& rhs) const { return compare(*this, rhs) == std::strong_ordering::less; }
 
             ae::virus::Passage passage;
 
@@ -92,7 +93,7 @@ namespace ae::chart::v2
             }
             std::string full_name() const override
             {
-                auto fname = ae::string::join(" ", {name, reassortant, ae::string::join(" ", annotations), serum_id, passage});
+                auto fname = ae::string::join(" ", name, reassortant, ae::string::join(" ", annotations), serum_id, passage);
                 if (!orig_full_name_.empty())
                     fname += fmt::format(" (orig: {})", orig_full_name_);
                 return fname;
@@ -102,14 +103,15 @@ namespace ae::chart::v2
                 return name.size() + reassortant.size() + annotations.total_length() + serum_id.size() + 1 + (reassortant.empty() ? 0 : 1) + annotations->size() + passage.size() +
                     (passage.empty() ? 0 : 1) + (orig_full_name_.empty() ? 0 : orig_full_name_.size() + 9);
             }
-            bool operator<(const SerumEntry& rhs) const { return compare(*this, rhs) < 0; }
 
-            static inline int compare(const SerumEntry& lhs, const SerumEntry& rhs)
+            static inline auto compare(const SerumEntry& lhs, const SerumEntry& rhs)
             {
-                if (auto np_c = CoreEntry::compare(lhs, rhs); np_c != 0)
+                if (auto np_c = CoreEntry::compare(lhs, rhs); np_c != std::strong_ordering::equal)
                     return np_c;
-                return lhs.serum_id.compare(rhs.serum_id);
+                return lhs.serum_id <=> rhs.serum_id;
             }
+
+            bool operator<(const SerumEntry& rhs) const { return compare(*this, rhs) == std::strong_ordering::less; }
 
             SerumId serum_id;
             ae::virus::Passage passage;

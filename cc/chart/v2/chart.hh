@@ -25,7 +25,7 @@
 #include "chart/v2/titers.hh"
 #include "chart/v2/stress.hh"
 #include "chart/v2/optimize.hh"
-// #include "chart/v2/blobs.hh"
+#include "chart/v2/blobs.hh"
 
 // ----------------------------------------------------------------------
 
