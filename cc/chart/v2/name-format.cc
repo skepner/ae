@@ -1,29 +1,29 @@
 #include "utils/string.hh"
 #include "utils/regex.hh"
 #include "utils/named-type.hh"
-#include "locdb/v3/locdb.hh"
+#include "virus/name-parse.hh"
 #include "chart/v2/chart-modify.hh"
 
 // ----------------------------------------------------------------------
 
 template <typename AgSr> static std::string name_full_without_passage(const AgSr& ag_sr)
 {
-    return fmt::format("{}", fmt::join({ag_sr.name(), fmt::format("{: }", ag_sr.annotations()), ag_sr.reassortant()}, " "));
+    return ae::string::join(" ", {ag_sr.name(), fmt::format("{: }", ag_sr.annotations()), ag_sr.reassortant()});
 }
 
 inline static std::string name_full(const ae::chart::v2::Antigen& ag)
 {
-    return acmacs::string::join(acmacs::string::join_space, name_full_without_passage(ag), ag.passage());
+    return ae::string::join(" ", {name_full_without_passage(ag), ag.passage()});
 }
 
 inline static std::string name_full(const ae::chart::v2::Serum& sr)
 {
-    return acmacs::string::join(acmacs::string::join_space, name_full_without_passage(sr), sr.serum_id());
+    return ae::string::join(" ", {name_full_without_passage(sr), sr.serum_id()});
 }
 
 template <typename AgSr> static std::string name_full_passage(const AgSr& ag_sr)
 {
-    return acmacs::string::join(acmacs::string::join_space, name_full_without_passage(ag_sr), ag_sr.passage());
+    return ae::string::join(" ", {name_full_without_passage(ag_sr), ag_sr.passage()});
 }
 
 template <typename AgSr> static std::string location_abbreviated(const AgSr& ag_sr)
@@ -33,10 +33,7 @@ template <typename AgSr> static std::string location_abbreviated(const AgSr& ag_
 
 template <typename AgSr> static std::string year4(const AgSr& ag_sr)
 {
-    if (const auto yr = acmacs::virus::year(ag_sr.name()); yr.has_value())
-        return fmt::format("{}", *yr);
-    else
-        return {};
+    return ae::virus::name::year(ag_sr.name());
 }
 
 template <typename AgSr> static std::string year2(const AgSr& ag_sr)
@@ -49,7 +46,7 @@ template <typename AgSr> static std::string year2(const AgSr& ag_sr)
 
 template <typename AgSr> static std::string name_abbreviated(const AgSr& ag_sr)
 {
-    return acmacs::string::join(acmacs::string::join_dash, acmacs::string::join(acmacs::string::join_slash, location_abbreviated(ag_sr), acmacs::virus::isolation(ag_sr.name()), year2(ag_sr)), ag_sr.reassortant());
+    return ae::string::join("-", {ae::string::join("/", {location_abbreviated(ag_sr), ae::virus::name::isolation(ag_sr.name()), year2(ag_sr)}), ag_sr.reassortant()});
 }
 
 template <typename AgSr> static std::string fields(const AgSr& ag_sr)
@@ -145,10 +142,9 @@ template <> struct fmt::formatter<sequence_aligned_t>
     size_t len_{0};
 };
 
-
 // ----------------------------------------------------------------------
 
-#define FKF(key, call) std::pair{key, [](fmt::memory_buffer& output, std::string_view format, [[maybe_unused]] const auto& ag_sr) { fmt::format_to_mb(output, fmt::runtime(format), fmt::arg(key, call)); }}
+#define FKF(key, call) std::pair{key, [](fmt::memory_buffer& output, std::string_view format, [[maybe_unused]] const auto& ag_sr) { fmt::format_to(std::back_inserter(output), fmt::runtime(format), fmt::arg(key, call)); }}
 
 #pragma GCC diagnostic push
 #ifdef __clang__
@@ -157,32 +153,32 @@ template <> struct fmt::formatter<sequence_aligned_t>
 #endif
 
 const std::tuple format_subst_ag_sr{
-    FKF("abbreviated_location_with_passage_type", acmacs::string::join(acmacs::string::join_space, location_abbreviated(ag_sr), ag_sr.passage().passage_type())),        // mapi
-    FKF("abbreviated_name_with_passage_type", fmt::format("{}-{}", name_abbreviated(ag_sr), ag_sr.passage().passage_type())),                                            // mapi
-    FKF("annotations", ag_sr.annotations()),                                                                                                                             //
-    FKF("continent", ag_sr.location_data().continent),                                                                                                                   //
-    FKF("country", ag_sr.location_data().country),                                                                                                                       //
-    FKF("fields", fields(ag_sr)),                                                                                                                                        //
-    FKF("full_name", name_full(ag_sr)),                                                                                                                                  //
-    FKF("latitude", ag_sr.location_data().latitude),                                                                                                                     //
-    FKF("lineage", ag_sr.lineage().to_string()),                                                                                                                         //
-    FKF("location", ae::virus::name::location(ag_sr.name())),                                                                                                              //
-    FKF("location_abbreviated", location_abbreviated(ag_sr)),                                                                                                            //
-    FKF("longitude", ag_sr.location_data().longitude),                                                                                                                   //
-    FKF("name", ag_sr.name()),                                                                                                                                           //
-    FKF("name_abbreviated", name_abbreviated(ag_sr)),                                                                                                                    //
-    FKF("name_full", name_full(ag_sr)),                                                                                                                                  //
-    FKF("name_full_passage", name_full_passage(ag_sr)),                                                                                                                  //
-    FKF("name_without_subtype", acmacs::virus::without_subtype(ag_sr.name())),                                                                                           //
-    FKF("name_anntotations_reassortant", acmacs::string::join(acmacs::string::join_space, ag_sr.name(), fmt::format("{: }", ag_sr.annotations()), ag_sr.reassortant())), //
-    FKF("passage", ag_sr.passage()),                                                                                                                                     //
-    FKF("passage_type", ag_sr.passage().passage_type()),                                                                                                                 //
-    FKF("reassortant", ag_sr.reassortant()),                                                                                                                             //
-    FKF("year", year4(ag_sr)),                                                                                                                                           //
-    FKF("year2", year2(ag_sr)),                                                                                                                                          //
-    FKF("year4", year4(ag_sr)),                                                                                                                                          //
-    FKF("aa", sequence_aligned_t{ag_sr.sequence_aa()}),                                                                                                                  //
-    FKF("nuc", sequence_aligned_t{ag_sr.sequence_nuc()}),                                                                                                                //
+    FKF("abbreviated_location_with_passage_type", fmt::format("{}", fmt::join({location_abbreviated(ag_sr), ag_sr.passage().passage_type()}, " "))), // mapi
+    FKF("abbreviated_name_with_passage_type", fmt::format("{}-{}", name_abbreviated(ag_sr), ag_sr.passage().passage_type())),                        // mapi
+    FKF("annotations", ag_sr.annotations()),                                                                                                         //
+    FKF("continent", ag_sr.location_data().continent),                                                                                               //
+    FKF("country", ag_sr.location_data().country),                                                                                                   //
+    FKF("fields", fields(ag_sr)),                                                                                                                    //
+    FKF("full_name", name_full(ag_sr)),                                                                                                              //
+    FKF("latitude", ag_sr.location_data().latitude),                                                                                                 //
+    FKF("lineage", ag_sr.lineage().to_string()),                                                                                                     //
+    FKF("location", ae::virus::name::location(ag_sr.name())),                                                                                        //
+    FKF("location_abbreviated", location_abbreviated(ag_sr)),                                                                                        //
+    FKF("longitude", ag_sr.location_data().longitude),                                                                                               //
+    FKF("name", ag_sr.name()),                                                                                                                       //
+    FKF("name_abbreviated", name_abbreviated(ag_sr)),                                                                                                //
+    FKF("name_full", name_full(ag_sr)),                                                                                                              //
+    FKF("name_full_passage", name_full_passage(ag_sr)),                                                                                              //
+    FKF("name_without_subtype", ae::virus::name::without_subtype(ag_sr.name())),                                                                     //
+    FKF("name_anntotations_reassortant", ae::string::join(" ", {ag_sr.name(), fmt::format("{: }", ag_sr.annotations()), ag_sr.reassortant()})),      //
+    FKF("passage", ag_sr.passage()),                                                                                                                 //
+    FKF("passage_type", ag_sr.passage().passage_type()),                                                                                             //
+    FKF("reassortant", ag_sr.reassortant()),                                                                                                         //
+    FKF("year", year4(ag_sr)),                                                                                                                       //
+    FKF("year2", year2(ag_sr)),                                                                                                                      //
+    FKF("year4", year4(ag_sr)),                                                                                                                      //
+    FKF("aa", sequence_aligned_t{ag_sr.sequence_aa()}),                                                                                              //
+    FKF("nuc", sequence_aligned_t{ag_sr.sequence_nuc()}),                                                                                            //
 };
 
 const std::tuple format_subst_antigen{
@@ -198,20 +194,130 @@ const std::tuple format_subst_antigen{
 };
 
 const std::tuple format_subst_serum{
-    FKF("ag_sr", "SR"),                                                                                                       //
-    FKF("designation", acmacs::string::join(acmacs::string::join_space, name_full_without_passage(ag_sr), ag_sr.serum_id())), //
-    FKF("designation_without_serum_id", name_full_without_passage(ag_sr)),                                                    //
-    FKF("serum_id", ag_sr.serum_id()),                                                                                        //
-    FKF("serum_species", ag_sr.serum_species()),                                                                              //
-    FKF("serum_species", ag_sr.serum_species()),                                                                              //
-    FKF("species", ag_sr.serum_species()),                                                                                    //
-    FKF("date_in_brackets", ""),                                                                                              //
-    FKF("clades", ""),                                                                                                        //
-    FKF("lab_ids", ""),                                                                                                       //
-    FKF("ref", ""),                                                                                                           //
+    FKF("ag_sr", "SR"),                                                                              //
+    FKF("designation", ae::string::join(" ", {name_full_without_passage(ag_sr), ag_sr.serum_id()})), //
+    FKF("designation_without_serum_id", name_full_without_passage(ag_sr)),                           //
+    FKF("serum_id", ag_sr.serum_id()),                                                               //
+    FKF("serum_species", ag_sr.serum_species()),                                                     //
+    FKF("serum_species", ag_sr.serum_species()),                                                     //
+    FKF("species", ag_sr.serum_species()),                                                           //
+    FKF("date_in_brackets", ""),                                                                     //
+    FKF("clades", ""),                                                                               //
+    FKF("lab_ids", ""),                                                                              //
+    FKF("ref", ""),                                                                                  //
 };
 
 #pragma GCC diagnostic pop
+
+// ----------------------------------------------------------------------
+
+namespace fmt
+{
+    enum class if_no_substitution_found { leave_as_is, empty };
+
+    inline std::vector<std::pair<std::string_view, std::string_view>> split_for_formatting(std::string_view source) // pair{key, format}: {"key", "{key:03d}"} {"", "between-format"}
+    {
+        std::vector<std::pair<std::string_view, std::string_view>> result;
+        size_t beg{0};
+        size_t inside_format{0};
+        for (size_t pos{0}; pos < source.size(); ++pos) {
+            switch (source[pos]) {
+                case '{':
+                    if (pos > beg && inside_format == 0) {
+                        result.push_back(std::pair{source.substr(beg, pos - beg), source.substr(beg, pos - beg)});
+                        // result.push_back(std::pair{std::string_view{}, source.substr(beg, pos - beg)});
+                        beg = pos;
+                    }
+                    ++inside_format;
+                    break;
+                case '}':
+                    if (inside_format > 0)
+                        --inside_format;
+                    if (inside_format == 0) {
+                        const auto pattern = source.substr(beg, pos - beg + 1);
+                        if (const auto end = pattern.find(':', 1); end != std::string_view::npos)
+                            result.push_back(std::pair{pattern.substr(1, end - 1), pattern});
+                        else
+                            result.push_back(std::pair{pattern.substr(1, pattern.size() - 2), pattern});
+                        beg = pos + 1;
+                    }
+                    break;
+            }
+        }
+        if (beg < source.size())
+            result.push_back(std::pair{std::string_view{}, source.substr(beg)});
+        // AD_DEBUG("split_for_formatting {}", result);
+        return result;
+    }
+
+    template <typename FormatMatched, typename FormatNoPattern, typename... Args>
+    void substitute_to(FormatMatched&& format_matched, FormatNoPattern&& format_no_pattern, std::string_view pattern, if_no_substitution_found insf, Args&&... args)
+    {
+        const auto match_and_format = [&format_matched](std::string_view look_for, std::string_view pattern_arg, const auto& en) {
+            if (look_for == std::get<0>(en)) {
+                format_matched(pattern_arg, en);
+                return true;
+            }
+            else
+                return false;
+        };
+
+        for (const auto& [key, pattern_arg] : split_for_formatting(pattern)) {
+            if (!key.empty()) {
+                if (!(match_and_format(key, pattern_arg, args) || ...)) {
+                    // not matched
+                    switch (insf) {
+                        case if_no_substitution_found::leave_as_is:
+                            format_no_pattern(pattern_arg);
+                            break;
+                        case if_no_substitution_found::empty:
+                            break;
+                    }
+                }
+            }
+            else
+                format_no_pattern(pattern_arg);
+        }
+    }
+
+    // substitute_to args:
+    // std::pair{"name", value}                                     -- {name}, {name:3d}
+    // std::pair{"name", []() -> decltype(value) { return value; }} -- {name}, {name:3d}
+    // std::tuple{"name1", val1, "name2", val2}                     -- {name1:{name2}d}
+    template <typename... Args> void substitute_to(memory_buffer& output, std::string_view pattern, if_no_substitution_found insf, Args&&... args)
+    {
+        const auto format_matched = [&output](std::string_view pattern_arg, const auto& key_value) {
+            static_assert(std::is_same_v<std::decay_t<decltype(std::get<0>(key_value))>, const char*>);
+            if constexpr (std::tuple_size<std::decay_t<decltype(key_value)>>::value == 2) {
+                if constexpr (std::is_invocable_v<decltype(std::get<1>(key_value))>)
+                    format_to_mb(output, fmt::runtime(pattern_arg), arg(std::get<0>(key_value), std::invoke(std::get<1>(key_value))));
+                else
+                    format_to_mb(output, fmt::runtime(pattern_arg), arg(std::get<0>(key_value), std::get<1>(key_value)));
+            }
+            else if constexpr (std::tuple_size<std::decay_t<decltype(key_value)>>::value == 4) {
+                format_to_mb(output, fmt::runtime(pattern_arg), arg(std::get<0>(key_value), std::get<1>(key_value)), arg(std::get<2>(key_value), std::get<3>(key_value)));
+            }
+            else
+                static_assert(
+                    std::tuple_size<std::decay_t<decltype(key_value)>>::value == 0,
+                    "fmt::substitute arg can be used in the following forms: std::pair<const char*, value>, std::pair<const char*, lambda>, std::tuple<const char*, value, const char*, value>");
+        };
+        const auto format_no_pattern = [&output](std::string_view no_pattern) { output.append(no_pattern); };
+        substitute_to(format_matched, format_no_pattern, pattern, insf, std::forward<Args>(args)...);
+    }
+
+    // see acmacs-chart-2/cc/name-format.cc for usage example
+
+    template <typename... Args> std::string substitute(std::string_view pattern, if_no_substitution_found insf, Args&&... args)
+    {
+        memory_buffer output;
+        substitute_to(output, pattern, insf, std::forward<Args>(args)...);
+        return to_string(output);
+    }
+
+    template <typename... Args> std::string substitute(std::string_view pattern, Args&&... args) { return substitute(pattern, if_no_substitution_found::leave_as_is, std::forward<Args>(args)...); }
+
+} // namespace fmt
 
 // ----------------------------------------------------------------------
 
@@ -222,7 +328,7 @@ template <typename AgSr, typename... Args> static inline void format_ag_sr(fmt::
         if constexpr (std::is_invocable_v<decltype(std::get<1>(key_value)), fmt::memory_buffer&, std::string_view, const AgSr&>)
             std::invoke(std::get<1>(key_value), output, pattern_arg, ag_sr);
         else
-            fmt::format_to_mb(output, fmt::runtime(pattern_arg), fmt::arg(std::get<0>(key_value), std::get<1>(key_value)));
+            fmt::format_to(std::back_inserter(output), fmt::runtime(pattern_arg), fmt::arg(std::get<0>(key_value), std::get<1>(key_value)));
     };
     const auto format_no_pattern = [&output](std::string_view no_pattern) { output.append(no_pattern); };
     const auto format_args = [pattern, format_matched, format_no_pattern](const auto&... fargs) {
@@ -254,8 +360,9 @@ const ae::chart::v2::detail::location_data_t& ae::chart::v2::detail::AntigenSeru
 {
     if (!location_data_filled_) {
         const auto location{ae::virus::name::location(name())};
-        if (const auto loc = ae::locdb::get().find(location, ae::locdb::include_continent::yes); loc.has_value())
-            location_data_ = location_data_t{std::move(loc->name), std::string{loc->country()}, loc->continent, loc->latitude(), loc->longitude()};
+        const auto& locdb = ae::locdb::get();
+        if (const auto [name, loc] = locdb.find(location); loc)
+            location_data_ = location_data_t{std::string{name}, std::string{loc->country}, std::string{locdb.continent(loc->country)}, loc->latitude, loc->longitude};
         else
             location_data_ = location_data_t{std::string{location}, "*unknown*", "*unknown*", 360.0, 360.0};
         location_data_filled_ = true;
@@ -273,13 +380,18 @@ const ae::chart::v2::detail::location_data_t& ae::chart::v2::detail::AntigenSeru
 
 std::string ae::chart::v2::collapse_spaces(std::string src, collapse_spaces_t cs)
 {
-#include "acmacs-base/global-constructors-push.hh"
+#pragma GCC diagnostic push
+#ifdef __clang__
+#pragma GCC diagnostic ignored "-Wglobal-constructors"
+#pragma GCC diagnostic ignored "-Wexit-time-destructors"
+#endif
+
     static const std::array replace_data{
         ae::regex::look_replace_t{std::regex("^" CS_SPACES_OPT CS_CS1, std::regex::icase), {"$1$'"}},
         ae::regex::look_replace_t{std::regex(CS_CS1 CS_SPACES_OPT "$", std::regex::icase), {"$`$1"}},
         ae::regex::look_replace_t{std::regex(CS_SPACES_OR_CS_OPT CS_CS1 CS_SPACES_OR_CS_OPT, std::regex::icase), {"$` $'"}},
     };
-#include "acmacs-base/diagnostics-pop.hh"
+#pragma GCC diagnostic pop
 
     switch (cs) {
         case collapse_spaces_t::yes:

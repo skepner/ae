@@ -4,6 +4,7 @@
 #include <cstdlib>
 
 #include "locdb/v3/locdb.hh"
+#include "utils/string.hh"
 #include "ext/fmt.hh"
 
 // ----------------------------------------------------------------------
@@ -126,5 +127,45 @@ std::pair<std::string_view, const ae::locdb::v3::Db::location*> ae::locdb::v3::D
     return {{}, nullptr};
 
 } // ae::locdb::v3::Db::find
+
+// ----------------------------------------------------------------------
+
+std::string ae::locdb::v3::Db::abbreviation(std::string_view location) const
+{
+      // if it's in USA, use CDC abbreviation (if available)
+      // if aName has multiple words, use first letters of words in upper case
+      // otherwise use two letter of aName capitalized
+
+    using namespace std::string_view_literals;
+    std::string abbreviation;
+
+    const auto use_abbreviation_of = [&abbreviation](std::string_view to_abbr) {
+        abbreviation = ae::string::first_letter_of_words(to_abbr);
+        if (abbreviation.size() == 1 && to_abbr.size() > 1)
+            abbreviation.push_back(static_cast<char>(tolower(to_abbr[1])));
+    };
+
+    if (const auto [name, loc] = find(location); loc) {
+        if (loc->country == "UNITED STATES OF AMERICA"sv)
+            abbreviation = find_cdc_abbreviation_by_name(name);
+        if (abbreviation.empty())
+            use_abbreviation_of(name);
+    }
+    else {
+        use_abbreviation_of(name);
+    }
+    return abbreviation;
+}
+
+// ----------------------------------------------------------------------
+
+std::string_view ae::locdb::v3::Db::find_cdc_abbreviation_by_name(std::string_view name) const
+{
+    const auto found = std::find_if(cdc_abbreviations_.begin(), cdc_abbreviations_.end(), [name](const auto& e) -> bool { return e.second == name; });
+    if (found != cdc_abbreviations_.end())
+        return found->first;
+    else
+        return {};
+}
 
 // ----------------------------------------------------------------------

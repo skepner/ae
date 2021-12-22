@@ -1,3 +1,5 @@
+#pragma once
+
 #include <map>
 #include <vector>
 
@@ -46,6 +48,10 @@ namespace ae::locdb::inline v3
             else
                 return {};
         }
+
+        std::string abbreviation(std::string_view location) const;
+
+        std::string_view find_cdc_abbreviation_by_name(std::string_view name) const;
 
       private:
         simdjson::Parser parser_;

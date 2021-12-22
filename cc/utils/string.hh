@@ -7,6 +7,8 @@
 #include <cctype>
 #include <algorithm>
 
+#include "ext/fmt.hh"
+
 // ----------------------------------------------------------------------
 
 namespace ae::string
@@ -180,6 +182,43 @@ namespace ae::string
     }
     inline std::string collapse_spaces(const char* source) { return collapse_spaces(std::string_view(source, std::strlen(source))); }
     inline std::string collapse_spaces(char* source) { return collapse_spaces(std::string_view(source, std::strlen(source))); }
+
+    // ----------------------------------------------------------------------
+
+    // join collection using separator, empty elements in collection are omitted
+    template <typename Collection> inline std::string join(std::string_view separator, const Collection& collection)
+    {
+        fmt::memory_buffer out;
+        bool sep{false};
+        for (const auto& en : collection) {
+            if (!en.empty()) {
+                if (sep)
+                    fmt::format_to(std::back_inserter(out), "{}", separator);
+                else
+                    sep = true;
+                fmt::format_to(std::back_inserter(out), "{}", en);
+            }
+        }
+        return fmt::to_string(out);
+    }
+
+    // ----------------------------------------------------------------------
+
+    inline std::string first_letter_of_words(std::string_view source)
+    {
+        std::string result;
+        bool add = true;
+        for (char c : source) {
+            if (c == ' ') {
+                add = true;
+            }
+            else if (add) {
+                result.push_back(c);
+                add = false;
+            }
+        }
+        return result;
+    }
 
 } // namespace ae::string
 

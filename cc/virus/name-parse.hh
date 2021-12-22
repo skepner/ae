@@ -1,9 +1,12 @@
 #pragma once
 
 #include <bitset>
+#include <optional>
 
 #include "ext/fmt.hh"
+#include "ext/from_chars.hh"
 #include "virus/type-subtype.hh"
+#include "virus/name.hh"
 
 // ======================================================================
 
@@ -65,6 +68,17 @@ namespace ae::virus::name::inline v1
     Parts parse(std::string_view source);
 
     inline std::string location(std::string_view name) { return parse(name).location; }
+    inline std::string isolation(std::string_view name) { return parse(name).isolation; }
+    inline std::string without_subtype(const Name& name) { return parse(name).host_location_isolation_year(); }
+    inline std::string year(const Name& name) { return parse(name).year; }
+
+    inline std::optional<size_t> year_as_number(const Name& name)
+    {
+        if (const auto parts = parse(name); !parts.year.empty())
+            return ae::from_chars<size_t>(parts.year);
+        else
+            return std::nullopt;
+    }
 
 } // namespace ae::virus::name::inline v1
 
