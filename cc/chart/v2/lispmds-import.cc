@@ -138,7 +138,7 @@ std::pair<std::shared_ptr<ae::chart::v2::ColumnBases>, ae::chart::v2::MinimumCol
         return {nullptr, ae::chart::v2::MinimumColumnBasis()};
     }
     catch (acmacs::lispmds::error& err) {
-        fmt::print(stderr, "WARNING: broken save: {}\n", err);
+        fmt::print(stderr, "WARNING: broken save: {}\n", err.what());
         return {nullptr, ae::chart::v2::MinimumColumnBasis()};
     }
 
@@ -154,7 +154,7 @@ ChartP ae::chart::v2::lispmds_import(std::string_view aData, Verify aVerify)
         return chart;
     }
     catch (std::exception& err) {
-        fmt::print(stderr, "ERROR: lispmds_import: {}\n", err);
+        fmt::print(stderr, "ERROR: lispmds_import: {}\n", err.what());
         throw;
     }
 
@@ -171,7 +171,7 @@ void LispmdsChart::verify_data(Verify) const
             throw import_error("no sera (genetic tables are not supported)");
     }
     catch (std::exception& err) {
-        throw import_error{fmt::format("[lispmds]: structure verification failed: {}", err)};
+        throw import_error{fmt::format("[lispmds]: structure verification failed: {}", err.what())};
     }
 
 } // LispmdsChart::verify_data
@@ -270,11 +270,11 @@ static inline std::string antigen_name(const acmacs::lispmds::value& aData, size
 
 // ----------------------------------------------------------------------
 
-acmacs::virus::name_t LispmdsAntigen::name() const
+ae::virus::Name LispmdsAntigen::name() const
 {
-    acmacs::virus::name_t name;
-    acmacs::virus::Reassortant reassortant;
-    acmacs::virus::Passage passage;
+    ae::virus::Name name;
+    ae::virus::Reassortant reassortant;
+    ae::virus::Passage passage;
     Annotations annotations;
     lispmds_antigen_name_decode(antigen_name(mData, mIndex), name, reassortant, passage, annotations);
     return name;
@@ -283,11 +283,11 @@ acmacs::virus::name_t LispmdsAntigen::name() const
 
 // ----------------------------------------------------------------------
 
-acmacs::virus::Passage LispmdsAntigen::passage() const
+ae::virus::Passage LispmdsAntigen::passage() const
 {
-    acmacs::virus::name_t name;
-    acmacs::virus::Reassortant reassortant;
-    acmacs::virus::Passage passage;
+    ae::virus::Name name;
+    ae::virus::Reassortant reassortant;
+    ae::virus::Passage passage;
     Annotations annotations;
     lispmds_antigen_name_decode(antigen_name(mData, mIndex), name, reassortant, passage, annotations);
     return passage;
@@ -296,11 +296,11 @@ acmacs::virus::Passage LispmdsAntigen::passage() const
 
 // ----------------------------------------------------------------------
 
-acmacs::virus::Reassortant LispmdsAntigen::reassortant() const
+ae::virus::Reassortant LispmdsAntigen::reassortant() const
 {
-    acmacs::virus::name_t name;
-    acmacs::virus::Reassortant reassortant;
-    acmacs::virus::Passage passage;
+    ae::virus::Name name;
+    ae::virus::Reassortant reassortant;
+    ae::virus::Passage passage;
     Annotations annotations;
     lispmds_antigen_name_decode(antigen_name(mData, mIndex), name, reassortant, passage, annotations);
     return reassortant;
@@ -311,9 +311,9 @@ acmacs::virus::Reassortant LispmdsAntigen::reassortant() const
 
 Annotations LispmdsAntigen::annotations() const
 {
-    acmacs::virus::name_t name;
-    acmacs::virus::Reassortant reassortant;
-    acmacs::virus::Passage passage;
+    ae::virus::Name name;
+    ae::virus::Reassortant reassortant;
+    ae::virus::Passage passage;
     Annotations annotations;
     lispmds_antigen_name_decode(antigen_name(mData, mIndex), name, reassortant, passage, annotations);
     return annotations;
@@ -347,10 +347,10 @@ static inline std::string serum_name(const acmacs::lispmds::value& aData, size_t
 
 // ----------------------------------------------------------------------
 
-acmacs::virus::name_t LispmdsSerum::name() const
+ae::virus::Name LispmdsSerum::name() const
 {
-    acmacs::virus::name_t name;
-    acmacs::virus::Reassortant reassortant;
+    ae::virus::Name name;
+    ae::virus::Reassortant reassortant;
     SerumId serum_id;
     Annotations annotations;
     lispmds_serum_name_decode(serum_name(mData, mIndex), name, reassortant, annotations, serum_id);
@@ -360,10 +360,10 @@ acmacs::virus::name_t LispmdsSerum::name() const
 
 // ----------------------------------------------------------------------
 
-acmacs::virus::Reassortant LispmdsSerum::reassortant() const
+ae::virus::Reassortant LispmdsSerum::reassortant() const
 {
-    acmacs::virus::name_t name;
-    acmacs::virus::Reassortant reassortant;
+    ae::virus::Name name;
+    ae::virus::Reassortant reassortant;
     SerumId serum_id;
     Annotations annotations;
     lispmds_serum_name_decode(serum_name(mData, mIndex), name, reassortant, annotations, serum_id);
@@ -375,8 +375,8 @@ acmacs::virus::Reassortant LispmdsSerum::reassortant() const
 
 Annotations LispmdsSerum::annotations() const
 {
-    acmacs::virus::name_t name;
-    acmacs::virus::Reassortant reassortant;
+    ae::virus::Name name;
+    ae::virus::Reassortant reassortant;
     SerumId serum_id;
     Annotations annotations;
     lispmds_serum_name_decode(serum_name(mData, mIndex), name, reassortant, annotations, serum_id);
@@ -388,8 +388,8 @@ Annotations LispmdsSerum::annotations() const
 
 SerumId LispmdsSerum::serum_id() const
 {
-    acmacs::virus::name_t name;
-    acmacs::virus::Reassortant reassortant;
+    ae::virus::Name name;
+    ae::virus::Reassortant reassortant;
     SerumId serum_id;
     Annotations annotations;
     lispmds_serum_name_decode(serum_name(mData, mIndex), name, reassortant, annotations, serum_id);
@@ -535,7 +535,7 @@ void LispmdsProjection::check() const
             throw import_error{fmt::format("[lispmds] projection {} has unsupported number of dimensions: {}", projection_no(), nd)};
     }
     catch (std::exception& err) {
-        throw import_error{fmt::format("[lispmds] projection {} reading error: {}", projection_no(), err)};
+        throw import_error{fmt::format("[lispmds] projection {} reading error: {}", projection_no(), err.what())};
     }
 
 } // LispmdsProjection::check

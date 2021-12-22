@@ -265,11 +265,11 @@ void Acd1Chart::verify_data(Verify aVerify) const
             throw import_error("no titers");
         if (const auto& ll = titers["titers_list_of_list"]; !ll.is_null()) {
             if (ll.size() != antigens.size())
-                throw import_error("number of the titer rows (" + acmacs::to_string(ll.size()) + ") does not correspond to the number of antigens (" + acmacs::to_string(antigens.size()) + ")");
+                throw import_error(fmt::format("number of the titer rows ({}) does not correspond to the number of antigens ({})", ll.size(), antigens.size()));
         }
         else if (const auto& dd = titers["titers_list_of_dict"]; !dd.is_null()) {
             if (dd.size() != antigens.size())
-                throw import_error("number of the titer rows (" + acmacs::to_string(dd.size()) + ") does not correspond to the number of antigens (" + acmacs::to_string(antigens.size()) + ")");
+                throw import_error(fmt::format("number of the titer rows ({}) does not correspond to the number of antigens ({})", dd.size(), antigens.size()));
         }
         else
             throw import_error("no titers (neither \"titers_list_of_list\" nor \"titers_list_of_dict\" present)");
@@ -362,11 +362,11 @@ std::string Acd1Info::name(Compute aCompute) const
             rjson::transform(sources, composition.begin(), [](const rjson::value& sinfo) { return sinfo["name"].get_or_default(""); });
             composition.erase(std::remove_if(composition.begin(), composition.end(), [](const auto& s) { return s.empty(); }), composition.end());
             if (composition.size() > (sources.size() / 2))
-                result = string::join(acmacs::string::join_sep_t{" + "}, composition); // use only, if most sources have "name"
+                result = ae::string::join(" + ", composition); // use only, if most sources have "name"
         }
     }
     if (result.empty() && aCompute == Compute::Yes) {
-        result = acmacs::string::join(acmacs::string::join_space, *virus_not_influenza(aCompute), virus_type(aCompute), subset(aCompute), assay(aCompute), lab(aCompute), rbc_species(aCompute), date(aCompute));
+        result = ae::string::join(" ", *virus_not_influenza(aCompute), virus_type(aCompute), subset(aCompute), assay(aCompute), lab(aCompute), rbc_species(aCompute), date(aCompute));
     }
     return result;
 
@@ -374,14 +374,14 @@ std::string Acd1Info::name(Compute aCompute) const
 
 // ----------------------------------------------------------------------
 
-std::string Acd1Info::make_field(const char* aField, acmacs::string::join_sep_t aSeparator, Compute aCompute) const
+std::string Acd1Info::make_field(const char* aField, std::string_view aSeparator, Compute aCompute) const
 {
     std::string result{data_[aField].get_or_default("")};
     if (result.empty() && aCompute == Compute::Yes) {
         if (const auto& sources = data_["sources"]; !sources.empty()) {
             std::set<std::string> composition;
             rjson::transform(sources, std::inserter(composition, composition.begin()), [aField](const rjson::value& sinfo) { return sinfo[aField].get_or_default(""); });
-            result = string::join(aSeparator, composition);
+            result = ae::string::join(aSeparator, composition);
         }
     }
     return result;
@@ -406,35 +406,35 @@ TableDate Acd1Info::date(Compute aCompute) const
 
 // ----------------------------------------------------------------------
 
-static inline acmacs::virus::name_t make_name(const rjson::value& aData)
+static inline ae::virus::Name make_name(const rjson::value& aData)
 {
     if (auto name = aData["_name"].get_or_default(""); !name.empty())
-        return acmacs::virus::name_t{name};
+        return ae::virus::Name{name};
     if (auto isolation_number = aData["isolation_number"].get_or_default(""); !isolation_number.empty()) {
         std::string host = aData["host"].get_or_default("");
         if (host == "HUMAN")
             host.clear();
-        return acmacs::virus::name_t{acmacs::string::join(acmacs::string::join_slash, aData["virus_type"].get_or_default(""), host, aData.get("location", "name").get_or_default(""), isolation_number, aData["year"].get_or_default(""))};
+        return ae::virus::Name{ae::string::join("/", aData["virus_type"].get_or_default(""), host, aData.get("location", "name").get_or_default(""), isolation_number, aData["year"].get_or_default(""))};
     }
     else if (auto raw_name = aData["raw_name"].get_or_default(""); !raw_name.empty()) {
-        return acmacs::virus::name_t{raw_name};
+        return ae::virus::Name{raw_name};
     }
     else {
         const std::string cdc_abbreviation = aData.get("location", "cdc_abbreviation").get_or_default("");
         std::string name = aData["name"].get_or_default("");
         if (!cdc_abbreviation.empty() && name.size() > 3 && name[2] == '-' && name[0] == cdc_abbreviation[0] && name[1] == cdc_abbreviation[1])
             name.erase(0, 3);   // old cdc name (acmacs-b?) begins with cdc_abbreviation
-        return acmacs::virus::name_t{acmacs::string::join(acmacs::string::join_space, cdc_abbreviation, name)};
+        return ae::virus::Name{ae::string::join(" ", cdc_abbreviation, name)};
     }
 }
 
-acmacs::virus::name_t Acd1Antigen::name() const
+ae::virus::Name Acd1Antigen::name() const
 {
     return make_name(data_);
 
 } // Acd1Antigen::name
 
-acmacs::virus::name_t Acd1Serum::name() const
+ae::virus::Name Acd1Serum::name() const
 {
     return make_name(data_);
 
@@ -442,28 +442,28 @@ acmacs::virus::name_t Acd1Serum::name() const
 
 // ----------------------------------------------------------------------
 
-static inline acmacs::virus::Passage make_passage(const rjson::value& aData)
+static inline ae::virus::Passage make_passage(const rjson::value& aData)
 {
     if (const auto& p_dict = aData["passage"]; !p_dict.is_null()) {
         std::string p = p_dict["passage"].get_or_default("");
         if (auto date = p_dict["date"].get_or_default(""); !date.empty())
             p += " (" + date + ")";
-        return acmacs::virus::Passage{std::move(p)};
+        return ae::virus::Passage{std::move(p)};
     }
     else if (auto p_str = aData["passage"].get_or_default(""); !p_str.empty()) {
-        return acmacs::virus::Passage{std::move(p_str)};
+        return ae::virus::Passage{std::move(p_str)};
     }
     else
         return {};
 }
 
-acmacs::virus::Passage Acd1Antigen::passage() const
+ae::virus::Passage Acd1Antigen::passage() const
 {
     return make_passage(data_);
 
 } // Acd1Antigen::passage
 
-acmacs::virus::Passage Acd1Serum::passage() const
+ae::virus::Passage Acd1Serum::passage() const
 {
     return make_passage(data_);
 
@@ -471,7 +471,7 @@ acmacs::virus::Passage Acd1Serum::passage() const
 
 // ----------------------------------------------------------------------
 
-static inline acmacs::virus::Reassortant make_reassortant(const rjson::value& aData)
+static inline ae::virus::Reassortant make_reassortant(const rjson::value& aData)
 {
     if (const auto& r_dict = aData["reassortant"]; !r_dict.is_null()) {
         const auto& complete = r_dict["complete"];
@@ -479,22 +479,22 @@ static inline acmacs::virus::Reassortant make_reassortant(const rjson::value& aD
         std::vector<std::string> composition;
         rjson::transform(complete, std::back_inserter(composition), [](const rjson::value& val) -> std::string { return val.to<std::string>(); }); // cannot use rjson::copy here
         rjson::transform(incomplete, std::back_inserter(composition), [](const rjson::value& val) -> std::string { return val.to<std::string>(); }); // cannot use rjson::copy here
-        return acmacs::virus::Reassortant{acmacs::string::join(acmacs::string::join_space, composition)};
+        return ae::virus::Reassortant{ae::string::join(" ", composition)};
     }
     else if (auto r_str = aData["reassortant"].get_or_default(""); !r_str.empty()) {
-        return acmacs::virus::Reassortant{std::move(r_str)};
+        return ae::virus::Reassortant{std::move(r_str)};
     }
     else
         return {};
 }
 
-acmacs::virus::Reassortant Acd1Antigen::reassortant() const
+ae::virus::Reassortant Acd1Antigen::reassortant() const
 {
     return make_reassortant(data_);
 
 } // Acd1Antigen::reassortant
 
-acmacs::virus::Reassortant Acd1Serum::reassortant() const
+ae::virus::Reassortant Acd1Serum::reassortant() const
 {
     return make_reassortant(data_);
 

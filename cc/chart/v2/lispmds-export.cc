@@ -12,7 +12,7 @@ static std::string serum_names(std::shared_ptr<ae::chart::v2::Sera> aSera, size_
 static std::string titers(std::shared_ptr<ae::chart::v2::Titers> aTiters, const ae::chart::v2::DisconnectedPoints& disconnected);
 static std::string starting_coordss(const ae::chart::v2::Chart& aChart, const ae::chart::v2::DisconnectedPoints& disconnected);
 static std::string batch_runs(const ae::chart::v2::Chart& aChart, const ae::chart::v2::DisconnectedPoints& disconnected);
-static std::string coordinates(std::shared_ptr<acmacs::Layout> aLayout, size_t number_of_points, acmacs::number_of_dimensions_t number_of_dimensions, size_t aIndent, const ae::chart::v2::DisconnectedPoints& disconnected);
+static std::string coordinates(std::shared_ptr<ae::chart::v2::Layout> aLayout, size_t number_of_points, acmacs::number_of_dimensions_t number_of_dimensions, size_t aIndent, const ae::chart::v2::DisconnectedPoints& disconnected);
 static std::string col_and_row_adjusts(const ae::chart::v2::Chart& aChart, std::shared_ptr<ae::chart::v2::Projection> aProjection, size_t aIndent, const ae::chart::v2::DisconnectedPoints& disconnected);
 static std::string reference_antigens(std::shared_ptr<ae::chart::v2::Antigens> aAntigens, const ae::chart::v2::DisconnectedPoints& disconnected);
 static std::string plot_spec(const ae::chart::v2::Chart& aChart, const ae::chart::v2::DisconnectedPoints& disconnected);
@@ -172,7 +172,7 @@ std::string starting_coordss(const ae::chart::v2::Chart& aChart, const ae::chart
 std::string unmoveable_coords(const ae::chart::v2::UnmovablePoints& unmovable)
 {
     if (!unmovable.empty()) {
-        return fmt::format("({})", acmacs::string::join(acmacs::string::join_space, unmovable.begin(), unmovable.end(), [](auto index) -> std::string { return acmacs::to_string(index); }));
+        return fmt::format("({})", fmt::join(unmovable, " "));
     }
     else
         return "NIL";
@@ -195,7 +195,7 @@ std::string batch_runs(const ae::chart::v2::Chart& aChart, const ae::chart::v2::
         result.append("((" + coordinates(layout, layout->number_of_points(), layout->number_of_dimensions(), 18, disconnected) + col_and_row_adjusts(aChart, projection, 18, disconnected) + ')');
         std::string stress_s;
         if (auto stress = projection->stress(); !std::isnan(stress) && stress >= 0)
-            stress_s = acmacs::to_string(stress);
+            stress_s = fmt::format("{}", stress);
         else
             stress_s = "0";
         result.append("\n                 " + stress_s + " MULTIPLE-END-CONDITIONS NIL)");
@@ -207,7 +207,7 @@ std::string batch_runs(const ae::chart::v2::Chart& aChart, const ae::chart::v2::
 
 // ----------------------------------------------------------------------
 
-std::string coordinates(std::shared_ptr<acmacs::Layout> aLayout, size_t number_of_points, acmacs::number_of_dimensions_t number_of_dimensions, size_t aIndent, const ae::chart::v2::DisconnectedPoints& disconnected)
+std::string coordinates(std::shared_ptr<ae::chart::v2::Layout> aLayout, size_t number_of_points, acmacs::number_of_dimensions_t number_of_dimensions, size_t aIndent, const ae::chart::v2::DisconnectedPoints& disconnected)
 {
     std::string result;
     for (size_t point_no = 0; point_no < number_of_points; ++point_no) {
@@ -295,12 +295,12 @@ std::string plot_spec(const ae::chart::v2::Chart& aChart, const ae::chart::v2::D
                 if (point_no < number_of_antigens) {
                     auto antigen = (*antigens)[point_no];
                     name = lispmds_antigen_name_encode(antigen->name(), antigen->reassortant(), antigen->passage(), antigen->annotations()) + "-AG";
-                    nm = acmacs::string::join(acmacs::string::join_space, antigen->name(), antigen->reassortant(), antigen->passage(), acmacs::string::join(acmacs::string::join_space, antigen->annotations()));
+                    nm = ae::string::join(" ", antigen->name(), antigen->reassortant(), antigen->passage(), ae::string::join(" ", antigen->annotations()));
                 }
                 else {
                     auto serum = (*sera)[point_no - number_of_antigens];
                     name = lispmds_serum_name_encode(serum->name(), serum->reassortant(), serum->annotations(), serum->serum_id()) + "-SR";
-                    nm = acmacs::string::join(acmacs::string::join_space, serum->name(), serum->reassortant(), acmacs::string::join(acmacs::string::join_space, serum->annotations()), serum->serum_id());
+                    nm = ae::string::join(" ", serum->name(), serum->reassortant(), ae::string::join(" ", serum->annotations()), serum->serum_id());
                 }
                 result.append('(' + name + " :NM \"" + nm + '"' + point_style(plot_spec->style(point_no)) + ')');
             }
