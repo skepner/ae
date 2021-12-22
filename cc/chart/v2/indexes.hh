@@ -11,6 +11,8 @@ namespace ae::chart::v2
 {
     using Indexes = std::vector<size_t>;
 
+    inline bool contains(const Indexes& indexes, size_t value) { return std::find(indexes.begin(), indexes.end(), value) != indexes.end(); }
+
     class SortedIndexes : public Indexes
     {
       public:

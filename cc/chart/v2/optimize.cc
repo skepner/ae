@@ -71,7 +71,7 @@ ae::chart::v2::optimization_status ae::chart::v2::optimize(ProjectionModify& pro
     bool initial_opt = true;
     for (auto num_dims: schedule) {
         if (!initial_opt) {
-            dimension_annealing(options.method, stress, projection.number_of_dimensions(), num_dims, layout->data(), layout->data() + layout->size());
+            do_dimension_annealing(options.method, stress, projection.number_of_dimensions(), num_dims, layout->data(), layout->data() + layout->size());
             layout->change_number_of_dimensions(num_dims);
             stress.change_number_of_dimensions(num_dims);
         }
@@ -156,7 +156,7 @@ ae::chart::v2::ErrorLines ae::chart::v2::error_lines(const Projection& projectio
     }
     for (auto td = table_distances.less_than().begin(), md = map_distances.less_than().begin(); td != table_distances.less_than().end(); ++td, ++md) {
         auto diff = td->distance - md->distance + 1;
-        diff *= std::sqrt(acmacs::sigmoid(diff * SigmoidMutiplier())); // see Derek's message Thu, 10 Mar 2016 16:32:20 +0000 (Re: acmacs error line error)
+        diff *= std::sqrt(sigmoid(diff * SigmoidMutiplier())); // see Derek's message Thu, 10 Mar 2016 16:32:20 +0000 (Re: acmacs error line error)
         result.emplace_back(td->point_1, td->point_2, diff);
     }
     return result;

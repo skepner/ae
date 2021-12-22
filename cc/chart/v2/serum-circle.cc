@@ -4,6 +4,7 @@
 #include "chart/v2/serum-circle.hh"
 #include "chart/v2/point-index-list.hh"
 #include "chart/v2/chart.hh"
+#include "chart/v2/index-iterator.hh"
 
 // ----------------------------------------------------------------------
 
@@ -232,7 +233,7 @@ void ae::chart::v2::detail::serum_circle_empirical(const SerumCircle& circle_dat
 
 // ----------------------------------------------------------------------
 
-ae::chart::v2::SerumCircle ae::chart::v2::serum_circle_empirical(const PointIndexList& antigens, Titer homologous_titer, size_t serum_no, const Layout& layout, double column_basis, const Titers& titers, double fold, acmacs::verbose verbose)
+ae::chart::v2::SerumCircle ae::chart::v2::serum_circle_empirical(const PointIndexList& antigens, Titer homologous_titer, size_t serum_no, const Layout& layout, double column_basis, const Titers& titers, double fold, ae::verbose verbose)
 {
     SerumCircle circle_data(antigens, serum_no, column_basis, homologous_titer, fold);
     if (circle_data.failure_reason() == serum_circle_failure_reason::not_calculated)

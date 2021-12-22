@@ -142,14 +142,14 @@ namespace ae::virus
         // std::string_view last_number() const; // E2/E3 -> 3, X? -> ?
         // std::string_view last_type() const; // MDCK3/SITA1 -> SIAT
 
-        // std::string_view passage_type() const
-        // {
-        //     using namespace std::string_view_literals;
-        //     if (is_egg())
-        //         return "egg"sv;
-        //     else
-        //         return "cell"sv;
-        // }
+        std::string_view passage_type() const
+        {
+            using namespace std::string_view_literals;
+            if (is_egg())
+                return "egg"sv;
+            else
+                return "cell"sv;
+        }
 
         // size_t find(std::string_view look_for) const { return get().find(look_for); }
         // bool search(const std::regex& re) const { return std::regex_search(get(), re); }
@@ -162,7 +162,7 @@ namespace ae::virus
 
 template <> struct fmt::formatter<ae::virus::Passage> : public fmt::formatter<std::string>
 {
-    template <typename FormatContext> auto format(const ae::virus::Passage& ts, FormatContext& ctx) { return fmt::format(static_cast<std::string>(ts), ctx); }
+    template <typename FormatContext> auto format(const ae::virus::Passage& ts, FormatContext& ctx) { return fmt::formatter<std::string>::format(static_cast<std::string>(ts), ctx); }
 };
 
 // ======================================================================

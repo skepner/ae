@@ -38,7 +38,7 @@ namespace acmacs::statistics
 
     template <typename ForwardIterator, typename Extractor> inline double varianceN(ForwardIterator first, ForwardIterator last, double mean, Extractor extractor)
     {
-        return std::accumulate(first, last, 0.0, [mean,extractor](double sum, const auto& value) { return sum + sqr(extractor(value) - mean); });
+        return std::accumulate(first, last, 0.0, [mean,extractor](double sum, const auto& value) { return sum + ae::draw::v1::sqr(extractor(value) - mean); });
     }
 
     template <typename ForwardIterator, typename Extractor> inline double varianceN(ForwardIterator first, ForwardIterator last, Extractor extractor)

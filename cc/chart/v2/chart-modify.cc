@@ -818,7 +818,7 @@ void AntigenModify::set_continent()
             continent(locdb.continent(ae::virus::name::location(name())));
         }
         catch (std::exception& err) {
-            AD_WARNING("cannot figure out continent for \"{}\": {}", *name(), err);
+            AD_WARNING("cannot figure out continent for \"{}\": {}", *name(), err.what());
         }
         catch (...) {
             AD_WARNING("cannot figure out continent for \"{}\": unknown exception", *name());

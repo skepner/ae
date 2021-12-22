@@ -348,7 +348,7 @@ void ae::chart::v2::Stress::set_coordinates_of_disconnected(double* first, [[may
 {
     // do not use number_of_dimensions_! after pca its value is wrong!
     for (auto p_no : parameters_.disconnected) {
-        for (auto dim : range_from_0_to(number_of_dimensions))
+        for (number_of_dimensions_t dim{0}; dim < number_of_dimensions; ++dim)
             *(first + p_no * static_cast<size_t>(number_of_dimensions) + static_cast<size_t>(dim)) = value;
     }
 

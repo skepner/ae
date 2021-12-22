@@ -182,7 +182,7 @@ ae::chart::v2::ProcrustesData ae::chart::v2::procrustes(const Projection& primar
     // translation
     auto m5 = multiply(y, transformation);
     multiply_add(m5, -1, x);
-    for (auto dim : acmacs::range(number_of_dimensions)) {
+    for (number_of_dimensions_t dim{0}; dim < number_of_dimensions; ++dim) {
         const auto t_i = std::accumulate(index_iterator<aint_t>(0), index_iterator(cint(common_without_disconnected.size())), 0.0,
                                          [&m5, dim = cint(dim)](auto sum, auto row) { return sum + m5(row, dim); });
         result.transformation.translation(dim) = t_i / static_cast<double>(common_without_disconnected.size());
@@ -375,7 +375,7 @@ ae::chart::v2::ProcrustesSummary ae::chart::v2::procrustes_summary(const Layout&
         }
 
         if (parameters.vaccine_antigen.has_value()) { // compute only if vaccine antigen is valid
-            for (const auto dim : acmacs::range(primary.number_of_dimensions()))
+            for (number_of_dimensions_t dim{0}; dim < primary.number_of_dimensions(); ++dim)
                 results.distance_vaccine_to_test_antigen += square(transformed_secondary(parameters.antigen_being_tested, dim) - transformed_secondary(*parameters.vaccine_antigen, dim));
             results.distance_vaccine_to_test_antigen = std::sqrt(results.distance_vaccine_to_test_antigen);
 

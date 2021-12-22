@@ -8,22 +8,22 @@
 
 template <typename AgSr> static std::string name_full_without_passage(const AgSr& ag_sr)
 {
-    return ae::string::join(" ", {ag_sr.name(), fmt::format("{: }", ag_sr.annotations()), ag_sr.reassortant()});
+    return ae::string::join(" ", ag_sr.name(), fmt::format("{: }", ag_sr.annotations()), ag_sr.reassortant());
 }
 
 inline static std::string name_full(const ae::chart::v2::Antigen& ag)
 {
-    return ae::string::join(" ", {name_full_without_passage(ag), ag.passage()});
+    return ae::string::join(" ", name_full_without_passage(ag), ag.passage());
 }
 
 inline static std::string name_full(const ae::chart::v2::Serum& sr)
 {
-    return ae::string::join(" ", {name_full_without_passage(sr), sr.serum_id()});
+    return ae::string::join(" ", name_full_without_passage(sr), sr.serum_id());
 }
 
 template <typename AgSr> static std::string name_full_passage(const AgSr& ag_sr)
 {
-    return ae::string::join(" ", {name_full_without_passage(ag_sr), ag_sr.passage()});
+    return ae::string::join(" ", name_full_without_passage(ag_sr), ag_sr.passage());
 }
 
 template <typename AgSr> static std::string location_abbreviated(const AgSr& ag_sr)
@@ -46,7 +46,7 @@ template <typename AgSr> static std::string year2(const AgSr& ag_sr)
 
 template <typename AgSr> static std::string name_abbreviated(const AgSr& ag_sr)
 {
-    return ae::string::join("-", {ae::string::join("/", {location_abbreviated(ag_sr), ae::virus::name::isolation(ag_sr.name()), year2(ag_sr)}), ag_sr.reassortant()});
+    return ae::string::join("-", ae::string::join("/", location_abbreviated(ag_sr), ae::virus::name::isolation(ag_sr.name()), year2(ag_sr)), ag_sr.reassortant());
 }
 
 template <typename AgSr> static std::string fields(const AgSr& ag_sr)
@@ -153,32 +153,32 @@ template <> struct fmt::formatter<sequence_aligned_t>
 #endif
 
 const std::tuple format_subst_ag_sr{
-    FKF("abbreviated_location_with_passage_type", fmt::format("{}", fmt::join({location_abbreviated(ag_sr), ag_sr.passage().passage_type()}, " "))), // mapi
-    FKF("abbreviated_name_with_passage_type", fmt::format("{}-{}", name_abbreviated(ag_sr), ag_sr.passage().passage_type())),                        // mapi
-    FKF("annotations", ag_sr.annotations()),                                                                                                         //
-    FKF("continent", ag_sr.location_data().continent),                                                                                               //
-    FKF("country", ag_sr.location_data().country),                                                                                                   //
-    FKF("fields", fields(ag_sr)),                                                                                                                    //
-    FKF("full_name", name_full(ag_sr)),                                                                                                              //
-    FKF("latitude", ag_sr.location_data().latitude),                                                                                                 //
-    FKF("lineage", ag_sr.lineage().to_string()),                                                                                                     //
-    FKF("location", ae::virus::name::location(ag_sr.name())),                                                                                        //
-    FKF("location_abbreviated", location_abbreviated(ag_sr)),                                                                                        //
-    FKF("longitude", ag_sr.location_data().longitude),                                                                                               //
-    FKF("name", ag_sr.name()),                                                                                                                       //
-    FKF("name_abbreviated", name_abbreviated(ag_sr)),                                                                                                //
-    FKF("name_full", name_full(ag_sr)),                                                                                                              //
-    FKF("name_full_passage", name_full_passage(ag_sr)),                                                                                              //
-    FKF("name_without_subtype", ae::virus::name::without_subtype(ag_sr.name())),                                                                     //
-    FKF("name_anntotations_reassortant", ae::string::join(" ", {ag_sr.name(), fmt::format("{: }", ag_sr.annotations()), ag_sr.reassortant()})),      //
-    FKF("passage", ag_sr.passage()),                                                                                                                 //
-    FKF("passage_type", ag_sr.passage().passage_type()),                                                                                             //
-    FKF("reassortant", ag_sr.reassortant()),                                                                                                         //
-    FKF("year", year4(ag_sr)),                                                                                                                       //
-    FKF("year2", year2(ag_sr)),                                                                                                                      //
-    FKF("year4", year4(ag_sr)),                                                                                                                      //
-    FKF("aa", sequence_aligned_t{ag_sr.sequence_aa()}),                                                                                              //
-    FKF("nuc", sequence_aligned_t{ag_sr.sequence_nuc()}),                                                                                            //
+    FKF("abbreviated_location_with_passage_type", ae::string::join(" ", location_abbreviated(ag_sr), ag_sr.passage().passage_type())),        // mapi
+    FKF("abbreviated_name_with_passage_type", fmt::format("{}-{}", name_abbreviated(ag_sr), ag_sr.passage().passage_type())),                 // mapi
+    FKF("annotations", ag_sr.annotations()),                                                                                                  //
+    FKF("continent", ag_sr.location_data().continent),                                                                                        //
+    FKF("country", ag_sr.location_data().country),                                                                                            //
+    FKF("fields", fields(ag_sr)),                                                                                                             //
+    FKF("full_name", name_full(ag_sr)),                                                                                                       //
+    FKF("latitude", ag_sr.location_data().latitude),                                                                                          //
+    FKF("lineage", ag_sr.lineage().to_string()),                                                                                              //
+    FKF("location", ae::virus::name::location(ag_sr.name())),                                                                                 //
+    FKF("location_abbreviated", location_abbreviated(ag_sr)),                                                                                 //
+    FKF("longitude", ag_sr.location_data().longitude),                                                                                        //
+    FKF("name", ag_sr.name()),                                                                                                                //
+    FKF("name_abbreviated", name_abbreviated(ag_sr)),                                                                                         //
+    FKF("name_full", name_full(ag_sr)),                                                                                                       //
+    FKF("name_full_passage", name_full_passage(ag_sr)),                                                                                       //
+    FKF("name_without_subtype", ae::virus::name::without_subtype(ag_sr.name())),                                                              //
+    FKF("name_anntotations_reassortant", ae::string::join(" ", ag_sr.name(), fmt::format("{: }", ag_sr.annotations()), ag_sr.reassortant())), //
+    FKF("passage", ag_sr.passage()),                                                                                                          //
+    FKF("passage_type", ag_sr.passage().passage_type()),                                                                                      //
+    FKF("reassortant", ag_sr.reassortant()),                                                                                                  //
+    FKF("year", year4(ag_sr)),                                                                                                                //
+    FKF("year2", year2(ag_sr)),                                                                                                               //
+    FKF("year4", year4(ag_sr)),                                                                                                               //
+    FKF("aa", sequence_aligned_t{ag_sr.sequence_aa()}),                                                                                       //
+    FKF("nuc", sequence_aligned_t{ag_sr.sequence_nuc()}),                                                                                     //
 };
 
 const std::tuple format_subst_antigen{
@@ -194,17 +194,17 @@ const std::tuple format_subst_antigen{
 };
 
 const std::tuple format_subst_serum{
-    FKF("ag_sr", "SR"),                                                                              //
-    FKF("designation", ae::string::join(" ", {name_full_without_passage(ag_sr), ag_sr.serum_id()})), //
-    FKF("designation_without_serum_id", name_full_without_passage(ag_sr)),                           //
-    FKF("serum_id", ag_sr.serum_id()),                                                               //
-    FKF("serum_species", ag_sr.serum_species()),                                                     //
-    FKF("serum_species", ag_sr.serum_species()),                                                     //
-    FKF("species", ag_sr.serum_species()),                                                           //
-    FKF("date_in_brackets", ""),                                                                     //
-    FKF("clades", ""),                                                                               //
-    FKF("lab_ids", ""),                                                                              //
-    FKF("ref", ""),                                                                                  //
+    FKF("ag_sr", "SR"),                                                                            //
+    FKF("designation", ae::string::join(" ", name_full_without_passage(ag_sr), ag_sr.serum_id())), //
+    FKF("designation_without_serum_id", name_full_without_passage(ag_sr)),                         //
+    FKF("serum_id", ag_sr.serum_id()),                                                             //
+    FKF("serum_species", ag_sr.serum_species()),                                                   //
+    FKF("serum_species", ag_sr.serum_species()),                                                   //
+    FKF("species", ag_sr.serum_species()),                                                         //
+    FKF("date_in_brackets", ""),                                                                   //
+    FKF("clades", ""),                                                                             //
+    FKF("lab_ids", ""),                                                                            //
+    FKF("ref", ""),                                                                                //
 };
 
 #pragma GCC diagnostic pop

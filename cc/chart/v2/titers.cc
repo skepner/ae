@@ -6,6 +6,7 @@
 #include "ad/enumerate.hh"
 #include "chart/v2/titers.hh"
 #include "chart/v2/chart.hh"
+#include "ext/from_chars.hh"
 
 // ----------------------------------------------------------------------
 
@@ -134,13 +135,13 @@ size_t ae::chart::v2::Titer::value_for_sorting() const
       case DontCare:
           return 0;
       case Regular:
-          return std::stoul(*this);
+          return from_chars<size_t>(*this);
       case LessThan:
-          return std::stoul(get().substr(1)) - 1;
+          return from_chars<size_t>(get().substr(1)) - 1;
       case MoreThan:
-          return std::stoul(get().substr(1)) + 1;
+          return from_chars<size_t>(get().substr(1)) + 1;
       case Dodgy:
-          return std::stoul(get().substr(1));
+          return from_chars<size_t>(get().substr(1));
     }
     return 0;
 
@@ -155,11 +156,11 @@ size_t ae::chart::v2::Titer::value() const
       case DontCare:
           return 0;
       case Regular:
-          return std::stoul(get());
+          return from_chars<size_t>(get());
       case LessThan:
       case MoreThan:
       case Dodgy:
-          return std::stoul(get().substr(1));
+          return from_chars<size_t>(get().substr(1));
     }
     return 0;
 
@@ -174,13 +175,13 @@ size_t ae::chart::v2::Titer::value_with_thresholded() const
       case DontCare:
           return 0;
       case Regular:
-          return std::stoul(*this);
+          return from_chars<size_t>(*this);
       case LessThan:
-          return std::stoul(get().substr(1)) / 2;
+          return from_chars<size_t>(get().substr(1)) / 2;
       case MoreThan:
-          return std::stoul(get().substr(1)) * 2;
+          return from_chars<size_t>(get().substr(1)) * 2;
       case Dodgy:
-          return std::stoul(get().substr(1));
+          return from_chars<size_t>(get().substr(1));
     }
     return 0;
 

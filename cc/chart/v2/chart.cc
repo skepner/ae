@@ -548,13 +548,13 @@ ae::chart::v2::Sera::homologous_canditates_t ae::chart::v2::Sera::find_homologou
                 auto antigen = aAntigens[ag_no];
                 if (dbg == debug::yes)
                     fmt::print(stderr, "DEBUG: SR {} {} R:{} A:{} P:{} -- AG {} {} R:{} A:{} P:{} -- A_match:{} R_match: {} P_match:{}\n",
-                               sr_no, *serum->name(), serum->annotations(), *serum->reassortant(), *serum->passage(),
-                               ag_no, *antigen->name(), antigen->annotations(), *antigen->reassortant(), *antigen->passage(),
+                               sr_no, *serum->name(), serum->annotations(), *serum->reassortant(), serum->passage(),
+                               ag_no, *antigen->name(), antigen->annotations(), *antigen->reassortant(), antigen->passage(),
                                Annotations::match_antigen_serum(antigen->annotations(), serum->annotations()), antigen->reassortant() == serum->reassortant(),
                                match_passage(antigen->passage(), serum->passage(), *serum));
                 if (Annotations::match_antigen_serum(antigen->annotations(), serum->annotations()) && antigen->reassortant() == serum->reassortant() &&
                     match_passage(antigen->passage(), serum->passage(), *serum)) {
-                    result[sr_no].insert(ag_no);
+                    result[sr_no].push_back(ag_no);
                 }
             }
         }
@@ -586,7 +586,7 @@ void ae::chart::v2::Sera::set_homologous(find_homologous options, const Antigens
 
     if (options == find_homologous::all) {
         for (auto [sr_no, serum] : acmacs::enumerate(*this))
-            serum->set_homologous(*homologous_canditates[sr_no], dbg);
+            serum->set_homologous(homologous_canditates[sr_no], dbg);
     }
     else {
         std::vector<std::optional<size_t>> homologous(size()); // for each serum
@@ -661,9 +661,9 @@ ae::chart::v2::TableDate ae::chart::v2::table_date_from_sources(std::vector<std:
     std::sort(std::begin(sources), std::end(sources));
     std::string front{sources.front()}, back{sources.back()};
     const std::string_view tables_separator{"+"};
-    if (const auto fparts = acmacs::string::split(front, tables_separator, acmacs::string::Split::RemoveEmpty); fparts.size() > 1)
+    if (const auto fparts = ae::string::split(front, tables_separator, ae::string::split_emtpy::remove); fparts.size() > 1)
         front = fparts.front();
-    if (const auto bparts = acmacs::string::split(back, tables_separator, acmacs::string::Split::RemoveEmpty); bparts.size() > 1)
+    if (const auto bparts = ae::string::split(back, tables_separator, ae::string::split_emtpy::remove); bparts.size() > 1)
         back = bparts.back();
     return TableDate{fmt::format("{}-{}", front, back)};
 
