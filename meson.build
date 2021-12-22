@@ -15,6 +15,7 @@ if meson.get_compiler('cpp').get_id() == 'clang'
   add_project_arguments('-Weverything',
                         '-Wno-weak-vtables', '-Wno-padded', '-Wno-c++98-compat', '-Wno-c++98-c++11-compat', '-Wno-c++98-compat-pedantic',
                         '-Wno-ambiguous-reversed-operator', # ISO C++20 considers use of overloaded operator '<=' to be ambiguous despite there being a unique best viable function
+                        '-Wno-zero-as-null-pointer-constant', # clang13 somtimes with operator<=>
                         language : 'cpp')
 endif
 
