@@ -13,7 +13,6 @@
 #include "ad/statistics.hh"
 #include "locdb/v3/locdb.hh"
 #include "chart/v2/chart-modify.hh"
-#include "chart/v2/log.hh"
 
 using namespace std::string_literals;
 using namespace ae::chart::v2;
@@ -267,9 +266,9 @@ PlotSpecModify& ChartModify::plot_spec_modify()
 void ChartModify::report_disconnected_unmovable(const DisconnectedPoints& disconnected, const UnmovablePoints& unmovable) const
 {
     if (!disconnected.empty())
-        AD_LOG(acmacs::log::relax, "(ag:{} sr:{}) Disconnected: {}", number_of_antigens(), number_of_sera(), disconnected);
+        AD_LOG(ae::log::relax, "(ag:{} sr:{}) Disconnected: {}", number_of_antigens(), number_of_sera(), disconnected);
     if (!unmovable.empty())
-        AD_LOG(acmacs::log::relax, "(ag:{} sr:{}) Unmovable: {}", number_of_antigens(), number_of_sera(), unmovable);
+        AD_LOG(ae::log::relax, "(ag:{} sr:{}) Unmovable: {}", number_of_antigens(), number_of_sera(), unmovable);
 
 } // ChartModify::report_disconnected_unmovable
 
@@ -300,7 +299,7 @@ std::pair<optimization_status, ProjectionModifyP> ChartModify::relax(MinimumColu
     projection->randomize_layout(rnd);
     auto status = optimize(options.method, stress, layout->data(), layout->data() + layout->size(), optimization_precision::rough);
     if (start_num_dim > number_of_dimensions) {
-        dimension_annealing(options.method, stress, projection->number_of_dimensions(), number_of_dimensions, layout->data(), layout->data() + layout->size());
+        do_dimension_annealing(options.method, stress, projection->number_of_dimensions(), number_of_dimensions, layout->data(), layout->data() + layout->size());
         layout->change_number_of_dimensions(number_of_dimensions);
         stress.change_number_of_dimensions(number_of_dimensions);
         const auto status2 = optimize(options.method, stress, layout->data(), layout->data() + layout->size(), options.precision);
@@ -355,7 +354,7 @@ void ChartModify::relax(number_of_optimizations_t number_of_optimizations, Minim
         const auto status1 =
             optimize(options.method, stress, layout->data(), layout->data() + layout->size(), start_num_dim > number_of_dimensions ? optimization_precision::rough : options.precision);
         if (start_num_dim > number_of_dimensions) {
-            dimension_annealing(options.method, stress, projection->number_of_dimensions(), number_of_dimensions, layout->data(), layout->data() + layout->size());
+            do_dimension_annealing(options.method, stress, projection->number_of_dimensions(), number_of_dimensions, layout->data(), layout->data() + layout->size());
             layout->change_number_of_dimensions(number_of_dimensions);
             stress.change_number_of_dimensions(number_of_dimensions);
             const auto status2 = optimize(options.method, stress, layout->data(), layout->data() + layout->size(), options.precision);
@@ -367,7 +366,7 @@ void ChartModify::relax(number_of_optimizations_t number_of_optimizations, Minim
                 projection->stress_ = status1.final_stress;
         }
         projection->transformation_reset();
-        AD_LOG(acmacs::log::report_stresses, "{:3d} {:.4f}", p_no, *projection->stress_);
+        AD_LOG(ae::log::report_stresses, "{:3d} {:.4f}", p_no, *projection->stress_);
     }
 
 } // ChartModify::relax
@@ -408,7 +407,7 @@ void ChartModify::relax_projections(const optimization_options& options, size_t 
         projection->transformation_reset();
         // if (p_no < (first_projection_no + 5))
         // AD_DEBUG("stress {}: {}", p_no, *projection->stress_);
-        AD_LOG(acmacs::log::report_stresses, "{:3d} {:.4f}", p_no, *projection->stress_);
+        AD_LOG(ae::log::report_stresses, "{:3d} {:.4f}", p_no, *projection->stress_);
     }
 
 } // ChartModify::relax_all_projections
@@ -724,14 +723,14 @@ template <typename Field, typename Func> static inline Field info_modify_make_fi
     std::set<std::string> composition;
     std::transform(index_iterator(0UL), index_iterator(info.number_of_sources()), std::inserter(composition, composition.begin()),
                    [&info,&func](size_t index) { return static_cast<std::string>(std::invoke(func, *info.source(index), ae::chart::v2::Info::Compute::No)); });
-    return Field{acmacs::string::join(acmacs::string::join_sep_t{"+"}, composition)};
+    return Field{ae::string::join("+", composition)};
 }
 
 Virus       InfoModify::virus(Compute aCompute) const { return ::info_modify_make_field(aCompute, *this, virus_, &Info::virus); }
-acmacs::virus::type_subtype_t   InfoModify::virus_type(Compute aCompute) const { return ::info_modify_make_field(aCompute, *this, virus_type_, &Info::virus_type); }
+ae::virus::type_subtype_t   InfoModify::virus_type(Compute aCompute) const { return ::info_modify_make_field(aCompute, *this, virus_type_, &Info::virus_type); }
 std::string InfoModify::subset(Compute aCompute) const { return ::info_modify_make_field(aCompute, *this, subset_, &Info::subset); }
 Assay       InfoModify::assay(Compute aCompute) const { return ::info_modify_make_field(aCompute, *this, assay_, &Info::assay); }
-acmacs::Lab InfoModify::lab(Compute aCompute, FixLab fix) const { return ::info_modify_make_field(aCompute, *this, lab_, [fix](const auto& inf, auto compute) { return inf.lab(compute, fix); }); }
+Lab         InfoModify::lab(Compute aCompute, FixLab fix) const { return ::info_modify_make_field(aCompute, *this, lab_, [fix](const auto& inf, auto compute) { return inf.lab(compute, fix); }); }
 RbcSpecies  InfoModify::rbc_species(Compute aCompute) const { return ::info_modify_make_field(aCompute, *this, rbc_species_, &Info::rbc_species); }
 
 // ----------------------------------------------------------------------
@@ -814,16 +813,15 @@ void AntigenModify::update_with(const Antigen& main)
 void AntigenModify::set_continent()
 {
     if (continent().empty()) {
-        if (const auto& locdb = acmacs::locdb::v3::get(); locdb) {
-            try {
-                continent(locdb.continent(ae::virus::name::location(name())));
-            }
-            catch (std::exception& err) {
-                AD_WARNING("cannot figure out continent for \"{}\": {}", *name(), err);
-            }
-            catch (...) {
-                AD_WARNING("cannot figure out continent for \"{}\": unknown exception", *name());
-            }
+        const auto& locdb = ae::locdb::v3::get();
+        try {
+            continent(locdb.continent(ae::virus::name::location(name())));
+        }
+        catch (std::exception& err) {
+            AD_WARNING("cannot figure out continent for \"{}\": {}", *name(), err);
+        }
+        catch (...) {
+            AD_WARNING("cannot figure out continent for \"{}\": unknown exception", *name());
         }
     }
 
@@ -1551,7 +1549,7 @@ void TitersModify::set_proportion_of_titers_to_dont_care(double proportion)
     modifiable_check();
 
     if (proportion <= 0.0 || proportion > 0.5)
-        throw std::invalid_argument(acmacs::string::concat("invalid proportion for set_proportion_of_titers_to_dont_care: ", proportion));
+        throw std::invalid_argument(fmt::format("invalid proportion for set_proportion_of_titers_to_dont_care: {}", proportion));
 
     // collect all non-dont-care titers (row, col), randomly shuffle them, choose first proportion*size entries and set the to don't care
 
@@ -1585,7 +1583,7 @@ void TitersModify::set_proportion_of_titers_to_dont_care(double proportion)
 
 void TitersModify::remove_antigens(const ReverseSortedIndexes& indexes)
 {
-    auto do_remove_antigens_sparse = [&indexes](auto& titers) { acmacs::remove(indexes, titers); };
+    auto do_remove_antigens_sparse = [&indexes](auto& titers) { remove(indexes, titers); };
 
     auto do_remove_antigens_dense = [&indexes, this](auto& titers) {
         for (auto index : indexes) {
@@ -1837,7 +1835,7 @@ PointIndexList ProjectionModify::non_nan_points() const // for relax_incremental
 
 // ----------------------------------------------------------------------
 
-static inline void remove_from(PointIndexList& list, const acmacs::ReverseSortedIndexes& indexes, size_t base)
+static inline void remove_from(PointIndexList& list, const ReverseSortedIndexes& indexes, size_t base)
 {
     // if (!list.empty() && !indexes.empty())
     //     fmt::print(stderr, "DEBUG: remove_from BEGIN {} {} {}\n", list, indexes, base);
@@ -2055,14 +2053,14 @@ void ProjectionModifyNew::connect(const PointIndexList& to_connect)
 // ----------------------------------------------------------------------
 
 PlotSpecModify::PlotSpecModify(size_t number_of_antigens, size_t number_of_sera)
-    : main_{nullptr}, number_of_antigens_(number_of_antigens), modified_{true}, styles_(number_of_antigens + number_of_sera, PointStyle{})
+    : main_{nullptr}, number_of_antigens_(number_of_antigens), modified_{true}, styles_(number_of_antigens + number_of_sera, acmacs::PointStyle{})
 {
     // AD_DEBUG("PlotSpecModify number_of_antigens:{}", number_of_antigens);
     for (size_t point_no : range_from_0_to(number_of_antigens)) {
         styles_[point_no].fill(GREEN);
     }
     for (size_t point_no : range_from_to(number_of_antigens, number_of_antigens + number_of_sera)) {
-        styles_[point_no].shape(PointShape::Box);
+        styles_[point_no].shape(acmacs::PointShape::Box);
     }
     drawing_order_.fill_if_empty(number_of_antigens + number_of_sera);
 
@@ -2073,7 +2071,7 @@ PlotSpecModify::PlotSpecModify(size_t number_of_antigens, size_t number_of_sera)
 void PlotSpecModify::remove_antigens(const ReverseSortedIndexes& indexes)
 {
     modify();
-    acmacs::remove(indexes, styles_);
+    remove(indexes, styles_);
     drawing_order_.remove_points(indexes);
     number_of_antigens_ -= indexes.size();
 
@@ -2084,7 +2082,7 @@ void PlotSpecModify::remove_antigens(const ReverseSortedIndexes& indexes)
 void PlotSpecModify::remove_sera(const ReverseSortedIndexes& indexes)
 {
     modify();
-    acmacs::remove(indexes, styles_, static_cast<ReverseSortedIndexes::difference_type>(number_of_antigens_));
+    remove(indexes, styles_, static_cast<ReverseSortedIndexes::difference_type>(number_of_antigens_));
     drawing_order_.remove_points(indexes, number_of_antigens_);
 
 } // PlotSpecModify::remove_sera
@@ -2094,7 +2092,7 @@ void PlotSpecModify::remove_sera(const ReverseSortedIndexes& indexes)
 void PlotSpecModify::insert_antigen(size_t before)
 {
     modify();
-    styles_.insert(styles_.begin() + static_cast<decltype(styles_)::difference_type>(before), PointStyle{});
+    styles_.insert(styles_.begin() + static_cast<decltype(styles_)::difference_type>(before), acmacs::PointStyle{});
     drawing_order_.insert(before);
     ++number_of_antigens_;
 
@@ -2105,7 +2103,7 @@ void PlotSpecModify::insert_antigen(size_t before)
 void PlotSpecModify::insert_serum(size_t before)
 {
     modify();
-    styles_.insert(styles_.begin() + static_cast<decltype(styles_)::difference_type>(before + number_of_antigens_), PointStyle{});
+    styles_.insert(styles_.begin() + static_cast<decltype(styles_)::difference_type>(before + number_of_antigens_), acmacs::PointStyle{});
     drawing_order_.insert(before + number_of_antigens_);
 
 } // PlotSpecModify::insert_serum

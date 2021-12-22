@@ -4,7 +4,7 @@
 
 // ----------------------------------------------------------------------
 
-namespace acmacs::chart::v2
+namespace ae::chart::v2
 {
     template <typename Index> class index_iterator
     {
@@ -37,6 +37,6 @@ namespace acmacs::chart::v2
     index_iterator(int)->index_iterator<int>;
     index_iterator(long)->index_iterator<long>;
 
-} // namespace acmacs::chart::v2
+} // namespace ae::chart::v2
 
 // ----------------------------------------------------------------------

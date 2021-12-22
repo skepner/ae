@@ -88,7 +88,7 @@ constexpr inline double non_zero(double value) { return float_zero(value) ? 1e-5
 
 // ----------------------------------------------------------------------
 
-static inline double map_distance(const double* first, size_t point_1, size_t point_2, number_of_dimensions_t number_of_dimensions)
+static inline double map_distance(const double* first, size_t point_1, size_t point_2, ae::chart::v2::number_of_dimensions_t number_of_dimensions)
 {
     using diff_t = typename std::vector<double>::difference_type;
     return ae::chart::v2::vector_math::distance(
@@ -100,7 +100,7 @@ static inline double map_distance(const double* first, size_t point_1, size_t po
 
 // ----------------------------------------------------------------------
 
-static inline double map_distance(const double* first, const typename ae::chart::v2::TableDistances::Entry& entry, number_of_dimensions_t number_of_dimensions)
+static inline double map_distance(const double* first, const typename ae::chart::v2::TableDistances::Entry& entry, ae::chart::v2::number_of_dimensions_t number_of_dimensions)
 {
     return map_distance(first, entry.point_1, entry.point_2, number_of_dimensions);
 

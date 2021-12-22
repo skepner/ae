@@ -834,8 +834,8 @@ namespace ae::chart::v2
         bool empty() const override { return modified() ? false : main_->empty(); }
         Color error_line_positive_color() const override { return main_ ? main_->error_line_positive_color() : BLUE; }
         Color error_line_negative_color() const override { return main_ ? main_->error_line_negative_color() : RED; }
-        PointStyle style(size_t aPointNo) const override { return modified() ? style_modified(aPointNo) : main_->style(aPointNo); }
-        std::vector<PointStyle> all_styles() const override { return modified() ? styles_ : main_->all_styles(); }
+        acmacs::PointStyle style(size_t aPointNo) const override { return modified() ? style_modified(aPointNo) : main_->style(aPointNo); }
+        std::vector<acmacs::PointStyle> all_styles() const override { return modified() ? styles_ : main_->all_styles(); }
         size_t number_of_points() const override { return modified() ? styles_.size() : main_->number_of_points(); }
 
         DrawingOrder drawing_order() const override

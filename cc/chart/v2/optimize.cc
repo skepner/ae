@@ -165,7 +165,7 @@ ae::chart::v2::ErrorLines ae::chart::v2::error_lines(const Projection& projectio
 
 // ----------------------------------------------------------------------
 
-ae::chart::v2::DimensionAnnelingStatus ae::chart::v2::dimension_annealing(optimization_method optimization_method, const Stress& stress, number_of_dimensions_t source_number_of_dimensions,
+ae::chart::v2::DimensionAnnelingStatus ae::chart::v2::do_dimension_annealing(optimization_method optimization_method, const Stress& stress, number_of_dimensions_t source_number_of_dimensions,
                                                                           number_of_dimensions_t target_number_of_dimensions, double* arg_first, double* arg_last)
 {
     DimensionAnnelingStatus status;

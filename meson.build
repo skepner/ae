@@ -49,6 +49,8 @@ bzip2 = meson.get_compiler('cpp').find_library('bz2', required : false)
 
 alglib = dependency('alglib')
 
+omp = dependency('openmp')
+
 # websocketpp
 # asio
 # apache module
@@ -157,7 +159,7 @@ ae_lib = python3.extension_module(
   sources : sources_py + sources_virus + sources_sequences + sources_tree + sources_utlis +
             sources_locdb_v3 + sources_chart_v2 + sources_ad,
   include_directories : include_directories('./cc'),
-  dependencies : [dependency('python3'), pybind11, fmt, simdjson, range_v3, bzip2, zlib, xz, lexy, xxhash, alglib],
+  dependencies : [dependency('python3'), pybind11, fmt, simdjson, range_v3, bzip2, zlib, xz, lexy, xxhash, alglib, omp],
   install : true)
 
 # https://gabmus.org/posts/python-unittest-meson/
