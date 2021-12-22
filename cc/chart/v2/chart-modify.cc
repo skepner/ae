@@ -1721,7 +1721,7 @@ std::shared_ptr<ProjectionModifyNew> ProjectionModify::clone(ChartModify& chart)
 
 void ProjectionModify::clone_from(const Projection& aSource)
 {
-    layout_ = std::make_shared<acmacs::Layout>(*aSource.layout());
+    layout_ = std::make_shared<Layout>(*aSource.layout());
     transformation_ = aSource.transformation();
     transformed_layout_.reset();
     set_forced_column_bases(aSource.forced_column_bases());
@@ -1928,7 +1928,7 @@ void ProjectionModify::set_forced_column_basis(size_t serum_no, double column_ba
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<acmacs::Layout> ProjectionModify::randomize_layout(ProjectionModify::randomizer rnd, double diameter_multiplier, LayoutRandomizer::seed_t seed)
+std::shared_ptr<Layout> ProjectionModify::randomize_layout(ProjectionModify::randomizer rnd, double diameter_multiplier, LayoutRandomizer::seed_t seed)
 {
     AD_DEBUG("randomize_layout");
     std::shared_ptr<LayoutRandomizer> rnd_v;
@@ -1952,7 +1952,7 @@ std::shared_ptr<acmacs::Layout> ProjectionModify::randomize_layout(ProjectionMod
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<acmacs::Layout> ProjectionModify::randomize_layout(std::shared_ptr<LayoutRandomizer> randomizer)
+std::shared_ptr<Layout> ProjectionModify::randomize_layout(std::shared_ptr<LayoutRandomizer> randomizer)
 {
     modify();
     auto layout = layout_modified();
@@ -1968,7 +1968,7 @@ std::shared_ptr<acmacs::Layout> ProjectionModify::randomize_layout(std::shared_p
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<acmacs::Layout> ProjectionModify::randomize_layout(const PointIndexList& to_randomize, std::shared_ptr<LayoutRandomizer> randomizer)
+std::shared_ptr<Layout> ProjectionModify::randomize_layout(const PointIndexList& to_randomize, std::shared_ptr<LayoutRandomizer> randomizer)
 {
     modify();
     auto layout = layout_modified();
@@ -1981,11 +1981,11 @@ std::shared_ptr<acmacs::Layout> ProjectionModify::randomize_layout(const PointIn
 
 // ----------------------------------------------------------------------
 
-void ProjectionModify::set_layout(const acmacs::Layout& layout, bool allow_size_change)
+void ProjectionModify::set_layout(const Layout& layout, bool allow_size_change)
 {
     auto target_layout = layout_modified();
     if (!allow_size_change && layout.size() != target_layout->size())
-        throw invalid_data("ProjectionModify::set_layout(const acmacs::Layout&): wrong layout size");
+        throw invalid_data("ProjectionModify::set_layout(const Layout&): wrong layout size");
     *target_layout = layout;
 
 } // ProjectionModify::set_layout

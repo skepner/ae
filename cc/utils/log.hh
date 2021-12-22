@@ -41,7 +41,7 @@ namespace ae
             std::string key;
         };
 
-        extern const log_key_t all, timer, settings, vaccines, name_parsing, passage_parsing;
+        extern const log_key_t all, timer, settings, vaccines, name_parsing, passage_parsing, relax, report_stresses, common, distinct;
 
         namespace detail
         {

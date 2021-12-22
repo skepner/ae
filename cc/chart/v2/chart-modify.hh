@@ -7,6 +7,7 @@
 #include "chart/v2/chart.hh"
 #include "chart/v2/procrustes.hh"
 #include "chart/v2/randomizer.hh"
+#include "chart/v2/index-iterator.hh"
 
 // ----------------------------------------------------------------------
 
@@ -164,7 +165,7 @@ namespace ae::chart::v2
         }
         void name_append(std::string_view value)
         {
-            name_ = acmacs::string::join(acmacs::string::join_space, name_, value);
+            name_ = ae::string::join(" ", name_, value);
             computed_name_ = name_;
         }
         void virus(Virus value) { virus_ = value; }
@@ -325,7 +326,7 @@ namespace ae::chart::v2
         {
             for (auto index : indexes) {
                 if (index >= data_.size())
-                    throw invalid_data{"invalid index to remove: " + to_string(index) + ", valid values in [0.." + to_string(data_.size()) + ')'};
+                    throw invalid_data{fmt::format("invalid index to remove: {}, valid values in [0..{})", index,  data_.size())};
                 data_.erase(data_.begin() + static_cast<Indexes::difference_type>(index));
             }
         }
@@ -333,7 +334,7 @@ namespace ae::chart::v2
         std::shared_ptr<Modify> insert(size_t before)
         {
             if (before > data_.size())
-                throw invalid_data{"invalid index to insert before: " + to_string(before) + ", valid values in [0.." + to_string(data_.size()) + ']'};
+                throw invalid_data{fmt::format("invalid index to insert before: {}, valid values in [0..{}]", before, data_.size())};
             return *data_.emplace(data_.begin() + static_cast<Indexes::difference_type>(before), std::make_shared<Modify>());
         }
 
@@ -496,7 +497,7 @@ namespace ae::chart::v2
         explicit ProjectionModify(const ProjectionModify& aSource, const Chart& chart) : Projection(chart)
         {
             if (aSource.modified()) {
-                layout_ = std::make_shared<acmacs::Layout>(*aSource.layout_modified());
+                layout_ = std::make_shared<Layout>(*aSource.layout_modified());
                 transformation_ = aSource.transformation_modified();
             }
         }
@@ -526,7 +527,7 @@ namespace ae::chart::v2
         }
         void flip_east_west() { flip(0, 1); }
         void flip_north_south() { flip(1, 0); }
-        void transformation(const Transformation& transformation)
+        void transformation(const ae::draw::v1::Transformation& transformation)
         {
             modify();
             transformation_ = transformation;
@@ -548,16 +549,16 @@ namespace ae::chart::v2
         }
         void set_forced_column_basis(size_t serum_no, double column_basis);
 
-        std::shared_ptr<acmacs::Layout> layout_modified()
+        std::shared_ptr<Layout> layout_modified()
         {
             modify();
             return layout_;
         }
-        std::shared_ptr<acmacs::Layout> layout_modified() const { return layout_; }
-        std::shared_ptr<acmacs::Layout> randomize_layout(std::shared_ptr<LayoutRandomizer> randomizer);
-        std::shared_ptr<acmacs::Layout> randomize_layout(randomizer rnd, double diameter_multiplier, LayoutRandomizer::seed_t seed = std::nullopt);
-        std::shared_ptr<acmacs::Layout> randomize_layout(const PointIndexList& to_randomize, std::shared_ptr<LayoutRandomizer> randomizer); // randomize just some point coordinates
-        virtual void set_layout(const acmacs::Layout& layout, bool allow_size_change = false);
+        std::shared_ptr<Layout> layout_modified() const { return layout_; }
+        std::shared_ptr<Layout> randomize_layout(std::shared_ptr<LayoutRandomizer> randomizer);
+        std::shared_ptr<Layout> randomize_layout(randomizer rnd, double diameter_multiplier, LayoutRandomizer::seed_t seed = std::nullopt);
+        std::shared_ptr<Layout> randomize_layout(const PointIndexList& to_randomize, std::shared_ptr<LayoutRandomizer> randomizer); // randomize just some point coordinates
+        virtual void set_layout(const Layout& layout, bool allow_size_change = false);
         virtual void set_stress(double stress) { stress_ = stress; }
         virtual void comment(std::string comment)
         {
@@ -623,11 +624,11 @@ namespace ae::chart::v2
         }
         size_t number_of_points_modified() const { return layout_->number_of_points(); }
         number_of_dimensions_t number_of_dimensions_modified() const { return layout_->number_of_dimensions(); }
-        const Transformation& transformation_modified() const { return transformation_; }
+        const ae::draw::v1::Transformation& transformation_modified() const { return transformation_; }
         std::shared_ptr<ColumnBasesModify> forced_column_bases_modified() const { return forced_column_bases_; }
         void new_layout(size_t number_of_points, number_of_dimensions_t number_of_dimensions)
         {
-            layout_ = std::make_shared<acmacs::Layout>(number_of_points, number_of_dimensions);
+            layout_ = std::make_shared<Layout>(number_of_points, number_of_dimensions);
             transformation_.reset(number_of_dimensions);
             transformed_layout_.reset();
         }
@@ -639,8 +640,8 @@ namespace ae::chart::v2
         constexpr UnmovableInTheLastDimensionPoints& get_unmovable_in_the_last_dimension() { return unmovable_in_the_last_dimension_; }
 
       private:
-        std::shared_ptr<acmacs::Layout> layout_;
-        Transformation transformation_;
+        std::shared_ptr<Layout> layout_;
+        ae::draw::v1::Transformation transformation_;
         mutable std::shared_ptr<Layout> transformed_layout_;
         mutable std::optional<double> stress_;
         std::shared_ptr<ColumnBasesModify> forced_column_bases_;
@@ -676,7 +677,7 @@ namespace ae::chart::v2
         number_of_dimensions_t number_of_dimensions() const override { return modified() ? number_of_dimensions_modified() : main_->number_of_dimensions(); }
         MinimumColumnBasis minimum_column_basis() const override { return main_->minimum_column_basis(); }
         ColumnBasesP forced_column_bases() const override { return modified() ? forced_column_bases_modified() : main_->forced_column_bases(); }
-        draw::v1::Transformation transformation() const override { return modified() ? transformation_modified() : main_->transformation(); }
+        ae::draw::v1::Transformation transformation() const override { return modified() ? transformation_modified() : main_->transformation(); }
         enum dodgy_titer_is_regular dodgy_titer_is_regular() const override { return main_->dodgy_titer_is_regular(); }
         double stress_diff_to_stop() const override { return main_->stress_diff_to_stop(); }
         UnmovablePoints unmovable() const override { return modified() ? get_unmovable() : main_->unmovable(); }
@@ -734,7 +735,7 @@ namespace ae::chart::v2
         MinimumColumnBasis minimum_column_basis() const override { return minimum_column_basis_; }
         ColumnBasesP forced_column_bases() const override { return forced_column_bases_modified(); }
         using ProjectionModify::transformation;
-        draw::v1::Transformation transformation() const override { return transformation_modified(); }
+        ae::draw::v1::Transformation transformation() const override { return transformation_modified(); }
         enum dodgy_titer_is_regular dodgy_titer_is_regular() const override { return dodgy_titer_is_regular_; }
         double stress_diff_to_stop() const override { return stress_diff_to_stop_; }
         UnmovablePoints unmovable() const override { return get_unmovable(); }
@@ -890,7 +891,7 @@ namespace ae::chart::v2
             validate_point_no(point_no);
             styles_[point_no].shown(shown);
         }
-        void size(size_t point_no, Pixels size)
+        void size(size_t point_no, ae::draw::v1::Pixels size)
         {
             modify();
             validate_point_no(point_no);
@@ -907,7 +908,7 @@ namespace ae::chart::v2
             modify();
             validate_point_no(point_no);
             validate_opacity(opacity);
-            styles_[point_no].fill(color::Modifier{color::Modifier::transparency_set{1.0 - opacity}});
+            styles_[point_no].fill(acmacs::color::Modifier{acmacs::color::Modifier::transparency_set{1.0 - opacity}});
         }
         void outline(size_t point_no, Color outline)
         {
@@ -920,27 +921,27 @@ namespace ae::chart::v2
             modify();
             validate_point_no(point_no);
             validate_opacity(opacity);
-            styles_[point_no].outline(color::Modifier{color::Modifier::transparency_set{1.0 - opacity}});
+            styles_[point_no].outline(acmacs::color::Modifier{acmacs::color::Modifier::transparency_set{1.0 - opacity}});
         }
-        void outline_width(size_t point_no, Pixels outline_width)
+        void outline_width(size_t point_no, ae::draw::v1::Pixels outline_width)
         {
             modify();
             validate_point_no(point_no);
             styles_[point_no].outline_width(outline_width);
         }
-        void rotation(size_t point_no, Rotation rotation)
+        void rotation(size_t point_no, ae::draw::v1::Rotation rotation)
         {
             modify();
             validate_point_no(point_no);
             styles_[point_no].rotation(rotation);
         }
-        void aspect(size_t point_no, Aspect aspect)
+        void aspect(size_t point_no, ae::draw::v1::Aspect aspect)
         {
             modify();
             validate_point_no(point_no);
             styles_[point_no].aspect(aspect);
         }
-        void shape(size_t point_no, PointShape::Shape shape)
+        void shape(size_t point_no, acmacs::PointShape::Shape shape)
         {
             modify();
             validate_point_no(point_no);
@@ -964,7 +965,7 @@ namespace ae::chart::v2
             validate_point_no(point_no);
             styles_[point_no].label().offset.y(offset);
         }
-        void label_size(size_t point_no, Pixels size)
+        void label_size(size_t point_no, ae::draw::v1::Pixels size)
         {
             modify();
             validate_point_no(point_no);
@@ -974,21 +975,21 @@ namespace ae::chart::v2
         {
             modify();
             validate_point_no(point_no);
-            styles_[point_no].label().color.add(color::Modifier{color});
+            styles_[point_no].label().color.add(acmacs::color::Modifier{color});
         }
-        void label_rotation(size_t point_no, Rotation rotation)
+        void label_rotation(size_t point_no, ae::draw::v1::Rotation rotation)
         {
             modify();
             validate_point_no(point_no);
             styles_[point_no].label().rotation = rotation;
         }
-        void label_slant(size_t point_no, FontSlant slant)
+        void label_slant(size_t point_no, acmacs::FontSlant slant)
         {
             modify();
             validate_point_no(point_no);
             styles_[point_no].label().style.slant = slant;
         }
-        void label_weight(size_t point_no, FontWeight weight)
+        void label_weight(size_t point_no, acmacs::FontWeight weight)
         {
             modify();
             validate_point_no(point_no);
@@ -1013,19 +1014,19 @@ namespace ae::chart::v2
             std::for_each(styles_.begin(), styles_.end(), [=](auto& style) { style.scale(point_scale).scale_outline(outline_scale); });
         }
 
-        void modify(size_t point_no, const PointStyleModified& style)
+        void modify(size_t point_no, const acmacs::PointStyleModified& style)
         {
             modify();
             validate_point_no(point_no);
             styles_[point_no] = style;
         }
-        void modify(const Indexes& points, const PointStyleModified& style)
+        void modify(const Indexes& points, const acmacs::PointStyleModified& style)
         {
             modify();
             std::for_each(points.begin(), points.end(), [this, &style](size_t index) { this->modify(index, style); });
         }
-        void modify_serum(size_t serum_no, const PointStyleModified& style) { modify(serum_no + number_of_antigens_, style); }
-        void modify_sera(const Indexes& sera, const PointStyleModified& style)
+        void modify_serum(size_t serum_no, const acmacs::PointStyleModified& style) { modify(serum_no + number_of_antigens_, style); }
+        void modify_sera(const Indexes& sera, const acmacs::PointStyleModified& style)
         {
             std::for_each(sera.begin(), sera.end(), [this, &style](size_t index) { this->modify(index + this->number_of_antigens_, style); });
         }
@@ -1050,7 +1051,7 @@ namespace ae::chart::v2
             drawing_order_ = aSource.drawing_order();
             drawing_order_.fill_if_empty(number_of_points());
         }
-        const PointStyle& style_modified(size_t point_no) const { return styles_.at(point_no); }
+        const acmacs::PointStyle& style_modified(size_t point_no) const { return styles_.at(point_no); }
 
         void validate_point_no(size_t point_no) const
         {
@@ -1070,7 +1071,7 @@ namespace ae::chart::v2
         PlotSpecP main_;
         size_t number_of_antigens_;
         bool modified_ = false;
-        std::vector<PointStyle> styles_;
+        std::vector<acmacs::PointStyle> styles_;
         DrawingOrder drawing_order_;
 
     }; // class PlotSpecModify

@@ -212,7 +212,7 @@ ae::chart::v2::ProcrustesData ae::chart::v2::procrustes(const Projection& primar
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<ae::chart::v2::Layout> ae::chart::v2::ProcrustesData::apply(const acmacs::Layout& source) const
+std::shared_ptr<ae::chart::v2::Layout> ae::chart::v2::ProcrustesData::apply(const Layout& source) const
 {
     assert(source.number_of_dimensions() == transformation.number_of_dimensions);
     auto result = std::make_shared<Layout>(source.number_of_points(), source.number_of_dimensions());
@@ -340,7 +340,7 @@ void singular_value_decomposition(const alglib::real_2d_array& matrix, alglib::r
 
 // ----------------------------------------------------------------------
 
-ae::chart::v2::ProcrustesSummary ae::chart::v2::procrustes_summary(const acmacs::Layout& primary, const acmacs::Layout& transformed_secondary, const ProcrustesSummaryParameters& parameters)
+ae::chart::v2::ProcrustesSummary ae::chart::v2::procrustes_summary(const Layout& primary, const Layout& transformed_secondary, const ProcrustesSummaryParameters& parameters)
 {
     ProcrustesSummary results{parameters.number_of_antigens, primary.number_of_points() - parameters.number_of_antigens};
     double sum_distance = 0;

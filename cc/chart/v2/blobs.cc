@@ -55,7 +55,7 @@ void ae::chart::v2::Blobs::calculate_for_point(size_t /*point_no*/, Layout& /*la
 
 // Old (incorrect) algorithm and implementation
 
-// void ae::chart::v2::Blobs::calculate_for_point(size_t point_no, acmacs::Layout& layout, const Stress& stress, double initial_stress)
+// void ae::chart::v2::Blobs::calculate_for_point(size_t point_no, Layout& layout, const Stress& stress, double initial_stress)
 // {
 //     auto& result = result_.emplace_back(point_no, std::vector<double>(number_of_drections_, 0.0)).second;
 //     const std::array saved{layout(point_no, 0), layout(point_no, 1)};

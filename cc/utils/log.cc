@@ -23,6 +23,10 @@ namespace ae::log::inline v1
     const log_key_t vaccines{"vaccines"};
     const log_key_t name_parsing{"name"};
     const log_key_t passage_parsing{"passage"};
+    const log_key_t relax{"relax"};
+    const log_key_t report_stresses{"report-stresses"};
+    const log_key_t common{"common"};
+    const log_key_t distinct{"distinct"};
 
 } // namespace ae::log::v1
 
