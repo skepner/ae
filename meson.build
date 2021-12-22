@@ -61,7 +61,7 @@ sources_utlis = ['cc/utils/file.cc', 'cc/utils/log.cc', 'cc/utils/messages.cc', 
 
 sources_locdb_v3 = ['cc/locdb/v3/locdb.cc']
 
-sources_virus = ['cc/virus/name-parse.cc', 'cc/virus/passage-parse.cc']
+sources_virus = ['cc/virus/name-parse.cc', 'cc/virus/passage.cc', 'cc/virus/reassortant.cc']
 sources_sequences = ['cc/sequences/seqdb.cc', 'cc/sequences/seqdb-selected.cc', 'cc/sequences/seqdb-export.cc', 'cc/sequences/fasta.cc', 'cc/sequences/clades.cc',
                      'cc/sequences/translate.cc', 'cc/sequences/align.cc', 'cc/sequences/master.cc', 'cc/sequences/deletions.cc']
 sources_tree = ['cc/tree/tree.cc', 'cc/tree/tree-iterator.cc', 'cc/tree/newick.cc', 'cc/tree/export.cc']
@@ -118,7 +118,7 @@ test_virus_name = executable(
 
 test_passage = executable(
   'test-passage',
-  ['cc/test/test-passage.cc', 'cc/virus/passage-parse.cc', 'cc/utils/messages.cc'],
+  ['cc/test/test-passage.cc', 'cc/virus/passage.cc', 'cc/utils/messages.cc'],
   include_directories : include_directories('./cc'),
   dependencies : [fmt, range_v3, lexy],
   install : true)

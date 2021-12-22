@@ -148,7 +148,7 @@ namespace ae::chart::v2
 
         std::string name(Compute aCompute = Compute::No) const override { return aCompute == Compute::No ? name_ : computed_name_; }
         Virus virus(Compute aCompute = Compute::No) const override;
-        acmacs::virus::type_subtype_t virus_type(Compute aCompute = Compute::Yes) const override;
+        ae::virus::type_subtype_t virus_type(Compute aCompute = Compute::Yes) const override;
         std::string subset(Compute aCompute = Compute::No) const override;
         Assay assay(Compute aCompute = Compute::No) const override;
         Lab lab(Compute aCompute = Compute::No, FixLab fix = FixLab::yes) const override;
@@ -168,7 +168,7 @@ namespace ae::chart::v2
             computed_name_ = name_;
         }
         void virus(Virus value) { virus_ = value; }
-        void virus_type(acmacs::virus::type_subtype_t value) { virus_type_ = value; }
+        void virus_type(ae::virus::type_subtype_t value) { virus_type_ = value; }
         void subset(std::string value) { subset_ = value; }
         void assay(std::string value) { assay_ = Assay{value}; }
         void lab(std::string value) { lab_ = Lab{value}; }
@@ -181,7 +181,7 @@ namespace ae::chart::v2
         std::string name_;
         std::string computed_name_;
         Virus virus_;
-        acmacs::virus::type_subtype_t virus_type_;
+        ae::virus::type_subtype_t virus_type_;
         std::string subset_;
         Assay assay_;
         Lab lab_;
@@ -199,11 +199,11 @@ namespace ae::chart::v2
         explicit AntigenModify() = default;
         explicit AntigenModify(const Antigen& main);
 
-        acmacs::virus::name_t name() const override { return name_; }
+        ae::virus::Name name() const override { return name_; }
         Date date() const override { return date_; }
-        acmacs::virus::Passage passage() const override { return passage_; }
+        ae::virus::Passage passage() const override { return passage_; }
         BLineage lineage() const override { return lineage_; }
-        acmacs::virus::Reassortant reassortant() const override { return reassortant_; }
+        ae::virus::Reassortant reassortant() const override { return reassortant_; }
         LabIds lab_ids() const override { return lab_ids_; }
         Clades clades() const override { return clades_; }
         Annotations annotations() const override { return annotations_; }
@@ -213,11 +213,11 @@ namespace ae::chart::v2
         std::string sequence_aa() const override { return sequence_aa_; }
         std::string sequence_nuc() const override { return sequence_nuc_; }
 
-        void name(std::string_view value) { name_ = acmacs::virus::name_t{value}; }
+        void name(std::string_view value) { name_ = ae::virus::Name{value}; }
         void date(std::string_view value) { date_ = Date{value}; }
-        void passage(const acmacs::virus::Passage& value) { passage_ = value; }
+        void passage(const ae::virus::Passage& value) { passage_ = value; }
         void lineage(std::string_view value) { lineage_ = value; }
-        void reassortant(const acmacs::virus::Reassortant& value) { reassortant_ = value; }
+        void reassortant(const ae::virus::Reassortant& value) { reassortant_ = value; }
         void reference(bool value) { reference_ = value; }
         void add_annotation(std::string_view annotation) { annotations_.insert_if_not_present(std::string{annotation}); }
         void set_distinct() { annotations_.set_distinct(); }
@@ -232,11 +232,11 @@ namespace ae::chart::v2
         void update_with(const Antigen& main);
 
       private:
-        acmacs::virus::name_t name_;
+        ae::virus::Name name_;
         Date date_;
-        acmacs::virus::Passage passage_;
+        ae::virus::Passage passage_;
         BLineage lineage_;
-        acmacs::virus::Reassortant reassortant_;
+        ae::virus::Reassortant reassortant_;
         Annotations annotations_;
         LabIds lab_ids_;
         Clades clades_;
@@ -255,10 +255,10 @@ namespace ae::chart::v2
         explicit SerumModify() = default;
         explicit SerumModify(const Serum& main);
 
-        acmacs::virus::name_t name() const override { return name_; }
-        acmacs::virus::Passage passage() const override { return passage_; }
+        ae::virus::Name name() const override { return name_; }
+        ae::virus::Passage passage() const override { return passage_; }
         BLineage lineage() const override { return lineage_; }
-        acmacs::virus::Reassortant reassortant() const override { return reassortant_; }
+        ae::virus::Reassortant reassortant() const override { return reassortant_; }
         Annotations annotations() const override { return annotations_; }
         Clades clades() const override { return clades_; }
         SerumId serum_id() const override { return serum_id_; }
@@ -269,10 +269,10 @@ namespace ae::chart::v2
         std::string sequence_aa() const override { return sequence_aa_; }
         std::string sequence_nuc() const override { return sequence_nuc_; }
 
-        void name(std::string_view value) { name_ = acmacs::virus::name_t{value}; }
-        void passage(const acmacs::virus::Passage& value) { passage_ = value; }
+        void name(std::string_view value) { name_ = ae::virus::Name{value}; }
+        void passage(const ae::virus::Passage& value) { passage_ = value; }
         void lineage(std::string_view value) { lineage_ = value; }
-        void reassortant(const acmacs::virus::Reassortant& value) { reassortant_ = value; }
+        void reassortant(const ae::virus::Reassortant& value) { reassortant_ = value; }
         void serum_id(const SerumId& value) { serum_id_ = value; }
         void serum_species(const SerumSpecies& value) { serum_species_ = value; }
         void add_annotation(std::string_view annotation) { annotations_.insert_if_not_present(std::string{annotation}); }
@@ -286,10 +286,10 @@ namespace ae::chart::v2
         void update_with(const Serum& main);
 
       private:
-        acmacs::virus::name_t name_;
-        acmacs::virus::Passage passage_;
+        ae::virus::Name name_;
+        ae::virus::Passage passage_;
         BLineage lineage_;
-        acmacs::virus::Reassortant reassortant_;
+        ae::virus::Reassortant reassortant_;
         Annotations annotations_;
         Clades clades_;
         SerumId serum_id_;
@@ -676,7 +676,7 @@ namespace ae::chart::v2
         number_of_dimensions_t number_of_dimensions() const override { return modified() ? number_of_dimensions_modified() : main_->number_of_dimensions(); }
         MinimumColumnBasis minimum_column_basis() const override { return main_->minimum_column_basis(); }
         ColumnBasesP forced_column_bases() const override { return modified() ? forced_column_bases_modified() : main_->forced_column_bases(); }
-        acmacs::Transformation transformation() const override { return modified() ? transformation_modified() : main_->transformation(); }
+        draw::v1::Transformation transformation() const override { return modified() ? transformation_modified() : main_->transformation(); }
         enum dodgy_titer_is_regular dodgy_titer_is_regular() const override { return main_->dodgy_titer_is_regular(); }
         double stress_diff_to_stop() const override { return main_->stress_diff_to_stop(); }
         UnmovablePoints unmovable() const override { return modified() ? get_unmovable() : main_->unmovable(); }
@@ -734,7 +734,7 @@ namespace ae::chart::v2
         MinimumColumnBasis minimum_column_basis() const override { return minimum_column_basis_; }
         ColumnBasesP forced_column_bases() const override { return forced_column_bases_modified(); }
         using ProjectionModify::transformation;
-        acmacs::Transformation transformation() const override { return transformation_modified(); }
+        draw::v1::Transformation transformation() const override { return transformation_modified(); }
         enum dodgy_titer_is_regular dodgy_titer_is_regular() const override { return dodgy_titer_is_regular_; }
         double stress_diff_to_stop() const override { return stress_diff_to_stop_; }
         UnmovablePoints unmovable() const override { return get_unmovable(); }

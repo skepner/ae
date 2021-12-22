@@ -1,7 +1,7 @@
 #include "ext/fmt.hh"
 #include "ext/range-v3.hh"
 #include "utils/messages.hh"
-#include "virus/passage-parse.hh"
+#include "virus/passage.hh"
 
 static size_t passage_parsing_test(bool verbose);
 

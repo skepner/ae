@@ -21,6 +21,8 @@ namespace ae::log::inline v1
     const log_key_t timer{"timer"};
     const log_key_t settings{"settings"};
     const log_key_t vaccines{"vaccines"};
+    const log_key_t name_parsing{"name"};
+    const log_key_t passage_parsing{"passage"};
 
 } // namespace ae::log::v1
 

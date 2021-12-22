@@ -606,7 +606,7 @@ void ChartModify::detect_reference_antigens(remove_reference_before_detecting rr
     // set refernece attribute for all antigens whose names (without reassortant, annotations, passage) are the same as sera names
     // DISTINCT antigens are not marked to avoid marking control duplicates of CDC (CDC-LV can be reference, see h1 20200710)
 
-    acmacs::flat_set_t<acmacs::virus::name_t> serum_names;
+    acmacs::flat_set_t<ae::virus::Name> serum_names;
     ranges::for_each(range_from_0_to(ser->size()), [&ser, &serum_names](auto sr_no) { serum_names.add(ser->at(sr_no)->name()); });
 
     ranges::for_each(range_from_0_to(antigens.size()), [&antigens, &serum_names](auto ag_no) {

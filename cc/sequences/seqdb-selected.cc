@@ -1,7 +1,7 @@
 #include <regex>
 
 #include "utils/string-hash.hh"
-#include "virus/passage-parse.hh"
+#include "virus/passage.hh"
 #include "sequences/seqdb-selected.hh"
 #include "sequences/clades.hh"
 

@@ -1,7 +1,7 @@
 #include "py/module.hh"
 #include "utils/messages.hh"
 #include "virus/name-parse.hh"
-#include "virus/passage-parse.hh"
+#include "virus/passage.hh"
 
 // ----------------------------------------------------------------------
 
@@ -18,10 +18,10 @@ namespace ae::py
 
     struct PassageParsingResult
     {
-        ae::virus::passage::passage_deconstructed_t deconstructed;
+        ae::virus::passage::deconstructed_t deconstructed;
         ae::Messages messages;
 
-        PassageParsingResult(ae::virus::passage::passage_deconstructed_t&& a_deconstructed, ae::Messages&& a_messages) : deconstructed{std::move(a_deconstructed)}, messages{std::move(a_messages)} {}
+        PassageParsingResult(ae::virus::passage::deconstructed_t&& a_deconstructed, ae::Messages&& a_messages) : deconstructed{std::move(a_deconstructed)}, messages{std::move(a_messages)} {}
         bool good() const { return messages.empty(); }
     };
 

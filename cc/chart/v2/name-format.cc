@@ -28,7 +28,7 @@ template <typename AgSr> static std::string name_full_passage(const AgSr& ag_sr)
 
 template <typename AgSr> static std::string location_abbreviated(const AgSr& ag_sr)
 {
-    return acmacs::locationdb::get().abbreviation(acmacs::virus::location(ag_sr.name()));
+    return ae::locdb::get().abbreviation(ae::virus::name::location(ag_sr.name()));
 }
 
 template <typename AgSr> static std::string year4(const AgSr& ag_sr)
@@ -166,7 +166,7 @@ const std::tuple format_subst_ag_sr{
     FKF("full_name", name_full(ag_sr)),                                                                                                                                  //
     FKF("latitude", ag_sr.location_data().latitude),                                                                                                                     //
     FKF("lineage", ag_sr.lineage().to_string()),                                                                                                                         //
-    FKF("location", acmacs::virus::location(ag_sr.name())),                                                                                                              //
+    FKF("location", ae::virus::name::location(ag_sr.name())),                                                                                                              //
     FKF("location_abbreviated", location_abbreviated(ag_sr)),                                                                                                            //
     FKF("longitude", ag_sr.location_data().longitude),                                                                                                                   //
     FKF("name", ag_sr.name()),                                                                                                                                           //
@@ -253,8 +253,8 @@ void ae::chart::v2::Serum::format(fmt::memory_buffer& output, std::string_view p
 const ae::chart::v2::detail::location_data_t& ae::chart::v2::detail::AntigenSerum::location_data() const
 {
     if (!location_data_filled_) {
-        const auto location{acmacs::virus::location(name())};
-        if (const auto loc = acmacs::locationdb::get().find(location, acmacs::locationdb::include_continent::yes); loc.has_value())
+        const auto location{ae::virus::name::location(name())};
+        if (const auto loc = ae::locdb::get().find(location, ae::locdb::include_continent::yes); loc.has_value())
             location_data_ = location_data_t{std::move(loc->name), std::string{loc->country()}, loc->continent, loc->latitude(), loc->longitude()};
         else
             location_data_ = location_data_t{std::string{location}, "*unknown*", "*unknown*", 360.0, 360.0};
@@ -275,9 +275,9 @@ std::string ae::chart::v2::collapse_spaces(std::string src, collapse_spaces_t cs
 {
 #include "acmacs-base/global-constructors-push.hh"
     static const std::array replace_data{
-        acmacs::regex::look_replace_t{std::regex("^" CS_SPACES_OPT CS_CS1, std::regex::icase), {"$1$'"}},
-        acmacs::regex::look_replace_t{std::regex(CS_CS1 CS_SPACES_OPT "$", std::regex::icase), {"$`$1"}},
-        acmacs::regex::look_replace_t{std::regex(CS_SPACES_OR_CS_OPT CS_CS1 CS_SPACES_OR_CS_OPT, std::regex::icase), {"$` $'"}},
+        ae::regex::look_replace_t{std::regex("^" CS_SPACES_OPT CS_CS1, std::regex::icase), {"$1$'"}},
+        ae::regex::look_replace_t{std::regex(CS_CS1 CS_SPACES_OPT "$", std::regex::icase), {"$`$1"}},
+        ae::regex::look_replace_t{std::regex(CS_SPACES_OR_CS_OPT CS_CS1 CS_SPACES_OR_CS_OPT, std::regex::icase), {"$` $'"}},
     };
 #include "acmacs-base/diagnostics-pop.hh"
 
@@ -401,8 +401,8 @@ std::string ae::chart::v2::format_help()
     auto& antigen = chart.antigens_modify().at(67);
     antigen.name("A(H3N2)/KLAGENFURT/24/2020");
     antigen.date("2020-05-24");
-    antigen.passage(acmacs::virus::Passage{"E1 (2020-04-01)"});
-    antigen.reassortant(acmacs::virus::Reassortant{"NYMC-1A"});
+    antigen.passage(ae::virus::Passage{"E1 (2020-04-01)"});
+    antigen.reassortant(ae::virus::Reassortant{"NYMC-1A"});
     antigen.add_annotation("FLEDERMAUS");
     antigen.add_annotation("BAT");
     antigen.reference(true);
@@ -410,7 +410,7 @@ std::string ae::chart::v2::format_help()
 
     auto& serum = chart.sera_modify().at(12);
     serum.name("B/WUHAN/24/2020");
-    serum.passage(acmacs::virus::Passage{"MDCK1/SIAT2 (2020-04-01)"});
+    serum.passage(ae::virus::Passage{"MDCK1/SIAT2 (2020-04-01)"});
     serum.lineage("YAMAGATA");
     serum.serum_id(SerumId{"2020-031"});
     serum.serum_species(SerumSpecies{"RAT"});

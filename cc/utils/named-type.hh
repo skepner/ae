@@ -59,6 +59,7 @@ namespace ae
         constexpr size_t size() const { return this->get().size(); }
         void clear() { this->get().clear(); }
         auto operator[](size_t pos) const { return this->get().operator[](pos); }
+        template <typename S> auto find(S look_for) const { return this->get().find(look_for); }
 
         operator std::string_view() const { return this->get(); }
     };

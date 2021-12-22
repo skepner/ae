@@ -7,11 +7,18 @@
 
 namespace ae::locdb::inline v3
 {
-    class error : public std::runtime_error { public: using std::runtime_error::runtime_error; };
+    class error : public std::runtime_error
+    {
+      public:
+        using std::runtime_error::runtime_error;
+    };
 
     class Db;
     const Db& get();
     void db_path(const std::filesystem::path& path);
+
+    using Latitude = double;
+    using Longitude = double;
 
     // ----------------------------------------------------------------------
 
@@ -20,8 +27,8 @@ namespace ae::locdb::inline v3
       public:
         struct location
         {
-            double latitude;
-            double longitude;
+            Latitude latitude;
+            Longitude longitude;
             std::string_view country;
             std::string_view province;
         };
@@ -31,6 +38,14 @@ namespace ae::locdb::inline v3
         std::pair<std::string_view, const location*> find(std::string_view look_for) const;
 
         std::string_view continent(std::string_view country) const;
+
+        std::string_view country(std::string_view location) const
+        {
+            if (const auto [_, loc] = find(location); loc)
+                return loc->country;
+            else
+                return {};
+        }
 
       private:
         simdjson::Parser parser_;
@@ -46,6 +61,6 @@ namespace ae::locdb::inline v3
         friend const Db& get();
     };
 
-}
+} // namespace ae::locdb::inline v3
 
 // ----------------------------------------------------------------------

@@ -4,7 +4,7 @@
 
 // ----------------------------------------------------------------------
 
-namespace ae::virus
+namespace ae::virus::inline v2
 {
     class type_subtype_t
     {

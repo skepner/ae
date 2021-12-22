@@ -34,14 +34,14 @@ namespace ae
         {
             explicit log_key_t(std::string_view kk) : key{kk} {}
             explicit log_key_t(const char* kk) : key{kk} {}
-            bool operator==(const log_key_t& rhs) const { return key == rhs.key; }
+            bool operator==(const log_key_t& rhs) const = default;
             bool operator==(std::string_view rhs) const { return key == rhs; }
             operator std::string_view() const { return key; }
             operator const std::string&() const { return key; }
             std::string key;
         };
 
-        extern const log_key_t all, timer, settings, vaccines;
+        extern const log_key_t all, timer, settings, vaccines, name_parsing, passage_parsing;
 
         namespace detail
         {

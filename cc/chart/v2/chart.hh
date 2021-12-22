@@ -14,9 +14,14 @@
 #include "utils/regex.hh"
 #include "utils/named-vector.hh"
 #include "sequences/lineage.hh"
-// #include "acmacs-virus/virus-name.hh"
+#include "virus/type-subtype.hh"
+#include "virus/name.hh"
+#include "virus/name-parse.hh"
+#include "virus/passage.hh"
+#include "virus/reassortant.hh"
+#include "locdb/v3/locdb.hh"
 #include "chart/v2/name-format.hh"
-// #include "chart/v2/annotations.hh"
+#include "chart/v2/annotations.hh"
 #include "chart/v2/titers.hh"
 #include "chart/v2/stress.hh"
 #include "chart/v2/optimize.hh"
@@ -156,9 +161,7 @@ namespace ae::chart::v2
             return *this;
         }
         bool operator==(BLineage lineage) const { return mLineage == lineage.mLineage; }
-        bool operator!=(BLineage lineage) const { return !operator==(lineage); }
         bool operator==(Lineage lineage) const { return mLineage == lineage; }
-        bool operator!=(Lineage lineage) const { return !operator==(lineage); }
 
         bool operator==(std::string_view rhs) const
         {
@@ -174,8 +177,6 @@ namespace ae::chart::v2
             }
             return mLineage == Unknown;
         }
-
-        bool operator!=(std::string_view rhs) const { return !operator==(rhs); }
 
         std::string to_string() const
         {
@@ -336,12 +337,12 @@ namespace ae::chart::v2
         Virus virus_not_influenza(Compute aCompute = Compute::No) const
         {
             const auto vir = virus(aCompute);
-            if (::string::lower(*vir) == "influenza")
+            if (string::lowercase(*vir) == "influenza")
               return {};
             else
               return vir;
         }
-        virtual acmacs::virus::type_subtype_t virus_type(Compute = Compute::Yes) const = 0;
+        virtual ae::virus::type_subtype_t virus_type(Compute = Compute::Yes) const = 0;
         virtual std::string subset(Compute = Compute::No) const = 0;
         virtual Assay assay(Compute = Compute::Yes) const = 0;
         virtual Lab lab(Compute = Compute::Yes, FixLab fix = FixLab::yes) const = 0;
@@ -365,8 +366,8 @@ namespace ae::chart::v2
             std::string name;
             std::string country;
             std::string continent;
-            acmacs::locationdb::Latitude latitude;
-            acmacs::locationdb::Longitude longitude;
+            ae::locdb::v3::Latitude latitude;
+            ae::locdb::v3::Longitude longitude;
         };
 
         class AntigenSerum
@@ -376,12 +377,11 @@ namespace ae::chart::v2
             AntigenSerum() = default;
             AntigenSerum(const AntigenSerum&) = delete;
             bool operator==(const AntigenSerum& rhs) const { return name_full() == rhs.name_full(); }
-            bool operator!=(const AntigenSerum& rhs) const { return !operator==(rhs); }
 
-            virtual acmacs::virus::name_t name() const = 0;
-            virtual acmacs::virus::Passage passage() const = 0;
+            virtual ae::virus::Name name() const = 0;
+            virtual ae::virus::Passage passage() const = 0;
             virtual BLineage lineage() const = 0;
-            virtual acmacs::virus::Reassortant reassortant() const = 0;
+            virtual ae::virus::Reassortant reassortant() const = 0;
             virtual Annotations annotations() const = 0;
             virtual Clades clades() const = 0;
             virtual bool sequenced() const { return false; }
@@ -398,7 +398,7 @@ namespace ae::chart::v2
             {
                 return rae == reassortant_as_egg::yes ? (!reassortant().empty() || passage().is_egg()) : (reassortant().empty() && passage().is_egg());
             }
-            bool is_cell() const { return !is_egg(reassortant_as_egg::yes); }
+            bool is_cell() const { return !reassortant().empty() || passage().is_cell(); }
 
             std::string_view passage_type(reassortant_as_egg rae = reassortant_as_egg::yes) const
             {
@@ -547,7 +547,7 @@ namespace ae::chart::v2
             {
                 remove(aIndexes, [aCountry](const auto& entry) {
                     try {
-                        return acmacs::locationdb::get().country(acmacs::virus::location(entry.name())) != aCountry;
+                        return ae::locdb::get().country(ae::virus::name::location(entry.name())) != aCountry;
                     }
                     catch (std::exception&) {
                         return true;
@@ -559,7 +559,7 @@ namespace ae::chart::v2
             {
                 remove(aIndexes, [aContinent](const auto& entry) {
                     try {
-                        return acmacs::locationdb::get().continent(acmacs::virus::location(entry.name())) != aContinent;
+                        return ae::locdb::get().continent(ae::virus::name::location(entry.name())) != aContinent;
                     }
                     catch (std::exception&) {
                         return true;
@@ -574,25 +574,25 @@ namespace ae::chart::v2
 
             template <typename F> void remove(Indexes& aIndexes, F&& aFilter) const
             {
-                aIndexes.get().erase(std::remove_if(aIndexes.begin(), aIndexes.end(), [&aFilter, this](auto index) -> bool { return aFilter(*(*this)[index]); }), aIndexes.end());
+                aIndexes.erase(std::remove_if(aIndexes.begin(), aIndexes.end(), [&aFilter, this](auto index) -> bool { return aFilter(*(*this)[index]); }), aIndexes.end());
             }
 
             // if aName starts with ~, then search by regex in full name
             virtual bool name_matches(size_t index, std::string_view aName) const
             {
                 if (!aName.empty() && aName[0] == '~') {
-                    const std::regex re{std::next(std::begin(aName), 1), std::end(aName), acmacs::regex::icase};
+                    const std::regex re{std::next(std::begin(aName), 1), std::end(aName), ae::regex::icase};
                     return std::regex_search(at(index)->name_full(), re);
                 }
                 else {
                     const auto name = at(index)->name();
-                    if (name == acmacs::virus::name_t{aName})
+                    if (name == ae::virus::Name{aName})
                         return true;
                     else if (aName.size() > 2 && name.size() > 2) {
                         if ((aName[0] == 'A' && aName[1] == '/' && name[0] == 'A' && name[1] == '(' && name.find(")/") != std::string::npos) || (aName[0] == 'B' && aName[1] == '/'))
-                            return name == acmacs::virus::name_t{acmacs::string::concat(name->substr(0, name.find('/')), aName.substr(1))};
+                            return name == ae::virus::Name{fmt::format("{}{}", name.substr(0, name.find('/')), aName.substr(1))};
                         else if (aName[1] != '/' && aName[1] != '(')
-                            return name == acmacs::virus::name_t{acmacs::string::concat(name->substr(0, name.find('/') + 1), aName)};
+                            return name == ae::virus::Name{fmt::format("{}{}", name.substr(0, name.find('/') + 1), aName)};
                     }
                     else
                         return false;
@@ -609,43 +609,43 @@ namespace ae::chart::v2
             }
 
             // if aName starts with ~, then search by regex in full name
-            virtual Indexes find_by_name(std::string_view aName) const
+            virtual SortedIndexes find_by_name(std::string_view aName) const
             {
                 if (!aName.empty() && aName[0] == '~')
-                    return find_by_name(std::regex{std::next(std::begin(aName), 1), std::end(aName), acmacs::regex::icase});
+                    return find_by_name(std::regex{std::next(std::begin(aName), 1), std::end(aName), ae::regex::icase});
 
                 auto find = [this](auto name) {
                     Indexes indexes;
                     for (auto iter = begin(); iter != end(); ++iter) {
-                        if ((*iter)->name() == acmacs::virus::name_t{name})
-                            indexes.insert(iter.index());
+                        if ((*iter)->name() == ae::virus::Name{name})
+                            indexes.push_back(iter.index());
                     }
                     return indexes;
                 };
 
-                const auto name{::string::upper(aName)};
+                const auto name{string::uppercase(aName)};
                 auto indexes = find(name);
-                if (indexes->empty() && name.size() > 2) {
+                if (indexes.empty() && name.size() > 2) {
                     if (const auto first_name = (*begin())->name(); first_name.size() > 2) {
                         // handle names with "A/" instead of "A(HxNx)/" or without subtype prefix (for A and B)
                         if ((name[0] == 'A' && name[1] == '/' && first_name[0] == 'A' && first_name[1] == '(' && first_name.find(")/") != std::string::npos) || (name[0] == 'B' && name[1] == '/'))
-                            indexes = find(acmacs::string::concat(first_name->substr(0, first_name.find('/')), name.substr(1)));
+                            indexes = find(fmt::format("{}{}", first_name.substr(0, first_name.find('/')), name.substr(1)));
                         else if (name[1] != '/' && name[1] != '(')
-                            indexes = find(acmacs::string::concat(first_name->substr(0, first_name.find('/') + 1), name));
+                            indexes = find(fmt::format("{}{}", first_name.substr(0, first_name.find('/') + 1), name));
                     }
                 }
-                return indexes;
+                return SortedIndexes{indexes};
             }
 
             // regex search in full name
-            virtual Indexes find_by_name(const std::regex& re_name) const
+            virtual SortedIndexes find_by_name(const std::regex& re_name) const
             {
                 Indexes indexes;
                 for (auto iter = begin(); iter != end(); ++iter) {
                     if (std::regex_search((*iter)->name_full(), re_name))
-                        indexes.insert(iter.index());
+                        indexes.push_back(iter.index());
                 }
-                return indexes;
+                return SortedIndexes{indexes};
             }
 
             duplicates_t find_duplicates() const
@@ -666,7 +666,7 @@ namespace ae::chart::v2
             }
 
           protected:
-            template <typename F> Indexes make_indexes(F&& test, std::shared_ptr<Titers> titers = nullptr) const
+            template <typename F> SortedIndexes make_indexes(F&& test, std::shared_ptr<Titers> titers = nullptr) const
             {
                 const auto call = [&](size_t no, const std::shared_ptr<AgSr>& ptr) -> bool {
                     if constexpr (std::is_invocable_v<F, const AgSr&>)
@@ -687,19 +687,19 @@ namespace ae::chart::v2
                 Indexes result;
                 for (size_t no = 0; no < size(); ++no) {
                     if (call(no, at(no)))
-                        result.insert(no);
+                        result.push_back(no);
                 }
-                return result;
+                return SortedIndexes{result};
             }
 
-            template <typename F> Indexes make_indexes(const Layout& layout, size_t index_base, F&& test, std::shared_ptr<Titers> titers) const
+            template <typename F> SortedIndexes make_indexes(const Layout& layout, size_t index_base, F&& test, std::shared_ptr<Titers> titers) const
             {
                 Indexes result;
                 for (size_t no = 0; no < size(); ++no) {
                     if (test(SelectionData<AntigenSerumType>{.index = no, .point_no = no + index_base, .ag_sr = at(no), .coord = layout.at(no + index_base), .titers = titers}))
-                        result.insert(no);
+                        result.push_back(no);
                 }
-                return result;
+                return SortedIndexes{result};
             }
         };
 
@@ -712,15 +712,15 @@ namespace ae::chart::v2
       public:
         using detail::AntigensSera<Antigen>::AntigensSera;
 
-        Indexes reference_indexes() const
+        SortedIndexes reference_indexes() const
         {
             return make_indexes([](const Antigen& ag) { return ag.reference(); });
         }
-        Indexes test_indexes() const
+        SortedIndexes test_indexes() const
         {
             return make_indexes([](const Antigen& ag) { return !ag.reference(); });
         }
-        Indexes egg_indexes() const
+        SortedIndexes egg_indexes() const
         {
             return make_indexes([](const Antigen& ag) { return ag.passage().is_egg() || !ag.reassortant().empty(); });
         }
@@ -804,7 +804,7 @@ namespace ae::chart::v2
         virtual std::shared_ptr<Layout> transformed_layout() const { return layout()->transform(transformation()); }
         virtual MinimumColumnBasis minimum_column_basis() const = 0;
         virtual std::shared_ptr<ColumnBases> forced_column_bases() const = 0; // returns nullptr if not forced
-        virtual acmacs::Transformation transformation() const = 0;
+        virtual draw::v1::Transformation transformation() const = 0;
         virtual enum dodgy_titer_is_regular dodgy_titer_is_regular() const = 0;
         virtual double stress_diff_to_stop() const = 0;
         virtual UnmovablePoints unmovable() const = 0;
@@ -868,14 +868,14 @@ namespace ae::chart::v2
 
     // ----------------------------------------------------------------------
 
-    class PlotSpec : public PointStyles
+    class PlotSpec : public acmacs::PointStyles
     {
       public:
         virtual DrawingOrder drawing_order() const = 0;
         virtual Color error_line_positive_color() const = 0;
         virtual Color error_line_negative_color() const = 0;
-        virtual std::vector<PointStyle> all_styles() const = 0;
-        PointStylesCompacted compacted() const override;
+        virtual std::vector<acmacs::PointStyle> all_styles() const = 0;
+        acmacs::PointStylesCompacted compacted() const override;
 
     }; // class PlotSpec
 
@@ -890,7 +890,7 @@ namespace ae::chart::v2
     {
       protected:
         enum class PointType { TestAntigen, ReferenceAntigen, Serum };
-        PointStyle default_style(PointType aPointType) const;
+        acmacs::PointStyle default_style(PointType aPointType) const;
 
       public:
         enum class use_cache { no, yes };
@@ -931,7 +931,7 @@ namespace ae::chart::v2
         std::string make_name(std::optional<size_t> aProjectionNo = {}) const;
         std::string description() const;
 
-        PointStyle default_style(size_t aPointNo) const
+        acmacs::PointStyle default_style(size_t aPointNo) const
         {
             auto ags = antigens();
             return default_style(aPointNo < ags->size() ? ((*ags)[aPointNo]->reference() ? PointType::ReferenceAntigen : PointType::TestAntigen) : PointType::Serum);

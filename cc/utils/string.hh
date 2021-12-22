@@ -38,6 +38,9 @@ namespace ae::string
     inline std::string uppercase(std::string_view source) { return transform(source.begin(), source.end(), ::toupper); }
     template <typename Iter> inline std::string uppercase(Iter first, Iter last) { return transform(first, last, ::toupper); }
 
+    inline std::string lowercase(std::string_view source) { return transform(source.begin(), source.end(), ::tolower); }
+    template <typename Iter> inline std::string lowercase(Iter first, Iter last) { return transform(first, last, ::tolower); }
+
 } // namespace ae::string
 
 // ======================================================================
@@ -160,6 +163,24 @@ namespace ae::string
         else
             return split(source, "\n"sv, handle_empty);
     }
+
+    // ----------------------------------------------------------------------
+
+    // changes subsequent spaces into one space
+    inline std::string collapse_spaces(std::string_view source)
+    {
+        std::string result;
+        std::copy_if(source.begin(), source.end(), std::back_inserter(result), [prev_was_space = false](auto c) mutable -> bool {
+            const auto space = std::isspace(c);
+            const auto res = !(prev_was_space && space);
+            prev_was_space = space;
+            return res;
+        });
+        return result;
+    }
+    inline std::string collapse_spaces(const char* source) { return collapse_spaces(std::string_view(source, std::strlen(source))); }
+    inline std::string collapse_spaces(char* source) { return collapse_spaces(std::string_view(source, std::strlen(source))); }
+
 } // namespace ae::string
 
 // ----------------------------------------------------------------------

@@ -4,13 +4,15 @@
 #include <vector>
 
 #include "ext/fmt.hh"
+#include "ext/string.hh"
 #include "utils/string.hh"
+#include "utils/messages.hh"
 
 // ======================================================================
 
 namespace ae::virus::passage
 {
-    struct passage_deconstructed_t
+    struct deconstructed_t
     {
         struct element_t
         {
@@ -38,23 +40,27 @@ namespace ae::virus::passage
         std::vector<element_t> elements{};
         std::string date{};
 
-        constexpr passage_deconstructed_t() = default;
-        constexpr passage_deconstructed_t(int) : passage_deconstructed_t() {} // to support lexy::fold_inplace in passage-parse.cc
-        passage_deconstructed_t(const std::vector<element_t>& a_elements, const std::string& a_date) : elements{a_elements}, date{a_date} {}
+        constexpr deconstructed_t() = default;
+        constexpr deconstructed_t(int) : deconstructed_t() {} // to support lexy::fold_inplace in passage-parse.cc
+        deconstructed_t(const std::vector<element_t>& a_elements, const std::string& a_date) : elements{a_elements}, date{a_date} {}
+        // deconstructed_t(std::string_view not_parsed) : elements{element_t{.name{not_parsed}}} {}
 
-        bool operator==(const passage_deconstructed_t& rhs) const = default;
+        bool operator==(const deconstructed_t& rhs) const = default;
+        // bool operator<=>(const deconstructed_t& rhs) const = default;
 
         bool empty() const { return elements.empty(); }
         const element_t& last() const { return elements.back(); }
         bool egg() const { return !empty() && last().egg(); }
         bool cell() const { return !empty() && last().cell(); }
 
-        std::string construct() const
+        enum class with_date { no, yes };
+
+        std::string construct(with_date wd = with_date::yes) const
         {
             std::string result;
             for (const auto& elt : elements)
                 result.append(elt.construct(true));
-            if (!date.empty())
+            if (wd == with_date::yes && !date.empty())
                 result.append(fmt::format(" ({})", date));
             return result;
         }
@@ -74,6 +80,88 @@ namespace ae::virus::passage
         }
     };
 
+    // ----------------------------------------------------------------------
+
+    class parse_settings
+    {
+      public:
+        enum class tracing { no, yes };
+
+        parse_settings(tracing a_trace = tracing::no) : tracing_{a_trace} {}
+
+        constexpr bool trace() const { return tracing_ == tracing::yes; }
+
+      private:
+        tracing tracing_{tracing::no};
+    };
+
+    deconstructed_t parse(std::string_view source, const parse_settings& settings, Messages& messages, const MessageLocation& location);
+
+    inline deconstructed_t parse(std::string_view source)
+    {
+        Messages messages;
+        return parse(source, parse_settings{}, messages, MessageLocation{});
+    }
+
 } // namespace ae::virus::passage
+
+// ----------------------------------------------------------------------
+
+namespace ae::virus
+{
+    class Passage
+    {
+      public:
+        enum class parse { no, yes };
+
+        Passage() = default;
+        Passage(const Passage&) = default;
+        Passage(Passage&&) = default;
+        explicit Passage(std::string_view src, parse pars = parse::yes)
+        {
+            if (pars == parse::yes)
+                deconstructed_ = passage::parse(src);
+            else
+                deconstructed_.elements.push_back({.name{src}});
+        }
+
+        Passage& operator=(const Passage&) = default;
+        Passage& operator=(Passage&&) = default;
+
+        bool operator==(const Passage& rhs) const = default;
+        // bool operator<=>(const Passage& rhs) const = default;
+
+        bool good() const { return deconstructed_.good(); }
+        bool empty() const { return deconstructed_.empty(); }
+        bool is_egg() const { return deconstructed_.egg(); }
+        bool is_cell() const { return deconstructed_.cell(); }
+        std::string without_date() const { return deconstructed_.construct(passage::deconstructed_t::with_date::no); }
+        operator std::string() const { return deconstructed_.construct(); }
+
+        // std::string_view last_number() const; // E2/E3 -> 3, X? -> ?
+        // std::string_view last_type() const; // MDCK3/SITA1 -> SIAT
+
+        // std::string_view passage_type() const
+        // {
+        //     using namespace std::string_view_literals;
+        //     if (is_egg())
+        //         return "egg"sv;
+        //     else
+        //         return "cell"sv;
+        // }
+
+        // size_t find(std::string_view look_for) const { return get().find(look_for); }
+        // bool search(const std::regex& re) const { return std::regex_search(get(), re); }
+
+
+      private:
+        passage::deconstructed_t deconstructed_{};
+    };
+} // namespace ae::virus
+
+template <> struct fmt::formatter<ae::virus::Passage> : public fmt::formatter<std::string>
+{
+    template <typename FormatContext> auto format(const ae::virus::Passage& ts, FormatContext& ctx) { return fmt::format(static_cast<std::string>(ts), ctx); }
+};
 
 // ======================================================================
