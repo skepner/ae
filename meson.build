@@ -17,6 +17,9 @@ if meson.get_compiler('cpp').get_id() == 'clang'
                         '-Wno-ambiguous-reversed-operator', # ISO C++20 considers use of overloaded operator '<=' to be ambiguous despite there being a unique best viable function
                         '-Wno-zero-as-null-pointer-constant', # clang13 somtimes with operator<=>
                         language : 'cpp')
+  link_args = ['-L/usr/local/lib'] # for -lomp, otherwise not found
+else
+  link_args = []
 endif
 
 # ----------------------------------------------------------------------
@@ -51,6 +54,7 @@ bzip2 = meson.get_compiler('cpp').find_library('bz2', required : false)
 alglib = dependency('alglib')
 
 omp = dependency('openmp')
+# omp_lib = meson.get_compiler('cpp').find_library('omp', dirs: '/usr/local/lib', required: true)
 
 # websocketpp
 # asio
@@ -124,9 +128,10 @@ sources_chart_v2 = [
 
 chart_relax = executable(
   'chart-relax',
-  ['cc/chart/v2/chart-relax.cc'] + sources_chart_v2 + sources_ad + sources_virus,
+  ['cc/chart/v2/chart-relax.cc'] + sources_chart_v2 + sources_locdb_v3 + sources_ad + sources_virus + sources_utlis,
   include_directories : include_cc,
   dependencies : [alglib, fmt, simdjson, range_v3, lexy, omp, bzip2, zlib, xz],
+  link_args : link_args,
   install : true)
 
 # ----------------------------------------------------------------------
@@ -185,6 +190,7 @@ ae_lib = python3.extension_module(
             sources_locdb_v3 + sources_chart_v2 + sources_ad,
   include_directories : include_cc,
   dependencies : [dependency('python3'), pybind11, fmt, simdjson, range_v3, bzip2, zlib, xz, lexy, xxhash, alglib, omp],
+  link_args : link_args,
   install : true)
 
 # https://gabmus.org/posts/python-unittest-meson/

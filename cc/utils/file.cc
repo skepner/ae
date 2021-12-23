@@ -32,19 +32,6 @@ namespace ae::file::detail
 
     } // ae::file::read_access::compressor_factory
 
-    inline std::string decompress_if_necessary(std::string_view source, size_t padding)
-    {
-        if (auto compressor = compressor_factory(source, {}, force_compression::no, padding); compressor) {
-            return compressor->decompress(source);
-        }
-        else {
-            std::string output;
-            output.reserve(source.size() + padding);
-            output = source;
-            return output;
-        }
-    }
-
     inline std::string read_stdin(size_t padding)
     {
         constexpr size_t chunk_size = 1024 * 100;
@@ -121,6 +108,19 @@ std::string ae::file::read(const std::filesystem::path& filename, size_t padding
 } // ae::file::read
 
 // ----------------------------------------------------------------------
+
+std::string ae::file::decompress_if_necessary(std::string_view source, size_t padding)
+{
+    if (auto compressor = detail::compressor_factory(source, {}, force_compression::no, padding); compressor) {
+        return compressor->decompress(source);
+    }
+    else {
+        std::string output;
+        output.reserve(source.size() + padding);
+        output = source;
+        return output;
+    }
+}
 
 void ae::file::backup(const std::filesystem::path& to_backup, const std::filesystem::path& backup_dir, backup_move bm)
 {
