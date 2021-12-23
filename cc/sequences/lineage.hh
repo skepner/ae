@@ -36,7 +36,7 @@ namespace ae::sequences
         explicit operator bool() const { return !empty(); }
 
       private:
-        std::string lineage_;
+        std::string lineage_{};
     };
 
 } // namespace ae::sequences

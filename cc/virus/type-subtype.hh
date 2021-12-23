@@ -68,7 +68,7 @@ namespace ae::virus::inline v2
         }
 
       private:
-        std::string value_;
+        std::string value_{};
 
     };
 

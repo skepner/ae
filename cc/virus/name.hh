@@ -31,7 +31,7 @@ namespace ae::virus::inline v2
         auto substr(size_t pos, size_t len) const { return value_.substr(pos, len); }
 
       private:
-        std::string value_;
+        std::string value_{};
 
     };
 

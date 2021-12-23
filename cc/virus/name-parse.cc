@@ -112,7 +112,7 @@ namespace ae::virus::name::inline v1
         template <Lexeme Lex> part_t(Lex&& lex1, Lex&& lex2, type_t typ) : head{uppercase_strip(lex1)}, tail{uppercase_strip(lex2)}, type{typ} {}
         part_t& operator=(const part_t&) = default;
         part_t& operator=(part_t&&) = default;
-        constexpr bool empty() const { return head.empty(); }
+        bool empty() const { return head.empty(); }
         operator std::string() const { return fmt::format("{}{}", head, tail); }
     };
 
@@ -293,7 +293,7 @@ namespace ae::virus::name::inline v1
             static constexpr auto whitespace = dsl::ascii::blank; // auto skip whitespaces
 
             // H3N2 | H3
-            static constexpr auto rule = dsl::peek(H + dsl::digit<>) >> dsl::capture(H + dsl::digits<>) + dsl::opt(dsl::peek(N) >> dsl::capture(N + dsl::digits<>));
+            static constexpr auto rule = dsl::peek(H + dsl::digit<>) >> (dsl::capture(H + dsl::digits<>) + dsl::opt(dsl::peek(N) >> dsl::capture(N + dsl::digits<>)));
             static constexpr auto value = lexy::callback<part_t>([](auto lex1, auto lex2) {
                 if constexpr (std::is_same_v<decltype(lex2), lexy::nullopt>)
                     return part_t{uppercase_strip(lex1), part_type::subtype};
@@ -307,7 +307,7 @@ namespace ae::virus::name::inline v1
             static constexpr auto whitespace = dsl::ascii::blank; // auto skip whitespaces
 
             // A | AH3 | AH3N2 | A(H3N2) | A(H3)
-            static constexpr auto rule = A >> dsl::opt(dsl::p<subtype_a_hn> | OPEN >> dsl::p<subtype_a_hn> + CLOSE);
+            static constexpr auto rule = A >> dsl::opt(dsl::p<subtype_a_hn> | OPEN >> (dsl::p<subtype_a_hn> + CLOSE));
             static constexpr auto value = lexy::callback<part_t>([](auto lex) {
                 if constexpr (std::is_same_v<decltype(lex), lexy::nullopt>)
                     return part_t{"A", part_type::type_subtype};
@@ -333,7 +333,7 @@ namespace ae::virus::name::inline v1
             static constexpr auto peek_cber = dsl::peek(C + B + E + R + dsl::hyphen / dsl::ascii::blank / dsl::digit<>);
             static constexpr auto peek = peek_bvr | peek_cber;
 
-            static constexpr auto rule = peek >> dsl::while_(dsl::ascii::alpha) + dsl::while_(dsl::hyphen / dsl::ascii::blank) + dsl::capture(dsl::while_(dsl::digit<> / dsl::ascii::alpha));
+            static constexpr auto rule = peek >> (dsl::while_(dsl::ascii::alpha) + dsl::while_(dsl::hyphen / dsl::ascii::blank) + dsl::capture(dsl::while_(dsl::digit<> / dsl::ascii::alpha)));
             static constexpr auto value = lexy::callback<parts_t>([](auto lex) { return parts_t{part_t{"CBER-" + uppercase_strip(lex), part_type::reassortant}}; });
         };
 
@@ -345,10 +345,10 @@ namespace ae::virus::name::inline v1
             static constexpr auto peek_x = dsl::peek(X + dsl::hyphen / dsl::ascii::blank / dsl::digit<>);
             static constexpr auto peek = peek_nymc | peek_bx | peek_x;
             static constexpr auto nymc = peek_nymc                                               //
-                                         >> dsl::while_(dsl::ascii::alpha)                       //
-                                                + (dsl::hyphen / dsl::ascii::blank / dsl::slash) //
-                                                + dsl::opt(dsl::peek(X / B) >> dsl::while_(dsl::ascii::alpha) + dsl::while_(dsl::hyphen / dsl::ascii::blank));
-            static constexpr auto xbx = (peek_x | peek_bx) >> dsl::while_(dsl::ascii::alpha) + dsl::hyphen / dsl::ascii::blank;
+                >> (dsl::while_(dsl::ascii::alpha)                       //
+                    + (dsl::hyphen / dsl::ascii::blank / dsl::slash) //
+                    + dsl::opt(dsl::peek(X / B) >> (dsl::while_(dsl::ascii::alpha) + dsl::while_(dsl::hyphen / dsl::ascii::blank))));
+            static constexpr auto xbx = (peek_x | peek_bx) >> (dsl::while_(dsl::ascii::alpha) + dsl::hyphen / dsl::ascii::blank);
 
             static constexpr auto rule = (nymc | xbx) + dsl::capture(dsl::while_(dsl::digit<> / dsl::ascii::alpha / dsl::hyphen / PLUS)) //
                                          + dsl::whitespace(dsl::ascii::blank)                                                            //
@@ -389,7 +389,7 @@ namespace ae::virus::name::inline v1
 
             static constexpr auto rule = (nymc_x_bx::peek >> dsl::p<nymc_x_bx>) //
                                          | (cber::peek >> dsl::p<cber>)         //
-                                         | (prefix >> dsl::capture(dsl::while_(dsl::ascii::alpha)) + hy_space + dsl::capture(dsl::while_(dsl::digit<> / dsl::ascii::alpha)));
+                | (prefix >> (dsl::capture(dsl::while_(dsl::ascii::alpha)) + hy_space + dsl::capture(dsl::while_(dsl::digit<> / dsl::ascii::alpha))));
             static constexpr auto value = lexy::callback<parts_t>( //
                 [](const parts_t& parts) { return parts; },        //
                 [](auto lex1, auto lex2) {
@@ -408,7 +408,7 @@ namespace ae::virus::name::inline v1
             static constexpr auto mixed = letters_only / dsl::ascii::digit / dsl::colon / dsl::period / PLUS / OPEN / CLOSE;
 
             static constexpr auto rule = dsl::peek(OPT_SPACES + dsl::ascii::alpha / letter_extra) //
-                                         >> dsl::capture(dsl::while_(letters_only)) + dsl::opt(dsl::peek_not(dsl::lit_c<'/'>) >> dsl::capture(dsl::while_(mixed)));
+                >> (dsl::capture(dsl::while_(letters_only)) + dsl::opt(dsl::peek_not(dsl::lit_c<'/'>) >> dsl::capture(dsl::while_(mixed))));
             static constexpr auto value = lexy::callback<part_t>([](auto lex1, auto lex2) {
                 if constexpr (std::is_same_v<decltype(lex2), lexy::nullopt>)
                     return part_t{lex1, part_type::letters_only};
@@ -433,8 +433,8 @@ namespace ae::virus::name::inline v1
 
             static constexpr auto
                 rule = dsl::peek(OPT_SPACES + dsl::digit<> / dsl::hash_sign) //
-                       >> OPT_SPACES +
-                              dsl::capture(dsl::while_(dsl::digit<>)) + dsl::opt(dsl::peek(mixed) >> dsl::capture(dsl::while_(mixed))) + dsl::opt(dsl::peek(OPT_SPACES + dsl::slash) >> OPT_SPACES);
+                >> (OPT_SPACES +
+                    dsl::capture(dsl::while_(dsl::digit<>)) + dsl::opt(dsl::peek(mixed) >> dsl::capture(dsl::while_(mixed))) + dsl::opt(dsl::peek(OPT_SPACES + dsl::slash) >> OPT_SPACES));
 
             static constexpr auto value12 = [](auto lex1, auto lex2) {
                 if constexpr (std::is_same_v<decltype(lex2), lexy::nullopt>)
@@ -491,8 +491,8 @@ namespace ae::virus::name::inline v1
         struct parts
         {
             static constexpr auto rule =
-                ((dsl::p<reassortant> >> dsl::opt(dsl::peek(OPT_SPACES + OPEN2) >> OPT_SPACES + OPEN2 + dsl::p<virus_name> + dsl::if_(CLOSE2)))
-                 | (dsl::else_ >> dsl::p<virus_name> + dsl::opt(dsl::p<reassortant>) + dsl::p<rest>))
+                ((dsl::p<reassortant> >> (dsl::opt(dsl::peek(OPT_SPACES + OPEN2) >> (OPT_SPACES + OPEN2 + dsl::p<virus_name> + dsl::if_(CLOSE2)))))
+                 | (dsl::else_ >> (dsl::p<virus_name> + dsl::opt(dsl::p<reassortant>) + dsl::p<rest>)))
                 + dsl::eof;
             static constexpr auto value = lexy::callback<parts_t>(
                 [](const parts_t& reassortant, const parts_t& virus_name) {

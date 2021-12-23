@@ -24,12 +24,12 @@ namespace ae::chart::v2
         StressParameters(size_t a_number_of_points)
             : number_of_points(a_number_of_points) {}
 
-        size_t number_of_points;
-        UnmovablePoints unmovable;
-        DisconnectedPoints disconnected;
-        UnmovableInTheLastDimensionPoints unmovable_in_the_last_dimension;
+        size_t number_of_points{0};
+        UnmovablePoints unmovable{};
+        DisconnectedPoints disconnected{};
+        UnmovableInTheLastDimensionPoints unmovable_in_the_last_dimension{};
         multiply_antigen_titer_until_column_adjust mult{multiply_antigen_titer_until_column_adjust::yes};
-        AvidityAdjusts avidity_adjusts;
+        AvidityAdjusts avidity_adjusts{};
         enum dodgy_titer_is_regular dodgy_titer_is_regular{dodgy_titer_is_regular::no};
 
     }; // struct StressParameters
@@ -70,8 +70,8 @@ namespace ae::chart::v2
         void set_coordinates_of_disconnected(double* first, size_t num_args, double value, number_of_dimensions_t number_of_dimensions) const;
 
      private:
-        number_of_dimensions_t number_of_dimensions_;
-        TableDistances table_distances_;
+        number_of_dimensions_t number_of_dimensions_{0};
+        TableDistances table_distances_{};
         StressParameters parameters_;
 
         void gradient_plain(const double* first, const double* last, double* gradient_first) const;

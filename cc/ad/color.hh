@@ -55,7 +55,7 @@ class Color
     std::string_view name() const noexcept;
 
   private:
-    uint32_t color_;
+    uint32_t color_{0};
 
     void from_string(std::string_view src);
 

@@ -122,7 +122,7 @@ namespace ae::virus
             if (pars == parse::yes)
                 deconstructed_ = passage::parse(src);
             else
-                deconstructed_.elements.push_back(passage::deconstructed_t::element_t{.name{src}});
+                deconstructed_.elements.push_back(passage::deconstructed_t::element_t{.name{std::string{src}}}); // g++-11 wants std::string{src}
         }
 
         Passage& operator=(const Passage&) = default;

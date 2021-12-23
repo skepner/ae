@@ -41,26 +41,26 @@ namespace ae::locdb::inline v3
 
         std::string_view continent(std::string_view country) const;
 
-        std::string_view country(std::string_view location) const
+        std::string_view country(std::string_view loc) const
         {
-            if (const auto [_, loc] = find(location); loc)
-                return loc->country;
+            if (const auto [_, found] = find(loc); found)
+                return found->country;
             else
                 return {};
         }
 
-        std::string abbreviation(std::string_view location) const;
+        std::string abbreviation(std::string_view loc) const;
 
         std::string_view find_cdc_abbreviation_by_name(std::string_view name) const;
 
       private:
         simdjson::Parser parser_;
-        std::map<std::string_view, std::string_view> cdc_abbreviations_;
-        std::map<std::string_view, location> locations_;
-        std::map<std::string_view, uint64_t> countries_; // name -> index in continents_
-        std::vector<std::string_view> continents_;
-        std::map<std::string_view, std::string_view> names_;
-        std::map<std::string_view, std::string_view> replacements_;
+        std::map<std::string_view, std::string_view> cdc_abbreviations_{};
+        std::map<std::string_view, location> locations_{};
+        std::map<std::string_view, uint64_t> countries_{}; // name -> index in continents_
+        std::vector<std::string_view> continents_{};
+        std::map<std::string_view, std::string_view> names_{};
+        std::map<std::string_view, std::string_view> replacements_{};
 
         Db(const std::filesystem::path& path);
 

@@ -22,7 +22,7 @@ namespace ae::chart::v2
         ae::draw::v1::Transformation transformation;
         double scale{1};
         double rms{0};
-        std::shared_ptr<Layout> secondary_transformed;
+        std::shared_ptr<Layout> secondary_transformed{};
 
         std::shared_ptr<Layout> apply(const Layout& source) const;
 

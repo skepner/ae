@@ -1,6 +1,7 @@
 #pragma once
 
 #pragma GCC diagnostic push
+
 #ifdef __clang__
 // 0.11.0 clang 13
 #pragma GCC diagnostic ignored "-Wreserved-identifier"
@@ -10,6 +11,11 @@
 #pragma GCC diagnostic ignored "-Wold-style-cast"
 #pragma GCC diagnostic ignored "-Wpadded"
 #pragma GCC diagnostic ignored "-Wweak-vtables"
+#endif
+
+#ifdef __GNUG__
+#pragma GCC diagnostic ignored "-Weffc++"
+#pragma GCC diagnostic ignored "-Wconversion"
 #endif
 
 // #include <range/v3/core.hpp>

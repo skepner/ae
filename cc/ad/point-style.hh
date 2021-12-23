@@ -11,7 +11,7 @@ namespace acmacs
      public:
         enum Shape {Circle, Box, Triangle, Egg, UglyEgg};
 
-        PointShape() noexcept : mShape{Circle} {}
+        PointShape() noexcept {}
         PointShape(const PointShape&) noexcept = default;
         PointShape(Shape aShape) noexcept : mShape{aShape} {}
         PointShape(std::string_view aShape) { from(aShape); }
@@ -26,7 +26,7 @@ namespace acmacs
         constexpr Shape get() const noexcept { return mShape; }
 
      private:
-        Shape mShape;
+        Shape mShape{Circle};
 
         void from(std::string_view aShape)
             {
@@ -126,9 +126,9 @@ namespace acmacs
         ae::draw::v1::Scaled diameter_{0.0}; // drawi: use it if >0
         ae::draw::v1::Rotation rotation_{ae::draw::v1::NoRotation};
         ae::draw::v1::Aspect aspect_{ae::draw::v1::AspectNormal};
-        PointShape shape_;
-        LabelStyle label_;
-        std::string label_text_;
+        PointShape shape_{};
+        LabelStyle label_{};
+        std::string label_text_{};
 
     }; // class PointStyle
 
@@ -183,8 +183,8 @@ namespace acmacs
         bool modified_label_{false};
         bool modified_label_text_{false};
 
-        acmacs::color::Modifier fill_modifier_;
-        acmacs::color::Modifier outline_modifier_;
+        acmacs::color::Modifier fill_modifier_{};
+        acmacs::color::Modifier outline_modifier_{};
 
         void all_modified() noexcept
         {
@@ -223,8 +223,8 @@ namespace acmacs
 
     struct PointStylesCompacted
     {
-        std::vector<PointStyle> styles;
-        std::vector<size_t> index;
+        std::vector<PointStyle> styles{};
+        std::vector<size_t> index{};
 
     }; // class PointStylesCompacted
 

@@ -95,12 +95,12 @@ namespace ae::virus::passage
             static constexpr auto cond = dsl::peek(just_or) | dsl::peek(just_cs) | dsl::peek(cli) | dsl::peek(dir);
 
             static constexpr auto rule = //
-                (dsl::peek(ori) >> ori + dsl::any) //
-                | (dsl::peek(org) >> org + dsl::any) //
+                (dsl::peek(ori) >> (ori + dsl::any)) //
+                | (dsl::peek(org) >> (org + dsl::any)) //
                 | (dsl::peek(just_or) >> just_or) //
-                | (dsl::peek(cli) >> cli + dsl::any) //
+                | (dsl::peek(cli) >> (cli + dsl::any)) //
                 | (dsl::peek(just_cs) >> just_cs) //
-                | (dsl::peek(dir) >> dir + dsl::any) //
+                | (dsl::peek(dir) >> (dir + dsl::any)) //
                 ;
 
             static constexpr auto value = lexy::callback<std::string>([]() { return "OR"; });
@@ -122,7 +122,7 @@ namespace ae::virus::passage
             static constexpr auto hyphen = dsl::while_(dsl::hyphen);
             static constexpr auto symbol = dsl::digit<> / X / dsl::question_mark;
             static constexpr auto cond = dsl::peek(hyphen + dsl::digit<>);
-            static constexpr auto rule = dsl::peek(hyphen + symbol) >> hyphen + dsl::capture(dsl::while_(symbol));
+            static constexpr auto rule = dsl::peek(hyphen + symbol) >> (hyphen + dsl::capture(dsl::while_(symbol)));
             static constexpr auto value = lexy::as_string<std::string>;
         };
 
@@ -144,7 +144,7 @@ namespace ae::virus::passage
             static constexpr auto prefix = P + A + S + S + A + G + E;
             static constexpr auto prefix_details = D + E + T + A + I + L + S;
             static constexpr auto cond = dsl::peek(prefix);
-            static constexpr auto rule = prefix + (WS / dsl::hyphen) + dsl::opt(dsl::peek(prefix_details) >> prefix_details + WS) + dsl::opt(dsl::peek(dsl::colon) >> dsl::colon) + WS;
+            static constexpr auto rule = prefix + (WS / dsl::hyphen) + dsl::opt(dsl::peek(prefix_details) >> (prefix_details + WS)) + dsl::opt(dsl::peek(dsl::colon) >> dsl::colon) + WS;
             static constexpr auto value = lexy::callback<lexy::nullopt>([](auto...) { return lexy::nullopt{}; });
         };
 
@@ -152,8 +152,8 @@ namespace ae::virus::passage
         {
             static constexpr auto rule = //
                 dsl::opt(passage_prefix::cond >> dsl::p<passage_prefix>) +
-                ((passage_or_cs::cond >> dsl::p<passage_or_cs> + dsl::nullopt + dsl::nullopt) // nullopt to match value callback arg list
-                 | (passage_name::cond >> dsl::p<passage_name> + WS + dsl::opt(dsl::p<passage_number>) + WS + dsl::opt(dsl::p<passage_separator>) + WS));
+                ((passage_or_cs::cond >> (dsl::p<passage_or_cs> + dsl::nullopt + dsl::nullopt)) // nullopt to match value callback arg list
+                 | (passage_name::cond >> (dsl::p<passage_name> + WS + dsl::opt(dsl::p<passage_number>) + WS + dsl::opt(dsl::p<passage_separator>) + WS)));
 
             static constexpr auto value = lexy::callback<deconstructed_t::element_t>([](lexy::nullopt, const std::string& name, auto number, auto separator) {
                 deconstructed_t::element_t result{.name = name};
@@ -280,7 +280,7 @@ ae::virus::passage::deconstructed_t ae::virus::passage::parse(std::string_view s
         // fmt::print(">> not parsed: {} <- \"{}\"\n", err.what(), source);
         messages.add(Message::unrecognized_passage, err.what(), source, message_location);
         deconstructed_t result;
-        result.elements.push_back(deconstructed_t::element_t{.name{source}}); // store original passage without any modifications!
+        result.elements.push_back(deconstructed_t::element_t{.name{std::string{source}}}); // store original passage without any modifications! (g++11 wants std::string{source})
         result.uppercase();
         return result;
     }

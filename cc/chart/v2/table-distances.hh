@@ -71,9 +71,9 @@ namespace ae::chart::v2
             // IteratorForPoint end_more_than_for(size_t point_no) const { return IteratorForPoint(point_no, more_than().end(), more_than().end()); }
 
           private:
-            entries_t regular_;
-            entries_t less_than_;
-            // entries_t more_than_;
+            entries_t regular_{};
+            entries_t less_than_{};
+            // entries_t more_than_{};
 
         }; // class DistancesBase
 
@@ -161,7 +161,7 @@ namespace ae::chart::v2
         }
 
       private:
-        dodgy_titer_is_regular dodgy_is_regular_ = dodgy_titer_is_regular::no;
+        dodgy_titer_is_regular dodgy_is_regular_{dodgy_titer_is_regular::no};
 
     }; // class TableDistances
 

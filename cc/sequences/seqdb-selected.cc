@@ -1,4 +1,5 @@
 #include <regex>
+#include <variant>
 
 #include "utils/string-hash.hh"
 #include "virus/passage.hh"

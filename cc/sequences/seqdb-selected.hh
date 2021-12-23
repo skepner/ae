@@ -101,7 +101,7 @@ namespace ae::sequences
 
       private:
         const Seqdb& seqdb_;
-        SeqdbSeqRefList refs_;
+        SeqdbSeqRefList refs_{};
 
         template <typename Pred> static inline void erase_if(SeqdbSelected& selected, Pred&& pred)
         {

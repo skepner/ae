@@ -44,7 +44,7 @@ namespace ae
         explicit constexpr operator const T&() const noexcept { return value_; }
 
       protected:
-        T value_;
+        T value_{};
     };
 
     // ----------------------------------------------------------------------

@@ -363,11 +363,11 @@ namespace ae::chart::v2
     {
         struct location_data_t
         {
-            std::string name;
-            std::string country;
-            std::string continent;
-            ae::locdb::v3::Latitude latitude;
-            ae::locdb::v3::Longitude longitude;
+            std::string name{};
+            std::string country{};
+            std::string continent{};
+            ae::locdb::v3::Latitude latitude{0.0};
+            ae::locdb::v3::Longitude longitude{0.0};
         };
 
         class AntigenSerum
@@ -467,10 +467,10 @@ namespace ae::chart::v2
     // Argument for antigen/serum selecting object
     template <typename AgSr> struct SelectionData
     {
-        size_t index;
-        size_t point_no;
-        std::shared_ptr<AgSr> ag_sr;
-        PointCoordinates coord;
+        size_t index{0];
+        size_t point_no{0};
+        std::shared_ptr<AgSr> ag_sr{};
+        PointCoordinates coord{};
         std::shared_ptr<Titers> titers{nullptr};
     };
 
@@ -743,7 +743,6 @@ namespace ae::chart::v2
             remove(aIndexes, [first_date, after_last_date](const auto& entry) { return entry.date().within_range(first_date, after_last_date); });
         }
 
-
         enum class include_reference { no, yes };
         std::vector<Date> all_dates(include_reference inc_ref) const; // list of unique dates of the antigens of a chart
 
@@ -833,7 +832,7 @@ namespace ae::chart::v2
 
       private:
         const Chart& chart_;
-        std::optional<size_t> projection_no_;
+        std::optional<size_t> projection_no_{std::nullopt};
 
     }; // class Projection
 
@@ -969,7 +968,7 @@ namespace ae::chart::v2
         virtual bool has_sequences() const = 0;
 
       private:
-        mutable std::map<MinimumColumnBasis, std::shared_ptr<ColumnBases>> computed_column_bases_; // cache, computing might be slow for big charts
+        mutable std::map<MinimumColumnBasis, std::shared_ptr<ColumnBases>> computed_column_bases_{}; // cache, computing might be slow for big charts
 
     }; // class Chart
 

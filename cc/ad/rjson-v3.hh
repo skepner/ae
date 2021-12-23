@@ -59,7 +59,7 @@ namespace rjson::v3
         const char* what() const noexcept override { return message_.data(); }
 
       private:
-        std::string message_;
+        std::string message_{};
 
     }; // class parse_error
 
@@ -101,7 +101,7 @@ namespace rjson::v3
 
           private:
             using content_t = acmacs::small_map_with_unique_keys_t<std::string_view, value>; // to avoid sorting which invalidates string_view's
-            content_t content_;
+            content_t content_{};
         };
 
         class array
@@ -127,7 +127,7 @@ namespace rjson::v3
             }
 
           private:
-            std::vector<value> content_;
+            std::vector<value> content_{};
         };
 
         class simple
@@ -139,7 +139,7 @@ namespace rjson::v3
             constexpr std::string_view _content() const noexcept { return content_; }
 
           private:
-            std::string_view content_;
+            std::string_view content_{};
         };
 
         class string : public simple
@@ -166,7 +166,7 @@ namespace rjson::v3
             }
 
           private:
-            std::optional<std::string> scontent_; // see constructor with with_content_ above
+            std::optional<std::string> scontent_{std::nullopt}; // see constructor with with_content_ above
         };
 
         class number : public simple
@@ -221,7 +221,7 @@ namespace rjson::v3
             }
 
           private:
-            bool content_;
+            bool content_{false};
         };
 
     } // namespace detail
@@ -282,7 +282,7 @@ namespace rjson::v3
       private:
         using value_base = std::variant<detail::null, detail::object, detail::array, detail::string, detail::number, detail::boolean>; // null must be the first alternative, it is the default value;
 
-        value_base value_;
+        value_base value_{detail::null{}};
 
         friend value_read parse(std::string&& data, std::string_view filename);
 
@@ -307,7 +307,7 @@ namespace rjson::v3
             return *this;
         }
 
-        std::string buffer_;
+        std::string buffer_{};
 
         friend value_read parse(std::string&& data, std::string_view filename);
     };

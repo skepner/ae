@@ -130,7 +130,7 @@ std::pair<std::string_view, const ae::locdb::v3::Db::location*> ae::locdb::v3::D
 
 // ----------------------------------------------------------------------
 
-std::string ae::locdb::v3::Db::abbreviation(std::string_view location) const
+std::string ae::locdb::v3::Db::abbreviation(std::string_view loc) const
 {
       // if it's in USA, use CDC abbreviation (if available)
       // if aName has multiple words, use first letters of words in upper case
@@ -145,8 +145,8 @@ std::string ae::locdb::v3::Db::abbreviation(std::string_view location) const
             abbreviation.push_back(static_cast<char>(tolower(to_abbr[1])));
     };
 
-    if (const auto [name, loc] = find(location); loc) {
-        if (loc->country == "UNITED STATES OF AMERICA"sv)
+    if (const auto [name, found] = find(loc); found) {
+        if (found->country == "UNITED STATES OF AMERICA"sv)
             abbreviation = find_cdc_abbreviation_by_name(name);
         if (abbreviation.empty())
             use_abbreviation_of(name);

@@ -31,11 +31,11 @@ namespace ae::chart::v2
 
             virtual std::string full_name() const = 0; // for make_orig()
 
-            size_t index;
-            ae::virus::Name name;
-            ae::virus::Reassortant reassortant;
-            Annotations annotations;
-            std::string orig_full_name_;
+            size_t index{0};
+            ae::virus::Name name{};
+            ae::virus::Reassortant reassortant{};
+            Annotations annotations{};
+            std::string orig_full_name_{};
 
             void make_orig()    // to report if fields were updated by antigen_selector_t or serum_selector_t (in acmacs-py)
             {
@@ -77,7 +77,7 @@ namespace ae::chart::v2
 
             bool operator<(const AntigenEntry& rhs) const { return compare(*this, rhs) == std::strong_ordering::less; }
 
-            ae::virus::Passage passage;
+            ae::virus::Passage passage{};
 
         }; // class AntigenEntry
 
@@ -113,8 +113,8 @@ namespace ae::chart::v2
 
             bool operator<(const SerumEntry& rhs) const { return compare(*this, rhs) == std::strong_ordering::less; }
 
-            SerumId serum_id;
-            ae::virus::Passage passage;
+            SerumId serum_id{};
+            ae::virus::Passage passage{};
 
         }; // class SerumEntry
 
@@ -179,7 +179,7 @@ namespace ae::chart::v2
 
       private:
         class Impl;
-        std::unique_ptr<Impl> impl_;
+        std::unique_ptr<Impl> impl_{};
 
     }; // class CommonAntigensSera
 

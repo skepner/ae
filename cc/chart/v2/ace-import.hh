@@ -35,9 +35,9 @@ namespace ae::chart::v2
         const rjson::value& extension_fields() const override;
 
      private:
-        rjson::value data_;
-        mutable ace::name_index_t mAntigenNameIndex;
-        mutable ProjectionsP projections_;
+        rjson::value data_{};
+        mutable ace::name_index_t mAntigenNameIndex{};
+        mutable ProjectionsP projections_{};
 
     }; // class AceChart
 
@@ -133,7 +133,7 @@ namespace ae::chart::v2
 
      private:
         const rjson::value& data_;
-        ace::name_index_t& mAntigenNameIndex;
+        ace::name_index_t& mAntigenNameIndex{};
 
         void make_name_index() const;
 
@@ -189,7 +189,7 @@ namespace ae::chart::v2
 
       private:
         const rjson::value& data_;
-        MinimumColumnBasis minimum_column_basis_;
+        MinimumColumnBasis minimum_column_basis_{};
 
     }; // class AceColumnBases
 
@@ -236,7 +236,7 @@ namespace ae::chart::v2
 
      private:
         const rjson::value& data_;
-        mutable std::vector<ProjectionP> projections_;
+        mutable std::vector<ProjectionP> projections_{};
 
     }; // class AceProjections
 

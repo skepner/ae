@@ -28,7 +28,7 @@ namespace acmacs
         constexpr Value get() const noexcept { return mFontSlant; }
 
      private:
-        Value mFontSlant;
+        Value mFontSlant{Normal};
 
         void from(std::string_view aFontSlant)
         {
@@ -61,7 +61,7 @@ namespace acmacs
         constexpr Value get() const noexcept { return mFontWeight; }
 
      private:
-        Value mFontWeight;
+        Value mFontWeight{Normal};
 
         void from(std::string_view aFontWeight)
         {
@@ -89,9 +89,9 @@ namespace acmacs
                 return slant == ts.slant && weight == ts.weight && font_family == ts.font_family;
             }
 
-        FontSlant slant;
-        FontWeight weight;
-        std::string font_family;
+        FontSlant slant{};
+        FontWeight weight{};
+        std::string font_family{};
 
     }; // class TextStyle
 
@@ -113,7 +113,7 @@ namespace acmacs
         color::Modifier color{BLACK};
         ae::draw::v1::Rotation rotation{ae::draw::v1::NoRotation};
         double interline{0.2};
-        TextStyle style;
+        TextStyle style{};
 
     }; // class LabelStyle
 

@@ -10,6 +10,7 @@
 #endif
 
 #ifdef __GNUG__
+#pragma GCC diagnostic ignored "-Weffc++"
 #pragma GCC diagnostic ignored "-Wunknown-pragmas"
 #endif
 
@@ -18,6 +19,3 @@
 #pragma GCC diagnostic pop
 
 // ----------------------------------------------------------------------
-/// Local Variables:
-/// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
-/// End:

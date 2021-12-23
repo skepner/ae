@@ -81,7 +81,7 @@ namespace ae::sequences
 
     struct seqdb_issues_t
     {
-        std::string data_;
+        std::string data_{};
 
         seqdb_issues_t() = default;
         seqdb_issues_t(const seqdb_issues_t&) = default;

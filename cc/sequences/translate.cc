@@ -34,8 +34,8 @@ bool ae::sequences::translate(RawSequence& sequence, Messages& messages)
 
         struct translated_t
         {
-            std::string longest; // translated longest part
-            size_t offset;       // nuc prefix size at which translation started
+            std::string longest{}; // translated longest part
+            size_t offset{};       // nuc prefix size at which translation started
         };
         // using translated_t = std::tuple<std::string, size_t>; // translated longest part, nuc prefix size at which translation started
 

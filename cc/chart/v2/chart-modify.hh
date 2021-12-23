@@ -98,14 +98,14 @@ namespace ae::chart::v2
         explicit ChartModify(const Chart& source, bool copy_projections, bool copy_plot_spec);
 
       private:
-        ChartP main_;
-        std::shared_ptr<InfoModify> info_;
-        std::shared_ptr<AntigensModify> antigens_;
-        std::shared_ptr<SeraModify> sera_;
-        std::shared_ptr<TitersModify> titers_;
-        std::shared_ptr<ColumnBasesModify> forced_column_bases_;
-        std::shared_ptr<ProjectionsModify> projections_;
-        std::shared_ptr<PlotSpecModify> plot_spec_;
+        ChartP main_{};
+        std::shared_ptr<InfoModify> info_{};
+        std::shared_ptr<AntigensModify> antigens_{};
+        std::shared_ptr<SeraModify> sera_{};
+        std::shared_ptr<TitersModify> titers_{};
+        std::shared_ptr<ColumnBasesModify> forced_column_bases_{};
+        std::shared_ptr<ProjectionsModify> projections_{};
+        std::shared_ptr<PlotSpecModify> plot_spec_{};
         rjson::value extensions_{rjson::null{}};
 
         void report_disconnected_unmovable(const DisconnectedPoints& disconnected, const UnmovablePoints& unmovable) const;
@@ -179,16 +179,16 @@ namespace ae::chart::v2
         void add_source(InfoP source) { sources_.push_back(std::make_shared<InfoModify>(source)); }
 
       protected:
-        std::string name_;
-        std::string computed_name_;
-        Virus virus_;
-        ae::virus::type_subtype_t virus_type_;
-        std::string subset_;
-        Assay assay_;
-        Lab lab_;
-        RbcSpecies rbc_species_;
-        std::string date_;
-        std::vector<InfoP> sources_;
+        std::string name_{};
+        std::string computed_name_{};
+        Virus virus_{};
+        ae::virus::type_subtype_t virus_type_{};
+        std::string subset_{};
+        Assay assay_{};
+        Lab lab_{};
+        RbcSpecies rbc_species_{};
+        std::string date_{};
+        std::vector<InfoP> sources_{};
 
     }; // class InfoModify
 
@@ -233,16 +233,16 @@ namespace ae::chart::v2
         void update_with(const Antigen& main);
 
       private:
-        ae::virus::Name name_;
-        Date date_;
-        ae::virus::Passage passage_;
-        BLineage lineage_;
-        ae::virus::Reassortant reassortant_;
-        Annotations annotations_;
-        LabIds lab_ids_;
-        Clades clades_;
-        Continent continent_;
-        bool reference_ = false;
+        ae::virus::Name name_{};
+        Date date_{};
+        ae::virus::Passage passage_{};
+        BLineage lineage_{};
+        ae::virus::Reassortant reassortant_{};
+        Annotations annotations_{};
+        LabIds lab_ids_{};
+        Clades clades_{};
+        Continent continent_{};
+        bool reference_{false};
         std::string sequence_aa_{};
         std::string sequence_nuc_{};
 
@@ -287,15 +287,15 @@ namespace ae::chart::v2
         void update_with(const Serum& main);
 
       private:
-        ae::virus::Name name_;
-        ae::virus::Passage passage_;
-        BLineage lineage_;
-        ae::virus::Reassortant reassortant_;
-        Annotations annotations_;
-        Clades clades_;
-        SerumId serum_id_;
-        SerumSpecies serum_species_;
-        mutable PointIndexList homologous_antigens_;
+        ae::virus::Name name_{};
+        ae::virus::Passage passage_{};
+        BLineage lineage_{};
+        ae::virus::Reassortant reassortant_{};
+        Annotations annotations_{};
+        Clades clades_{};
+        SerumId serum_id_{};
+        SerumSpecies serum_species_{};
+        mutable PointIndexList homologous_antigens_{};
         std::string sequence_aa_ {};
         std::string sequence_nuc_{};
 
@@ -458,10 +458,10 @@ namespace ae::chart::v2
 
       private:
         // size_t number_of_antigens_;
-        size_t number_of_sera_;
-        titers_t titers_;
-        layers_t layers_;
-        bool layer_titer_modified_ = false; // force titer recalculation
+        size_t number_of_sera_{0};
+        titers_t titers_{};
+        layers_t layers_{};
+        bool layer_titer_modified_{false}; // force titer recalculation
 
         static Titer find_titer_for_serum(const sparse_row_t& aRow, size_t aSerumNo);
         static Titer titer_in_sparse_t(const sparse_t& aSparse, size_t aAntigenNo, size_t aSerumNo);
@@ -640,15 +640,15 @@ namespace ae::chart::v2
         constexpr UnmovableInTheLastDimensionPoints& get_unmovable_in_the_last_dimension() { return unmovable_in_the_last_dimension_; }
 
       private:
-        std::shared_ptr<Layout> layout_;
-        ae::draw::v1::Transformation transformation_;
-        mutable std::shared_ptr<Layout> transformed_layout_;
-        mutable std::optional<double> stress_;
-        std::shared_ptr<ColumnBasesModify> forced_column_bases_;
-        std::string comment_;
-        DisconnectedPoints disconnected_;
-        UnmovablePoints unmovable_;
-        UnmovableInTheLastDimensionPoints unmovable_in_the_last_dimension_;
+        std::shared_ptr<Layout> layout_{};
+        ae::draw::v1::Transformation transformation_{};
+        mutable std::shared_ptr<Layout> transformed_layout_{};
+        mutable std::optional<double> stress_{};
+        std::shared_ptr<ColumnBasesModify> forced_column_bases_{};
+        std::string comment_{};
+        DisconnectedPoints disconnected_{};
+        UnmovablePoints unmovable_{};
+        UnmovableInTheLastDimensionPoints unmovable_in_the_last_dimension_{};
 
         friend class ProjectionsModify;
         friend class ChartModify; // to set stress_ in ChartModify::relax()
@@ -695,7 +695,7 @@ namespace ae::chart::v2
         }
 
       private:
-        ProjectionP main_;
+        ProjectionP main_{};
 
     }; // class ProjectionModifyMain
 
@@ -746,10 +746,10 @@ namespace ae::chart::v2
         AvidityAdjusts& avidity_adjusts_modify() { return avidity_adjusts_; }
 
       private:
-        MinimumColumnBasis minimum_column_basis_;
-        enum dodgy_titer_is_regular dodgy_titer_is_regular_ = dodgy_titer_is_regular::no;
+        MinimumColumnBasis minimum_column_basis_{};
+        enum dodgy_titer_is_regular dodgy_titer_is_regular_{dodgy_titer_is_regular::no};
         double stress_diff_to_stop_{0};
-        AvidityAdjusts avidity_adjusts_;
+        AvidityAdjusts avidity_adjusts_{};
 
     }; // class ProjectionModifyNew
 
@@ -812,7 +812,7 @@ namespace ae::chart::v2
         }
 
       private:
-        std::vector<ProjectionModifyP> projections_;
+        std::vector<ProjectionModifyP> projections_{};
 
         void set_projection_no()
         {
@@ -1068,11 +1068,11 @@ namespace ae::chart::v2
         }
 
       private:
-        PlotSpecP main_;
-        size_t number_of_antigens_;
-        bool modified_ = false;
-        std::vector<acmacs::PointStyle> styles_;
-        DrawingOrder drawing_order_;
+        PlotSpecP main_{};
+        size_t number_of_antigens_{};
+        bool modified_{false};
+        std::vector<acmacs::PointStyle> styles_{};
+        DrawingOrder drawing_order_{};
 
     }; // class PlotSpecModify
 

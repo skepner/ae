@@ -161,6 +161,12 @@ namespace ae::chart::v2
 
     // ----------------------------------------------------------------------
 
+#pragma GCC diagnostic push
+
+#ifdef __GNUG__
+#pragma GCC diagnostic ignored "-Wnon-virtual-dtor" // g++-11 base class ‘class std::vector<double>’ has accessible non-virtual destructor
+#endif
+
     class Layout : public std::vector<double>
     {
       public:
@@ -273,6 +279,8 @@ namespace ae::chart::v2
         number_of_dimensions_t number_of_dimensions_{2};
 
     }; // class Layout
+
+#pragma GCC diagnostic pop
 
     inline PointCoordinates LayoutConstIterator::operator*() const
     {

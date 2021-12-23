@@ -29,8 +29,8 @@ namespace ae::tree
     struct Leaf : public Node
     {
         Leaf() = default;
-        Leaf(std::string_view a_name, EdgeLength a_edge) : Node{.name{a_name}, .edge{a_edge}} {}
-        Leaf(std::string_view a_name, EdgeLength a_edge, EdgeLength a_cumulative_edge) : Node{.name{a_name}, .edge{a_edge}, .cumulative_edge{a_cumulative_edge}} {}
+        Leaf(std::string_view a_name, EdgeLength a_edge) : Node{.name{std::string{a_name}}, .edge{a_edge}} {} // g++-11 wants std::string{a_name}
+        Leaf(std::string_view a_name, EdgeLength a_edge, EdgeLength a_cumulative_edge) : Node{.name{std::string{a_name}}, .edge{a_edge}, .cumulative_edge{a_cumulative_edge}} {}
 
         bool shown{true};
         std::string date{};

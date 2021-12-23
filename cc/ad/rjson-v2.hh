@@ -5,9 +5,9 @@
 // To avoid warnings about ==  and !=
 // ISO C++20 considers use of overloaded operator '==' (with operand types 'rjson::v2::value' and 'rjson::v2::value') to be ambiguous despite
 
-#ifdef __clang__
-#pragma GCC diagnostic ignored "-Wambiguous-reversed-operator"
-#endif
+// #ifdef __clang__
+// #pragma GCC diagnostic ignored "-Wambiguous-reversed-operator"
+// #endif
 
 // ----------------------------------------------------------------------
 
@@ -20,6 +20,7 @@
 #include <stdexcept>
 #include <type_traits>
 #include <limits>
+#include <optional>
 
 #include "ad/sfinae.hh"
 #include "ad/format-double.hh"
@@ -124,7 +125,7 @@ namespace rjson::inline v2
         template <typename F> void for_each(F&& func);
 
       private:
-        content_t content_;
+        content_t content_{};
 
         friend std::string format(const object& val, space_after_comma, const PrettyHandler&, show_empty_values);
         friend std::string pretty(const object& val, emacs_indent, const PrettyHandler&, size_t prefix);
@@ -169,7 +170,7 @@ namespace rjson::inline v2
         template <typename Func> std::optional<size_t> find_index_if(Func&& func) const;
 
       private:
-        std::vector<value> content_;
+        std::vector<value> content_{};
 
         friend std::string format(const array& val, space_after_comma, const PrettyHandler&, show_empty_values);
         friend std::string pretty(const array& val, emacs_indent, const PrettyHandler&, size_t prefix);
@@ -313,7 +314,7 @@ namespace rjson::inline v2
       private:
         using value_base = std::variant<null, const_null, object, array, std::string, number, bool>; // null must be the first alternative, it is the default value;
 
-        value_base value_;
+        value_base value_{null{}};
 
         template <typename S> const value& get1(S field_name) const noexcept; // if this is not object or field not present, returns ConstNull
 //        template <typename T> T to_integer() const;

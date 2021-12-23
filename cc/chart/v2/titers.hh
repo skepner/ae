@@ -111,8 +111,8 @@ namespace ae::chart::v2
             constexpr operator const Titer& () const { return titer; }
             constexpr bool operator==(const Data& rhs) const { return antigen == rhs.antigen && serum == rhs.serum; }
             constexpr bool operator!=(const Data& rhs) const { return !operator==(rhs); }
-            Titer titer;
-            size_t antigen, serum;
+            Titer titer{};
+            size_t antigen{0}, serum{0};
         };
 
         class TiterGetter
@@ -132,8 +132,8 @@ namespace ae::chart::v2
         const TiterIterator& operator++() { getter_->next(data_); return *this; }
 
       private:
-        Data data_;
-        std::shared_ptr<TiterGetter> getter_;
+        Data data_{};
+        std::shared_ptr<TiterGetter> getter_{};
         enum class begin { begin };
         enum class end { end };
 

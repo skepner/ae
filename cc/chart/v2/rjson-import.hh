@@ -209,7 +209,7 @@ namespace ae::chart::v2
       private:
         const rjson::value& data_;
         const Keys& keys_;
-        mutable std::shared_ptr<Layout> layout_;
+        mutable std::shared_ptr<Layout> layout_{};
 
     }; // class RjsonProjection
 

@@ -22,7 +22,7 @@ namespace ae::chart::v2
 
       private:
         constexpr static size_t N{624};
-        std::array<unsigned long, N> mt_;
+        std::array<unsigned long, N> mt_{};
         size_t mti_{N + 1};
 
         void init(unsigned long seed);
@@ -91,9 +91,9 @@ namespace ae::chart::v2
         // }
 
       private:
-        double diameter_;
-        std::mutex generator_access_;
-        std::uniform_real_distribution<> distribution_;
+        double diameter_{0.0};
+        std::mutex generator_access_{};
+        std::uniform_real_distribution<> distribution_{};
 
     }; // class LayoutRandomizerPlain
 

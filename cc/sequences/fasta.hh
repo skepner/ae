@@ -19,7 +19,7 @@ namespace ae::sequences::fasta
 
         struct value_t
         {
-            std::shared_ptr<RawSequence> sequence; // shared_ptr for accessing via pybind11
+            std::shared_ptr<RawSequence> sequence{}; // shared_ptr for accessing via pybind11
             std::string_view filename{};
             size_t line_no{0};
             friend bool operator==(const value_t&, const value_t&) = default;
@@ -36,8 +36,10 @@ namespace ae::sequences::fasta
             using difference_type =  std::ptrdiff_t;
 
             iterator() = default;
-            // iterator(iterator&&) = default;
-            // iterator& operator=(iterator&&) = default;
+            iterator(const iterator&) = default;
+            iterator(iterator&&) = default;
+            iterator& operator=(iterator&&) = default;
+            iterator& operator=(const iterator&) = default;
 
             const value_type* operator->() const { return &value_; }
             const value_type& operator*() const  { return value_; }
@@ -50,7 +52,7 @@ namespace ae::sequences::fasta
             std::string_view data_{};
             std::string_view::const_iterator next_;
             size_t line_no_{1};
-            std::string_view filename_;
+            std::string_view filename_{};
 
             iterator(std::string_view data, std::string_view filename) : data_{data}, next_{data_.begin()}, filename_{filename} { operator++(); }
 

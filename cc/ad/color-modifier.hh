@@ -45,7 +45,7 @@ namespace acmacs::color
         operator Color() const;
 
       private:
-        applicators_t applicators_; // no change if empty, applied in order stored
+        applicators_t applicators_{}; // no change if empty, applied in order stored
 
         applicators_t::iterator find_last_color() noexcept;
         applicators_t::const_iterator find_last_color() const noexcept;

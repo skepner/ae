@@ -116,12 +116,12 @@ namespace ae::sequences
         using hash_index_all_t = std::unordered_map<hash_t, SeqdbSeqRefList, ae::string_hash_for_unordered_map, std::equal_to<>>;
         using seq_id_index_t = std::unordered_map<seq_id_t, SeqdbSeqRef, ae::string_hash_for_unordered_map, std::equal_to<>>;
 
-        virus::type_subtype_t subtype_;
-        std::vector<SeqdbEntry> entries_;
+        virus::type_subtype_t subtype_{};
+        std::vector<SeqdbEntry> entries_{};
         bool modified_{false};
-        hash_index_t hash_index_; // hash -> name
-        hash_index_all_t hash_index_all_; // hash -> vector<ref>
-        mutable seq_id_index_t seq_id_index_;
+        hash_index_t hash_index_{}; // hash -> name
+        hash_index_all_t hash_index_all_{}; // hash -> vector<ref>
+        mutable seq_id_index_t seq_id_index_{};
         mutable verbose verbose_{verbose::no};
 
         std::filesystem::path filename() const;
@@ -138,13 +138,13 @@ namespace ae::sequences
 
     struct SeqdbEntry
     {
-        std::string name;
-        std::string continent;
-        std::string country;
-        std::vector<std::string> dates;
-        lineage_t lineage;
-        std::vector<SeqdbSeq> seqs;
-        std::string host;
+        std::string name{};
+        std::string continent{};
+        std::string country{};
+        std::vector<std::string> dates{};
+        lineage_t lineage{};
+        std::vector<SeqdbSeq> seqs{};
+        std::string host{};
 
         SeqdbEntry() = default;
         SeqdbEntry(const RawSequence& raw_sequence);
@@ -214,16 +214,16 @@ namespace ae::sequences
             bool empty() const { return accession_number.empty() && gisaid_dna_accession_no.empty() && gisaid_dna_insdc.empty() && gisaid_identifier.empty() && gisaid_last_modified.empty(); }
         };
 
-        // master_ref_t master; // for slave only
-        sequence_aa_t aa;
-        sequence_nuc_t nuc;
-        std::vector<std::string> annotations;
-        std::vector<std::string> reassortants;
-        std::vector<std::string> passages;
-        hash_t hash;
-        seqdb_issues_t issues;
-        labs_t lab_ids;
-        gisaid_data_t gisaid;
+        // master_ref_t master{}; // for slave only
+        sequence_aa_t aa{};
+        sequence_nuc_t nuc{};
+        std::vector<std::string> annotations{};
+        std::vector<std::string> reassortants{};
+        std::vector<std::string> passages{};
+        hash_t hash{};
+        seqdb_issues_t issues{};
+        labs_t lab_ids{};
+        gisaid_data_t gisaid{};
 
         SeqdbSeq() = default;
         bool update(const RawSequence& raw_sequence, bool keep_sequence); // returns if entry was modified

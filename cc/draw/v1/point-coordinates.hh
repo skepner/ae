@@ -217,7 +217,7 @@ namespace ae::draw::v1
             size_t size; };
         struct ConstRef { const double* const begin; size_t size; };
 
-        std::variant<Store2D, Store3D, StoreXD, Ref, ConstRef> data_;
+        std::variant<Store2D, Store3D, StoreXD, Ref, ConstRef> data_{};
 
     }; // class PointCoordinates
 

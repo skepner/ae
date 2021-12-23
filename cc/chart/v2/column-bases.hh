@@ -35,7 +35,7 @@ namespace ae::chart::v2
         operator std::string() const noexcept { return format("{}", use_none::yes); }
 
       private:
-        double value_;
+        double value_{};
 
         void from(std::string_view value);
 
@@ -82,7 +82,7 @@ namespace ae::chart::v2
         void insert(size_t before, double value) { data_.insert(data_.begin() + static_cast<decltype(data_)::difference_type>(before), value); }
 
      private:
-        std::vector<double> data_;
+        std::vector<double> data_{};
 
     }; // class ColumnBases
 

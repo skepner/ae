@@ -34,7 +34,7 @@ namespace ae::sequences
 
       private:
         using entries_t = std::vector<entry_t>;
-        std::unordered_map<std::string, entries_t> data_;
+        std::unordered_map<std::string, entries_t> data_{};
 
         void load(const std::filesystem::path& clades_file);
         std::string subtype_key(const ae::virus::type_subtype_t& subtype, const lineage_t& lineage) const;

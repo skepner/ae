@@ -36,12 +36,12 @@ namespace ae::chart::v2
     {
         optimization_status(optimization_method a_method) : method{a_method} {}
         optimization_method method;
-        size_t number_of_iterations = 0;
-        size_t number_of_stress_calculations = 0;
-        std::string termination_report;
-        std::chrono::microseconds time;
-        double initial_stress;
-        double final_stress;
+        size_t number_of_iterations{0};
+        size_t number_of_stress_calculations{0};
+        std::string termination_report{};
+        std::chrono::microseconds time{0};
+        double initial_stress{0.0};
+        double final_stress{0.0};
 
     }; // struct optimization_status
 

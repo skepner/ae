@@ -33,9 +33,9 @@ namespace acmacs::color
             return *this;
         }
 
-        double h; // angle in degrees 0-360
-        double s; // percent
-        double v; // percent
+        double h{0.0}; // angle in degrees 0-360
+        double s{0.0}; // percent
+        double v{0.0}; // percent
     };
 
 } // namespace acmacs::color
