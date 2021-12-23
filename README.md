@@ -12,9 +12,9 @@
 - cmake 3.18+ (to build lexy)
   - macOS: brew install cmake
   - Ubuntu: sudo apt install cmake
-     > if older version of cmake is installed, use snap
-     > (sudo apt install snapd)
-     > sudo snap install cmake
+     > if older version of cmake is installed, use snap  
+     > (sudo apt install snapd)  
+     > sudo snap install cmake  
      > sudo ln -s /snap/bin/cmake /usr/local/bin`
 - zlib (brew install zlib)
 - libbz2
