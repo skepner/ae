@@ -1,6 +1,7 @@
 #pragma once
 
 #pragma GCC diagnostic push
+
 #ifdef __clang__
 // 8.0.1, clang 13
 #pragma GCC diagnostic ignored "-Wreserved-identifier" // identifier '_a' is reserved because it starts with '_' at global scope (bug in clang13 ?)
@@ -15,6 +16,7 @@
 
 #ifdef __GNUG__
 #pragma GCC diagnostic ignored "-Wdeprecated" // fmt/format.h: implicit capture of ‘this’ via ‘[=]’ is deprecated in C++20
+#pragma GCC diagnostic ignored "-Weffc++"
 #endif
 
 #include <fmt/format.h>

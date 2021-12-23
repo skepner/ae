@@ -40,8 +40,8 @@ libstudxml = static_library(
   install : false,
   override_options : ['cpp_std=gnu++11'],
   objects : [],
-  cpp_args : ['-DLIBSTUDXML_STATIC_LIB=1'],
-  c_args : ['-DLIBSTUDXML_STATIC_LIB=1'],
+  cpp_args : ['-DLIBSTUDXML_STATIC_LIB=1', '-w'],
+  c_args : ['-DLIBSTUDXML_STATIC_LIB=1', '-w'],
   pic : true
 )
 libstudxml_dep = declare_dependency(
@@ -233,6 +233,16 @@ xlnt_src = files(
   'source/detail/serialization/zstream.hpp',
   'third-party/miniz/miniz.h'
 )
+
+warnings = [
+]
+
+if meson.get_compiler('cpp').get_id() == 'clang'
+  cpp_args = []
+else
+  cpp_args = ['-include', 'limits']
+endif
+
 xlnt = shared_library(
   'xlnt',
   xlnt_src,
@@ -246,13 +256,8 @@ xlnt = shared_library(
     libstudxml.extract_all_objects()
   ],
   install_dir : 'lib',
-  cpp_args : [
-    '-DXLNT_SHARED=1',
-    '-Dxlnt_EXPORTS',
-    '-Wno-undef',
-    '-Wno-shorten-64-to-32'
-  ],
-  c_args : ['-DXLNT_SHARED=1', '-Dxlnt_EXPORTS']
+  cpp_args : ['-DXLNT_SHARED=1', '-Dxlnt_EXPORTS', '-w'] + cpp_args,
+  c_args : ['-DXLNT_SHARED=1', '-Dxlnt_EXPORTS', '-w']
 )
 xlnt_dep = declare_dependency(
   link_args : [],

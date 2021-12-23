@@ -33,12 +33,12 @@ namespace ae::tree
         Leaf(std::string_view a_name, EdgeLength a_edge, EdgeLength a_cumulative_edge) : Node{.name{a_name}, .edge{a_edge}, .cumulative_edge{a_cumulative_edge}} {}
 
         bool shown{true};
-        std::string date;
-        std::string continent;
-        std::string country;
-        sequences::sequence_aa_t aa;
-        sequences::sequence_nuc_t nuc;
-        std::vector<std::string> clades;
+        std::string date{};
+        std::string continent{};
+        std::string country{};
+        sequences::sequence_aa_t aa{};
+        sequences::sequence_nuc_t nuc{};
+        std::vector<std::string> clades{};
     };
 
     struct Inode : public Node

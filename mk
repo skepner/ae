@@ -11,7 +11,6 @@ BUILT=NO
 build()
 {
     trap 'fail "build failed"' ERR
-    meson --version
     if [[ ! -d "${BUILD_DIR}" || ! -f "${BUILD_DIR}/meson-private/coredata.dat" ]]; then
         rm -rf "${BUILD_DIR}"
         find_compiler

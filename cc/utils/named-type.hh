@@ -76,7 +76,7 @@ namespace ae
         using named_t<T, Tag>::operator==;
         using named_t<T, Tag>::operator<=>;
 
-        constexpr auto& operator++()
+        constexpr named_number_t<T, Tag>& operator++()
         {
             ++this->get();
             return *this;
@@ -89,13 +89,13 @@ namespace ae
             return saved;
         }
 
-        constexpr auto& operator--()
+        constexpr named_number_t<T, Tag>& operator--()
         {
             --this->get();
             return *this;
         }
 
-        constexpr auto operator--(int)
+        constexpr named_number_t<T, Tag> operator--(int)
         {
             const auto saved{*this};
             --this->get();

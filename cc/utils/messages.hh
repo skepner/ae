@@ -141,9 +141,10 @@ namespace ae
         }
 
       private:
-        std::vector<Message> messages_;
-        std::set<std::string> unrecognized_locations_;
+        std::vector<Message> messages_{};
+        std::set<std::string> unrecognized_locations_{};
     };
+
 } // namespace ae
 
 // ----------------------------------------------------------------------
