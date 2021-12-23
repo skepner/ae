@@ -470,7 +470,7 @@ namespace ae::chart::v2
         size_t index{0};
         size_t point_no{0};
         std::shared_ptr<AgSr> ag_sr{};
-        PointCoordinates coord{};
+        PointCoordinates coord;
         std::shared_ptr<Titers> titers{nullptr};
     };
 
