@@ -8,6 +8,7 @@
 #include <algorithm>
 
 #include "ext/fmt.hh"
+#include "ext/from_chars.hh"
 
 // ----------------------------------------------------------------------
 
@@ -135,6 +136,155 @@ namespace ae::string
         }
 
     }; // class split_iterator
+
+    // ----------------------------------------------------------------------
+
+    class split_error : public std::runtime_error { public: using std::runtime_error::runtime_error; };
+
+    namespace detail
+    {
+        // template <typename S> class split_iterator
+        // {
+        //  public:
+        //     using iterator_category = std::input_iterator_tag;
+        //     using value_type = std::string_view;
+        //     using difference_type = ssize_t;
+        //     using pointer = std::string_view*;
+        //     using reference = std::string_view&;
+
+        //     inline split_iterator() : mInputEnd(nullptr), mKeepEmpty(split_emtpy::remove), mBegin(nullptr), mEnd(nullptr) {}
+        //     inline split_iterator(const S& s, std::string_view delim, split_emtpy keep_empty)
+        //         : mInputEnd(&*s.cend()), mDelim(delim), mKeepEmpty(keep_empty), mBegin(s.data()), mEnd(nullptr)
+        //         {
+        //             if (mDelim.empty()) {
+        //                 mEnd = mInputEnd;
+        //             }
+        //             else
+        //                 next();
+        //         }
+
+        //     inline value_type operator*() noexcept
+        //         {
+        //             value_type res{mBegin, static_cast<typename value_type::size_type>(mEnd - mBegin)};
+        //             if (mKeepEmpty == split_emtpy::strip_keep || mKeepEmpty == split_emtpy::strip_remove)
+        //                 res = strip(res);
+        //             return res;
+        //         }
+
+        //     inline split_iterator& operator++() noexcept
+        //         {
+        //             if (mEnd != nullptr) {
+        //                 if (mDelim.empty())
+        //                     set_end();
+        //                 else
+        //                     next();
+        //             }
+        //             return *this;
+        //         }
+
+        //     split_iterator operator++(int) noexcept = delete;
+
+        //     inline bool operator==(const split_iterator& other) const noexcept
+        //         {
+        //             return mEnd == other.mEnd && (mEnd == nullptr || (mInputEnd == other.mInputEnd && mDelim == other.mDelim && mKeepEmpty == other.mKeepEmpty && mBegin == other.mBegin));
+        //         }
+
+        //     inline bool operator!=(const split_iterator& other) const noexcept { return !operator==(other); }
+
+        //  private:
+        //     const char* mInputEnd;
+        //     const std::string_view mDelim;
+        //     const split_emtpy mKeepEmpty;
+        //     const char* mBegin;
+        //     const char* mEnd;
+
+        //     inline void set_end() { mBegin = mEnd = nullptr; }
+
+        //       // http://stackoverflow.com/questions/236129/split-a-string-in-c
+        //     inline void next()
+        //         {
+        //             for (const char* substart = mEnd == nullptr ? mBegin : mEnd + mDelim.size(), *subend; substart <= mInputEnd; substart = subend + mDelim.size()) {
+        //                 subend = std::search(substart, mInputEnd, mDelim.cbegin(), mDelim.cend());
+        //                 if (substart != subend || mKeepEmpty == split_emtpy::keep || mKeepEmpty == split_emtpy::strip_keep) {
+        //                     mBegin = substart;
+        //                     mEnd = subend;
+        //                     return;
+        //                 }
+        //             }
+        //             set_end();
+        //         }
+
+        // }; // class split_iterator
+
+          // ======================================================================
+
+        template <typename T, typename Extractor> inline std::vector<T> split_into(std::string_view source, std::string_view delim, Extractor extractor, const char* extractor_name, split_emtpy keep_empty = split_emtpy::keep)
+        {
+            auto extract = [&](auto chunk) -> T {
+                               try {
+                                   size_t pos = 0; // g++-9 warn about uninitialized otherwise
+                                   const T result = extractor(chunk, &pos);
+                                   if (pos != chunk.size())
+                                       throw split_error{fmt::format("cannot read {} from \"{}\"", extractor_name, chunk)};
+                                   return result;
+                               }
+                               catch (split_error&) {
+                                   throw;
+                               }
+                               catch (std::exception& err) {
+                                   throw split_error{fmt::format("cannot read {} from \"{}\": {}", extractor_name, chunk, err.what())};
+                               }
+                           };
+
+            std::vector<T> result;
+            std::transform(split_iterator(source, delim, keep_empty), split_iterator(), std::back_inserter(result), extract);
+            return result;
+        }
+
+        template <typename T, typename Extractor> inline std::vector<T> split_into(std::string_view source, Extractor extractor, const char* extractor_name, split_emtpy keep_empty = split_emtpy::keep)
+        {
+            using namespace std::string_view_literals;
+            for (auto delim : {","sv, " "sv, ", "sv, ":"sv, ";"sv}) {
+                try {
+                    return detail::split_into<T>(source, delim, extractor, extractor_name, keep_empty);
+                }
+                catch (split_error&) {
+                }
+            }
+            throw split_error{fmt::format("cannot extract {}'s from \"{}\"", extractor_name, source)};
+        }
+
+    } // namespace detail
+
+    template <typename T> inline std::vector<T> split_into_uint(std::string_view source, std::string_view delim)
+    {
+        return detail::split_into<T>(source, delim, [](const auto& chunk, size_t* pos) -> T { return T{ae::from_chars<size_t>(chunk, *pos)}; }, "unsigned", split_emtpy::remove);
+    }
+
+    template <typename T> inline std::vector<T> split_into_uint(std::string_view source)
+    {
+        return detail::split_into<T>(source, [](const auto& chunk, size_t* pos) -> T { return T{ae::from_chars<size_t>(chunk, *pos)}; }, "unsigned", split_emtpy::remove);
+    }
+
+    inline std::vector<size_t> split_into_size_t(std::string_view source, std::string_view delim)
+    {
+        return detail::split_into<size_t>(source, delim, [](const auto& chunk, size_t* pos) -> size_t { return ae::from_chars<size_t>(chunk, *pos); }, "unsigned", split_emtpy::remove);
+    }
+
+    inline std::vector<size_t> split_into_size_t(std::string_view source)
+    {
+        return detail::split_into<size_t>(source, [](const auto& chunk, size_t* pos) -> size_t { return ae::from_chars<size_t>(chunk, *pos); }, "unsigned", split_emtpy::remove);
+    }
+
+    inline std::vector<double> split_into_double(std::string_view source, std::string_view delim)
+    {
+        return detail::split_into<double>(source, delim, [](const auto& chunk, size_t* pos) -> double { return ae::from_chars<double>(chunk, *pos); }, "double", split_emtpy::remove);
+    }
+
+    inline std::vector<double> split_into_double(std::string_view source)
+    {
+        return detail::split_into<double>(source, [](const auto& chunk, size_t* pos) -> double { return ae::from_chars<double>(chunk, *pos); }, "double", split_emtpy::remove);
+    }
 
 }
 

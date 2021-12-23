@@ -8,7 +8,6 @@
 
 ae::chart::v2::ChartP ae::chart::v2::import_from_decompressed_data(std::string aData, Verify aVerify)
 {
-    Timeit ti("reading chart from data: ", aReport);
     const std::string_view data_view(aData);
     if (is_ace(data_view))
         return ace_import(data_view, aVerify);
@@ -47,7 +46,7 @@ ae::chart::v2::ChartP ae::chart::v2::import_from_file(std::string aFilename, Ver
         throw import_error{fmt::format("[ae::chart::v2::import_from_file]: file not found: \"{}\"", aFilename)};
     }
     catch (std::exception& err) {
-        throw import_error{fmt::format("[ae::chart::v2::import_from_file]: unrecognized file content: \"{}\": {}", aFilename, err)};
+        throw import_error{fmt::format("[ae::chart::v2::import_from_file]: unrecognized file content: \"{}\": {}", aFilename, err.what())};
     }
 
 } // ae::chart::v2::import_from_file

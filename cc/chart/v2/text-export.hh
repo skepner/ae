@@ -16,10 +16,10 @@ namespace ae::chart::v2
     {
         fmt::memory_buffer out;
         for (const auto ag_no : antigens.indexes)
-            fmt::format_to_mb(out, "{}", ae::chart::v2::format_antigen(format, chart, ag_no, collapse_spaces_t::yes));
-        fmt::format_to_mb(out, "\n");
+            fmt::format_to(std::back_inserter(out), "{}", ae::chart::v2::format_antigen(format, chart, ag_no, collapse_spaces_t::yes));
+        fmt::format_to(std::back_inserter(out), "\n");
         for (const auto sr_no : sera.indexes)
-            fmt::format_to_mb(out, "{}", ae::chart::v2::format_serum(format, chart, sr_no, collapse_spaces_t::yes));
+            fmt::format_to(std::back_inserter(out), "{}", ae::chart::v2::format_serum(format, chart, sr_no, collapse_spaces_t::yes));
         return fmt::to_string(out);
     }
 

@@ -246,7 +246,7 @@ std::string export_projections_to_text(const ae::chart::v2::Chart& chart)
                     fmt::format_to(std::back_inserter(result), "{}", column_bases->column_basis(sr_no));
                 fmt::format_to(std::back_inserter(result), "\n");
             }
-            if (const auto transformation = projection->transformation(); transformation != acmacs::Transformation{} && transformation.valid())
+            if (const auto transformation = projection->transformation(); transformation != ae::draw::v1::Transformation{} && transformation.valid())
                 fmt::format_to(std::back_inserter(result), "  transformation: {}\n", transformation.as_vector());
             if (projection->dodgy_titer_is_regular() == ae::chart::v2::dodgy_titer_is_regular::yes)
                 fmt::format_to(std::back_inserter(result), "  dodgy-titer-is-regular: {}\n", true);

@@ -21,7 +21,7 @@ rjson::value ae::chart::v2::export_ace_to_rjson(const Chart& aChart, std::string
 {
     rjson::value ace{rjson::object{{
                 {"  version", "acmacs-ace-v1"},
-                {"?created", fmt::format("AD {} on {}", aProgramName, acmacs::time_format())},
+                {"?created", fmt::format("AD {}", aProgramName)},
                 {"c", rjson::object{{
                             {"i", rjson::object{}},
                             {"a", rjson::array{}},
@@ -126,7 +126,7 @@ void export_antigens(rjson::value& aTarget, std::shared_ptr<ae::chart::v2::Antig
         auto& object = aTarget.append(rjson::object{});
         object["N"] = static_cast<std::string>(antigen->name());
         rjson::set_field_if_not_empty(object, "D", antigen->date());
-        rjson::set_field_if_not_empty(object, "P", antigen->passage());
+        rjson::set_field_if_not_empty(object, "P", antigen->passage().to_string());
         rjson::set_field_if_not_empty(object, "R", antigen->reassortant());
         rjson::set_array_field_if_not_empty(object, "l", antigen->lab_ids());
         rjson::set_field_if_not_empty(object, "S", semantic);
@@ -151,7 +151,7 @@ void export_sera(rjson::value& aTarget, std::shared_ptr<ae::chart::v2::Sera> aSe
 
         auto& object = aTarget.append(rjson::object{});
         object["N"] = *serum->name();
-        rjson::set_field_if_not_empty(object, "P", serum->passage());
+        rjson::set_field_if_not_empty(object, "P", serum->passage().to_string());
         rjson::set_field_if_not_empty(object, "R", serum->reassortant());
         rjson::set_field_if_not_empty(object, "I", serum->serum_id());
         rjson::set_array_field_if_not_empty(object, "a", serum->annotations());
@@ -269,11 +269,11 @@ void export_projections(rjson::value& aTarget, std::shared_ptr<ae::chart::v2::Pr
 
         auto layout = projection->layout();
         const auto number_of_dimensions = layout->number_of_dimensions();
-        if (const auto number_of_points = layout->number_of_points(); number_of_points && acmacs::valid(number_of_dimensions)) {
+        if (const auto number_of_points = layout->number_of_points(); number_of_points && number_of_dimensions.get() > 0) {
             rjson::value& ar = target["l"] = rjson::array{};
             for (size_t p_no = 0; p_no < number_of_points; ++p_no) {
                 auto& p = ar.append(rjson::array{});
-                for (auto dim : acmacs::range(number_of_dimensions)) {
+                for (ae::chart::v2::number_of_dimensions_t dim{0}; dim < number_of_dimensions; ++dim) {
                     const auto c = layout->coordinate(p_no, dim);
                     if (std::isnan(c))
                         break;
@@ -284,11 +284,11 @@ void export_projections(rjson::value& aTarget, std::shared_ptr<ae::chart::v2::Pr
 
         rjson::set_field_if_not_empty(target, "c", projection->comment());
         if (const auto stress = projection->stress(); !std::isnan(stress) && !std::isinf(stress) && stress >= 0)
-            target["s"] = rjson::number(acmacs::to_string(stress, 8));
+            target["s"] = rjson::number(fmt::format("{:.8g}", stress));
         if (const auto minimum_column_basis = projection->minimum_column_basis(); !minimum_column_basis.is_none())
             target["m"] = static_cast<std::string>(minimum_column_basis);
         export_forced_column_bases(target, projection->forced_column_bases());
-        if (const auto transformation = projection->transformation(); transformation != acmacs::Transformation{}) {
+        if (const auto transformation = projection->transformation(); transformation != ae::draw::v1::Transformation{}) {
             if (transformation.valid()) {
                 const auto vec = transformation.as_vector();
                 target["t"] = rjson::array(vec.begin(), vec.end());
@@ -347,11 +347,11 @@ template <typename T> inline void set_field(rjson::value& target, const char* na
     if (do_set) {
         if constexpr (std::is_same_v<T, Color> || std::is_same_v<T, acmacs::color::Modifier>)
             target[name] = fmt::format("{:X}", field);
-        else if constexpr (std::is_same_v<T, Pixels> || std::is_same_v<T, Scaled> || std::is_same_v<T, Rotation> || std::is_same_v<T, Aspect>)
-            target[name] = field.value();
+        else if constexpr (std::is_same_v<T, ae::draw::v1::Pixels> || std::is_same_v<T, ae::draw::v1::Scaled> || std::is_same_v<T, ae::draw::v1::Rotation> || std::is_same_v<T, ae::draw::v1::Aspect>)
+            target[name] = *field;
         else if constexpr (std::is_same_v<T, bool> || std::is_same_v<T, double> || std::is_same_v<T, size_t>)
             target[name] = field;
-        else if constexpr (std::is_same_v<T, acmacs::Offset>)
+        else if constexpr (std::is_same_v<T, ae::draw::v1::Offset>)
             target[name] = rjson::array{field.x(), field.y()};
         else
             target[name] = fmt::format("{}", field);
@@ -402,7 +402,7 @@ template <typename DF> std::string ae::chart::v2::export_layout(const Chart& aCh
     for (auto [ag_no, antigen] : acmacs::enumerate(*antigens)) {
         DF::first_field(result, "AG");
         DF::second_field(result, antigen->name_full());
-        for (auto dim : acmacs::range<number_of_dimensions_t>(number_of_dimensions))
+        for (ae::chart::v2::number_of_dimensions_t dim{0}; dim < number_of_dimensions; ++dim)
             DF::second_field(result, (*layout)(ag_no, dim));
         DF::end_of_record(result);
     }
@@ -410,7 +410,7 @@ template <typename DF> std::string ae::chart::v2::export_layout(const Chart& aCh
     for (auto [sr_no, serum] : acmacs::enumerate(*sera)) {
         DF::first_field(result, "SR");
         DF::second_field(result, serum->name_full());
-        for (auto dim : acmacs::range<number_of_dimensions_t>(number_of_dimensions))
+        for (ae::chart::v2::number_of_dimensions_t dim{0}; dim < number_of_dimensions; ++dim)
             DF::second_field(result, (*layout)(sr_no + number_of_antigens, dim));
         DF::end_of_record(result);
     }
@@ -474,11 +474,11 @@ template <typename DF> std::string ae::chart::v2::export_distances_between_all_p
     DF::second_field(result, "Distance");
     DF::end_of_record(result);
 
-    for (auto point_1 : acmacs::range(number_of_points)) {
+    for (auto point_1 : range_from_0_to(number_of_points)) {
         const auto ag_1 = point_1 < number_of_antigens;
         const auto no_1 = ag_1 ? point_1 : (point_1 - number_of_antigens);
         const auto name_1 = ag_1 ? antigens->at(no_1)->name_full() : sera->at(no_1)->name_full();
-        for (auto point_2 : acmacs::range(point_1 + 1, number_of_points)) {
+        for (auto point_2 : range_from_to(point_1 + 1, number_of_points)) {
             const auto ag_2 = point_2 < number_of_antigens;
             const auto no_2 = ag_2 ? point_2 : (point_2 - number_of_antigens);
             const auto name_2 = ag_2 ? antigens->at(no_2)->name_full() : sera->at(no_2)->name_full();

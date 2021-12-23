@@ -235,42 +235,24 @@ namespace acmacs::lispmds
 
 namespace acmacs
 {
-    inline std::string to_string(const lispmds::nil&)
-    {
-        return "nil";
-    }
+    inline std::string to_string(const lispmds::nil&) { return "nil"; }
 
-    inline std::string to_string(const lispmds::boolean& val)
-    {
-        return val ? "t" : "f";
-    }
+    inline std::string to_string(const lispmds::boolean& val) { return val ? "t" : "f"; }
 
-    inline std::string to_string(const lispmds::number& val)
-    {
-        return acmacs::to_string(static_cast<double>(val));
-    }
+    inline std::string to_string(const lispmds::number& val) { return fmt::format("{}", static_cast<double>(val)); }
 
-    inline std::string to_string(const lispmds::string& val)
-    {
-        return '"' + static_cast<std::string>(val) + '"';
-    }
+    inline std::string to_string(const lispmds::string& val) { return '"' + static_cast<std::string>(val) + '"'; }
 
-    inline std::string to_string(const lispmds::symbol& val)
-    {
-        return '\'' + static_cast<std::string>(val);
-    }
+    inline std::string to_string(const lispmds::symbol& val) { return '\'' + static_cast<std::string>(val); }
 
-    inline std::string to_string(const lispmds::keyword& val)
-    {
-        return static_cast<std::string>(val);
-    }
+    inline std::string to_string(const lispmds::keyword& val) { return static_cast<std::string>(val); }
 
     std::string to_string(const lispmds::value& val);
 
     inline std::string to_string(const lispmds::list& list)
     {
         std::string result{"(\n"};
-        for (const lispmds::value& val: list) {
+        for (const lispmds::value& val : list) {
             result.append(to_string(val));
             result.append(1, '\n');
         }

@@ -99,13 +99,13 @@ std::string ae::chart::v2::lispmds_encode(std::string_view aName, lispmds_encodi
             case '}':
             case '#': // special character in lisp that get expanded before the usual readers sees them
             case '|': // special character in lisp that get expanded before the usual readers sees them
-                result.append("%" + acmacs::to_hex_string(c, acmacs::NotShowBase));
+                result.append(fmt::format("%{:02X}", c));
                 encoded = true;
                 break;
             case '/':
             case '~': // perhaps avoid in the table name
                 if (signature == lispmds_encoding_signature::table_name) {
-                    result.append("%" + acmacs::to_hex_string(c, acmacs::NotShowBase));
+                    result.append(fmt::format("%{:02X}", c));
                     encoded = true;
                 }
                 else {
@@ -149,13 +149,13 @@ std::string ae::chart::v2::lispmds_table_name_encode(std::string_view name)
 
 // ----------------------------------------------------------------------
 
-std::string ae::chart::v2::lispmds_antigen_name_encode(const acmacs::virus::name_t& aName, const acmacs::virus::Reassortant& aReassortant, const acmacs::virus::Passage& aPassage, const Annotations& aAnnotations, lispmds_encoding_signature signature)
+std::string ae::chart::v2::lispmds_antigen_name_encode(const ae::virus::Name& aName, const ae::virus::Reassortant& aReassortant, const ae::virus::Passage& aPassage, const Annotations& aAnnotations, lispmds_encoding_signature signature)
 {
     std::string result = lispmds_encode(aName, lispmds_encoding_signature::no);
     if (!aReassortant.empty())
         result += "_r!" + lispmds_encode(aReassortant, lispmds_encoding_signature::no);
     if (!aPassage.empty())
-        result += "_p!" + lispmds_encode(aPassage, lispmds_encoding_signature::no);
+        result += "_p!" + lispmds_encode(aPassage.to_string(), lispmds_encoding_signature::no);
     for (const auto& anno: aAnnotations)
         result += "_a!" + lispmds_encode(anno, lispmds_encoding_signature::no);
     if (result == *aName)
@@ -167,7 +167,7 @@ std::string ae::chart::v2::lispmds_antigen_name_encode(const acmacs::virus::name
 
 // ----------------------------------------------------------------------
 
-std::string ae::chart::v2::lispmds_serum_name_encode(const acmacs::virus::name_t& aName, const acmacs::virus::Reassortant& aReassortant, const Annotations& aAnnotations, const SerumId& aSerumId, lispmds_encoding_signature signature)
+std::string ae::chart::v2::lispmds_serum_name_encode(const ae::virus::Name& aName, const ae::virus::Reassortant& aReassortant, const Annotations& aAnnotations, const SerumId& aSerumId, lispmds_encoding_signature signature)
 {
     std::string result = lispmds_encode(aName, lispmds_encoding_signature::no);
     if (!aReassortant.empty())
@@ -205,7 +205,7 @@ std::string ae::chart::v2::lispmds_decode(std::string_view aName)
                   break;
               case '%':
                   if (std::isxdigit(aName[pos + 1]) && std::isxdigit(aName[pos + 2])) {
-                      result.append(1, static_cast<char>(ae:;from_chars<size_t>(aName.substr(pos + 1, 2), 16)));
+                      result.append(1, static_cast<char>(ae::from_chars<size_t>(aName.substr(pos + 1, 2), 16)));
                       pos += 2;
                   }
                   else
@@ -269,7 +269,7 @@ static inline std::string fix_passage_date(std::string source)
     return source;
 }
 
-void ae::chart::v2::lispmds_antigen_name_decode(std::string_view aSource, acmacs::virus::Name& aName, acmacs::virus::Reassortant& aReassortant, acmacs::virus::Passage& aPassage, Annotations& aAnnotations)
+void ae::chart::v2::lispmds_antigen_name_decode(std::string_view aSource, ae::virus::Name& aName, ae::virus::Reassortant& aReassortant, ae::virus::Passage& aPassage, Annotations& aAnnotations)
 {
     if (strain_name_encoded(aSource)) {
         const bool v1 = std::tolower(aSource.back()) == 'a';

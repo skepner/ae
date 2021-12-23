@@ -137,6 +137,7 @@ namespace ae::virus
         bool is_cell() const { return deconstructed_.cell(); }
         std::string without_date() const { return deconstructed_.construct(passage::deconstructed_t::with_date::no); }
         operator std::string() const { return deconstructed_.construct(); }
+        std::string to_string() const { return deconstructed_.construct(); }
         size_t size() const { return deconstructed_.construct().size(); }
 
         // std::string_view last_number() const; // E2/E3 -> 3, X? -> ?

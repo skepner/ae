@@ -558,17 +558,17 @@ std::optional<double> LispmdsProjection::stored_stress() const
 
 // ----------------------------------------------------------------------
 
-class LispmdsLayout : public acmacs::Layout
+class LispmdsLayout : public ae::chart::v2::Layout
 {
  public:
     LispmdsLayout(const acmacs::lispmds::value& aData, size_t aNumberOfAntigens, size_t aNumberOfSera)
-        : acmacs::Layout(aNumberOfAntigens + aNumberOfSera, acmacs::number_of_dimensions_t{acmacs::lispmds::size(aData, 0)})
+        : ae::chart::v2::Layout(aNumberOfAntigens + aNumberOfSera, number_of_dimensions_t{acmacs::lispmds::size(aData, 0)})
         {
             auto target = Vec::begin();
             for (size_t p_no = 0; p_no < number_of_points(); ++p_no) {
                 const auto& point = acmacs::lispmds::get(aData, p_no);
                 if (const auto ps = acmacs::lispmds::size(point); ps == *number_of_dimensions()) {
-                    for (auto dim : acmacs::range(ps))
+                    for (auto dim : range_from_0_to(ps))
                         *target++ = std::get<acmacs::lispmds::number>(acmacs::lispmds::get(point, dim));
                 }
                 else if (ps > 0)
@@ -582,7 +582,7 @@ class LispmdsLayout : public acmacs::Layout
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<acmacs::Layout> LispmdsProjection::layout() const
+std::shared_ptr<ae::chart::v2::Layout> LispmdsProjection::layout() const
 {
     // std::cerr << "antigens: " << mNumberOfAntigens << " sera: " << mNumberOfSera << " points: " << (mNumberOfAntigens + mNumberOfSera) << '\n';
     if (!layout_)
@@ -593,9 +593,9 @@ std::shared_ptr<acmacs::Layout> LispmdsProjection::layout() const
 
 // ----------------------------------------------------------------------
 
-acmacs::number_of_dimensions_t LispmdsProjection::number_of_dimensions() const
+number_of_dimensions_t LispmdsProjection::number_of_dimensions() const
 {
-    return acmacs::number_of_dimensions_t{acmacs::lispmds::size(projection_layout(mData, projection_no()), 0)};
+    return number_of_dimensions_t{acmacs::lispmds::size(projection_layout(mData, projection_no()), 0)};
 
 } // LispmdsProjection::number_of_dimensions
 
@@ -619,7 +619,7 @@ ae::chart::v2::MinimumColumnBasis LispmdsProjection::minimum_column_basis() cons
 
 ae::draw::v1::Transformation LispmdsProjection::transformation() const
 {
-    acmacs::Transformation result;
+    ae::draw::v1::Transformation result;
     try {
         if (const auto& coord_tr = acmacs::lispmds::get(mData, ":CANVAS-COORD-TRANSFORMATIONS"); !acmacs::lispmds::empty(coord_tr)) {
             try {
@@ -699,11 +699,11 @@ AvidityAdjusts LispmdsProjection::avidity_adjusts() const
         return result;
     }
     catch (acmacs::lispmds::error& err) {
-        fmt::print(stderr, "ERROR: [lispmds avidity_adjusts] broken save: {}\n", err);
+        AD_ERROR("[lispmds avidity_adjusts] broken save: {}", err.what());
         return {};
     }
     catch (std::exception& err) {
-        fmt::print(stderr, "ERROR: [lispmds avidity_adjusts]: {}\n", err);
+        AD_ERROR("[lispmds avidity_adjusts]: {}\n", err.what());
         throw;
     }
 
@@ -806,7 +806,7 @@ std::vector<acmacs::PointStyle> LispmdsPlotSpec::all_styles() const
         return result;
     }
     catch (std::exception& err) {
-        AD_WARNING("[lispmds]: cannot get point styles: {}", err);
+        AD_WARNING("[lispmds]: cannot get point styles: {}", err.what());
     }
     return {};
 
@@ -820,7 +820,7 @@ size_t LispmdsPlotSpec::number_of_points() const
         return acmacs::lispmds::size(mData, 0, 1) + acmacs::lispmds::size(mData, 0, 2);
     }
     catch (std::exception& err) {
-        AD_WARNING("[lispmds]: cannot get point styles: {}", err);
+        AD_WARNING("[lispmds]: cannot get point styles: {}", err.what());
         return 0;
     }
 
@@ -848,7 +848,7 @@ void LispmdsPlotSpec::extract_style(acmacs::PointStyle& aTarget, size_t aPointNo
 void LispmdsPlotSpec::extract_style(acmacs::PointStyle& aTarget, const acmacs::lispmds::list& aSource) const
 {
     try {
-        aTarget.size(Pixels{static_cast<double>(std::get<acmacs::lispmds::number>(aSource[":DS"])) / acmacs::lispmds::DS_SCALE});
+        aTarget.size(ae::draw::v1::Pixels{static_cast<double>(std::get<acmacs::lispmds::number>(aSource[":DS"])) / acmacs::lispmds::DS_SCALE});
           // if antigen also divide size by 2 ?
     }
     catch (std::exception&) {
@@ -862,13 +862,13 @@ void LispmdsPlotSpec::extract_style(acmacs::PointStyle& aTarget, const acmacs::l
     }
 
     try {
-        aTarget.shape(PointShape{*std::get<acmacs::lispmds::string>(aSource[":SH"])});
+        aTarget.shape(acmacs::PointShape{*std::get<acmacs::lispmds::string>(aSource[":SH"])});
     }
     catch (std::exception&) {
     }
 
     try {
-        aTarget.label().size = Pixels{static_cast<double>(std::get<acmacs::lispmds::number>(aSource[":NS"])) / acmacs::lispmds::NS_SCALE};
+        aTarget.label().size = ae::draw::v1::Pixels{static_cast<double>(std::get<acmacs::lispmds::number>(aSource[":NS"])) / acmacs::lispmds::NS_SCALE};
     }
     catch (std::exception&) {
     }

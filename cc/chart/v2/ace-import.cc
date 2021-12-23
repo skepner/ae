@@ -301,7 +301,7 @@ ColumnBasesP AceProjection::forced_column_bases() const
             return std::make_shared<AceColumnBases>(cb);
         }
         catch (std::exception& err) {
-            AD_ERROR("cannot read column bases: {}\ndata: {}", err, cb);
+            AD_ERROR("cannot read column bases: {}\ndata: {}", err.what(), cb);
             throw;
         }
     }
@@ -439,7 +439,7 @@ acmacs::PointStyle AcePlotSpec::extract(const rjson::value& aSrc, size_t aPointN
                 }
             }
             catch (std::exception& err) {
-                AD_WARNING("[ace]: point {} style {} field \"{}\" value is wrong: {} value {}\n", aPointNo, aStyleNo, field_name, err, field_value);
+                AD_WARNING("[ace]: point {} style {} field \"{}\" value is wrong: {} value {}\n", aPointNo, aStyleNo, field_name, err.what(), field_value);
             }
         }
     });
@@ -460,7 +460,7 @@ void AcePlotSpec::label_style(acmacs::PointStyle& aStyle, const rjson::value& aD
                       label_style.shown = field_value.to<bool>();
                       break;
                   case 'p':
-                      label_style.offset = acmacs::Offset{field_value[0].to<double>(), field_value[1].to<double>()}; // size.hh
+                      label_style.offset = ae::draw::v1::Offset{field_value[0].to<double>(), field_value[1].to<double>()};
                       break;
                   case 's':
                       label_style.size = ae::draw::v1::Pixels{field_value.to<double>() * ae::chart::v2::ace::LabelScale};
@@ -489,7 +489,7 @@ void AcePlotSpec::label_style(acmacs::PointStyle& aStyle, const rjson::value& aD
                 }
             }
             catch (std::exception& err) {
-                AD_WARNING("[ace]: label style field \"{}\" value is wrong: {} value {}\n", field_name, err, field_value);
+                AD_WARNING("[ace]: label style field \"{}\" value is wrong: {} value {}\n", field_name, err.what(), field_value);
             }
         }
     });

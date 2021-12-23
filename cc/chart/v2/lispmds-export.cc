@@ -12,7 +12,7 @@ static std::string serum_names(std::shared_ptr<ae::chart::v2::Sera> aSera, size_
 static std::string titers(std::shared_ptr<ae::chart::v2::Titers> aTiters, const ae::chart::v2::DisconnectedPoints& disconnected);
 static std::string starting_coordss(const ae::chart::v2::Chart& aChart, const ae::chart::v2::DisconnectedPoints& disconnected);
 static std::string batch_runs(const ae::chart::v2::Chart& aChart, const ae::chart::v2::DisconnectedPoints& disconnected);
-static std::string coordinates(std::shared_ptr<ae::chart::v2::Layout> aLayout, size_t number_of_points, acmacs::number_of_dimensions_t number_of_dimensions, size_t aIndent, const ae::chart::v2::DisconnectedPoints& disconnected);
+static std::string coordinates(std::shared_ptr<ae::chart::v2::Layout> aLayout, size_t number_of_points, ae::chart::v2::number_of_dimensions_t number_of_dimensions, size_t aIndent, const ae::chart::v2::DisconnectedPoints& disconnected);
 static std::string col_and_row_adjusts(const ae::chart::v2::Chart& aChart, std::shared_ptr<ae::chart::v2::Projection> aProjection, size_t aIndent, const ae::chart::v2::DisconnectedPoints& disconnected);
 static std::string reference_antigens(std::shared_ptr<ae::chart::v2::Antigens> aAntigens, const ae::chart::v2::DisconnectedPoints& disconnected);
 static std::string plot_spec(const ae::chart::v2::Chart& aChart, const ae::chart::v2::DisconnectedPoints& disconnected);
@@ -160,7 +160,7 @@ std::string starting_coordss(const ae::chart::v2::Chart& aChart, const ae::chart
     auto layout = projection->layout();
     const auto number_of_points = layout->number_of_points();
     const auto number_of_dimensions = layout->number_of_dimensions();
-    if (number_of_points && acmacs::valid(number_of_dimensions))
+    if (number_of_points && number_of_dimensions.get() > 0)
         return fmt::format(":STARTING-COORDSS '(\n        {}\n{})", coordinates(layout, number_of_points, number_of_dimensions, 8, disconnected), col_and_row_adjusts(aChart, projection, 8, disconnected));
     else
         return {};
@@ -207,7 +207,7 @@ std::string batch_runs(const ae::chart::v2::Chart& aChart, const ae::chart::v2::
 
 // ----------------------------------------------------------------------
 
-std::string coordinates(std::shared_ptr<ae::chart::v2::Layout> aLayout, size_t number_of_points, acmacs::number_of_dimensions_t number_of_dimensions, size_t aIndent, const ae::chart::v2::DisconnectedPoints& disconnected)
+std::string coordinates(std::shared_ptr<ae::chart::v2::Layout> aLayout, size_t number_of_points, ae::chart::v2::number_of_dimensions_t number_of_dimensions, size_t aIndent, const ae::chart::v2::DisconnectedPoints& disconnected)
 {
     std::string result;
     for (size_t point_no = 0; point_no < number_of_points; ++point_no) {
@@ -215,14 +215,14 @@ std::string coordinates(std::shared_ptr<ae::chart::v2::Layout> aLayout, size_t n
             if (point_no)
                 result.append(1, '\n').append(aIndent, ' ');
             result.append(1, '(');
-            for (auto dim : acmacs::range(number_of_dimensions)) {
-                if (acmacs::valid(dim))
+            for (ae::chart::v2::number_of_dimensions_t dim{0}; dim < number_of_dimensions; ++dim) {
+                if (dim.get() > 0)
                     result.append(1, ' ');
                 const auto c = aLayout->coordinate(point_no, dim);
                 if (std::isnan(c))
                     result.append("0"); // disconnected point
                 else
-                    result.append(acmacs::to_string(c));
+                    result.append(fmt::format("{}", c));
             }
             result.append(1, ')');
         }
@@ -254,7 +254,7 @@ std::string col_and_row_adjusts(const ae::chart::v2::Chart& aChart, std::shared_
         if (!disconnected.contains(sr_no + number_of_antigens)) {
             if (sr_no)
                 result.append(1, ' ');
-            result.append(acmacs::to_string(cb->column_basis(sr_no)));
+            result.append(fmt::format("{}", cb->column_basis(sr_no)));
         }
     }
     result.append(1, '\n').append(aIndent + 2, ' ');
@@ -262,7 +262,7 @@ std::string col_and_row_adjusts(const ae::chart::v2::Chart& aChart, std::shared_
     if (auto avidity_adjusts = aProjection->avidity_adjusts(); !avidity_adjusts.empty()) {
         for (auto[point_no, aa] : acmacs::enumerate(avidity_adjusts)) {
             if (!disconnected.contains(point_no))
-                result.append(1, ' ').append(acmacs::to_string(std::log2(aa)));
+                result.append(1, ' ').append(fmt::format("{}", std::log2(aa)));
         }
     }
     else {
@@ -341,13 +341,13 @@ std::string point_style(const acmacs::PointStyle& aStyle)
     };
 
     std::string result;
-    result.append(" :DS " + acmacs::to_string(aStyle.size().value() * acmacs::lispmds::DS_SCALE));
+    result.append(fmt::format(" :DS {}", aStyle.size().value() * acmacs::lispmds::DS_SCALE));
     if (aStyle.label().shown)
         result.append(" :WN \"" + static_cast<std::string>(aStyle.label_text()) + "\"");
     else
         result.append(" :WN \"\"");
     result.append(" :SH \"" + point_shape(aStyle.shape()) + '"');
-    result.append(" :NS " + acmacs::to_string(std::lround(aStyle.label().size.value() * acmacs::lispmds::NS_SCALE))); // :NS must be integer (otherwise tk complains)
+    result.append(fmt::format(" :NS {}", std::lround(aStyle.label().size.value() * acmacs::lispmds::NS_SCALE))); // :NS must be integer (otherwise tk complains)
     result.append(make_color("NC", aStyle.label().color));
     if (aStyle.fill() == TRANSPARENT)
         result.append(" :CO \"{}\"");
@@ -359,7 +359,7 @@ std::string point_style(const acmacs::PointStyle& aStyle)
         result.append(make_color("OC", aStyle.outline()));
     // if (const auto alpha = acmacs::color::alpha(aStyle.fill); alpha < 1.0)
     if (const auto alpha = aStyle.fill().alpha(); alpha < 1.0)
-        result.append(" :TR " + acmacs::to_string(1.0 - alpha));
+        result.append(fmt::format(" :TR {}", 1.0 - alpha));
 
     return result;
 

@@ -6,7 +6,7 @@
 #include "chart/v2/chart-modify.hh"
 // #include "chart/v2/grid-test.hh"
 #include "utils/log.hh"
-// #include "acmacs-chart-2/command-helper.hh"
+#include "chart/v2/command-helper.hh"
 
 // ----------------------------------------------------------------------
 
@@ -61,7 +61,11 @@ int main(int argc, char* const argv[])
         bool incremental{false};
         bool unmovable_non_nan_points{false};
         bool rough{false};
-        std::string method{"alglib-cg"}; // alglib-lbfgs, alglib-cg, optim-bfgs, optim-differential-evolution
+        size_t fine { 0 }; // relax roughly, then relax finely N best projections
+        double randomization_diameter_multiplier{2.0};
+        bool no_disconnect_having_few_titers{false};
+        std::string disconnect_antigens{}, disconnect_sera{};
+        const auto method{ae::chart::v2::optimization_method_from_string("alglib-cg")}; // alglib-lbfgs, alglib-cg, optim-bfgs, optim-differential-evolution
         std::optional<unsigned> seed{std::nullopt};
 
         // Options opt(argc, argv);
@@ -72,13 +76,12 @@ int main(int argc, char* const argv[])
         auto& projections = chart.projections_modify();
         if (remove_original_projections && !incremental)
             projections.remove_all();
-        const auto precision = rough ? ae::chart::v2::optimization_precision::rough : ae::chart::v2::optimization_precision::fine;
-        const auto method{ae::chart::v2::optimization_method_from_string(method)};
-        // auto disconnected{ae::chart::v2::get_disconnected(opt.disconnect_antigens, opt.disconnect_sera, chart.number_of_antigens(), chart.number_of_sera())};
+        const auto precision = (rough || !fine) ? ae::chart::v2::optimization_precision::rough : ae::chart::v2::optimization_precision::fine;
+        auto disconnected{ae::chart::v2::get_disconnected(disconnect_antigens, disconnect_sera, chart.number_of_antigens(), chart.number_of_sera())};
         const size_t incremental_source_projection_no = 0;
 
-        ae::chart::v2::optimization_options options(method, precision, opt.randomization_diameter_multiplier);
-        options.disconnect_too_few_numeric_titers = opt.no_disconnect_having_few_titers ? ae::chart::v2::disconnect_few_numeric_titers::no : ae::chart::v2::disconnect_few_numeric_titers::yes;
+        ae::chart::v2::optimization_options options(method, precision, randomization_diameter_multiplier);
+        options.disconnect_too_few_numeric_titers = no_disconnect_having_few_titers ? ae::chart::v2::disconnect_few_numeric_titers::no : ae::chart::v2::disconnect_few_numeric_titers::yes;
 
         // if (opt.no_dimension_annealing)
         //     AD_WARNING("option --no-dimension-annealing is deprectaed, dimension annealing is disabled by default, use --dimension-annealing to enable");
@@ -97,13 +100,13 @@ int main(int argc, char* const argv[])
         }
         else {
             options.num_threads = threads;
-            if (opt.incremental)
-                chart.relax_incremental(incremental_source_projection_no, ae::chart::v2::number_of_optimizations_t{*opt.number_of_optimizations}, options,
+            if (incremental)
+                chart.relax_incremental(incremental_source_projection_no, ae::chart::v2::number_of_optimizations_t{number_of_optimizations}, options,
                                         remove_original_projections ? ae::chart::v2::remove_source_projection::yes : ae::chart::v2::remove_source_projection::no,
                                         unmovable_non_nan_points ? ae::chart::v2::unmovable_non_nan_points::yes : ae::chart::v2::unmovable_non_nan_points::no);
             else
-                chart.relax(ae::chart::v2::number_of_optimizations_t{*opt.number_of_optimizations}, *opt.minimum_column_basis, acmacs::number_of_dimensions_t{*opt.number_of_dimensions},
-                            dimension_annealing, options, disconnected);
+                chart.relax(ae::chart::v2::number_of_optimizations_t{number_of_optimizations}, minimum_column_basis, ae::chart::v2::number_of_dimensions_t{number_of_dimensions}, dimension_annealing,
+                            options, disconnected);
 
             // if (grid) {
             //     const size_t projection_no_to_test = 0, relax_attempts = 20;
@@ -112,7 +115,7 @@ int main(int argc, char* const argv[])
         }
 
         projections.sort();
-        for (size_t p_no = 0; p_no < opt.fine; ++p_no)
+        for (size_t p_no = 0; p_no < fine; ++p_no)
             chart.projection_modify(p_no)->relax(ae::chart::v2::optimization_options(method, ae::chart::v2::optimization_precision::fine));
         if (keep_projections > 0 && projections.size() > keep_projections)
             projections.keep_just(keep_projections);
@@ -121,7 +124,7 @@ int main(int argc, char* const argv[])
         ae::chart::v2::export_factory(chart, output_chart, argv[0]);
     }
     catch (std::exception& err) {
-        AD_ERROR("{}", err);
+        AD_ERROR("{}", err.what());
         exit_code = 2;
     }
     return exit_code;

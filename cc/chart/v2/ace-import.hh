@@ -180,7 +180,7 @@ namespace ae::chart::v2
                 return minimum_column_basis_.apply(data_[aSerumNo].to<double>());
             }
             catch (std::exception& err) {
-                AD_ERROR("cannot read column bases (serum no: {}): {}\ndata: {}", aSerumNo, err, data_);
+                AD_ERROR("cannot read column bases (serum no: {}): {}\ndata: {}", aSerumNo, err.what(), data_);
                 throw;
             }
         }

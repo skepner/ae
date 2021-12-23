@@ -508,7 +508,7 @@ LabIds Acd1Antigen::lab_ids() const
     if (data_["lab_id"].is_array())
         rjson::transform(data_["lab_id"], std::back_inserter(result), [](const rjson::value& val) -> std::string { return val[0].to<std::string>() + '#' + val[1].to<std::string>(); });
     else
-        rjson::transform(data_["lab_id"], std::back_inserter(result), [](std::string_view key, const rjson::value& val) -> std::string { return acmacs::string::concat(key, '#', val.to<std::string_view>()); });
+        rjson::transform(data_["lab_id"], std::back_inserter(result), [](std::string_view key, const rjson::value& val) -> std::string { return fmt::format("{}#{}", key, val.to<std::string_view>()); });
     return result;
 
 } // Acd1Antigen::lab_ids
@@ -577,7 +577,7 @@ std::optional<size_t> Acd1Antigens::find_by_full_name(std::string_view aFullName
 {
     if (mAntigenNameIndex.empty())
         make_name_index();
-    const std::string name(::virus_name::name(aFullName));
+    const std::string name{aFullName}; // (::virus_name::name(aFullName));
     if (const auto found = mAntigenNameIndex.find(name); found != mAntigenNameIndex.end()) {
         for (auto index: found->second) {
             if (Acd1Antigen(data_[index]).format("{name_full}") == aFullName)
@@ -592,9 +592,7 @@ std::optional<size_t> Acd1Antigens::find_by_full_name(std::string_view aFullName
 
 void Acd1Antigens::make_name_index() const
 {
-    rjson::for_each(data_, [this](const rjson::value& val, size_t index) {
-        mAntigenNameIndex[*make_name(val)].push_back(index);
-    });
+    rjson::for_each(data_, [this](const rjson::value& val, size_t index) { mAntigenNameIndex[std::string{*make_name(val)}].push_back(index); });
 
 } // Acd1Antigens::make_name_index
 
@@ -613,7 +611,7 @@ void Acd1Antigens::make_name_index() const
 
 // ----------------------------------------------------------------------
 
-// std::shared_ptr<acmacs::Layout> Acd1Projection::layout() const
+// std::shared_ptr<ae::chart::v2::Layout> Acd1Projection::layout() const
 // {
 //     if (!layout_)
 //         layout_ = std::make_shared<rjson_import::Layout>(data_.get_or_empty_array("layout"));
@@ -643,9 +641,9 @@ ColumnBasesP Acd1Projection::forced_column_bases() const
 
 // ----------------------------------------------------------------------
 
-acmacs::Transformation Acd1Projection::transformation() const
+ae::draw::v1::Transformation Acd1Projection::transformation() const
 {
-    acmacs::Transformation result(number_of_dimensions());
+    ae::draw::v1::Transformation result(number_of_dimensions());
     if (const auto& array = data()["transformation"]; !array.empty()) {
         result.set(array[0][0].to<double>(), array[0][1].to<double>(), array[1][0].to<double>(), array[1][1].to<double>());
     }
@@ -794,17 +792,17 @@ acmacs::PointStyle Acd1PlotSpec::extract(const rjson::value& aSrc, size_t aPoint
                 else if (field_name == "outline_color")
                     result.outline(Color(field_value.to<size_t>()));
                 else if (field_name == "outline_width")
-                    result.outline_width(Pixels{field_value.to<double>()});
+                    result.outline_width(ae::draw::v1::Pixels{field_value.to<double>()});
                 else if (field_name == "line_width") // acmacs-b3
-                    result.outline_width(Pixels{field_value.to<double>()});
+                    result.outline_width(ae::draw::v1::Pixels{field_value.to<double>()});
                 else if (field_name == "shape")
                     result.shape(field_value.to<std::string_view>());
                 else if (field_name == "size")
-                    result.size(Pixels{field_value.to<double>() * PointScale});
+                    result.size(ae::draw::v1::Pixels{field_value.to<double>() * PointScale});
                 else if (field_name == "rotation")
-                    result.rotation(Rotation{field_value.to<double>()});
+                    result.rotation(ae::draw::v1::Rotation{field_value.to<double>()});
                 else if (field_name == "aspect")
-                    result.aspect(Aspect{field_value.to<double>()});
+                    result.aspect(ae::draw::v1::Aspect{field_value.to<double>()});
                 else if (field_name == "show_label")
                     result.label().shown = field_value.to<bool>();
                 else if (field_name == "label_position_x")
@@ -814,11 +812,11 @@ acmacs::PointStyle Acd1PlotSpec::extract(const rjson::value& aSrc, size_t aPoint
                 else if (field_name == "label")
                     result.label_text(field_value.to<std::string_view>());
                 else if (field_name == "label_size")
-                    result.label().size = Pixels{field_value.to<double>() * LabelScale};
+                    result.label().size = ae::draw::v1::Pixels{field_value.to<double>() * LabelScale};
                 else if (field_name == "label_color")
                     result.label().color = acmacs::color::Modifier{Color(field_value.to<size_t>())};
                 else if (field_name == "label_rotation")
-                    result.label().rotation = Rotation{field_value.to<double>()};
+                    result.label().rotation = ae::draw::v1::Rotation{field_value.to<double>()};
                 else if (field_name == "label_font_face")
                     result.label().style.font_family = field_value.to<std::string>();
                 else if (field_name == "label_font_slant")
@@ -827,7 +825,7 @@ acmacs::PointStyle Acd1PlotSpec::extract(const rjson::value& aSrc, size_t aPoint
                     result.label().style.weight = field_value.to<std::string_view>();
             }
             catch (std::exception& err) {
-                AD_WARNING("[acd1]: point {} style {} field \"{}\" value is wrong: {} value: {}", aPointNo, aStyleNo, field_name, err, field_value);
+                AD_WARNING("[acd1]: point {} style {} field \"{}\" value is wrong: {} value: {}", aPointNo, aStyleNo, field_name, err.what(), field_value);
             }
         }
     });
