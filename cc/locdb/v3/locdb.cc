@@ -65,7 +65,7 @@ ae::locdb::v3::Db::Db(const std::filesystem::path& path)
     for(auto field : parser_.doc().get_object()) {
         const std::string_view key = field.unescaped_key();
         if (key == "  version") {
-            if (const std::string_view ver{field.value()}; ver != "locdb-v2")
+            if (const std::string_view ver{field.value()}; ver != "locationdb-v2")
                 throw std::runtime_error{fmt::format("locdb: unsupported version: \"{}\"", ver)};
         }
         else if (key == "cdc_abbreviations") {

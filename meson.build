@@ -54,7 +54,6 @@ bzip2 = meson.get_compiler('cpp').find_library('bz2', required : false)
 alglib = dependency('alglib')
 
 omp = dependency('openmp')
-# omp_lib = meson.get_compiler('cpp').find_library('omp', dirs: '/usr/local/lib', required: true)
 
 # websocketpp
 # asio
@@ -66,15 +65,49 @@ include_cc = include_directories('./cc')
 # ae
 # ----------------------------------------------------------------------
 
-sources_utlis = ['cc/utils/file.cc', 'cc/utils/log.cc', 'cc/utils/messages.cc', 'cc/ext/date.cc']
+sources_py = [
+  'cc/py/module.cc',
+  'cc/py/virus.cc',
+  'cc/py/sequences.cc',
+  'cc/py/tree.cc',
+  'cc/py/utils.cc'
+]
 
-sources_locdb_v3 = ['cc/locdb/v3/locdb.cc']
+sources_tree = [
+  'cc/tree/tree.cc',
+  'cc/tree/tree-iterator.cc',
+  'cc/tree/newick.cc',
+  'cc/tree/export.cc'
+]
 
-sources_virus = ['cc/virus/name-parse.cc', 'cc/virus/passage.cc', 'cc/virus/reassortant.cc']
-sources_sequences = ['cc/sequences/seqdb.cc', 'cc/sequences/seqdb-selected.cc', 'cc/sequences/seqdb-export.cc', 'cc/sequences/fasta.cc', 'cc/sequences/clades.cc',
-                     'cc/sequences/translate.cc', 'cc/sequences/align.cc', 'cc/sequences/master.cc', 'cc/sequences/deletions.cc']
-sources_tree = ['cc/tree/tree.cc', 'cc/tree/tree-iterator.cc', 'cc/tree/newick.cc', 'cc/tree/export.cc']
-sources_py = ['cc/py/module.cc', 'cc/py/virus.cc', 'cc/py/sequences.cc', 'cc/py/tree.cc', 'cc/py/utils.cc']
+sources_sequences = [
+  'cc/sequences/seqdb.cc',
+  'cc/sequences/seqdb-selected.cc',
+  'cc/sequences/seqdb-export.cc',
+  'cc/sequences/fasta.cc',
+  'cc/sequences/clades.cc',
+  'cc/sequences/translate.cc',
+  'cc/sequences/align.cc',
+  'cc/sequences/master.cc',
+  'cc/sequences/deletions.cc'
+]
+
+sources_locdb_v3 = [
+  'cc/locdb/v3/locdb.cc'
+]
+
+sources_virus = [
+  'cc/virus/name-parse.cc',
+  'cc/virus/passage.cc',
+  'cc/virus/reassortant.cc'
+]
+
+sources_utlis = [
+  'cc/utils/file.cc',
+  'cc/utils/log.cc',
+  'cc/utils/messages.cc',
+  'cc/ext/date.cc'
+]
 
 # ----------------------------------------------------------------------
 # rjson
@@ -161,28 +194,31 @@ test('ae test basic', test_basic)
 
 test_virus_name = executable(
   'test-virus-name',
-  ['cc/test/test-virus-name.cc'] + sources_virus + sources_locdb_v3 + sources_utlis,
+  sources : ['cc/test/test-virus-name.cc'],
   include_directories : include_cc,
-  dependencies : [fmt, simdjson, range_v3, bzip2, zlib, xz, lexy],
+  dependencies : [fmt, simdjson, range_v3],
+  link_with : [libae],
   install : true)
 
 test_passage = executable(
   'test-passage',
-  ['cc/test/test-passage.cc', 'cc/virus/passage.cc', 'cc/utils/messages.cc'],
+  sources : ['cc/test/test-passage.cc'],
   include_directories : include_cc,
   dependencies : [fmt, range_v3, lexy],
+  link_with : [libae],
   install : true)
 
 test_date = executable(
   'test-date',
-  ['cc/test/test-date.cc', 'cc/ext/date.cc'],
+  sources : ['cc/test/test-date.cc'],
   include_directories : include_cc,
   dependencies : [fmt],
+  link_with : [libae],
   install : true)
 
 test_pos = executable(
   'test-pos',
-  ['cc/test/test-pos.cc'],
+  sources : ['cc/test/test-pos.cc'],
   include_directories : include_cc,
   dependencies : [fmt],
   install : true)
@@ -200,12 +236,10 @@ python3 = import('python').find_installation('python3')
 
 ae_lib = python3.extension_module(
   'ae_backend',
-  sources : sources_py, # + sources_virus + sources_sequences + sources_tree + sources_utlis + sources_locdb_v3 + sources_chart_v2 + sources_ad,
+  sources : sources_py,
   include_directories : include_cc,
-  # dependencies : [dependency('python3'), pybind11, fmt, simdjson, range_v3, bzip2, zlib, xz, lexy, xxhash, alglib, omp],
   dependencies : [dependency('python3'), pybind11, fmt],
   link_with : [libae],
-  # link_args : libomp_dir,
   install : true)
 
 # https://gabmus.org/posts/python-unittest-meson/
