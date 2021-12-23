@@ -17,9 +17,9 @@ if meson.get_compiler('cpp').get_id() == 'clang'
                         '-Wno-ambiguous-reversed-operator', # ISO C++20 considers use of overloaded operator '<=' to be ambiguous despite there being a unique best viable function
                         '-Wno-zero-as-null-pointer-constant', # clang13 somtimes with operator<=>
                         language : 'cpp')
-  link_args = ['-L/usr/local/lib'] # for -lomp, otherwise not found
+  libomp_dir = ['-L/usr/local/lib'] # for -lomp, otherwise not found
 else
-  link_args = []
+  libomp_dir = []
 endif
 
 # ----------------------------------------------------------------------
@@ -123,15 +123,29 @@ sources_chart_v2 = [
 ]
 
 # ----------------------------------------------------------------------
+# libae
+# ----------------------------------------------------------------------
+
+libae = library(
+  'ae',
+  sources : sources_tree + sources_locdb_v3 + 
+            sources_sequences + sources_virus + sources_utlis +
+            sources_chart_v2 + sources_ad,
+  include_directories : include_cc,
+  dependencies : [alglib, xxhash, fmt, simdjson, range_v3, lexy, omp, bzip2, zlib, xz],
+  link_args : libomp_dir,
+  install : true)
+
+# ----------------------------------------------------------------------
 # ad executables
 # ----------------------------------------------------------------------
 
 chart_relax = executable(
   'chart-relax',
-  ['cc/chart/v2/chart-relax.cc'] + sources_chart_v2 + sources_locdb_v3 + sources_ad + sources_virus + sources_utlis,
+  sources : ['cc/chart/v2/chart-relax.cc'],
   include_directories : include_cc,
-  dependencies : [alglib, fmt, simdjson, range_v3, lexy, omp, bzip2, zlib, xz],
-  link_args : link_args,
+  dependencies : [fmt, range_v3, simdjson],
+  link_with : [libae],
   install : true)
 
 # ----------------------------------------------------------------------
@@ -186,11 +200,12 @@ python3 = import('python').find_installation('python3')
 
 ae_lib = python3.extension_module(
   'ae_backend',
-  sources : sources_py + sources_virus + sources_sequences + sources_tree + sources_utlis +
-            sources_locdb_v3 + sources_chart_v2 + sources_ad,
+  sources : sources_py, # + sources_virus + sources_sequences + sources_tree + sources_utlis + sources_locdb_v3 + sources_chart_v2 + sources_ad,
   include_directories : include_cc,
-  dependencies : [dependency('python3'), pybind11, fmt, simdjson, range_v3, bzip2, zlib, xz, lexy, xxhash, alglib, omp],
-  link_args : link_args,
+  # dependencies : [dependency('python3'), pybind11, fmt, simdjson, range_v3, bzip2, zlib, xz, lexy, xxhash, alglib, omp],
+  dependencies : [dependency('python3'), pybind11, fmt],
+  link_with : [libae],
+  # link_args : libomp_dir,
   install : true)
 
 # https://gabmus.org/posts/python-unittest-meson/

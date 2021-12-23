@@ -71,10 +71,10 @@ namespace ae::tree
         constexpr const auto& subtype() const { return subtype_; }
         constexpr const auto& lineage() const { return lineage_; }
 
-        const Inode& inode(node_index_t index) const { return inodes_[-*index]; }
-        Inode& inode(node_index_t index) { return inodes_[-*index]; }
-        const Leaf& leaf(node_index_t index) const { return leaves_[*index]; }
-        Leaf& leaf(node_index_t index) { return leaves_[*index]; }
+        const Inode& inode(node_index_t index) const { return inodes_[static_cast<size_t>(-*index)]; }
+        Inode& inode(node_index_t index) { return inodes_[static_cast<size_t>(-*index)]; }
+        const Leaf& leaf(node_index_t index) const { return leaves_[static_cast<size_t>(*index)]; }
+        Leaf& leaf(node_index_t index) { return leaves_[static_cast<size_t>(*index)]; }
 
         const_tree_iterator::reference node(node_index_t index) const
         {
