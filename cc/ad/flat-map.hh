@@ -212,7 +212,7 @@ namespace acmacs
         }
 
       private:
-        std::vector<entry_type> data_;
+        std::vector<entry_type> data_{};
 
     }; // small_map_with_unique_keys_t<Key, Value>
 

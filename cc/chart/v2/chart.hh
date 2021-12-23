@@ -419,7 +419,7 @@ namespace ae::chart::v2
 
           private:
             mutable bool location_data_filled_{false};
-            mutable location_data_t location_data_;
+            mutable location_data_t location_data_{};
         };
 
     } // namespace detail
@@ -467,7 +467,7 @@ namespace ae::chart::v2
     // Argument for antigen/serum selecting object
     template <typename AgSr> struct SelectionData
     {
-        size_t index{0];
+        size_t index{0};
         size_t point_no{0};
         std::shared_ptr<AgSr> ag_sr{};
         PointCoordinates coord{};

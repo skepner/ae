@@ -184,7 +184,7 @@ namespace ae::chart::v2
         size_t size() const override { return mData.size(); }
 
      private:
-        std::vector<double> mData;
+        std::vector<double> mData{};
 
     }; // class LispmdsColumnBases
 
@@ -214,8 +214,8 @@ namespace ae::chart::v2
 
      private:
         const acmacs::lispmds::value& mData;
-        size_t mNumberOfAntigens, mNumberOfSera;
-        mutable std::shared_ptr<Layout> layout_;
+        size_t mNumberOfAntigens{0}, mNumberOfSera{0};
+        mutable std::shared_ptr<Layout> layout_{};
 
     }; // class LispmdsProjections
 
@@ -232,7 +232,7 @@ namespace ae::chart::v2
 
      private:
         const acmacs::lispmds::value& mData;
-        mutable std::vector<ProjectionP> projections_;
+        mutable std::vector<ProjectionP> projections_{};
 
     }; // class LispmdsProjections
 

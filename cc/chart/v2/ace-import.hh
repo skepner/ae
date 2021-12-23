@@ -133,7 +133,7 @@ namespace ae::chart::v2
 
      private:
         const rjson::value& data_;
-        ace::name_index_t& mAntigenNameIndex{};
+        ace::name_index_t& mAntigenNameIndex;
 
         void make_name_index() const;
 
