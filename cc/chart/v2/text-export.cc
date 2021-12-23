@@ -19,7 +19,7 @@ std::string ae::chart::v2::export_text(const Chart& chart)
     fmt::format_to(std::back_inserter(result), "{}",
                    ae::string::join("\n\n", export_info_to_text(chart), export_table_to_text(chart), export_forced_column_bases_to_text(chart), export_projections_to_text(chart),
                                         export_plot_spec_to_text(chart), export_extensions_to_text(chart)),
-                   "\n", ae::string::split_empty::keep);
+                   "\n", ae::string::split_emtpy::keep);
     return fmt::to_string(result);
 
     // // Timeit ti_plot_spec("export plot_spec ");
@@ -264,7 +264,7 @@ std::string export_projections_to_text(const ae::chart::v2::Chart& chart)
             auto layout = projection->layout();
             const auto number_of_dimensions = layout->number_of_dimensions();
             fmt::format_to(std::back_inserter(result), "  layout {} x {}\n", layout->number_of_points(), number_of_dimensions);
-            if (const auto number_of_points = layout->number_of_points(); number_of_points && acmacs::valid(number_of_dimensions)) {
+            if (const auto number_of_points = layout->number_of_points(); number_of_points && number_of_dimensions.get() > 0) {
                 for (size_t p_no = 0; p_no < number_of_points; ++p_no)
                     fmt::format_to(std::back_inserter(result), fmt::runtime("    {:4d} {:13.10f}\n"), p_no, layout->at(p_no)); // to avoid problems comparing exported charts during test on linux
             }
@@ -319,11 +319,11 @@ std::string export_plot_spec_to_text(const ae::chart::v2::Chart& chart)
 std::string export_style_to_text(const acmacs::PointStyle& aStyle)
 {
     fmt::memory_buffer result;
-    fmt::format_to(std::back_inserter(result), "shown:{} fill:\"{}\" outline:\"{}\" outline_width:{} size:{} rotation:{} aspect:{} shape:{}", aStyle.shown(), aStyle.fill(), aStyle.outline(), aStyle.outline_width().value(),
-                   aStyle.size().value(), aStyle.rotation(), aStyle.aspect(), aStyle.shape());
+    fmt::format_to(std::back_inserter(result), "shown:{} fill:\"{}\" outline:\"{}\" outline_width:{} size:{} rotation:{} aspect:{} shape:{}", aStyle.shown(), aStyle.fill(), aStyle.outline(),
+                   aStyle.outline_width().value(), aStyle.size().value(), *aStyle.rotation(), *aStyle.aspect(), aStyle.shape());
     fmt::format_to(std::back_inserter(result), " label:{{ shown:{} text:\"{}\" font_family:\"{}\" slant:\"{}\" weight:\"{}\" size:{} color:\"{}\" rotation:{} interline:{} offset:{}",
-                   aStyle.label().shown, aStyle.label_text(), aStyle.label().style.font_family, aStyle.label().style.slant, aStyle.label().style.weight, aStyle.label().size.value(), aStyle.label().color,
-                   aStyle.label().rotation, aStyle.label().interline, aStyle.label().offset);
+                   aStyle.label().shown, aStyle.label_text(), aStyle.label().style.font_family, aStyle.label().style.slant, aStyle.label().style.weight, aStyle.label().size.value(),
+                   aStyle.label().color, *aStyle.label().rotation, aStyle.label().interline, aStyle.label().offset);
 
     return fmt::to_string(result);
 
