@@ -51,11 +51,11 @@ int main(int argc, char* const argv[])
     try {
         std::string_view source_chart{argv[1]};
         std::string_view output_chart{argv[2]};
-        size_t number_of_optimizations{100};
+        size_t number_of_optimizations{1000};
         ae::chart::v2::number_of_dimensions_t number_of_dimensions{2};
         std::string minimum_column_basis{"none"};
         bool grid{true};
-        size_t keep_projections{0};
+        size_t keep_projections{10};
         int threads{0};
         bool remove_original_projections{false};
         bool incremental{false};
