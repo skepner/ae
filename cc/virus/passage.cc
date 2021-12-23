@@ -280,7 +280,7 @@ ae::virus::passage::deconstructed_t ae::virus::passage::parse(std::string_view s
         // fmt::print(">> not parsed: {} <- \"{}\"\n", err.what(), source);
         messages.add(Message::unrecognized_passage, err.what(), source, message_location);
         deconstructed_t result;
-        result.elements.push_back(deconstructed_t::element_t{.name{std::string{source}}}); // store original passage without any modifications! (g++11 wants std::string{source})
+        result.elements.push_back(deconstructed_t::element_t{.name{std::string{source}}}); // store original passage without any modifications! std::string{source} required by g++-11
         result.uppercase();
         return result;
     }
