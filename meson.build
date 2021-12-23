@@ -5,7 +5,7 @@ project('ae', ['cpp'],
         version         : '1',
         default_options : [
           'warning_level=3',
-          'cpp_std=c++20',
+          'cpp_std=c++2a', # g++-11 does not support c++20
           'buildtype=debugoptimized',
           'werror=false'
         ],

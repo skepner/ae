@@ -62,7 +62,7 @@ find_compiler()
             MK_TIME=gtime
             ;;
         Linux)
-            export CXX=g++-11
+            export CXX=$(which g++-11)
             MK_TIME=time
             ;;
         *)
