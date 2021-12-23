@@ -178,7 +178,7 @@ namespace ae::virus::passage
                 deconstructed_t::element_t result{.count = number};
                 if constexpr (!std::is_same_v<decltype(separator), lexy::nullopt>)
                     result.new_lab = true;
-                return result;
+                return part_without_name_t{result};
             });
         };
 
