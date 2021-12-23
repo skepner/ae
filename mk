@@ -11,7 +11,9 @@ BUILT=NO
 build()
 {
     trap 'fail "build failed"' ERR
-    if [[ ! -d "${BUILD_DIR}" ]]; then
+    meson --version
+    if [[ ! -d "${BUILD_DIR}" || ! -f "${BUILD_DIR}/meson-private/coredata.dat" ]]; then
+        rm -rf "${BUILD_DIR}"
         find_compiler
         meson setup "${BUILD_DIR}" -Ddebug=true ${SETUP_ARGS}
         # --buildtype debugoptimized

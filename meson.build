@@ -29,9 +29,6 @@ endif
 cmake = import('cmake')
 lexy = cmake.subproject('lexy').dependency('lexy_core')
 
-subproject('fmt')
-fmt = dependency('fmt')
-
 subproject('xlnt')
 
 # simdjson = import('cmake').subproject('simdjson').dependency('simdjson')
@@ -46,6 +43,9 @@ pybind11 = dependency('pybind11')
 
 subproject('xxhash')
 xxhash = dependency('libxxhash')
+
+subproject('fmt')
+fmt = dependency('fmt')
 
 zlib = dependency('zlib', version : '>=1.2.8')
 xz = dependency('liblzma')
