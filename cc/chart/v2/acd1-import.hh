@@ -31,9 +31,9 @@ namespace ae::chart::v2
         void verify_data(Verify aVerify) const;
 
      private:
-        rjson::value data_;
-        mutable acd1::name_index_t mAntigenNameIndex;
-        mutable ProjectionsP projections_;
+        rjson::value data_{};
+        mutable acd1::name_index_t mAntigenNameIndex{};
+        mutable ProjectionsP projections_{};
 
     }; // class Acd1Chart
 
@@ -190,7 +190,7 @@ namespace ae::chart::v2
 
      private:
         const rjson::value& data_;
-        MinimumColumnBasis minimum_column_basis_;
+        MinimumColumnBasis minimum_column_basis_{};
 
     }; // class Acd1ColumnBases
 
@@ -255,7 +255,7 @@ namespace ae::chart::v2
 
      private:
         const rjson::value& data_;
-        mutable std::vector<ProjectionP> projections_;
+        mutable std::vector<ProjectionP> projections_{};
 
     }; // class Acd1Projections
 

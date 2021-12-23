@@ -89,7 +89,7 @@ namespace ae::tree
       private:
         TREE tree_;
         tree_visiting visiting_;
-        std::vector<std::pair<node_index_t, size_t>> parents_; // parent and index in tree.inode(parents_.back()).children, index=-1 for tree.inode(parents_.back()) itself
+        std::vector<std::pair<node_index_t, size_t>> parents_{}; // parent and index in tree.inode(parents_.back()).children, index=-1 for tree.inode(parents_.back()) itself
 
         constexpr static size_t parent_itself{static_cast<size_t>(-1)};
         constexpr static size_t iteration_end{static_cast<size_t>(-2)};
@@ -106,6 +106,7 @@ namespace ae::tree
                 case tree_visiting::inodes_post:
                     return true;
             }
+            return false;       // g++-11
         }
     };
 

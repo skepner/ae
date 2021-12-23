@@ -43,14 +43,14 @@ namespace ae::tree
 
     struct Inode : public Node
     {
-        std::vector<node_index_t> children;
+        std::vector<node_index_t> children{};
         size_t number_of_leaves{0};
         // std::vector<std::string> aa_substs;
     };
 
     struct Nodes
     {
-        std::vector<node_index_t> nodes;
+        std::vector<node_index_t> nodes{};
         Tree& tree;
 
         Nodes& sort_by_cumulative();
@@ -121,8 +121,8 @@ namespace ae::tree
         void remove(const std::vector<node_index_t>& nodes);
 
       private:
-        virus::type_subtype_t subtype_;
-        sequences::lineage_t lineage_;
+        virus::type_subtype_t subtype_{};
+        sequences::lineage_t lineage_{};
         std::vector<Inode> inodes_{Inode{}}; // root is always there
         std::vector<Leaf> leaves_{Leaf{}};   // first leaf is unused, node_index_t{0} is index of root inode
         mutable size_t depth_{0};

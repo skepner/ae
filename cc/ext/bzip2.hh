@@ -80,12 +80,9 @@ namespace ae::file
         }
 
       private:
-        bz_stream strm_;
+        bz_stream strm_{};
     };
 
 } // namespace ae::file
 
 // ----------------------------------------------------------------------
-/// Local Variables:
-/// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
-/// End:

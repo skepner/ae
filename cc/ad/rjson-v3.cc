@@ -66,10 +66,10 @@ namespace parser_pop
         }
 
       private:
-        std::string_view source_;
-        std::string_view filename_;
+        std::string_view source_{};
+        std::string_view filename_{};
         size_t pos_{0}, line_{1}, column_{1};
-        std::stack<std::unique_ptr<SymbolHandler>> handlers_;
+        std::stack<std::unique_ptr<SymbolHandler>> handlers_{};
 
         void pop() noexcept;
 
@@ -173,8 +173,8 @@ namespace parser_pop
         constexpr bool value_read() const { return value_read_; }
 
       private:
-        bool value_read_ = false;
-        rjson::v3::value value_;
+        bool value_read_{false};
+        rjson::v3::value value_{};
 
     }; // class ValueHandler
 
@@ -233,7 +233,7 @@ namespace parser_pop
       private:
         Parser& parser_;
         bool escaped{false};
-        size_t begin_, end_;
+        size_t begin_{0}, end_{0};
 
     }; // class StringHandler
 
@@ -292,7 +292,7 @@ namespace parser_pop
 
       private:
         Parser& parser_;
-        size_t begin_, end_;
+        size_t begin_{0}, end_{0};
         bool sign_allowed_ = true;
         bool exponent_ = false;
 
@@ -304,6 +304,8 @@ namespace parser_pop
     {
       public:
         BoolNullHandler(const char* aExpected, rjson::v3::value&& aValue) : expected_{aExpected}, value_{std::move(aValue)} {}
+        BoolNullHandler(const BoolNullHandler&) = default;
+        BoolNullHandler& operator=(const BoolNullHandler&) = default;
 
         HandlingResult handle(std::string_view::value_type aSymbol, Parser& aParser) override
         {
@@ -334,8 +336,8 @@ namespace parser_pop
         rjson::v3::value value_move() override { return std::move(value_); }
 
       private:
-        const char* expected_;
-        rjson::v3::value value_;
+        const char* expected_{nullptr};
+        rjson::v3::value value_{};
 
         size_t pos_ = 0;
 
@@ -434,8 +436,8 @@ namespace parser_pop
         }
 
       private:
-        rjson::v3::detail::object value_;
-        rjson::v3::value key_;
+        rjson::v3::detail::object value_{};
+        rjson::v3::value key_{};
         Expected expected_ = Expected::Key;
 
     }; // class ObjectHandler
@@ -507,7 +509,7 @@ namespace parser_pop
         void subvalue(rjson::v3::value&& aSubvalue, Parser& /*aParser*/) override { value_.append(std::move(aSubvalue)); }
 
       private:
-        rjson::v3::detail::array value_;
+        rjson::v3::detail::array value_{};
         Expected expected_ = Expected::Value;
 
     }; // class ArrayHandler

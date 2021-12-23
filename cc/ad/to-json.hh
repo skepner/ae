@@ -120,7 +120,7 @@ namespace to_json
           protected:
             using data_t = std::vector<std::string>;
 
-            data_t data_;
+            data_t data_{};
 
             json(char beg, char end)
             {
@@ -217,7 +217,7 @@ namespace to_json
             template <typename T> void set(std::string_view key, T&& value, json::escape_double_quotes esc = json::escape_double_quotes::no) { kv_ = key_val(key, std::move(value), esc); }
 
           private:
-            std::optional<key_val> kv_;
+            std::optional<key_val> kv_{std::nullopt};
         };
 
         class key_val_if_not_empty : public key_val_if
@@ -332,16 +332,16 @@ namespace to_json
             return target;
         }
 
-        inline object& operator<<(object& target, key_val&& kv)
+        inline object& operator<<(object& target, key_val&& kvv)
         {
-            target.move_before_end(std::move(kv));
+            target.move_before_end(std::move(kvv));
             return target;
         }
 
-        inline object& operator<<(object& target, key_val_if&& kv)
+        inline object& operator<<(object& target, key_val_if&& kvv)
         {
-            if (!kv.empty())
-                target.move_before_end(std::move(kv).get());
+            if (!kvv.empty())
+                target.move_before_end(std::move(kvv).get());
             return target;
         }
 

@@ -72,7 +72,7 @@ template <> struct fmt::formatter<ae::fmt_helper::float_formatter>
     }
 
   private:
-    std::string format_;
+    std::string format_{};
 };
 
 // ----------------------------------------------------------------------

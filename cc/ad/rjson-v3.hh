@@ -301,7 +301,7 @@ namespace rjson::v3
       private:
         value_read(std::string&& buf) : buffer_{std::move(buf)} {}
 
-        value& operator=(value&& val) // buffer_ untouched
+        value_read& operator=(value&& val) // buffer_ untouched
         {
             value::operator=(std::move(val));
             return *this;

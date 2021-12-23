@@ -67,7 +67,7 @@ namespace ae::file
         }
 
       private:
-        lzma_stream strm_;
+        lzma_stream strm_{};
 
         std::string process(std::string_view input, size_t padding, size_t buf_size)
         {

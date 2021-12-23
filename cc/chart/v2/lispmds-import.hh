@@ -29,8 +29,8 @@ namespace ae::chart::v2
         void verify_data(Verify aVerify) const;
 
      private:
-        acmacs::lispmds::value mData;
-        mutable ProjectionsP projections_;
+        acmacs::lispmds::value mData{};
+        mutable ProjectionsP projections_{};
 
     }; // class Chart
 
@@ -92,7 +92,7 @@ namespace ae::chart::v2
 
      private:
         const acmacs::lispmds::value& mData;
-        size_t mIndex;
+        size_t mIndex{0};
 
     }; // class LispmdsAntigen
 
@@ -115,7 +115,7 @@ namespace ae::chart::v2
 
      private:
         const acmacs::lispmds::value& mData;
-        size_t mIndex;
+        size_t mIndex{0};
 
     }; // class LispmdsSerum
 

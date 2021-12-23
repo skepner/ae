@@ -67,9 +67,9 @@ namespace rjson
                 }
 
               private:
-                std::string_view source_;
+                std::string_view source_{};
                 size_t pos_ = 0, line_ = 1, column_ = 1;
-                std::stack<std::unique_ptr<SymbolHandler>> handlers_;
+                std::stack<std::unique_ptr<SymbolHandler>> handlers_{};
 
                 void pop();
 
@@ -193,7 +193,7 @@ namespace rjson
 
               private:
                 Parser& parser_;
-                size_t begin_, end_;
+                size_t begin_{0}, end_{0};
 
             }; // class StringHandler
 
@@ -252,7 +252,7 @@ namespace rjson
 
               private:
                 Parser& parser_;
-                size_t begin_, end_;
+                size_t begin_{0}, end_{0};
                 bool sign_allowed_ = true;
                 bool exponent_ = false;
                 // bool integer_ = true;
@@ -265,6 +265,8 @@ namespace rjson
             {
               public:
                 BoolNullHandler(const char* aExpected, value&& aValue) : expected_{aExpected}, value_{std::move(aValue)} {}
+                BoolNullHandler(const BoolNullHandler&) = default;
+                BoolNullHandler& operator=(const BoolNullHandler&) = default;
 
                 HandlingResult handle(std::string_view::value_type aSymbol, Parser& aParser) override
                 {
@@ -295,8 +297,8 @@ namespace rjson
                 value value_move() override { return std::move(value_); }
 
               private:
-                const char* expected_;
-                value value_;
+                const char* expected_{nullptr};
+                value value_{};
 
                 size_t pos_ = 0;
 
@@ -323,7 +325,7 @@ namespace rjson
 
               private:
                 bool value_read_ = false;
-                value value_;
+                value value_{};
 
             }; // class ValueHandler
 
@@ -420,8 +422,8 @@ namespace rjson
                 }
 
               private:
-                object value_;
-                value key_;
+                object value_{};
+                value key_{};
                 Expected expected_ = Expected::Key;
 
             }; // class ObjectHandler
@@ -493,7 +495,7 @@ namespace rjson
                 void subvalue(value&& aSubvalue, Parser& /*aParser*/) override { value_.append(std::move(aSubvalue)); }
 
               private:
-                array value_;
+                array value_{};
                 Expected expected_ = Expected::Value;
 
             }; // class ArrayHandler

@@ -21,7 +21,7 @@ struct deletions_insertions_t
         auto operator<=>(const pos_num_t&) const = default;
     };
 
-    std::vector<pos_num_t> deletions, insertions;
+    std::vector<pos_num_t> deletions{}, insertions{};
 
     bool empty() const { return deletions.empty() && insertions.empty(); }
 
@@ -113,8 +113,8 @@ inline bool N_deletions_at(const deletions_insertions_t& deletions, size_t num_d
 
 struct find_head_t
 {
-    size_t head = 0;
-    size_t common = 0;
+    size_t head{0};
+    size_t common{0};
 };
 
 inline find_head_t find_common_head(std::string_view s1, std::string_view s2)
@@ -163,7 +163,7 @@ struct deletions_insertions_at_start_t
 {
     size_t deletions = 0;
     size_t insertions = 0;
-    find_head_t head;
+    find_head_t head{};
 };
 
 inline deletions_insertions_at_start_t deletions_insertions_at_start(std::string_view master, std::string_view to_align)

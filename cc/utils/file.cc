@@ -70,6 +70,8 @@ namespace ae::file::detail
             else
                 throw not_found{std::string{filename}};
         }
+        mmapped(const mmapped&) = delete;
+        mmapped operator=(const mmapped&) = delete;
 
         ~mmapped()
         {

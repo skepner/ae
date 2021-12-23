@@ -118,7 +118,7 @@ namespace acmacs::lispmds
         bool empty() const { return mContent.empty(); }
 
      private:
-        std::vector<value> mContent;
+        std::vector<value> mContent{};
 
     }; // class list
 

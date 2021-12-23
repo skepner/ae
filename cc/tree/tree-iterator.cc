@@ -58,6 +58,7 @@ template <ae::lvalue_reference TREE, ae::pointer LEAF, ae::pointer INODE> ae::tr
             case tree_visiting::inodes_post:
                 return false;
         }
+        return false;           // g++-11
     };
 
     [[maybe_unused]] const auto debug_print_current = [this](std::string_view prefix) {
