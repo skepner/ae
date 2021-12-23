@@ -4,11 +4,11 @@
 
 - clang-13 or g++-11
 - ninja
-  macOS: brew install ninja
-  Ubuntu: sudo apt install ninja-build
+  - macOS: brew install ninja
+  - Ubuntu: sudo apt install ninja-build
 - meson
-  macOS: brew install meson
-  Ubuntu: sudo apt install meson
+  - macOS: brew install meson
+  - Ubuntu: sudo apt install meson
 - cmake 3.18+ (to build lexy)
   macOS: brew install cmake
   Ubuntu: sudo apt install cmake
