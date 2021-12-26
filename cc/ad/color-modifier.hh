@@ -1,7 +1,4 @@
 #pragma once
-/// Local Variables:
-/// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
-/// End:
 
 #include <vector>
 #include <variant>

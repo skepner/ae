@@ -5,7 +5,7 @@
 #include <chrono>
 
 #include "ext/fmt.hh"
-#include "ext/xlnt.hh"
+// #include "ext/xlnt.hh"
 #include "ext/range-v3.hh"
 
 // ----------------------------------------------------------------------
@@ -27,7 +27,7 @@ int main()
     fmt::print("range-v3: {}\n", ranges::views::ints(0, 10) | ranges::to<std::vector>);
     // er;
 
-    xlnt::workbook wb;
+    // xlnt::workbook wb;
     // wb.load("empty.xlsx");
     // const auto ws = wb.active_sheet();
     // fmt::print("{}\n", ws.cell(1, 1).value<std::string>());
@@ -40,6 +40,3 @@ int main()
 }
 
 // ----------------------------------------------------------------------
-/// Local Variables:
-/// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
-/// End:

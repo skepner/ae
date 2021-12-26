@@ -34,7 +34,7 @@ endif
 cmake = import('cmake')
 lexy = cmake.subproject('lexy').dependency('lexy_core')
 
-subproject('xlnt')
+# subproject('xlnt')
 
 # simdjson = import('cmake').subproject('simdjson').dependency('simdjson')
 subproject('simdjson')
@@ -166,7 +166,7 @@ sources_chart_v2 = [
 
 libae = library(
   'ae',
-  sources : sources_tree + sources_locdb_v3 + 
+  sources : sources_tree + sources_locdb_v3 +
             sources_sequences + sources_virus + sources_utlis +
             sources_chart_v2 + sources_ad,
   include_directories : include_cc,
@@ -190,12 +190,12 @@ chart_relax = executable(
 # tests ae
 # ----------------------------------------------------------------------
 
-test_basic = executable('test-basic', 'cc/test/basic.cc',
-                 include_directories : include_cc,
-                 dependencies : [fmt, dependency('xlnt'), simdjson, range_v3, lexy],
-                 install : true)
+# test_basic = executable('test-basic', 'cc/test/basic.cc',
+#                  include_directories : include_cc,
+#                  dependencies : [fmt, dependency('xlnt'), simdjson, range_v3, lexy],
+#                  install : true)
 
-test('ae test basic', test_basic)
+# test('ae test basic', test_basic)
 
 test_virus_name = executable(
   'test-virus-name',

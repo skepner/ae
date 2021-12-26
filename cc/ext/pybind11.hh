@@ -5,7 +5,9 @@
 // ----------------------------------------------------------------------
 
 #pragma GCC diagnostic push
-#ifdef __clang__
+
+#if defined(__clang__)
+
 // clang++ 13 2021-10-08
 #pragma GCC diagnostic ignored "-Wreserved-identifier"
 
@@ -28,6 +30,9 @@
 #pragma GCC diagnostic ignored "-Wundefined-reinterpret-cast"
 #pragma GCC diagnostic ignored "-Wfloat-equal"
 #pragma GCC diagnostic ignored "-Wweak-vtables"
+
+#elif defined(__GNUG__)
+
 #endif
 
 #include <pybind11/pybind11.h>
