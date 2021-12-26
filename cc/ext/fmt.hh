@@ -6,6 +6,7 @@
 
 // 8.0.1, clang 13
 #pragma GCC diagnostic ignored "-Wreserved-identifier" // identifier '_a' is reserved because it starts with '_' at global scope (bug in clang13 ?)
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #pragma GCC diagnostic ignored "-Wdocumentation-unknown-command"
 #pragma GCC diagnostic ignored "-Wsigned-enum-bitfield" // fmt/format.h
 #pragma GCC diagnostic ignored "-Wmissing-noreturn" // fmt/core.h
@@ -75,15 +76,6 @@ template <> struct fmt::formatter<ae::fmt_helper::float_formatter>
 
   private:
     std::string format_{};
-};
-
-// ----------------------------------------------------------------------
-
-template <> struct fmt::formatter<std::chrono::year_month_day> : fmt::formatter<ae::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(const std::chrono::year_month_day& value, FormatCtx& ctx)
-    {
-        return format_to(ctx.out(), "{:04d}-{:02d}-{:02d}", static_cast<size_t>(static_cast<int>(value.year())), static_cast<unsigned>(value.month()), static_cast<unsigned>(value.day()));
-    }
 };
 
 // ----------------------------------------------------------------------

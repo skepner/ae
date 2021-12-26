@@ -82,14 +82,14 @@ namespace ae::file
                 strm_.avail_out = buf_size;
                 auto const r = lzma_code(&strm_, LZMA_FINISH);
                 if (r == LZMA_STREAM_END) {
-                    output.resize(static_cast<size_t>(offset + buf_size) - strm_.avail_out);
-                    output.reserve(static_cast<size_t>(offset + buf_size) - strm_.avail_out + padding);
+                    output.resize(static_cast<size_t>(offset) + buf_size - strm_.avail_out);
+                    output.reserve(static_cast<size_t>(offset) + buf_size - strm_.avail_out + padding);
                     break;
                 }
                 else if (r == LZMA_OK) {
                     offset += buf_size;
-                    output.reserve(static_cast<size_t>(offset + buf_size) + padding);
-                    output.resize(static_cast<size_t>(offset + buf_size));
+                    output.reserve(static_cast<size_t>(offset) + buf_size + padding);
+                    output.resize(static_cast<size_t>(offset) + buf_size);
                 }
                 else {
                     throw compressor_failed("lzma decompression failed 2");
