@@ -79,6 +79,15 @@ template <> struct fmt::formatter<ae::fmt_helper::float_formatter>
 
 // ----------------------------------------------------------------------
 
+template <> struct fmt::formatter<std::chrono::year_month_day> : fmt::formatter<ae::fmt_helper::default_formatter> {
+    template <typename FormatCtx> auto format(const std::chrono::year_month_day& value, FormatCtx& ctx)
+    {
+        return format_to(ctx.out(), "{:04d}-{:02d}-{:02d}", static_cast<size_t>(static_cast<int>(value.year())), static_cast<unsigned>(value.month()), static_cast<unsigned>(value.day()));
+    }
+};
+
+// ----------------------------------------------------------------------
+
 // template <> struct fmt::formatter<###> : fmt::formatter<ae::fmt_helper::default_formatter> {
 //     template <typename FormatCtx> auto format(const ###& value, FormatCtx& ctx)
 //     {
