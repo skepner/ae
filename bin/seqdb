@@ -5,10 +5,10 @@ Seqdb lookup
 
 import os, sys, argparse, traceback
 from pathlib import Path
-if os.environ.get("DYLD_INSERT_LIBRARIES"):
-    sys.path[:0] = [str(Path(os.environ["AE_ROOT"], dir)) for dir in ["build.debug", "py"]]
-else:
-    sys.path[:0] = [str(Path(os.environ["AE_ROOT"], dir)) for dir in ["build", "py"]]
+# if os.environ.get("DYLD_INSERT_LIBRARIES"):
+#     sys.path[:0] = [str(Path(os.environ["AE_ROOT"], dir)) for dir in ["build.debug", "py"]]
+# else:
+#     sys.path[:0] = [str(Path(os.environ["AE_ROOT"], dir)) for dir in ["build", "py"]]
 from ae.sequences.source import fasta
 import ae_backend
 
