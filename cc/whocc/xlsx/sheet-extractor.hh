@@ -63,7 +63,7 @@ namespace ae::xlsx::inline v1
         std::string_view lineage() const { return lineage_; }
         std::string_view assay() const { return assay_; }
         std::string_view rbc() const { return rbc_; }
-        std::string date() const { return fmt::format("{}", date_); }
+        const std::chrono::year_month_day& date() const { return date_; }
 
         size_t number_of_antigens() const { return antigen_rows().size(); }
         size_t number_of_sera() const { return serum_columns().size(); }
@@ -92,6 +92,8 @@ namespace ae::xlsx::inline v1
         virtual void force_serum_id_row(nrow_t row);
 
         virtual const char* extractor_name() const { return "[Extractor]"; }
+
+        virtual std::string format_assay_data(std::string_view format) const;
 
       protected:
         virtual void find_titers(warn_if_not_found winf);

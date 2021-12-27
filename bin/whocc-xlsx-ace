@@ -19,13 +19,27 @@ def main(args: argparse.Namespace):
             detected = detect_m.detect(sheet)
             print(detected)
             extractor = ae_backend.whocc.xlsx.extractor(sheet, detected)
-            print(extractor)
+            if args.serum_name_row is not None:
+                extractor.force_serum_name_row(args.serum_name_row - 1)
+            if args.serum_passage_row is not None:
+                extractor.force_serum_passage_row(args.serum_passage_row - 1)
+            if args.serum_id_row is not None:
+                extractor.force_serum_id_row(args.serum_id_row - 1)
+            if args.assay_information:
+                print(extractor.format_assay_data(args.format))
+            else:
+                pass
 
 # ----------------------------------------------------------------------
 
 try:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("filenames", nargs="+", type=Path, metavar="file.xlsx")
+    parser.add_argument("-n", "--assay-information", dest="assay_information", action="store_true", help="print assay information fields according to format (-f or --format)")
+    parser.add_argument("-f", "--format", dest="format", default="{virus_type_lineage}-{assay_low_rbc}-{lab_low}-{table_date}", help="print assay information fields: {virus_type} {lineage} {virus_type_lineage} {virus_type_lineage_subset_short_low} {assay_full} {assay_low} {assay_low_rbc} {lab} {lab_low} {rbc} {table_date}")
+    parser.add_argument("--serum-name-row", dest="serum_name_row", type=int, help="force serum name row (1 based)")
+    parser.add_argument("--serum-passage-row", dest="serum_passage_row", type=int, help="force serum passage row (1 based)")
+    parser.add_argument("--serum-id-row", dest="serum_id_row", type=int, help="force serum id row (1 based)")
     args = parser.parse_args()
     exit_code = main(args) or 0
 except Exception as err:

@@ -71,8 +71,9 @@ namespace ae
       public:
         // using difference_type = long; // named_number_t<T, Tag>;
 
-        // template <std::integral T2> explicit named_number_t(T2 val) : named_t<T, Tag>(static_cast<T>(val)) {}
-        using named_t<T, Tag>::named_t;
+        constexpr named_number_t() = default;
+        template <std::integral T2> explicit constexpr named_number_t(T2 val) : named_t<T, Tag>(static_cast<T>(val)) {}
+
         using named_t<T, Tag>::operator=;
         using named_t<T, Tag>::operator==;
         using named_t<T, Tag>::operator<=>;

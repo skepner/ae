@@ -96,9 +96,33 @@ void ae::py::whocc(pybind11::module_& mdl)
         .def("__repr__", [](const ae::xlsx::cell_match_t& cm) { return fmt::format("<cell_match_t: {}:{} {}>", cm.row, cm.col, cm.matches); }) //
         ;
 
-    pybind11::class_<ae::xlsx::Extractor, std::shared_ptr<ae::xlsx::Extractor>>(xlsx_submodule, "Extractor")           //
+    pybind11::class_<ae::xlsx::Extractor, std::shared_ptr<ae::xlsx::Extractor>>(xlsx_submodule, "Extractor") //
+        .def("format_assay_data", &ae::xlsx::Extractor::format_assay_data, "format"_a) //
+        .def(
+            "force_serum_name_row",
+            [](ae::xlsx::Extractor& extractor, ssize_t row_no) {
+                if (row_no < 0)
+                    throw std::invalid_argument{fmt::format("force_serum_name_row: invalid row: {}", row_no)};
+                extractor.force_serum_name_row(ae::xlsx::nrow_t{row_no});
+            },
+            "row_no"_a) //
+        .def(
+            "force_serum_passage_row",
+            [](ae::xlsx::Extractor& extractor, ssize_t row_no) {
+                if (row_no < 0)
+                    throw std::invalid_argument{fmt::format("force_serum_passage_row: invalid row: {}", row_no)};
+                extractor.force_serum_passage_row(ae::xlsx::nrow_t{row_no});
+            },
+            "row_no"_a) //
+        .def(
+            "force_serum_id_row",
+            [](ae::xlsx::Extractor& extractor, ssize_t row_no) {
+                if (row_no < 0)
+                    throw std::invalid_argument{fmt::format("force_serum_id_row: invalid row: {}", row_no)};
+                extractor.force_serum_id_row(ae::xlsx::nrow_t{row_no});
+            },
+            "row_no"_a) //
         ;
-
 }
 
 // ======================================================================

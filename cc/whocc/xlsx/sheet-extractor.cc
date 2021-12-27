@@ -575,6 +575,40 @@ void ae::xlsx::v1::Extractor::force_serum_id_row(nrow_t /*row*/)
 
 // ----------------------------------------------------------------------
 
+std::string ae::xlsx::v1::Extractor::format_assay_data(std::string_view format) const
+{
+    using namespace fmt::literals;
+
+    const auto assay_rbc = [this]() -> std::string {
+        if (const auto assy = assay(); assy == "HI")
+            return fmt::format("hi-{}", ae::string::lowercase(rbc()));
+        else
+            return ae::string::lowercase(assy);
+        // else if (assay == "HINT")
+        //     return "hint";
+        // else
+        //     return "neut";
+    };
+
+    return fmt::format(fmt::runtime(format),                     //
+                       "virus_type"_a = subtype(),               //
+                       "lineage"_a = lineage(),                  //
+                       "virus_type_lineage"_a = subtype_short(), //
+                       // "subset"_a = ,
+                       "virus_type_lineage_subset_short_low"_a = subtype_short(), //
+                       "assay_full"_a = assay(),                                  //
+                       "assay"_a = assay(),                                       //
+                       "assay_low"_a = ae::string::lowercase(assay()),            //
+                       "assay_low_rbc"_a = assay_rbc(),                           //
+                       "lab"_a = lab(),                                           //
+                       "lab_low"_a = ae::string::lowercase(lab()),                //
+                       "rbc"_a = rbc(),                                           //
+                       "table_date"_a = fmt::format(":%Y%m%d", date())             //
+    );
+}
+
+// ----------------------------------------------------------------------
+
 ae::xlsx::v1::ExtractorCDC::ExtractorCDC(std::shared_ptr<Sheet> a_sheet)
     : Extractor(a_sheet)
 {
