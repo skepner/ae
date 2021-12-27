@@ -20,6 +20,7 @@ PYBIND11_MODULE(ae_backend, mdl)
     ae::py::sequences(mdl);
     ae::py::tree(mdl);
     ae::py::virus(mdl);
+    ae::py::whocc(mdl);
     ae::py::utils(mdl);
 
     // ----------------------------------------------------------------------

@@ -1,0 +1,36 @@
+#! /usr/bin/env python3
+
+import sys, os, argparse, traceback
+from pathlib import Path
+import ae_whocc
+import ae.whocc.load_module
+
+# ----------------------------------------------------------------------
+
+def main(args: argparse.Namespace):
+    if not (whocc_tables_dir := os.environ.get("WHOCC_TABLES_DIR")):
+        raise RuntimeError(f"""WHOCC_TABLES_DIR env var not set""")
+    detect_m = ae.whocc.load_module.load(Path(whocc_tables_dir, "ae-whocc-detect.py"))
+    for source in args.filenames:
+        workbook = ae_whocc.xlsx.open(source)
+        for sheet_no in range(workbook.number_of_sheets()):
+            sheet = workbook.sheet(sheet_no)
+            print(f"sheet {sheet_no} name: \"{sheet.name()}\" {sheet.number_of_rows()}:{sheet.number_of_columns()}")
+            detected = detect_m.detect(sheet)
+            print(detected)
+            extractor = ae_whocc.xlsx.extractor(sheet, detected)
+            print(extractor)
+
+# ----------------------------------------------------------------------
+
+try:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("filenames", nargs="+", type=Path, metavar="file.xlsx")
+    args = parser.parse_args()
+    exit_code = main(args) or 0
+except Exception as err:
+    print(f"> {err}\n{traceback.format_exc()}", file=sys.stderr)
+    exit_code = 1
+exit(exit_code)
+
+# ======================================================================

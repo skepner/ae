@@ -34,7 +34,8 @@ endif
 cmake = import('cmake')
 lexy = cmake.subproject('lexy').dependency('lexy_core')
 
-# subproject('xlnt')
+subproject('xlnt')
+xlnt = dependency('xlnt')
 
 # simdjson = import('cmake').subproject('simdjson').dependency('simdjson')
 subproject('simdjson')
@@ -75,7 +76,8 @@ sources_py = [
   'cc/py/virus.cc',
   'cc/py/sequences.cc',
   'cc/py/tree.cc',
-  'cc/py/utils.cc'
+  'cc/py/whocc.cc',
+  'cc/py/utils.cc',
 ]
 
 sources_tree = [
@@ -101,13 +103,19 @@ sources_locdb_v3 = [
   'cc/locdb/v3/locdb.cc'
 ]
 
+sources_whocc = [
+  'cc/whocc/xlsx/csv-parser.cc',
+  'cc/whocc/xlsx/sheet-extractor.cc',
+  'cc/whocc/xlsx/sheet.cc',
+]
+
 sources_virus = [
   'cc/virus/name-parse.cc',
   'cc/virus/passage.cc',
   'cc/virus/reassortant.cc'
 ]
 
-sources_utlis = [
+sources_utils = [
   'cc/utils/file.cc',
   'cc/utils/log.cc',
   'cc/utils/messages.cc',
@@ -167,10 +175,11 @@ sources_chart_v2 = [
 libae = library(
   'ae',
   sources : sources_tree + sources_locdb_v3 +
-            sources_sequences + sources_virus + sources_utlis +
+            sources_sequences + sources_virus + sources_whocc +
+            sources_utils +
             sources_chart_v2 + sources_ad,
   include_directories : include_cc,
-  dependencies : [alglib, xxhash, fmt, simdjson, range_v3, lexy, omp, bzip2, zlib, xz],
+  dependencies : [alglib, xxhash, fmt, simdjson, range_v3, lexy, omp, xlnt, bzip2, zlib, xz],
   link_args : libomp_dir,
   install : true)
 
