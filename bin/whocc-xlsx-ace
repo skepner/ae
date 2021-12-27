@@ -2,7 +2,7 @@
 
 import sys, os, argparse, traceback
 from pathlib import Path
-import ae_whocc
+import ae_backend
 import ae.whocc.load_module
 
 # ----------------------------------------------------------------------

@@ -252,7 +252,7 @@ ae_lib = python3.extension_module(
   'ae_backend',
   sources : sources_py,
   include_directories : include_cc,
-  dependencies : [dependency('python3'), pybind11, fmt],
+  dependencies : [dependency('python3'), pybind11, xlnt, fmt],
   link_with : [libae],
   install : true)
 
