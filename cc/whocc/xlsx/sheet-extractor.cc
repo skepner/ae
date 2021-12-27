@@ -603,7 +603,7 @@ std::string ae::xlsx::v1::Extractor::format_assay_data(std::string_view format) 
                        "lab"_a = lab(),                                           //
                        "lab_low"_a = ae::string::lowercase(lab()),                //
                        "rbc"_a = rbc(),                                           //
-                       "table_date"_a = fmt::format(":%Y%m%d", date())             //
+                       "table_date"_a = date()                                    //
     );
 }
 

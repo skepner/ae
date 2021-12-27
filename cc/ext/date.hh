@@ -39,13 +39,21 @@ namespace ae::date
 
 // ----------------------------------------------------------------------
 
-template <> struct fmt::formatter<std::chrono::year_month_day> : fmt::formatter<ae::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(const std::chrono::year_month_day& date, FormatCtx& ctx) const
+template <> struct fmt::formatter<std::chrono::year_month_day>
+{
+    template <typename ParseContext> constexpr auto parse(ParseContext& ctx)
     {
-        return format_to(ctx.out(), "{:04d}-{:02d}-{:02d}", static_cast<int>(date.year()), static_cast<unsigned>(date.month()), static_cast<unsigned>(date.day()));
+        const auto begin = ctx.begin();
+        const auto end = std::find(begin, ctx.end(), '}');
+        format_ = fmt::format("{{:{}}}", std::string_view(begin, static_cast<size_t>(end - begin)));
+        return end;
     }
-};
 
+    template <typename FormatCtx> auto format(const std::chrono::year_month_day& date, FormatCtx& ctx) const { return format_to(ctx.out(), fmt::runtime(format_), std::chrono::sys_days(date)); }
+
+  private:
+    std::string format_{};
+};
 
 // ----------------------------------------------------------------------
 
