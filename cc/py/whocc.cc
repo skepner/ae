@@ -96,10 +96,17 @@ void ae::py::whocc(pybind11::module_& mdl)
         .def("__repr__", [](const ae::xlsx::cell_match_t& cm) { return fmt::format("<cell_match_t: {}:{} {}>", cm.row, cm.col, cm.matches); }) //
         ;
 
-    pybind11::class_<ae::xlsx::Extractor, std::shared_ptr<ae::xlsx::Extractor>>(xlsx_submodule, "Extractor") //
-        .def("format_assay_data", &ae::xlsx::Extractor::format_assay_data, "format"_a) //
-        .def("report_data_anchors", &ae::xlsx::Extractor::report_data_anchors) //
-        .def("check_export_possibility", &ae::xlsx::Extractor::check_export_possibility) //
+    pybind11::class_<ae::xlsx::Extractor, std::shared_ptr<ae::xlsx::Extractor>>(xlsx_submodule, "Extractor")                        //
+        .def("format_assay_data", &ae::xlsx::Extractor::format_assay_data, "format"_a)                                              //
+        .def("report_data_anchors", &ae::xlsx::Extractor::report_data_anchors)                                                      //
+        .def("check_export_possibility", &ae::xlsx::Extractor::check_export_possibility)                                            //
+        .def("lab", pybind11::overload_cast<>(&ae::xlsx::Extractor::lab, pybind11::const_))                                         //
+        .def("date", pybind11::overload_cast<>(&ae::xlsx::Extractor::date, pybind11::const_))                                       //
+        .def("assay", pybind11::overload_cast<>(&ae::xlsx::Extractor::assay, pybind11::const_))                                     //
+        .def("subtype_without_lineage", pybind11::overload_cast<>(&ae::xlsx::Extractor::subtype_without_lineage, pybind11::const_)) //
+        .def("rbc", pybind11::overload_cast<>(&ae::xlsx::Extractor::rbc, pybind11::const_))                                         //
+        .def("lineage", pybind11::overload_cast<>(&ae::xlsx::Extractor::lineage, pybind11::const_))                                 //
+        .def("titer_comment", &ae::xlsx::Extractor::titer_comment)                                                                  //
         .def(
             "force_serum_name_row",
             [](ae::xlsx::Extractor& extractor, ssize_t row_no) {

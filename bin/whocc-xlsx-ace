@@ -1,9 +1,9 @@
 #! /usr/bin/env python3
 
-import sys, os, argparse, traceback
+import sys, os, io, argparse, traceback
 from pathlib import Path
 import ae_backend
-import ae.utils.load_module
+import ae.utils.load_module, ae.utils.open_file
 
 # ----------------------------------------------------------------------
 
@@ -38,11 +38,52 @@ def main(args: argparse.Namespace):
 
 def make_torg(extractor: ae_backend.whocc.xlsx.Extractor, output_dir: Path):
     if not output_dir:
-        output_dir = sWhoccTablesDir.joinpath(extractor.format_assay_data("{virus_type_lineage}-{assay_low_rbc}-{lab_low}"))
+        output_dir = sWhoccTablesDir.joinpath(extractor.format_assay_data("{virus_type_lineage}-{assay_low_rbc}-{lab_low}"), "torg")
         if not output_dir.exists():
             raise RuntimeError(f"""Output dir "{output_dir}" does not exist""")
     filename = output_dir.joinpath(extractor.format_assay_data("{virus_type_lineage}-{assay_low_rbc}-{lab_low}-{table_date:%Y%m%d}") + ".torg")
     print(f">>> {filename}")
+    with ae.utils.open_file.for_writing(filename) as output:
+        generate_torg(extractor, output)
+
+# ----------------------------------------------------------------------
+
+def generate_torg(extractor: ae_backend.whocc.xlsx.Extractor, output: io.FileIO):
+    assay_date = extractor.format_assay_data("{table_date:%Y-%m-%d}")
+    print(f"""# -*- Org -*-
+
+- Lab: {extractor.lab()}
+- Date: {assay_date}
+- Assay: {extractor.assay()}
+- Subtype: {extractor.subtype_without_lineage()}""", file=output)
+
+    if rbc := extractor.rbc():
+        print(f"- Rbc: {rbc}", file=output)
+    if lineage := extractor.lineage():
+        print(f"- Lineage: {lineage}", file=output);
+    print("", file=output)
+
+    if titer_comment := extractor.titer_comment():
+        print(f"titer value in the table: {titer_comment}\n", file=output);
+
+    # for (const auto& row : data) {
+    #     fmt::format_to_mb(result, "|");
+    #     for (const auto col : range_from_0_to(row.size()))
+    #         fmt::format_to_mb(result, " {:{}s} |", row[col], column_widths[col]);
+    #     fmt::format_to_mb(result, "\n");
+    # }
+
+    print("""
+* COMMENT local vars ----------------------------------------------------------------------
+:PROPERTIES:
+:VISIBILITY: folded
+:END:
+
+#+STARTUP: showall indent
+Local Variables:
+eval: (if (fboundp 'eu-whocc-torg-to-ace) (add-hook 'after-save-hook 'eu-whocc-torg-to-ace nil 'local))
+eval: (if (fboundp 'eu-whocc-xlsx-torg-ace-hup) (add-hook 'after-save-hook 'eu-whocc-xlsx-torg-ace-hup nil 'local))
+End:""", file=output);
 
 # ----------------------------------------------------------------------
 

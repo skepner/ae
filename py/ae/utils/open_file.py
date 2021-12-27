@@ -36,7 +36,7 @@ def for_writing(path :Path, do_backup: bool = True):
 # ----------------------------------------------------------------------
 
 def backup(path: Path):
-    if path.exists() and path.parents[-1] != "dev":
+    if path.exists() and path.parents[len(path.parents) - 2] != "/dev":
         backup_dir = path.resolve().parent.joinpath(".backup")
         backup_dir.mkdir(parents=True, exist_ok=True)
         now = datetime.datetime.now()
