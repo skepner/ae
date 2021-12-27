@@ -98,6 +98,8 @@ void ae::py::whocc(pybind11::module_& mdl)
 
     pybind11::class_<ae::xlsx::Extractor, std::shared_ptr<ae::xlsx::Extractor>>(xlsx_submodule, "Extractor") //
         .def("format_assay_data", &ae::xlsx::Extractor::format_assay_data, "format"_a) //
+        .def("report_data_anchors", &ae::xlsx::Extractor::report_data_anchors) //
+        .def("check_export_possibility", &ae::xlsx::Extractor::check_export_possibility) //
         .def(
             "force_serum_name_row",
             [](ae::xlsx::Extractor& extractor, ssize_t row_no) {

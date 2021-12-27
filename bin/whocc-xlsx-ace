@@ -7,10 +7,12 @@ import ae.utils.load_module
 
 # ----------------------------------------------------------------------
 
+sWhoccTablesDir = Path(os.environ.get("WHOCC_TABLES_DIR"))
+
 def main(args: argparse.Namespace):
-    if not (whocc_tables_dir := os.environ.get("WHOCC_TABLES_DIR")):
+    if not sWhoccTablesDir:
         raise RuntimeError(f"""WHOCC_TABLES_DIR env var not set""")
-    detect_m = ae.utils.load_module.load(Path(whocc_tables_dir, "ae-whocc-detect.py"))
+    detect_m = ae.utils.load_module.load(Path(sWhoccTablesDir, "ae-whocc-detect.py"))
     for source in args.filenames:
         workbook = ae_backend.whocc.xlsx.open(source)
         for sheet_no in range(workbook.number_of_sheets()):
@@ -28,13 +30,26 @@ def main(args: argparse.Namespace):
             if args.assay_information:
                 print(extractor.format_assay_data(args.format))
             else:
-                pass
+                extractor.report_data_anchors()
+                extractor.check_export_possibility()
+                make_torg(extractor, args.output_dir)
+
+# ----------------------------------------------------------------------
+
+def make_torg(extractor: ae_backend.whocc.xlsx.Extractor, output_dir: Path):
+    if not output_dir:
+        output_dir = sWhoccTablesDir.joinpath(extractor.format_assay_data("{virus_type_lineage}-{assay_low_rbc}-{lab_low}"))
+        if not output_dir.exists():
+            raise RuntimeError(f"""Output dir "{output_dir}" does not exist""")
+    filename = output_dir.joinpath(extractor.format_assay_data("{virus_type_lineage}-{assay_low_rbc}-{lab_low}-{table_date:%Y%m%d}") + ".torg")
+    print(f">>> {filename}")
 
 # ----------------------------------------------------------------------
 
 try:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("filenames", nargs="+", type=Path, metavar="file.xlsx")
+    parser.add_argument("-o", "--output-dir", dest="output_dir", type=Path)
     parser.add_argument("-n", "--assay-information", dest="assay_information", action="store_true", help="print assay information fields according to format (-f or --format)")
     parser.add_argument("-f", "--format", dest="format", default="{virus_type_lineage}-{assay_low_rbc}-{lab_low}-{table_date:%Y%m%d}", help="print assay information fields: {virus_type} {lineage} {virus_type_lineage} {virus_type_lineage_subset_short_low} {assay_full} {assay_low} {assay_low_rbc} {lab} {lab_low} {rbc} {table_date}")
     parser.add_argument("--serum-name-row", dest="serum_name_row", type=int, help="force serum name row (1 based)")
