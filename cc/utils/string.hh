@@ -44,6 +44,13 @@ namespace ae::string
     inline std::string lowercase(std::string_view source) { return transform(source.begin(), source.end(), ::tolower); }
     template <typename Iter> inline std::string lowercase(Iter first, Iter last) { return transform(first, last, ::tolower); }
 
+    inline std::string remove_spaces(std::string_view source)
+    {
+        std::string result;
+        std::copy_if(source.begin(), source.end(), std::back_inserter(result), [](auto c) -> bool { return !std::isspace(c); });
+        return result;
+    }
+
 } // namespace ae::string
 
 // ======================================================================
@@ -53,6 +60,28 @@ namespace ae::string
     inline bool endswith(std::string_view source, std::string_view suffix) { return source.size() >= suffix.size() && source.substr(source.size() - suffix.size()) == suffix; }
 
     inline bool startswith(std::string_view source, std::string_view prefix) { return source.size() >= prefix.size() && source.substr(0, prefix.size()) == prefix; }
+
+    // assumes s1.size() == s2.size()
+    inline bool equals_ignore_case_same_length(std::string_view s1, std::string_view s2)
+    {
+        for (auto c1 = s1.begin(), c2 = s2.begin(); c1 != s1.end(); ++c1, ++c2) {
+            if (std::toupper(*c1) != std::toupper(*c2))
+                return false;
+        }
+        return true;
+    }
+
+    inline bool equals_ignore_case(std::string_view s1, std::string_view s2) { return s1.size() == s2.size() && equals_ignore_case_same_length(s1, s2); }
+
+    inline bool endswith_ignore_case(std::string_view source, std::string_view suffix)
+    {
+        return source.size() >= suffix.size() && equals_ignore_case_same_length(source.substr(source.size() - suffix.size()), suffix);
+    }
+
+    inline bool startswith_ignore_case(std::string_view source, std::string_view prefix)
+    {
+        return source.size() >= prefix.size() && equals_ignore_case_same_length(source.substr(0, prefix.size()), prefix);
+    }
 
 } // namespace ae::string
 
@@ -404,6 +433,43 @@ namespace ae::string
     }
 
     // ----------------------------------------------------------------------
+
+    inline std::string replace(std::string_view source, std::string_view look_for, std::string_view replace_with)
+    {
+        std::string result;
+        std::string::size_type start = 0;
+        while (true) {
+            const auto pos = source.find(look_for, start);
+            if (pos != std::string::npos) {
+                result.append(source.begin() + static_cast<std::string::difference_type>(start), source.begin() + static_cast<std::string::difference_type>(pos));
+                result.append(replace_with);
+                start = pos + look_for.size();
+            }
+            else {
+                result.append(source.begin() + static_cast<std::string::difference_type>(start), source.end());
+                break;
+            }
+        }
+        return result;
+    }
+
+    inline std::string replace(std::string_view source, char look_for, char replace_with)
+    {
+        std::string result(source.size(), ' ');
+        std::transform(std::begin(source), std::end(source), std::begin(result), [=](char c) { if (c == look_for) return replace_with; else return c; });
+        return result;
+    }
+
+    inline std::string& replace_in_place(std::string& source, char look_for, char replace_with)
+    {
+        std::transform(std::begin(source), std::end(source), std::begin(source), [=](char c) { if (c == look_for) return replace_with; else return c; });
+        return source;
+    }
+
+    template <typename ... Args> inline std::string replace(std::string_view source, std::string_view l1, std::string_view r1, std::string_view l2, std::string_view r2, Args ... args)
+    {
+        return replace(replace(source, l1, r1), l2, r2, args ...);
+    }
 
     inline std::string replace_spaces(std::string_view source, char replacement)
     {
