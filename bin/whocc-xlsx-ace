@@ -75,10 +75,10 @@ def generate_torg(extractor: ae_backend.whocc.xlsx.Extractor, output: io.FileIO)
         ag_row = sr_row.index("base") + ag_no
         antigen = extractor.antigen(ag_no)
         #     acmacs::data_fix::Set::fix(antigen, ag_no)
-        data[ag_row][ag_col.index("name")] = antigen.name
-        data[ag_row][ag_col.index("date")] = antigen.date
-        data[ag_row][ag_col.index("passage")] = antigen.passage
-        data[ag_row][ag_col.index("lab_id")] = antigen.lab_id
+        data[ag_row][ag_col.index("name")] = antigen["name"]
+        data[ag_row][ag_col.index("date")] = antigen["date"]
+        data[ag_row][ag_col.index("passage")] = antigen["passage"]
+        data[ag_row][ag_col.index("lab_id")] = antigen["lab_id"]
 
     #     for (const auto sr_no : range_from_0_to(extractor_->number_of_sera())) {
     #         auto titer = extractor_->titer(ag_no, sr_no)

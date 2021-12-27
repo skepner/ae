@@ -520,10 +520,11 @@ bool ae::xlsx::v1::Extractor::is_control_serum_cell(const cell_t& cell) const
 
 std::string ae::xlsx::v1::Extractor::make_date(const std::string& src) const
 {
-        if (!src.empty())
-            return ae::date::parse_and_format(src, ae::date::allow_incomplete::no, ae::date::throw_on_error::yes, lab() == "CDC" ? ae::date::month_first::yes : ae::date::month_first::no);
-        else
-            return src;
+    // AD_DEBUG("make_date \"{}\"", src);
+    if (!src.empty())
+        return ae::date::parse_and_format(src, ae::date::allow_incomplete::no, ae::date::throw_on_error::yes, lab() == "CDC" ? ae::date::month_first::yes : ae::date::month_first::no);
+    else
+        return src;
 
 } // ae::xlsx::v1::Extractor::make_date
 

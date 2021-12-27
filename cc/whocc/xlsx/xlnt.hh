@@ -58,7 +58,7 @@ namespace ae::xlsx::inline v1
             static inline std::chrono::year_month_day make_date(const ::xlnt::datetime& dt, xlsx::nrow_t /*row*/, xlsx::ncol_t /*col*/)
             {
                 // if (dt.hour || dt.minute || dt.second || dt.microsecond)
-                //     AD_WARNING("xlnt datetime at {:c}{} contains time: {}", col + 'A', row + 1, dt.to_string());
+                //     AD_WARNING("xlnt datetime at {}{} contains time: {}", col, row, dt.to_string());
                 return std::chrono::year{dt.year} / std::chrono::month{static_cast<unsigned>(dt.month)} / dt.day;
             }
 
@@ -79,7 +79,7 @@ namespace ae::xlsx::inline v1
                     return ae::xlsx::cell::empty{};
 
                 const auto cell = sheet_.cell(ref);
-                switch (cell.data_type()) { // ~/AD/build/ae-build/build/xlnt/include/xlnt/cell/cell_type.hpp
+                switch (cell.data_type()) { // ~/ae/subprojects/xlnt-1.5.0/include/xlnt/cell/cell_type.hpp
                     case ::xlnt::cell_type::empty:
                         return ae::xlsx::cell::empty{};
                     case ::xlnt::cell_type::boolean:

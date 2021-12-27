@@ -49,7 +49,7 @@ template <> struct fmt::formatter<std::chrono::year_month_day>
         return end;
     }
 
-    template <typename FormatCtx> auto format(const std::chrono::year_month_day& date, FormatCtx& ctx) const { return format_to(ctx.out(), fmt::runtime(format_), std::chrono::sys_days(date)); }
+    template <typename FormatCtx> constexpr auto format(const std::chrono::year_month_day& date, FormatCtx& ctx) const { return format_to(ctx.out(), fmt::runtime(format_), std::chrono::sys_days(date)); }
 
   private:
     std::string format_{};
@@ -59,7 +59,7 @@ template <> struct fmt::formatter<std::chrono::year_month_day>
 
 inline std::string ae::date::parse_and_format(std::string_view source, allow_incomplete allow, throw_on_error toe, month_first mf)
 {
-    return fmt::format("{}", from_string(source, allow, toe, mf));
+    return fmt::format(fmt::runtime("{:%Y-%m-%d}"), from_string(source, allow, toe, mf));
 }
 
 // ----------------------------------------------------------------------

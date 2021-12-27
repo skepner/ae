@@ -162,7 +162,7 @@ template <> struct fmt::formatter<ae::xlsx::cell_t> : fmt::formatter<ae::fmt_hel
                 else if constexpr (std::is_same_v<Content, std::string> || std::is_same_v<Content, double> || std::is_same_v<Content, long>)
                     format_to(ctx.out(), "{}", arg);
                 else if constexpr (std::is_same_v<Content, std::chrono::year_month_day>)
-                    format_to(ctx.out(), "{}", arg);
+                    format_to(ctx.out(), fmt::runtime("{:%Y-%m-%d}"), arg);
                 else
                     format_to(ctx.out(), "<*unknown*>");
             },
