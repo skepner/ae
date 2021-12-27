@@ -42,6 +42,9 @@ namespace ae::virus::name::inline v1
 
         std::string name(mark_extra me = mark_extra::no) const;
         std::string host_location_isolation_year() const;
+        bool good() const noexcept { return !location.empty() && !isolation.empty() && year.size() == 4; }
+        bool good_but_no_country() const noexcept { return good() && country.empty(); }
+
         bool operator==(const Parts& rhs) const
         {
             return subtype == rhs.subtype && host == rhs.host && location == rhs.location && isolation == rhs.isolation && year == rhs.year && reassortant == rhs.reassortant && extra == rhs.extra;
@@ -52,20 +55,29 @@ namespace ae::virus::name::inline v1
     {
       public:
         enum class tracing { no, yes };
+        enum class report { no, yes };
 
-        parse_settings(tracing a_trace = tracing::no, std::string_view type_subtype_hint = {}) : tracing_{a_trace}, type_subtype_hint_{type_subtype_hint} {}
+        parse_settings(tracing a_trace = tracing::no, report a_report = report::no, std::string_view type_subtype_hint = {})
+            : tracing_{a_trace}, report_{a_report}, type_subtype_hint_{type_subtype_hint}
+        {
+        }
+        parse_settings(report a_report, std::string_view type_subtype_hint = {}) : report_{a_report}, type_subtype_hint_{type_subtype_hint} {}
         parse_settings(std::string_view type_subtype_hint) : type_subtype_hint_{type_subtype_hint} {}
 
         constexpr bool trace() const { return tracing_ == tracing::yes; }
+        constexpr report report_errors() const { return report_; }
         const virus::type_subtype_t& type_subtype_hint() const { return type_subtype_hint_; }
 
       private:
         tracing tracing_{tracing::no};
+        report report_{report::no};
         virus::type_subtype_t type_subtype_hint_;
     };
 
     Parts parse(std::string_view source, parse_settings& settings, Messages& messages, const MessageLocation& location);
     Parts parse(std::string_view source);
+
+    inline bool is_good(std::string_view source) { return parse(source).good(); }
 
     inline std::string location(std::string_view name) { return parse(name).location; }
     inline std::string isolation(std::string_view name) { return parse(name).isolation; }

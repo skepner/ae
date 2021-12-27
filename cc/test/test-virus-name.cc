@@ -162,7 +162,7 @@ size_t virus_name_parsing_test(bool verbose)
     };
 
     size_t errors = 0;
-    ae::virus::name::parse_settings settings{ae::virus::name::parse_settings::tracing::no};
+    ae::virus::name::parse_settings settings{ae::virus::name::parse_settings::tracing::no, ae::virus::name::parse_settings::report::yes};
     for (const auto [no, entry] : ranges::views::enumerate(data)) {
         try {
             ae::Messages messages;

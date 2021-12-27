@@ -103,6 +103,11 @@ namespace ae::virus::passage
         return parse(source, parse_settings{}, messages, MessageLocation{});
     }
 
+    inline bool is_good(std::string_view source)
+    {
+        return parse(source).good();
+    }
+
 } // namespace ae::virus::passage
 
 // ----------------------------------------------------------------------

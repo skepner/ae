@@ -2,13 +2,10 @@
 #include "utils/log.hh"
 #include "utils/regex.hh"
 #include "utils/string.hh"
+#include "virus/name-parse.hh"
+#include "virus/passage.hh"
 #include "whocc/xlsx/sheet-extractor.hh"
 #include "whocc/xlsx/error.hh"
-
-// #include "acmacs-base/enumerate.hh"
-// #include "acmacs-virus/virus-name-normalize.hh"
-// #include "acmacs-virus/passage.hh"
-// #include "acmacs-whocc/whocc-xlsx-to-torg-py.hh"
 
 // ----------------------------------------------------------------------
 
@@ -352,7 +349,7 @@ void ae::xlsx::v1::Extractor::find_titers(warn_if_not_found winf)
 
 bool ae::xlsx::v1::Extractor::is_virus_name(nrow_t row, ncol_t col) const
 {
-    return false; // acmacs::virus::name::is_good(fmt::format("{}", sheet().cell(row, col)));
+    return ae::virus::name::is_good(fmt::format("{}", sheet().cell(row, col)));
 
 } // ae::xlsx::v1::Extractor::is_virus_name
 
@@ -459,8 +456,7 @@ void ae::xlsx::v1::Extractor::find_antigen_date_column(warn_if_not_found winf)
 
 void ae::xlsx::v1::Extractor::find_antigen_passage_column(warn_if_not_found winf)
 {
-#warning ae::xlsx::v1::Extractor::find_antigen_passage_column
-    antigen_passage_column_ = std::nullopt; // ::find_column(sheet(), antigen_rows_, [](const auto& cell) { return acmacs::virus::is_good_passage(fmt::format("{}", cell)); });
+    antigen_passage_column_ = ::find_column(sheet(), antigen_rows_, [](const auto& cell) { return ae::virus::passage::is_good(fmt::format("{}", cell)); });
     if (antigen_passage_column_.has_value())
         AD_INFO("Antigen passage column: {}", *antigen_passage_column_);
     else
@@ -535,16 +531,13 @@ std::string ae::xlsx::v1::Extractor::make_date(const std::string& src) const
 
 std::string ae::xlsx::v1::Extractor::make_passage(const std::string& src) const
 {
-#warning ae::xlsx::v1::Extractor::make_passage
-    return src;
-
-    // const auto [passage, extra] = acmacs::virus::parse_passage(src, acmacs::virus::passage_only::no);
-    // if (!extra.empty()) {
-    //     AD_WARNING("passage \"{}\" has extra \"{}\", not normalized", src, extra);
-    //     return src;
-    // }
-    // else
-    //     return *passage;
+    ae::virus::Passage passage(src);
+    if (!passage.good()) {
+        AD_WARNING("passage parsing failed: \"{}\" -> \"{}\"", src, passage);
+        return src;
+    }
+    else
+        return passage;
 
 } // ae::xlsx::v1::Extractor::make_passage
 

@@ -577,22 +577,25 @@ namespace ae::virus::name::inline v1
         struct error_sink
         {
             std::string_view text_to_parse;
+            parse_settings::report report_errors;
             std::size_t _count{0};
             using return_type = std::size_t;
 
             template <typename Production, typename Input, typename Reader, typename Tag>
             void operator()(const lexy::error_context<Production, Input>& /*context*/, const lexy::error<Reader, Tag>& /*error*/)
             {
-                fmt::print(stderr, "> parsing failed: \"{}\"\n", text_to_parse);
+                if (report_errors == parse_settings::report::yes)
+                    fmt::print(stderr, "> parsing failed: \"{}\"\n", text_to_parse);
                 ++_count;
             }
 
             return_type finish() && { return _count; }
         };
 
-        constexpr auto sink() const { return error_sink{text_to_parse}; }
+        constexpr auto sink() const { return error_sink{text_to_parse, report_errors}; }
 
         std::string_view text_to_parse;
+        parse_settings::report report_errors;
     };
 
 } // namespace ae::virus::name::inline v1
@@ -662,7 +665,7 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
         fmt::print(">>> parsing \"{}\"\n", source);
         lexy::trace<grammar::parts>(stderr, lexy::string_input<lexy::utf8_encoding>{source});
     }
-    const auto parsing_result = lexy::parse<grammar::parts>(lexy::string_input<lexy::utf8_encoding>{source}, report_error{source});
+    const auto parsing_result = lexy::parse<grammar::parts>(lexy::string_input<lexy::utf8_encoding>{source}, report_error{source, settings.report_errors()});
     const auto parts = parsing_result.value();
     // if (source == "A(H1N1)/NIB/4/1988")
     //     fmt::print(">>>> parsing \"{}\" -> {}\n", source, parts);
