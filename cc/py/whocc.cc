@@ -35,6 +35,32 @@ namespace ae::xlsx::inline v1
             result.date = ae::date::from_string(date, date::allow_incomplete::no, date::throw_on_error::no, result.lab == "CDC" ? date::month_first::yes : date::month_first::no);
         return result;
     }
+
+    inline pybind11::dict serum_fields(const serum_fields_t& fields)
+    {
+        using namespace pybind11::literals;
+        return pybind11::dict(
+            "name"_a = fields.name,
+            "serum_id"_a = fields.serum_id,
+            "passage"_a = fields.passage,
+            "species"_a = fields.species,
+            "conc"_a = fields.conc,
+            "dilut"_a = fields.dilut,
+            "boosted"_a = fields.boosted
+        );
+    }
+
+    inline pybind11::dict antigen_fields(const antigen_fields_t& fields)
+    {
+        using namespace pybind11::literals;
+        return pybind11::dict(
+            "name"_a = fields.name,
+            "date"_a = fields.date,
+            "passage"_a = fields.passage,
+            "lab_id"_a = fields.lab_id
+        );
+    }
+
 } // namespace ae::xlsx::inline v1
 
 // ----------------------------------------------------------------------
@@ -96,17 +122,23 @@ void ae::py::whocc(pybind11::module_& mdl)
         .def("__repr__", [](const ae::xlsx::cell_match_t& cm) { return fmt::format("<cell_match_t: {}:{} {}>", cm.row, cm.col, cm.matches); }) //
         ;
 
-    pybind11::class_<ae::xlsx::Extractor, std::shared_ptr<ae::xlsx::Extractor>>(xlsx_submodule, "Extractor")                        //
-        .def("format_assay_data", &ae::xlsx::Extractor::format_assay_data, "format"_a)                                              //
-        .def("report_data_anchors", &ae::xlsx::Extractor::report_data_anchors)                                                      //
-        .def("check_export_possibility", &ae::xlsx::Extractor::check_export_possibility)                                            //
-        .def("lab", pybind11::overload_cast<>(&ae::xlsx::Extractor::lab, pybind11::const_))                                         //
-        .def("date", pybind11::overload_cast<>(&ae::xlsx::Extractor::date, pybind11::const_))                                       //
-        .def("assay", pybind11::overload_cast<>(&ae::xlsx::Extractor::assay, pybind11::const_))                                     //
-        .def("subtype_without_lineage", pybind11::overload_cast<>(&ae::xlsx::Extractor::subtype_without_lineage, pybind11::const_)) //
-        .def("rbc", pybind11::overload_cast<>(&ae::xlsx::Extractor::rbc, pybind11::const_))                                         //
-        .def("lineage", pybind11::overload_cast<>(&ae::xlsx::Extractor::lineage, pybind11::const_))                                 //
-        .def("titer_comment", &ae::xlsx::Extractor::titer_comment)                                                                  //
+    pybind11::class_<ae::xlsx::Extractor, std::shared_ptr<ae::xlsx::Extractor>>(xlsx_submodule, "Extractor") //
+        .def("number_of_antigens", &ae::xlsx::Extractor::number_of_antigens)                                 //
+        .def("number_of_sera", &ae::xlsx::Extractor::number_of_sera)                                         //
+        .def(
+            "antigen", [](const ae::xlsx::Extractor& extractor, size_t antigen_no) { return ae::xlsx::antigen_fields(extractor.antigen(antigen_no)); }, "antigen_no"_a) //
+        .def(
+            "serum", [](const ae::xlsx::Extractor& extractor, size_t serum_no) { return ae::xlsx::serum_fields(extractor.serum(serum_no)); }, "serum_no"_a) //
+        .def("format_assay_data", &ae::xlsx::Extractor::format_assay_data, "format"_a)                                                                      //
+        .def("report_data_anchors", &ae::xlsx::Extractor::report_data_anchors)                                                                              //
+        .def("check_export_possibility", &ae::xlsx::Extractor::check_export_possibility)                                                                    //
+        .def("lab", pybind11::overload_cast<>(&ae::xlsx::Extractor::lab, pybind11::const_))                                                                 //
+        .def("date", pybind11::overload_cast<>(&ae::xlsx::Extractor::date, pybind11::const_))                                                               //
+        .def("assay", pybind11::overload_cast<>(&ae::xlsx::Extractor::assay, pybind11::const_))                                                             //
+        .def("subtype_without_lineage", pybind11::overload_cast<>(&ae::xlsx::Extractor::subtype_without_lineage, pybind11::const_))                         //
+        .def("rbc", pybind11::overload_cast<>(&ae::xlsx::Extractor::rbc, pybind11::const_))                                                                 //
+        .def("lineage", pybind11::overload_cast<>(&ae::xlsx::Extractor::lineage, pybind11::const_))                                                         //
+        .def("titer_comment", &ae::xlsx::Extractor::titer_comment)                                                                                          //
         .def(
             "force_serum_name_row",
             [](ae::xlsx::Extractor& extractor, ssize_t row_no) {
