@@ -496,9 +496,9 @@ std::optional<ae::xlsx::v1::nrow_t> ae::xlsx::v1::Extractor::find_serum_row(cons
     }
 
     if (found.has_value())
-        AD_INFO("[{}] Serum {} row: {}", lab(), row_name, *found);
+        AD_INFO("[{}]: Serum {} row: {}", lab(), row_name, *found);
     else
-        AD_WARNING(winf == warn_if_not_found::yes, "[{}] Serum {} row not found", lab(), row_name);
+        AD_WARNING(winf == warn_if_not_found::yes, "[{}]: Serum {} row not found", lab(), row_name);
     return found;
 
 } // ae::xlsx::v1::Extractor::find_serum_row
@@ -553,7 +553,7 @@ std::string ae::xlsx::v1::Extractor::make_lab_id(const std::string& src) const
 
 void ae::xlsx::v1::Extractor::force_serum_name_row(nrow_t /*row*/)
 {
-    AD_WARNING("[{}] forcing serum name row unsupported by this extractor", lab());
+    AD_WARNING("[{}]: forcing serum name row unsupported by this extractor", lab());
 
 } // ae::xlsx::v1::Extractor::force_serum_name_row
 
@@ -561,7 +561,7 @@ void ae::xlsx::v1::Extractor::force_serum_name_row(nrow_t /*row*/)
 
 void ae::xlsx::v1::Extractor::force_serum_passage_row(nrow_t /*row*/)
 {
-    AD_WARNING("[{}] forcing serum passage row unsupported by this extractor", lab());
+    AD_WARNING("[{}]: forcing serum passage row unsupported by this extractor", lab());
 
 } // ae::xlsx::v1::Extractor::force_serum_passage_row
 
@@ -569,7 +569,7 @@ void ae::xlsx::v1::Extractor::force_serum_passage_row(nrow_t /*row*/)
 
 void ae::xlsx::v1::Extractor::force_serum_id_row(nrow_t /*row*/)
 {
-    AD_WARNING("[{}] forcing serum id row unsupported by this extractor", lab());
+    AD_WARNING("[{}]: forcing serum id row unsupported by this extractor", lab());
 
 } // ae::xlsx::v1::Extractor::force_serum_id_row
 
@@ -818,7 +818,7 @@ void ae::xlsx::v1::ExtractorCDC::exclude_control_sera(warn_if_not_found /*winf*/
         const auto exclude = [this](ncol_t col) {
             if (const auto row = find_serum_row_by_col(col); valid(row)) {
                 if (const auto cell = sheet().cell(row, *serum_name_column_); is_control_serum_cell(cell)) {
-                    AD_INFO("[CDC] serum excluded (HUMAN or WHO or NORMAL serum): \"{}\"", cell);
+                    AD_INFO("[{}]: serum excluded (HUMAN or WHO or NORMAL serum): \"{}\"", lab(), cell);
                     return true;
                 }
                 else
@@ -968,7 +968,7 @@ void ae::xlsx::v1::ExtractorWithSerumRowsAbove::exclude_control_sera(warn_if_not
 {
     ranges::actions::remove_if(serum_columns_, [this](ncol_t col) {
         if ((serum_name_row_.has_value() && is_control_serum_cell(sheet().cell(*serum_name_row_, col))) || (serum_id_row_.has_value() && is_control_serum_cell(sheet().cell(*serum_id_row_, col))) || (serum_passage_row_.has_value() && is_control_serum_cell(sheet().cell(*serum_passage_row_, col)))) {
-            AD_INFO("[{}] serum column {} excluded: HUMAN or WHO or NORMAL serum", lab(), col);
+            AD_INFO("[{}]: serum column {} excluded: HUMAN or WHO or NORMAL serum", lab(), col);
             return true;
         }
         return false;
@@ -1072,9 +1072,9 @@ void ae::xlsx::v1::ExtractorCrick::find_serum_name_rows(warn_if_not_found winf)
     }
 
     if (serum_name_1_row_.has_value())
-        AD_INFO("[Crick]: Serum name row 1: {}", serum_name_1_row_);
+        AD_INFO("[{}]: Serum name row 1: {}", lab(), serum_name_1_row_);
     else
-        AD_WARNING(winf == warn_if_not_found::yes, "[Crick]: No serum name row 1 found (number of sera: {})\n{}", number_of_sera(), fmt::to_string(report));
+        AD_WARNING(winf == warn_if_not_found::yes, "[{}]: No serum name row 1 found (number of sera: {})\n{}", lab(), number_of_sera(), fmt::to_string(report));
 
     if (serum_name_1_row_.has_value() &&
         static_cast<size_t>(ranges::count_if(serum_columns(), [this](ncol_t col) { return sheet().matches(re_CRICK_serum_name_2, *serum_name_1_row_ + nrow_t{1}, col); })) > number_of_sera_threshold)
@@ -1084,9 +1084,9 @@ void ae::xlsx::v1::ExtractorCrick::find_serum_name_rows(warn_if_not_found winf)
                  static_cast<size_t>(ranges::count_if(serum_columns(), [this](ncol_t col) { return sheet().matches(re_CRICK_serum_name_2, *serum_name_1_row_ + nrow_t{1}, col); })));
 
     if (serum_name_2_row_.has_value())
-        AD_INFO("[Crick]: Serum name row 2: {}", serum_name_2_row_);
+        AD_INFO("[{}]: Serum name row 2: {}", lab(), serum_name_2_row_);
     else
-        AD_WARNING(winf == warn_if_not_found::yes, "[Crick]: No serum name row 2 found");
+        AD_WARNING(winf == warn_if_not_found::yes, "[{}]: No serum name row 2 found", lab());
 
 } // ae::xlsx::v1::ExtractorCrick::find_serum_name_rows
 
@@ -1130,17 +1130,17 @@ void ae::xlsx::v1::ExtractorCrick::find_serum_less_than_substitutions(warn_if_no
                 footnote_index_subst_.emplace_back(cell_match.matches[1], cell_match.matches[2]);
         }
         else
-            AD_WARNING(winf == warn_if_not_found::yes, "[Crick]: No less than substitution footnote");
+            AD_WARNING(winf == warn_if_not_found::yes, "[{}]: No less than substitution footnote", lab());
 
         if (!footnote_index_subst_.empty()) {
-            AD_INFO("[Crick]: less than subst: {}", footnote_index_subst_);
+            AD_INFO("[{}]: less than subst: {}", lab(), footnote_index_subst_);
             serum_less_than_substitutions_.resize(number_of_sera(), "<");
             if (serum_id_row_.has_value()) {
                 for (const auto sr_no : range_from_0_to(number_of_sera())) {
                     const auto cell = sheet().cell(*serum_id_row_, serum_columns().at(sr_no));
                     if (std::smatch match; sheet().matches(re_CRICK_serum_id, match, cell)) {
                         serum_less_than_substitutions_[sr_no] = get_footnote(match.str(2), std::string{"<"});
-                        AD_INFO("[Crick]:     SR: {} replacing \"<\" with \"{}\" (serum id footnote match: \"{}\")", sr_no, serum_less_than_substitutions_[sr_no], match.str(2));
+                        AD_INFO("[{}]:     SR: {} replacing \"<\" with \"{}\" (serum id footnote match: \"{}\")", lab(), sr_no, serum_less_than_substitutions_[sr_no], match.str(2));
                     }
                 }
             }
@@ -1253,7 +1253,7 @@ void ae::xlsx::v1::ExtractorCrickPRN::find_two_fold_read_row()
     if (two_fold_read_row_.has_value()) {
         ncol_t col_no{0};
         ranges::actions::remove_if(serum_columns(), [&col_no](auto) { const auto remove = (*col_no % 2) != 0; ++col_no; return remove; });
-        AD_INFO("[Crick PRN]: 2-fold read row: {}", *two_fold_read_row_);
+        AD_INFO("[{} PRN]: 2-fold read row: {}", lab(), *two_fold_read_row_);
     }
 
 } // ae::xlsx::v1::ExtractorCrickPRN::find_two_fold_read_row
@@ -1323,9 +1323,9 @@ void ae::xlsx::v1::ExtractorNIID::find_antigen_lab_id_column(warn_if_not_found w
     }
 
     if (antigen_lab_id_column_.has_value())
-        AD_INFO("[NIID] Antigen lab_id column: {}", *antigen_lab_id_column_);
+        AD_INFO("[{}]: Antigen lab_id column: {}", lab(), *antigen_lab_id_column_);
     else
-        AD_WARNING(winf == warn_if_not_found::yes, "[NIID] Antigen lab_id column not found");
+        AD_WARNING(winf == warn_if_not_found::yes, "[{}]: Antigen lab_id column not found", lab());
 
 
 } // ae::xlsx::v1::ExtractorNIID::find_antigen_lab_id_column
