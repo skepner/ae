@@ -121,10 +121,7 @@ def generate_torg(extractor: ae_backend.whocc.xlsx.Extractor, output: io.FileIO)
         print(f"titer value in the table: {titer_comment}\n", file=output)
 
     for row in data:
-        print("|", end="", file=output)
-        for col_no in range(len(row)):
-            print(f"{row[col_no]:{column_widths[col_no]}s} |", end="", file=output)
-        print("", file=output)
+        print("| ", " | ".join(f"{row[col_no]:{column_widths[col_no]}s}" for col_no in range(len(row))), " |", sep="", file=output)
 
     print("""
 * COMMENT local vars ----------------------------------------------------------------------
