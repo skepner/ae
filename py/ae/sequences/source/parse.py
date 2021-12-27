@@ -2,7 +2,7 @@ import sys
 from pathlib import Path
 from dataclasses import dataclass
 
-import ae.utils.directory_module
+import ae.utils.load_module
 import ae_backend
 
 # ======================================================================
@@ -60,19 +60,19 @@ class Context:
         self.reader.unrecognized_locations |= unrecognized_locations
 
     def preprocess_virus_name(self, name, metadata: dict):
-        if (directory_module := ae.utils.directory_module.load(self.filename.parent)) and (preprocessor := getattr(directory_module, "preprocess_virus_name", None)):
+        if (directory_module := ae.utils.load_module.load(self.filename.parent.joinpath("ae.py"))) and (preprocessor := getattr(directory_module, "preprocess_virus_name", None)):
             return preprocessor(name, metadata)
         else:
             return name
 
     def preprocess_date(self, date, metadata: dict):
-        if (directory_module := ae.utils.directory_module.load(self.filename.parent)) and (preprocessor := getattr(directory_module, "preprocess_date", None)):
+        if (directory_module := ae.utils.load_module.load(self.filename.parent.joinpath("ae.py"))) and (preprocessor := getattr(directory_module, "preprocess_date", None)):
             return preprocessor(date, metadata)
         else:
             return date
 
     def preprocess_passage(self, passage, metadata: dict):
-        if (directory_module := ae.utils.directory_module.load(self.filename.parent)) and (preprocessor := getattr(directory_module, "preprocess_passage", None)):
+        if (directory_module := ae.utils.load_module.load(self.filename.parent.joinpath("ae.py"))) and (preprocessor := getattr(directory_module, "preprocess_passage", None)):
             return preprocessor(passage, metadata)
         else:
             return passage

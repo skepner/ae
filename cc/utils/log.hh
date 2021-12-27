@@ -80,7 +80,7 @@ namespace ae
         namespace prefix
         {
             constexpr const std::string_view error{"> ERROR "};
-            constexpr const std::string_view warning{">> WARNING "};
+            constexpr const std::string_view warning{">> "};
             constexpr const std::string_view info{">>> "};
             constexpr const std::string_view debug{">>>> "};
             constexpr const std::string_view none{};
