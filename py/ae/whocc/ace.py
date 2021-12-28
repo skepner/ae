@@ -41,7 +41,7 @@ class DataFixer:
             self._passage(serum, ag_sr="SR", no=no)
 
     def mark_duplicates_as_distinct(self):
-        pass
+        print(f"> mark_duplicates_as_distinct", file=sys.stderr)
 
     def report(self):
         # report not found locations
@@ -85,6 +85,14 @@ class DataFixer:
             self.not_found_locations |= parsing_result.messages.unrecognized_locations()
 
     def _passage(self, entry: dict, ag_sr: str, no: int):
-        pass
+        if orig_passage := entry["P"]:
+            parsing_result = ae_backend.passage_parse(orig_passage)
+            if parsing_result.good():
+                entry["P"] = parsing_result.passage()
+                if entry["P"] != orig_passage:
+                    self.report_data.append(f"    {ag_sr} {no:3d} passage: \"{entry['P']}\" <- \"{orig_passage}\"")
+            else:
+                messages = [f"{msg.type}: {msg.value}" for msg in parsing_result.messages]
+                self.report_data.append(f">>  {ag_sr} {no:3d} passage parsing failed \"{orig_passage}\": {messages}")
 
 # ======================================================================
