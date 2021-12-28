@@ -40,7 +40,7 @@ def backup(path: Path):
         backup_dir = path.resolve().parent.joinpath(".backup")
         backup_dir.mkdir(parents=True, exist_ok=True)
         now = datetime.datetime.now()
-        new_name = backup_dir.joinpath(f"{path.stem}.~{now:%Y-%m%d-%H%M%S}~.{path.suffix}")
+        new_name = backup_dir.joinpath(f"{path.stem}.~{now:%Y-%m%d-%H%M%S}~{path.suffix}")
         if not new_name.exists():
             path.rename(new_name)
 
