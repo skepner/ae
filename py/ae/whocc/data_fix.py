@@ -46,7 +46,7 @@ class DataFix:
         for rex, replacement in table:
             fixed = rex.sub(replacement, fixed)
         if fixed != source:
-            print(f"{ag_sr} {no:3d} {field_name} \"{fixed}\" <- \"{source}\"")
+            print(f">>> {ag_sr} {no:3d} {field_name} \"{fixed}\" <- \"{source}\"")
         return fixed
 
 # ======================================================================

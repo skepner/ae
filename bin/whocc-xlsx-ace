@@ -13,9 +13,9 @@ def main(args: argparse.Namespace):
         workbook = ae_backend.whocc.xlsx.open(source)
         for sheet_no in range(workbook.number_of_sheets()):
             sheet = workbook.sheet(sheet_no)
-            print(f"sheet {sheet_no} name: \"{sheet.name()}\" {sheet.number_of_rows()}:{sheet.number_of_columns()}")
+            # print(f">>>> sheet {sheet_no} name: \"{sheet.name()}\" {sheet.number_of_rows()}:{sheet.number_of_columns()}")
             detected = detect_m.detect(sheet)
-            print(detected)
+            # print(detected)
             extractor = ae_backend.whocc.xlsx.extractor(sheet, detected)
             if args.serum_name_row is not None:
                 extractor.force_serum_name_row(args.serum_name_row - 1)
@@ -23,9 +23,8 @@ def main(args: argparse.Namespace):
                 extractor.force_serum_passage_row(args.serum_passage_row - 1)
             if args.serum_id_row is not None:
                 extractor.force_serum_id_row(args.serum_id_row - 1)
-            if args.assay_information:
-                print(extractor.format_assay_data(args.format))
-            else:
+            print(">>>", extractor.format_assay_data(args.format))
+            if not args.assay_information:
                 extractor.report_data_anchors()
                 extractor.check_export_possibility()
                 ae.whocc.torg.export_to_file(extractor, args.output_dir)
