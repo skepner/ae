@@ -49,6 +49,49 @@ def make_torg(extractor: ae_backend.whocc.xlsx.Extractor, output_dir: Path):
 # ----------------------------------------------------------------------
 
 def generate_torg(extractor: ae_backend.whocc.xlsx.Extractor, output: io.FileIO):
+    print("# -*- Org -*-\n",
+          "\n".join(f"- {k}: {v}" for k, v in prepare_torg_header(extractor)),
+          "",
+          sep="\n", file=output)
+
+    data = prepare_torg_table(extractor)
+    column_widths = [max(len(row[col_no]) for row in data) for col_no in range(len(data[0]))]
+    for row in data:
+        print("| ",
+              " | ".join(f"{row[col_no]:{column_widths[col_no]}s}" for col_no in range(len(row))),
+              " |",
+              sep="", file=output)
+
+    print("",
+          "* COMMENT local vars ----------------------------------------------------------------------",
+          ":PROPERTIES:",
+          ":VISIBILITY: folded",
+          ":END:",
+          "#+STARTUP: showall indent",
+          "Local Variables:",
+          """eval: (if (fboundp 'eu-whocc-torg-to-ace) (add-hook 'after-save-hook 'eu-whocc-torg-to-ace nil 'local))""",
+          """eval: (if (fboundp 'eu-whocc-xlsx-torg-ace-hup) (add-hook 'after-save-hook 'eu-whocc-xlsx-torg-ace-hup nil 'local))""",
+          "End:",
+          sep="\n", file=output)
+
+# ----------------------------------------------------------------------
+
+def prepare_torg_header(extractor: ae_backend.whocc.xlsx.Extractor):
+    header = [
+        ["Lab", extractor.lab()],
+        ["Date", extractor.format_assay_data("{table_date:%Y-%m-%d}")],
+        ["Assay", extractor.assay()],
+        ["Subtype", extractor.subtype_without_lineage()],
+        ]
+    if rbc := extractor.rbc():
+        header.append(["Rbc", rbc])
+    if lineage := extractor.lineage():
+        header.append(["Lineage", lineage])
+    return header
+
+# ----------------------------------------------------------------------
+
+def prepare_torg_table(extractor: ae_backend.whocc.xlsx.Extractor):
     ag_col = ["serum_field_name", "name", "date", "passage", "lab_id", "base"]
     sr_row = ["antigen_field_name", "name", "passage", "serum_id", "base"]
 
@@ -80,60 +123,17 @@ def generate_torg(extractor: ae_backend.whocc.xlsx.Extractor, output: io.FileIO)
         data[ag_row][ag_col.index("passage")] = antigen["passage"]
         data[ag_row][ag_col.index("lab_id")] = antigen["lab_id"]
 
-    #     for (const auto sr_no : range_from_0_to(extractor_->number_of_sera())) {
-    #         auto titer = extractor_->titer(ag_no, sr_no)
-    #         acmacs::data_fix::Set::fix_titer(titer, ag_no, sr_no)
-    #         switch (const auto fields = acmacs::string::split(titer, "/") fields.size()) {
-    #             case 2:
-    #                 data[ag_row][st(ag_col::base) + sr_no] = fmt::format("{:>5s} / {:>5s}", fields[0], fields[1])
-    #                 break
-    #             case 1:
-    #             default:
-    #                 data[ag_row][st(ag_col::base) + sr_no] = fmt::format("{:>5s}", titer)
-    #                 break
-    #         }
-    #     }
-    # }
+        for sr_no in range(extractor.number_of_sera()):
+            titer = extractor.titer(ag_no, sr_no)
+            #         acmacs::data_fix::Set::fix_titer(titer, ag_no, sr_no)
+            fields = titer.split("/")
+            if len(fields) == 2:
+                data[ag_row][ag_col.index("base") + sr_no] = f"{fields[0]:>5s} / {fields[1]:>5s}"
+            else:
+                data[ag_row][ag_col.index("base") + sr_no] = f"{titer:>5s}"
 
-    pprint.pprint(data, width=200)
-
-    # ----------------------------------------------------------------------
-
-    column_widths = [max(len(row[col_no]) for row in data) for col_no in range(len(data[0]))]
-
-    # ----------------------------------------------------------------------
-
-    assay_date = extractor.format_assay_data("{table_date:%Y-%m-%d}")
-    print(f"""# -*- Org -*-
-
-- Lab: {extractor.lab()}
-- Date: {assay_date}
-- Assay: {extractor.assay()}
-- Subtype: {extractor.subtype_without_lineage()}""", file=output)
-
-    if rbc := extractor.rbc():
-        print(f"- Rbc: {rbc}", file=output)
-    if lineage := extractor.lineage():
-        print(f"- Lineage: {lineage}", file=output)
-    print("", file=output)
-
-    if titer_comment := extractor.titer_comment():
-        print(f"titer value in the table: {titer_comment}\n", file=output)
-
-    for row in data:
-        print("| ", " | ".join(f"{row[col_no]:{column_widths[col_no]}s}" for col_no in range(len(row))), " |", sep="", file=output)
-
-    print("""
-* COMMENT local vars ----------------------------------------------------------------------
-:PROPERTIES:
-:VISIBILITY: folded
-:END:
-
-#+STARTUP: showall indent
-Local Variables:
-eval: (if (fboundp 'eu-whocc-torg-to-ace) (add-hook 'after-save-hook 'eu-whocc-torg-to-ace nil 'local))
-eval: (if (fboundp 'eu-whocc-xlsx-torg-ace-hup) (add-hook 'after-save-hook 'eu-whocc-xlsx-torg-ace-hup nil 'local))
-End:""", file=output)
+    # pprint.pprint(data, width=200)
+    return data
 
 # ----------------------------------------------------------------------
 

@@ -129,6 +129,7 @@ void ae::py::whocc(pybind11::module_& mdl)
             "antigen", [](const ae::xlsx::Extractor& extractor, size_t antigen_no) { return ae::xlsx::antigen_fields(extractor.antigen(antigen_no)); }, "antigen_no"_a) //
         .def(
             "serum", [](const ae::xlsx::Extractor& extractor, size_t serum_no) { return ae::xlsx::serum_fields(extractor.serum(serum_no)); }, "serum_no"_a) //
+        .def("titer", &ae::xlsx::Extractor::titer, "antigen_no"_a, "serum_no"_a)                                                                            //
         .def("format_assay_data", &ae::xlsx::Extractor::format_assay_data, "format"_a)                                                                      //
         .def("report_data_anchors", &ae::xlsx::Extractor::report_data_anchors)                                                                              //
         .def("check_export_possibility", &ae::xlsx::Extractor::check_export_possibility)                                                                    //
