@@ -1,4 +1,4 @@
-import sys
+import sys, pprint
 import ae_backend
 
 # ======================================================================
@@ -7,17 +7,18 @@ class DataFixer:
 
     def __init__(self, ace_data: dict):
         self.ace_data = ace_data
-        self.report_data = []
-        self.not_found_locations = set()
         self.type_subtype = self.ace_data["c"].get("i", {}).get("V", "")
         if not self.type_subtype:
             print(f">> no type_subtype in ace data: {self.ace_data.get('i')}", file=sys.stderr)
+        self.report_data = []
+        self.not_found_locations = set()
 
     def process(self, report: bool = True):
         self.antigen_names()
         self.serum_names()
         self.antigen_passages()
         self.serum_passages()
+        self.antigen_dates()
         self.mark_duplicates_as_distinct()
         if report:
             self.report()
@@ -40,8 +41,29 @@ class DataFixer:
         for no, serum in enumerate(self.ace_data["c"]["s"]):
             self._passage(serum, ag_sr="SR", no=no)
 
+    def antigen_dates(self):
+        pass
+        # for no, antigen in enumerate(self.ace_data["c"]["a"]):
+        #     if orig_date := antigen.get("D"):
+        #         p
+        #         if antigen["D"] != orig_date:
+        #             self.report_data.append(f"    AG {no:3d} date: \"{antigen['D']}\" <- \"{orig_date}\"")
+
+    sDistinct = "DISTINCT"
+
     def mark_duplicates_as_distinct(self):
-        print(f"> mark_duplicates_as_distinct", file=sys.stderr)
+        full_names = {}
+        for no, antigen in enumerate(self.ace_data["c"]["a"]):
+            full_name = " ".join(str(part) for part in (antigen.get(part_name) for part_name in ["N", "R", "A", "P"]) if part)
+            full_names.setdefault(full_name, []).append(no)
+        for full_name, nos in full_names.items():
+            if len(nos) > 1:
+                for no in nos[1:]:
+                    annotations = self.ace_data["c"]["a"][no].get("a", [])
+                    if self.sDistinct not in annotations:
+                        annotations.append(self.sDistinct)
+                        self.ace_data["c"]["a"][no]["a"] = annotations
+                        self.report_data.append(f">>  AG {no:3d} distinct \"{full_name}\", see AG {nos[0]}")
 
     def report(self):
         # report not found locations
