@@ -9,7 +9,7 @@ from .utilities import is_chinese
 
 # ======================================================================
 
-def geonames(name):
+def geonames(name) -> list:
     if not name:
         return name
     if is_chinese(name):
@@ -19,6 +19,63 @@ def geonames(name):
     return r
 
 # ----------------------------------------------------------------------
+
+sCountries = {
+    "UNITED STATES": "UNITED STATES OF AMERICA",
+    }
+
+sChinaDistrictSuffixes = ["XIAN", "XIN", "QU", "SHI"] # county, district, city, XIN is typo in XIAN, NRL:Kazakhstan
+
+def geonames_make_eval(look_for: str, entries: list) -> list:
+    if not entries:
+        return entries
+
+    try:
+        from unidecode import unidecode
+    except Exception:
+        print(">> pip3 install unidecode (for better geonames support)")
+        def unidecode(text): return text
+
+    result = []
+    for entry in entries:
+        division = entry["province"].upper()
+        country = entry["country"].upper()
+        country = sCountries.get(country, country)
+        name = entry["name"].upper()
+        name_words = name.split(" ")
+
+        if country == "CHINA":
+            if name_words[-1] in sChinaDistrictSuffixes:
+                name = " ".join(name_words[:-1])
+            if division != name_words[0]:
+                full_name = f"{division} {name}"
+            else:
+                full_name = name
+        else:
+            full_name = name
+        result.append({
+            "C": "add",
+            "name": unidecode(full_name).replace("'", ""),
+            "country": country,
+            "division": unidecode(division).replace("'", ""),
+            "lat": f"{float(entry['latitude']):>.2f}",
+            "long": f"{float(entry['longitude']):>.2f}",
+        })
+
+    if found_exact := [en for en in result if en["name"] == look_for]:
+        return found_exact
+
+    from .read import find
+    result_with_replacements = []
+    for found in result:
+        try:
+            find(name=found["name"], like=False, handle_replacement=False)
+        except: # LocationNotFound as err:
+            result_with_replacements.append(found)
+        result_with_replacements.append({"C": "replacement", "existing": found["name"], "new": look_for})
+    return result_with_replacements
+
+# ======================================================================
 
 def _lookup(feature, **args):
 
@@ -39,7 +96,7 @@ def _lookup(feature, **args):
 
 # ----------------------------------------------------------------------
 
-def _get(feature, result_maker, args):
+def _get(feature, result_maker, args) -> list:
     args.update({"username": "acorg", "type": "json"})
     url = "http://api.geonames.org/{}?{}".format(feature, urllib.parse.urlencode(args))
     # module_logger.debug('_lookup {!r}'.format(url))

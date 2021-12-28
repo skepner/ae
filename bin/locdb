@@ -9,7 +9,7 @@ from pathlib import Path
 sys.path[:0] = [str(Path(os.environ["AE_ROOT"], dir)) for dir in ["build", "py"]]
 # sys.path[:0] = [str(Path(sys.argv[0]).resolve().parents[1].joinpath("py"))]
 import logging; module_logger = logging.getLogger(__name__)
-from locdb_v2 import check, fix, find, find_cdc_abbreviation, country, continent, geonames, add, add_cdc_abbreviation, add_new_name, add_replacement, find_cdc_abbreviation_for_name, LocationNotFound, save
+from locdb_v2 import check, fix, find, find_cdc_abbreviation, country, continent, geonames, geonames_make_eval, add, add_cdc_abbreviation, add_new_name, add_replacement, find_cdc_abbreviation_for_name, LocationNotFound, save
 
 try:
     from unidecode import unidecode

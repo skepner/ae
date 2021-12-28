@@ -1,5 +1,7 @@
 import sys, pprint
 import ae_backend
+from locdb_v2 import geonames, geonames_make_eval
+from ..utils import json
 
 # ======================================================================
 
@@ -75,6 +77,14 @@ class DataFixer:
         if self.not_found_locations:
             print(f">>> Unrecognized locations ({len(self.not_found_locations)}):")
             print("    ", "\n    ".join(sorted(self.not_found_locations)), sep="")
+            print()
+            for name in sorted(self.not_found_locations):
+                if gnm := geonames(name=name):
+                    print(json.dumps(geonames_make_eval(look_for=name, entries=gnm), indent=2))
+                    # for ge in gnm:
+                    #     print(f">>>> {ge}")
+                else:
+                    print(f">> not in geonames: \"{name}\"", file=sys.stderr)
             print()
 
     # ----------------------------------------------------------------------
