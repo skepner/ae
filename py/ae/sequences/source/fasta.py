@@ -1,5 +1,6 @@
 import sys, re, io, pprint
 from pathlib import Path
+from typing import Union
 
 import ae_backend
 from .parse import Context, parse_name, parse_date, parse_passage
@@ -72,7 +73,7 @@ def regular_name_parser(name: str, lab_hint: str, context: Context):
 # writer
 # ======================================================================
 
-def write(file: io.TextIOWrapper|Path, selected :ae_backend.seqdb.Selected, aa: bool, wrap_pos: int = 0, name=lambda ref: ref.seq_id()):
+def write(file: Union[io.TextIOWrapper, Path], selected :ae_backend.seqdb.Selected, aa: bool, wrap_pos: int = 0, name=lambda ref: ref.seq_id()):
     def do_wrap(data: str):
         if wrap_pos:
             return "\n".join(data[i:i+wrap_pos] for i in range(0, len(data), wrap_pos))
