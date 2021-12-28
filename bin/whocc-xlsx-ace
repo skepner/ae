@@ -39,11 +39,7 @@ def main(args: argparse.Namespace):
 
 def torg_to_ace(torg_filename: Path, ace_filename: Path, prn_read: bool = False, prn_remove_concentration: bool = False, check_by_seqdb: bool = True, check_by_hidb: bool = True):
     ace_data = ae.whocc.torg.to_ace(torg_filename=torg_filename, prn_read=prn_read, prn_remove_concentration=prn_remove_concentration)
-    ae.whocc.ace.fix_antigen_names(ace_data)
-    ae.whocc.ace.fix_serum_names(ace_data)
-    ae.whocc.ace.fix_antigen_passages(ace_data)
-    ae.whocc.ace.fix_serum_passages(ace_data)
-    ae.whocc.ace.mark_duplicates_as_distinct(ace_data)
+    ae.whocc.ace.DataFixer(ace_data).process()
 
     print(ae.utils.json.dumps(ace_data, indent=2))
 
