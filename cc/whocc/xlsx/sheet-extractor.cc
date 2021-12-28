@@ -56,7 +56,7 @@ static const std::regex re_AC21_empty{R"(^\s*$)", regex_icase};
 static const std::regex re_CRICK_serum_name_1{"^([AB]/[A-Z '_-]+|NYMC\\s+X-[0-9]+[A-Z]*)$", regex_icase};
 static const std::regex re_CRICK_serum_name_2{"^[A-Z0-9-/]+$", regex_icase};
 #define pattern_CRICK_serum_id "F[0-9]+/[0-2][0-9]"
-static const std::regex re_CRICK_serum_id{R"(^(?:[A-Z\s]+\s+)?\s*(F[0-9]+/[0-2][0-9]|SH[\s\d,/]+)(?:\*(\d)(?:,\d)?)?$)", regex_icase};
+static const std::regex re_CRICK_serum_id{R"(^(?:[A-Z\s]+\s+)?\s*((?:St +Jude's +)?F[0-9]+/[0-2][0-9]|SH[\s\d,/]+)(?:\*(\d)(?:,\d)?)?$)", regex_icase};
 static const std::regex re_CRICK_less_than{R"(^\s*<\s*=\s*(<\d+)\s*$)", regex_icase};
 static const std::regex re_CRICK_less_than_2{R"(^Superscripts.*\s+(\d)\s*<\s*=\s*(<\d+)\s*$)", regex_icase};
 static const std::regex re_CRICK_less_than_multi{R"(^\s*\d\s*<\s*=\s*<\d+\s*[;,])", regex_icase};
@@ -1201,7 +1201,9 @@ ae::xlsx::v1::serum_fields_t ae::xlsx::v1::ExtractorCrick::serum(size_t sr_no) c
 
     if (std::smatch match; std::regex_match(serum.serum_id, match, re_CRICK_serum_id)) {
         // move to whocc-tables/*crick/whocc-xlsx-to-torg.py
-        serum.serum_id = ae::string::uppercase(ae::string::replace(match.str(1), " ", "", ",", "/")); // remove spaces, replace , with /, e.g. "Sh  539, 540, 543, 544, 570, 571, 574" -> "SH539/540/543/544/570/571/574"
+        serum.serum_id = ae::string::uppercase(match.str(1));
+        if (!ae::string::startswith(serum.serum_id, "ST JUDE"))
+            serum.serum_id = ae::string::replace(serum.serum_id, " ", "", ",", "/"); // remove spaces, replace , with /, e.g. "Sh  539, 540, 543, 544, 570, 571, 574" -> "SH539/540/543/544/570/571/574"
     }
 
     return serum;
