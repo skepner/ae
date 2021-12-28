@@ -43,7 +43,6 @@ def torg_to_ace(torg_filename: Path, ace_filename: Path, prn_read: bool = False,
 
     print(ae.utils.json.dumps(ace_data, indent=2))
 
-    # subprocess_check_call(["chart-fix-names-passages", ace, ace]) # , "-v", "all"])
     # subprocess_check_call(["chart-table", ace])
     # if check_by_seqdb: subprocess_check_call(["seqdb3-chart-populate", "-n", ace])
     # if check_by_hidb: subprocess_check_call(["whocc-check-new-tables", ace])

@@ -66,13 +66,16 @@ class DataFixer:
                         self.report_data.append(f">>  AG {no:3d} distinct \"{full_name}\", see AG {nos[0]}")
 
     def report(self):
-        # report not found locations
+        if self.report_data or self.not_found_locations:
+            print()
         if self.report_data:
             print(f">>> Messages ({len(self.report_data)}):")
             print("\n".join(self.report_data))
+            print()
         if self.not_found_locations:
             print(f">>> Unrecognized locations ({len(self.not_found_locations)}):")
             print("    ", "\n    ".join(sorted(self.not_found_locations)), sep="")
+            print()
 
     # ----------------------------------------------------------------------
 
