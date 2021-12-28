@@ -3,12 +3,12 @@
 import sys, os, io, argparse, traceback
 from pathlib import Path
 import ae_backend
-import ae.utils.load_module, ae.whocc.torg, ae.utils.open_file
+import ae.utils.load_module, ae.whocc.torg, ae.whocc.table_dir
 
 # ----------------------------------------------------------------------
 
 def main(args: argparse.Namespace):
-    detect_m = ae.utils.load_module.load(Path(ae.whocc.torg.WHOCC_TABLES_DIR, "ae-whocc-detect.py"))
+    detect_m = ae.utils.load_module.load(ae.whocc.table_dir.detect_pathname())
     for source in args.filenames:
         workbook = ae_backend.whocc.xlsx.open(source)
         for sheet_no in range(workbook.number_of_sheets()):
@@ -27,7 +27,10 @@ def main(args: argparse.Namespace):
             if not args.assay_information:
                 extractor.report_data_anchors()
                 extractor.check_export_possibility()
-                ae.whocc.torg.export_to_file(extractor, args.output_dir)
+                info = ae.whocc.torg.export_to_file(extractor, args.output_dir)
+                print(info)
+                ace_filename, ace_prn_read_filename = ae.whocc.table_dir.subtype_assay_lab_ace_pathname(extractor=extractor, prn_read=info["assay"] == "PRN" and info["multivalue_titer"], ace_dir=args.output_dir)
+                torg_to_ace(ace_filename=ace_filename, ace_prn_read_filename=ace_prn_read_filename, prn_remove_concentration=False, check_by_hidb=True)
 
 # ----------------------------------------------------------------------
 

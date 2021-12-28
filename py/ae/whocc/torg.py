@@ -1,41 +1,34 @@
-import os, io, pprint
+import io, pprint
 from pathlib import Path
 import ae_backend
-import ae.whocc.data_fix, ae.utils.open_file, ae.utils.load_module
+from ..utils import open_file, load_module
+from . import data_fix, table_dir
 
 # ======================================================================
 
-WHOCC_TABLES_DIR = Path(os.environ.get("WHOCC_TABLES_DIR"))
-if not WHOCC_TABLES_DIR:
-    raise RuntimeError(f"""WHOCC_TABLES_DIR env var not set""")
-
-# ----------------------------------------------------------------------
-
-def export_to_file(extractor: ae_backend.whocc.xlsx.Extractor, output_dir: Path):
-    whocc_output_dir = WHOCC_TABLES_DIR.joinpath(extractor.format_assay_data("{virus_type_lineage}-{assay_low_rbc}-{lab_low}"))
-    if (data_fix_module_filename := whocc_output_dir.joinpath("ae-whocc-data-fix.py")).exists():
-        data_fixer = ae.utils.load_module.load(data_fix_module_filename).DataFix(extractor)
+def export_to_file(extractor: ae_backend.whocc.xlsx.Extractor, output_dir: Path = None):
+    if (data_fix_module_filename := table_dir.subtype_assay_lab_data_fix_pathname(extractor=extractor)).exists():
+        data_fixer = load_module.load(data_fix_module_filename).DataFix(extractor)
     else:
         print(f">> \"{data_fix_module_filename}\" does not exist")
-        data_fixer = ae.whocc.data_fix.DataFix(extractor)
-    if not output_dir:
-        output_dir = whocc_output_dir.joinpath("torg")
-        if not output_dir.exists():
-            raise RuntimeError(f"""Output dir "{output_dir}" does not exist""")
-    filename = output_dir.joinpath(extractor.format_assay_data("{virus_type_lineage}-{assay_low_rbc}-{lab_low}-{table_date:%Y%m%d}") + ".torg")
+        data_fixer = data_fix.DataFix(extractor)
+    filename = table_dir.subtype_assay_lab_torg_pathname(extractor=extractor, torg_dir=output_dir)
     print(f">>> {filename}")
-    with ae.utils.open_file.for_writing(filename) as output:
-        generate(extractor=extractor, data_fixer=data_fixer, output=output)
+    with open_file.for_writing(filename) as output:
+        info = generate(extractor=extractor, data_fixer=data_fixer, output=output)
+    info["torg_filename"] = filename
+    return info
 
 # ----------------------------------------------------------------------
 
-def generate(extractor: ae_backend.whocc.xlsx.Extractor, data_fixer: ae.whocc.data_fix.DataFix, output: io.FileIO):
+def generate(extractor: ae_backend.whocc.xlsx.Extractor, data_fixer: data_fix.DataFix, output: io.FileIO):
+    header_data, assay = header(extractor=extractor, data_fixer=data_fixer)
     print("# -*- Org -*-\n",
-          "\n".join(f"- {k}: {v}" for k, v in header(extractor=extractor, data_fixer=data_fixer)),
+          "\n".join(f"- {k}: {v}" for k, v in header_data),
           "",
           sep="\n", file=output)
 
-    data = table(extractor=extractor, data_fixer=data_fixer)
+    data, multivalue_titer = table(extractor=extractor, data_fixer=data_fixer)
     column_widths = [max(len(row[col_no]) for row in data) for col_no in range(len(data[0]))]
     for row in data:
         print("| ",
@@ -55,24 +48,27 @@ def generate(extractor: ae_backend.whocc.xlsx.Extractor, data_fixer: ae.whocc.da
           "End:",
           sep="\n", file=output)
 
+    return {"assay": assay, "multivalue_titer": multivalue_titer}
+
 # ----------------------------------------------------------------------
 
-def header(extractor: ae_backend.whocc.xlsx.Extractor, data_fixer: ae.whocc.data_fix.DataFix):
+def header(extractor: ae_backend.whocc.xlsx.Extractor, data_fixer: data_fix.DataFix):
+    assay = data_fixer.assay(extractor.assay())
     header = [
         ["Lab", data_fixer.lab(extractor.lab())],
         ["Date", extractor.format_assay_data("{table_date:%Y-%m-%d}")],
-        ["Assay", data_fixer.assay(extractor.assay())],
+        ["Assay", assay],
         ["Subtype", data_fixer.subtype(extractor.subtype_without_lineage())],
         ]
     if rbc := data_fixer.rbc(extractor.rbc()):
         header.append(["Rbc", rbc])
     if lineage := data_fixer.lineage(extractor.lineage()):
         header.append(["Lineage", lineage])
-    return header
+    return header, assay
 
 # ----------------------------------------------------------------------
 
-def table(extractor: ae_backend.whocc.xlsx.Extractor, data_fixer: ae.whocc.data_fix.DataFix):
+def table(extractor: ae_backend.whocc.xlsx.Extractor, data_fixer: data_fix.DataFix):
     ag_col = ["serum_field_name", "name", "date", "passage", "lab_id", "base"]
     sr_row = ["antigen_field_name", "name", "passage", "serum_id", "base"]
 
@@ -94,6 +90,7 @@ def table(extractor: ae_backend.whocc.xlsx.Extractor, data_fixer: ae.whocc.data_
         data[sr_row.index("passage")][sr_col] = serum["passage"]
         data[sr_row.index("serum_id")][sr_col] = serum["serum_id"]
 
+    multivalue_titer = False
     for ag_no in range(extractor.number_of_antigens()):
         ag_row = sr_row.index("base") + ag_no
         antigen = data_fixer.antigen(extractor.antigen(ag_no), ag_no)
@@ -107,10 +104,11 @@ def table(extractor: ae_backend.whocc.xlsx.Extractor, data_fixer: ae.whocc.data_
             fields = titer.split("/")
             if len(fields) == 2:
                 data[ag_row][ag_col.index("base") + sr_no] = f"{fields[0]:>5s} / {fields[1]:>5s}"
+                multivalue_titer = True
             else:
                 data[ag_row][ag_col.index("base") + sr_no] = f"{titer:>5s}"
 
     # pprint.pprint(data, width=200)
-    return data
+    return data, multivalue_titer
 
 # ======================================================================
