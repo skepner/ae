@@ -1,4 +1,4 @@
-import io, pprint
+import sys, io, re, math, pprint, datetime
 from pathlib import Path
 import ae_backend
 from ..utils import open_file, load_module
@@ -110,5 +110,242 @@ def table(extractor: ae_backend.whocc.xlsx.Extractor, data_fixer: data_fix.DataF
 
     # pprint.pprint(data, width=200)
     return data, multivalue_titer
+
+# ======================================================================
+
+def to_ace(torg_filename: Path, prn_read: bool, prn_remove_concentration: bool = False) -> dict:
+    lines = [line.decode("utf-8").strip() for line in open_file.for_reading(torg_filename)]
+    lab = None
+    subtype = None
+    assay = None
+    num_antigens = 0
+    num_sera = 0
+    ace = {
+        "  version": "acmacs-ace-v1",
+        "?created": f"imported from {torg_filename.name} by {Path(sys.argv[0]).name} on {datetime.date.today()}",
+        "c": {
+            "i": {}, "a": [], "s": [], "t": {"l": []}
+            }
+    }
+    for line in lines:
+        if line and line[0] == '-':
+            field, value = line[1:].strip().split(":")
+            field = field.strip().lower()
+            value = value.strip()
+            if field == "lab":
+                ace["c"]["i"]["l"] = value
+                lab = value.upper()
+            elif field == "date":
+                ace["c"]["i"]["D"] = value.replace("-", "")
+            elif field == "subtype":
+                ace["c"]["i"]["V"] = value
+                subtype = value.upper()
+            elif field == "assay":
+                ace["c"]["i"]["A"] = value
+                assay = value.upper()
+            elif field == "rbc":
+                ace["c"]["i"]["r"] = value
+            elif field == "lineage":
+                ace["c"]["i"]["s"] = value
+            elif field == "error":
+                raise RuntimeError(f"> ERROR: {value}")
+            else:
+                raise RuntimeError(f"Unrecognized meta field name: \"{field}\"")
+
+    table_rows = [no for no, line in enumerate(lines, start=1) if line and line[0] == "|"]
+    rows = [[cell.strip() for cell in line[1:-1].split("|")] for line in lines if line and line[0] == "|"]
+    if not rows:
+        raise RuntimeError(f"no table present, table_rows: {table_rows}")
+    # pprint.pprint(rows)
+    ace_antigen_fields = {}
+    serum_columns = []
+    for no, cell in enumerate(rows[0][1:], start=1):
+        if not cell:
+            serum_columns.append(no)
+        else:
+            k, v = antigen_field(no, cell.lower())
+            if k:
+                ace_antigen_fields[k] = v
+    ace_serum_fields = {}
+    antigen_rows = []
+    for no, row in enumerate(rows[1:], start=1):
+        cell = row[0]
+        if not cell:
+            antigen_rows.append(no)
+        else:
+            k, v = serum_field(no, cell.lower())
+            if k:
+                ace_serum_fields[k] = v
+    # print(f"antigens: {ace_antigen_fields} {len(antigen_rows)} {antigen_rows}")
+    # print(f"sera: {ace_serum_fields} {len(serum_columns)} {serum_columns}")
+    # pprint.pprint(ace_antigen_fields)
+
+    # Lineage (sera)
+    for column_no in serum_columns:
+        entry = {}
+        for field, row_no in ace_serum_fields.items():
+            value = make_antigen_serum_field(field, rows[row_no][column_no], lab)
+            if value is not None:
+                entry[field] = value
+        if ace["c"]["i"].get("V") == "B" and ace["c"]["i"].get("s"): # lineage
+            entry["L"] = ace["c"]["i"]["s"][0]
+        if prn_remove_concentration:
+            remove_concentration(entry)
+        ace["c"]["s"].append(entry)
+
+    # Lineage (antigens) and Titers
+    for row_no in antigen_rows:
+        entry = {}
+        for field, column_no in ace_antigen_fields.items():
+            value = make_antigen_serum_field(field, rows[row_no][column_no], lab)
+            if value is not None:
+                entry[field] = value
+        if ace["c"]["i"].get("V") == "B" and ace["c"]["i"].get("s"): # lineage
+            entry["L"] = ace["c"]["i"]["s"][0]
+        if prn_remove_concentration:
+            remove_concentration(entry)
+        ace["c"]["a"].append(entry)
+        ace["c"]["t"]["l"].append([check_titer(rows[row_no][column_no], torg_filename, table_rows[row_no], column_no, prn_read=prn_read, lab=lab, subtype=subtype, assay=assay, warn_if_not_normal=True) for column_no in serum_columns])
+
+    detect_reference(ace["c"]["a"], ace["c"]["s"])
+
+    return ace
+
+# ----------------------------------------------------------------------
+
+def antigen_field(no, cell):
+    if cell == "name":
+        return "N", no
+    elif cell == "date":
+        return "D", no
+    elif cell == "passage":
+        return "P", no
+    elif cell == "reassortant":
+        return "R", no
+    elif cell == "lab_id":
+        return "l", no
+    elif cell == "annotation":
+        return "a", no
+    elif cell == "clade":
+        return "c", no
+    elif cell[0] == "#":
+        return None, no
+    else:
+        raise RuntimeError(f"Unrecognized antigen (first row, column {no}) field name: \"{cell}\"")
+
+# ----------------------------------------------------------------------
+
+sReDelim = re.compile(r"^[\-\+]+$")
+
+def serum_field(no, cell):
+    if cell == "name":
+        return "N", no
+    elif cell == "passage":
+        return "P", no
+    elif cell == "reassortant":
+        return "R", no
+    elif cell == "serum_id":
+        return "I", no
+    elif cell == "annotation":
+        return "a", no
+    elif cell == "species":
+        return "s", no
+    elif cell[0] == "#" or sReDelim.match(cell):
+        return None, no
+    else:
+        raise RuntimeError(f"Unrecognized serum (first column, row {no}) field name: \"{cell}\"")
+
+# ----------------------------------------------------------------------
+
+def make_antigen_serum_field(key, value, lab):
+    if key in ["l", "a"]:
+        if value:
+            if key == "l" and not value.startswith(lab):
+                value = f"{lab}#{value}"
+            return [value]
+        else:
+            return None
+    elif key == "D":
+        if value:
+            return value
+        else:
+            return None
+    else:
+        return value
+
+# ----------------------------------------------------------------------
+
+sReTiter = re.compile(r"^([><]?\d+|\*)$", re.I)
+sNormalTiters = ["10", "20", "40", "80", "160", "320", "640", "1280", "2560", "5120", "10240",
+                 "<10", "<20", "<40", "<80",
+                 ">1280", ">2560", ">5120", ">10240",
+                 "*"
+                 ]
+
+def check_titer(titer, filename, row_no, column_no, lab, subtype, assay, prn_read=False, warn_if_not_normal=True, convert_prn_low_read=False, prn_titer=None):
+    if sReTiter.match(titer):
+        if prn_read:
+             raise RuntimeError(f"PRN Read titer is not available: \"{titer}\" @@ {filename}:{row_no} column {column_no + 1}")
+        if titer not in sNormalTiters and warn_if_not_normal:
+            print(f">> unusual titer \"{titer}\" @@ {filename}:{row_no} column {column_no + 1}", file=sys.stderr)
+        if convert_prn_low_read and titer[0] not in ["<", ">", "*"] and int(titer) < 10:
+            titer = "<10"
+        return titer
+    elif titer == "<" and lab == "CRICK" and assay == "PRN":
+        if convert_prn_low_read:
+            return "<10"
+        elif prn_titer:
+            if prn_titer == "<" or int(prn_titer) < 10:
+                return "<10"
+            else:
+                prn_log = math.log2(int(prn_titer) / 10.0)
+                if math.ceil(prn_log) == prn_log:
+                    prn_log += 1
+                else:
+                    prn_log = math.ceil(prn_log)
+                print(f">>>> {titer} {prn_titer} -> {prn_log} -> {int(math.pow(2, prn_log) * 10)}", file=sys.stderr)
+                return "<" + str(int(math.pow(2, prn_log) * 10))
+        else:
+            return "<40"        # unclear
+    elif "/" in titer:
+        hi_titer, prn_titer = (tit.strip() for tit in titer.split("/"))
+        if prn_read:
+            return check_titer(prn_titer, filename, row_no, column_no, lab=lab, subtype=subtype, assay=assay, warn_if_not_normal=False, convert_prn_low_read=True)
+        else:
+            return check_titer(hi_titer, filename, row_no, column_no, lab=lab, subtype=subtype, assay=assay, prn_titer=prn_titer, warn_if_not_normal=warn_if_not_normal)
+    else:
+        raise RuntimeError(f"Unrecognized titer \"{titer}\" @@ {filename}:{row_no} column {column_no + 1}")
+
+# ----------------------------------------------------------------------
+
+# Crick PRN tables have concentration in passage or name, e.g. (10-4), it is perhaps property of the assay and not the property (annotation) of an antigen/serum
+# see Derek's message with subject "Crick H3 VN tables" date 2018-02-14 15:20
+sReConc = re.compile(r"\s+\(?10-\d\)?$")
+
+def remove_concentration(entry):
+    entry["N"] = sReConc.sub("", entry["N"])
+    entry["P"] = sReConc.sub("", entry["P"])
+
+# ----------------------------------------------------------------------
+
+def fix_name_for_comparison(name):
+    fields = name.upper().split("/")
+    try:
+        year = int(fields[-1])
+    except ValueError:
+        year = None
+    if year:
+        if year < 50:
+            year += 2000
+        elif year < 100:
+            year += 1900
+        fields[-1] = str(year)
+    return "/".join(fields)
+
+def detect_reference(antigens, sera):
+    # print("\n".join(fix_name_for_comparison(antigen["N"]) for antigen in antigens), "\n\n", "\n".join(fix_name_for_comparison(serum["N"]) for serum in sera), sep="")
+    for antigen in antigens:
+        if any(fix_name_for_comparison(serum["N"]) == fix_name_for_comparison(antigen["N"]) for serum in sera):
+            antigen["S"] = "R"
 
 # ======================================================================
