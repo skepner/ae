@@ -34,4 +34,19 @@ class DataFix:
     def titer(self, titer: str, antigen_no: int, serum_no: int):
         return titer
 
+    # ----------------------------------------------------------------------
+
+    # table: list of lists of two elements: regex, re.sub replacement pattern
+    #   e.g. [[re.compile(r"/IRE/(87733/(?:20)?19|84630/(?:20)?18)", re.I), r"/IRELAND/\g<1>"]]
+    # ag_sr: "AG" or "SR"
+    #   e.g. serum["name"] = self.fix_antigen_serum_field(source=serum["name"], field_name="name", ag_sr="SR", no=serum_no, table=self.sReSerumName)
+
+    def fix_antigen_serum_field(self, source: str, field_name: str, ag_sr: str, no: str, table: list):
+        fixed = source
+        for rex, replacement in table:
+            fixed = rex.sub(replacement, fixed)
+        if fixed != source:
+            print(f"{ag_sr} {no:3d} {field_name} \"{fixed}\" <- \"{source}\"")
+        return fixed
+
 # ======================================================================
