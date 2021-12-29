@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
-import sys, os, pprint, argparse, traceback
+import sys, os, subprocess, pprint, argparse, traceback
 from pathlib import Path
 import ae_backend
 import ae.whocc.torg, ae.whocc.ace, ae.whocc.table_dir
@@ -47,14 +47,17 @@ def torg_to_ace(torg_filename: Path, ace_filename: Path, prn_read: bool = False,
 
     chart = ae_backend.chart_v2.Chart(ace_filename)
     print(f"\n{SEP}\n{chart.make_name()}\n{chart.table_as_text()}", end="")
-    # chart.populate_from_seqdb()
-    sequenced_antigens = chart.select_all_antigens().filter_sequenced() # auto-populated
-    sequenced_sera = chart.select_all_sera().filter_sequenced() # auto-populated
-    print(f"Sequenced:\n  Antigens: {len(sequenced_antigens):3d} of {chart.number_of_antigens():3d}\n  Sera:     {len(sequenced_sera):3d} of {chart.number_of_sera():3d}")
+    if check_by_seqdb:
+        # chart.populate_from_seqdb()
+        sequenced_antigens = chart.select_all_antigens().filter_sequenced() # auto-populated
+        sequenced_sera = chart.select_all_sera().filter_sequenced() # auto-populated
+        print(f"Sequenced:\n  Antigens: {len(sequenced_antigens):3d} of {chart.number_of_antigens():3d}\n  Sera:     {len(sequenced_sera):3d} of {chart.number_of_sera():3d}")
     print(f"{SEP}\n")
 
-    # if check_by_hidb: subprocess_check_call(["whocc-check-new-tables", ace])
-
+    if check_by_hidb:
+        cmd = ["whocc-check-new-tables", str(ace_filename)]
+        print(f">> $ {' '.join(cmd)}")
+        subprocess.check_call(cmd)
 
 # ----------------------------------------------------------------------
 
