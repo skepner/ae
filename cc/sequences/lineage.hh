@@ -31,6 +31,7 @@ namespace ae::sequences
 
         operator std::string_view() const { return lineage_; }
         operator const std::string&() const { return lineage_; }
+        const std::string& get() const { return lineage_; }
 
         bool empty() const { return lineage_.empty(); }
         explicit operator bool() const { return !empty(); }

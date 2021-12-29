@@ -6,6 +6,8 @@ import ae_backend
 import ae.whocc.torg, ae.whocc.ace, ae.whocc.table_dir
 import ae.utils.load_module, ae.utils.open_file, ae.utils.json
 
+SEP = "=" * 100
+
 # ----------------------------------------------------------------------
 
 def main(args: argparse.Namespace):
@@ -43,8 +45,9 @@ def torg_to_ace(torg_filename: Path, ace_filename: Path, prn_read: bool = False,
     with ae.utils.open_file.for_writing(ace_filename) as output:
         output.write(ae.utils.json.dumps(ace_data, indent=2).encode("utf-8"))
 
+    chart = ae_backend.chart_v2.Chart(ace_filename)
+    print(f"\n{SEP}\n{chart.make_name()}\n{chart.table_as_text()}{SEP}\n")
 
-    # subprocess_check_call(["chart-table", ace])
     # if check_by_seqdb: subprocess_check_call(["seqdb3-chart-populate", "-n", ace])
     # if check_by_hidb: subprocess_check_call(["whocc-check-new-tables", ace])
 
