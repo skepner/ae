@@ -77,6 +77,7 @@ sources_py = [
   'cc/py/sequences.cc',
   'cc/py/tree.cc',
   'cc/py/whocc.cc',
+  'cc/py/chart-v2.cc',
   'cc/py/utils.cc',
 ]
 
@@ -152,6 +153,7 @@ sources_chart_v2 = [
   'cc/chart/v2/common.cc',
   'cc/chart/v2/factory-import.cc',
   'cc/chart/v2/factory-export.cc',
+  'cc/chart/v2/grid-test.cc',
   'cc/chart/v2/layout.cc',
   'cc/chart/v2/lispmds-encode.cc',
   'cc/chart/v2/lispmds-export.cc',
@@ -252,7 +254,7 @@ ae_lib = python3.extension_module(
   'ae_backend',
   sources : sources_py,
   include_directories : include_cc,
-  dependencies : [dependency('python3'), pybind11, xlnt, fmt],
+  dependencies : [dependency('python3'), pybind11, xlnt, fmt, range_v3, simdjson],
   link_with : [libae],
   install : true)
 
