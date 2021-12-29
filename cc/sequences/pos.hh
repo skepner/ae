@@ -96,7 +96,7 @@ namespace ae::sequences
         std::transform(std::begin(fields), std::end(fields), std::begin(pos1_aa_eq), [](std::string_view field) { return extract_aa_nuc_at_pos1_eq<MIN_SIZE, MAX_SIZE>(field); });
         return pos1_aa_eq;
 
-    } // acmacs::seqdb::v3::extract_aa_at_pos_eq_list
+    } // extract_aa_at_pos_eq_list
 
     inline amino_acid_at_pos1_eq_list_t extract_aa_nuc_at_pos1_eq_list(const std::vector<std::string>& source)
     {
@@ -104,7 +104,7 @@ namespace ae::sequences
         std::transform(std::begin(source), std::end(source), std::begin(list), [](const auto& en) { return extract_aa_nuc_at_pos1_eq<2, 6>(en); });
         return list;
 
-    } // acmacs::seqdb::v3::extract_aa_at_pos1_eq_list
+    } // extract_aa_nuc_at_pos1_eq_list
 
     inline amino_acid_at_pos1_eq_list_t extract_aa_nuc_at_pos1_eq_list(std::string_view source) { return extract_aa_nuc_at_pos1_eq_list<2, 6>(source); }
 
