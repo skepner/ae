@@ -123,6 +123,8 @@ ae::sequences::SeqdbSelected& ae::sequences::SeqdbSelected::include_name(const s
 
 ae::sequences::SeqdbSelected& ae::sequences::SeqdbSelected::filter_name(std::string_view name, std::string_view reassortant, std::string_view passage)
 {
+    if (ae::string::startswith(name, fmt::format("{}/", seqdb_.subtype())))
+        name.remove_prefix(seqdb_.subtype().size() + 1);
     erase_if(*this, [name](const auto& ref) -> bool { return ref.entry->name != name; });
     if (size() > 1) {
         const auto passage_parsed = virus::passage::parse(passage);

@@ -9,7 +9,7 @@ namespace ae::sequences
     class SeqdbSelected
     {
       public:
-        SeqdbSelected(const Seqdb& seqdb) : seqdb_{seqdb} {}
+        SeqdbSelected(const Seqdb& seqdb) : seqdb_{seqdb} {} // nothing initially selected
 
         auto size() const { return refs_.size(); }
         auto empty() const { return refs_.empty(); }
@@ -18,6 +18,7 @@ namespace ae::sequences
         auto begin() { return refs_.begin(); }
         auto end() { return refs_.end(); }
         const auto& operator[](size_t index) const { return refs_[index]; }
+        const auto& at(size_t index) const { return refs_[index]; }
 
         SeqdbSelected& exclude_with_issue(bool exclude = true)
         {

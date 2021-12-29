@@ -71,17 +71,22 @@ namespace ae::py
 
     inline void populate_from_seqdb(const std::shared_ptr<ae::chart::v2::ChartModify>& chart)
     {
-        const auto& seqdb = ae::sequences::seqdb_for_subtype(chart->info()->virus_type());
+        const auto subtype = chart->info()->virus_type();
+        const auto& seqdb = ae::sequences::seqdb_for_subtype(subtype);
         const auto populate = [&seqdb](size_t /*no*/, auto ag_sr_ptr) {
-            if (auto& selected = ae::sequences::SeqdbSelected(seqdb).filter_name(ag_sr_ptr->name(), ag_sr_ptr->reassortant(), ag_sr_ptr->passage().to_string()); !selected.empty()) {
-                selected.find_masters();
+            auto selected = seqdb.select_all();
+            selected->filter_name(ag_sr_ptr->name(), ag_sr_ptr->reassortant(), ag_sr_ptr->passage().to_string());
+            if (!selected->empty()) {
+                selected->find_masters();
                 if (const char* clades_file = getenv("AC_CLADES_JSON_V2"); clades_file)
-                    selected.find_clades(clades_file);
-                ag_sr_ptr->sequence_aa(selected[0].aa());
-                ag_sr_ptr->sequence_nuc(selected[0].nuc());
-                for (const auto& clade : selected[0].clades)
+                    selected->find_clades(clades_file);
+                ag_sr_ptr->sequence_aa(selected->at(0).aa());
+                ag_sr_ptr->sequence_nuc(selected->at(0).nuc());
+                for (const auto& clade : selected->at(0).clades)
                     ag_sr_ptr->add_clade(clade);
             }
+            // else
+            //     AD_DEBUG("populate_from_seqdb: no found \"{}\" R:\"{}\" P:\"{}\"", ag_sr_ptr->name(), ag_sr_ptr->reassortant(), ag_sr_ptr->passage());
         };
         ae::chart::v2::SelectedAntigensModify(chart).for_each(populate);
         ae::chart::v2::SelectedSeraModify(chart).for_each(populate);
