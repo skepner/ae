@@ -47,6 +47,7 @@ def torg_to_ace(torg_filename: Path, ace_filename: Path, prn_read: bool = False,
 
     chart = ae_backend.chart_v2.Chart(ace_filename)
     print(f"\n{SEP}\n{chart.make_name()}\n{chart.table_as_text()}{SEP}\n")
+    chart.populate_from_seqdb()
 
     # if check_by_seqdb: subprocess_check_call(["seqdb3-chart-populate", "-n", ace])
     # if check_by_hidb: subprocess_check_call(["whocc-check-new-tables", ace])

@@ -1,5 +1,7 @@
+#include <cstdlib>
+
 #include "py/module.hh"
-#include "sequences/seqdb.hh"
+#include "sequences/seqdb-selected.hh"
 #include "chart/v2/factory-import.hh"
 #include "chart/v2/factory-export.hh"
 #include "chart/v2/chart-modify.hh"
@@ -67,26 +69,44 @@ namespace ae::py
 
     // ----------------------------------------------------------------------
 
-    // template <typename Selected> static inline std::map<char, std::shared_ptr<Selected>> antigens_sera_by_aa_at_pos(std::shared_ptr<ae::chart::v2::ChartModify> chart, size_t pos1)
-    // {
-    //     using namespace ae::chart::v2;
-    //     acmacs::seqdb::populate(*chart);
-    //     const ae::sequences::pos1_t pos{pos1};
-    //     auto antigens = [&chart]() {
-    //         if constexpr (std::is_same_v<Selected, SelectedAntigensModify>)
-    //             return chart->antigens();
-    //         else
-    //             return chart->sera();
-    //     }();
+    inline void populate_from_seqdb(const std::shared_ptr<ae::chart::v2::ChartModify>& chart)
+    {
+        const auto& seqdb = ae::sequences::seqdb_for_subtype(chart->info()->virus_type());
+        const auto populate = [&seqdb](size_t /*no*/, auto ag_sr_ptr) {
+            if (auto& selected = ae::sequences::SeqdbSelected(seqdb).filter_name(ag_sr_ptr->name(), ag_sr_ptr->reassortant(), ag_sr_ptr->passage().to_string()); !selected.empty()) {
+                selected.find_masters();
+                if (const char* clades_file = getenv("AC_CLADES_JSON_V2"); clades_file)
+                    selected.find_clades(clades_file);
+                ag_sr_ptr->sequence_aa(selected[0].aa());
+                ag_sr_ptr->sequence_nuc(selected[0].nuc());
+                for (const auto& clade : selected[0].clades)
+                    ag_sr_ptr->add_clade(clade);
+            }
+        };
+        ae::chart::v2::SelectedAntigensModify(chart).for_each(populate);
+        ae::chart::v2::SelectedSeraModify(chart).for_each(populate);
+    }
 
-    //     std::map<char, std::shared_ptr<Selected>> result;
-    //     for (const auto ag_no : range_from_0_to(antigens->size())) {
-    //         const auto aa = ae::sequences::sequence_aa_t{antigens->at(ag_no)->sequence_aa()}.at(pos);
-    //         const auto [it, added] = result.try_emplace(aa, std::make_shared<Selected>(chart, Selected::None));
-    //         it->second->indexes.insert(ag_no);
-    //     }
-    //     return result;
-    // }
+    template <typename Selected> static inline std::map<char, std::shared_ptr<Selected>> antigens_sera_by_aa_at_pos(std::shared_ptr<ae::chart::v2::ChartModify> chart, size_t pos1)
+    {
+        using namespace ae::chart::v2;
+        populate_from_seqdb(chart);
+        const ae::sequences::pos1_t pos{pos1};
+        auto antigens = [&chart]() {
+            if constexpr (std::is_same_v<Selected, SelectedAntigensModify>)
+                return chart->antigens();
+            else
+                return chart->sera();
+        }();
+
+        std::map<char, std::shared_ptr<Selected>> result;
+        for (const auto ag_no : range_from_0_to(antigens->size())) {
+            const auto aa = ae::sequences::sequence_aa_t{antigens->at(ag_no)->sequence_aa()}[pos];
+            const auto [it, added] = result.try_emplace(aa, std::make_shared<Selected>(chart, Selected::None));
+            it->second->indexes.insert(ag_no);
+        }
+        return result;
+    }
 
 } // namespace ae::py
 
@@ -186,10 +206,7 @@ void ae::py::chart_v2(pybind11::module_& mdl)
         .def("number_of_sera", &Chart::number_of_sera)
         .def("number_of_projections", &Chart::number_of_projections)
 
-        // .def(
-        //     "populate_from_seqdb",                                            //
-        //     [](ChartModify& chart) { acmacs::seqdb::get().populate(chart); }, //
-        //     pybind11::doc("match seqdb, set lineages and clades"))
+        .def("populate_from_seqdb", &ae::py::populate_from_seqdb, pybind11::doc("populate with sequences from seqdb")) //
 
         .def(
             "relax", //
@@ -281,7 +298,7 @@ void ae::py::chart_v2(pybind11::module_& mdl)
         //     "select_antigens_by_aa", //
         //     [](std::shared_ptr<ChartModify> chart, const std::vector<std::string>& criteria, bool report) {
         //         auto selected = std::make_shared<SelectedAntigensModify>(chart);
-        //         acmacs::seqdb::populate(*chart);
+        //         ae::py::populate_from_seqdb(chart);
         //         ae::py::select_by_aa(selected->indexes, *chart->antigens(), criteria);
         //         AD_PRINT_L(report, [&selected]() { return selected->report("{ag_sr} {no0:{num_digits}d} {name_full_passage}\n"); });
         //         return selected;
@@ -292,7 +309,7 @@ void ae::py::chart_v2(pybind11::module_& mdl)
         //     "select_antigens_by_clade", //
         //     [](std::shared_ptr<ChartModify> chart, const std::vector<std::string>& clades, bool report) {
         //         auto selected = std::make_shared<SelectedAntigensModify>(chart);
-        //         acmacs::seqdb::populate(*chart);
+        //         ae::py::populate_from_seqdb(chart);
         //         const auto pred = [&clades, antigens = chart->antigens()](auto index) { return antigens->at(index)->clades().exists_any_of(clades); };
         //         selected->indexes.get().erase(std::remove_if(selected->indexes.begin(), selected->indexes.end(), pred), selected->indexes.end());
         //         AD_PRINT_L(report, [&selected]() { return selected->report("{ag_sr} {no0:{num_digits}d} {name_full_passage}\n"); });
@@ -309,10 +326,10 @@ void ae::py::chart_v2(pybind11::module_& mdl)
             [](std::shared_ptr<ChartModify> chart) { return std::make_shared<SelectedAntigensModify>(chart, SelectedAntigensModify::None); }, //
             pybind11::doc(R"(Selects no antigens and returns SelectedAntigens object.)"))                                                     //
 
-        // .def("antigens_by_aa_at_pos", &ae::py::antigens_sera_by_aa_at_pos<SelectedAntigensModify>, "pos"_a,
-        //      pybind11::doc(R"(Returns dict with AA at passed pos as keys and SelectedAntigens as values.)")) //
-        // .def("sera_by_aa_at_pos", &ae::py::antigens_sera_by_aa_at_pos<SelectedSeraModify>, "pos"_a,
-        //      pybind11::doc(R"(Returns dict with AA at passed pos as keys and SelectedSera as values.)")) //
+        .def("antigens_by_aa_at_pos", &ae::py::antigens_sera_by_aa_at_pos<SelectedAntigensModify>, "pos"_a,
+             pybind11::doc(R"(Returns dict with AA at passed pos as keys and SelectedAntigens as values.)")) //
+        .def("sera_by_aa_at_pos", &ae::py::antigens_sera_by_aa_at_pos<SelectedSeraModify>, "pos"_a,
+             pybind11::doc(R"(Returns dict with AA at passed pos as keys and SelectedSera as values.)")) //
 
         .def(
             "select_sera", //
@@ -329,7 +346,7 @@ void ae::py::chart_v2(pybind11::module_& mdl)
         //     "select_sera_by_aa", //
         //     [](std::shared_ptr<ChartModify> chart, const std::vector<std::string>& criteria, bool report) {
         //         auto selected = std::make_shared<SelectedSeraModify>(chart);
-        //         acmacs::seqdb::populate(*chart);
+        //         ae::py::populate_from_seqdb(chart);
         //         ae::py::select_by_aa(selected->indexes, *chart->sera(), criteria);
         //         AD_PRINT_L(report, [&selected]() { return selected->report("{ag_sr} {no0:{num_digits}d} {name_full_passage}\n"); });
         //         return selected;
@@ -340,7 +357,7 @@ void ae::py::chart_v2(pybind11::module_& mdl)
         //     "select_sera_by_clade", //
         //     [](std::shared_ptr<ChartModify> chart, const std::vector<std::string>& clades, bool report) {
         //         auto selected = std::make_shared<SelectedSeraModify>(chart);
-        //         acmacs::seqdb::populate(*chart);
+        //         ae::py::populate_from_seqdb(chart);
         //         const auto pred = [&clades, sera = chart->sera()](auto index) { return sera->at(index)->clades().exists_any_of(clades); };
         //         selected->indexes.get().erase(std::remove_if(selected->indexes.begin(), selected->indexes.end(), pred), selected->indexes.end());
         //         AD_PRINT_L(report, [&selected]() { return selected->report("{ag_sr} {no0:{num_digits}d} {name_full_passage}\n"); });
