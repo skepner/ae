@@ -6,7 +6,7 @@ import ae_backend
 import ae.whocc.torg, ae.whocc.ace, ae.whocc.table_dir
 import ae.utils.load_module, ae.utils.open_file, ae.utils.json
 
-SEP = "=" * 100
+SEP = "> ===================================================================================================="
 
 # ----------------------------------------------------------------------
 
