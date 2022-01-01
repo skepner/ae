@@ -66,12 +66,13 @@ static const std::regex re_CRICK_prn_2fold{"^2-fold$", regex_icase};
 static const std::regex re_CRICK_prn_read{"^read$", regex_icase};
 
 static const std::regex re_NIID_serum_name{R"(^\s*(?:\d+[A-Z]\s+)?)"           // [clade]
-                                           R"(([A-Z][A-Z\d\s\-_\./\(\)]+)\s+)" // name with reassortant $1
+                                           R"(([A-Z][A-Z\d\s\-_\./\(\)\+]+)\s+)" // name with reassortant, passage type or passage $1
                                            // R"((?:(EGG|CELL|HCK)\s+)?)"         // passage type (sometimes absent for reassortants) $2
                                            // R"((?:NIID\s+)?)"                   // NIID artefact
                                            R"(NO\s*\.\s*([\d\-]+)$)",          // serum_id $2
                                            regex_icase};
-static const std::regex re_NIID_serum_passage{R"(\s*(EGG|CELL|HCK)?\s*(?:NIID)?\s*$)", regex_icase};
+static const std::regex re_NIID_serum_passage_type{R"(\s*(EGG|CELL|HCK)?\s*(?:NIID)?\s*$)", regex_icase};
+static const std::regex re_NIID_serum_passage{R"(\s*((?:S|E|C|SIAT|HCK|MDCK)\d+[A-Z\+\d]*)\s*$)", regex_icase};
 
 static const std::regex re_NIID_serum_name_fix{R"(\s*([\-/])\s*)", regex_icase}; // remove spaces around - and /
 static const std::regex re_NIID_lab_id_label{"^\\s*NIID-ID\\s*$", regex_icase};
@@ -1379,17 +1380,22 @@ ae::xlsx::v1::serum_fields_t ae::xlsx::v1::ExtractorNIID::serum(size_t sr_no) co
             if (name.size() > 2 && ((name[0] != 'A' && name[0] != 'B') || name[1] != '/'))
                 name = fmt::format("{}/{}", subtype_without_lineage(), name);
             // AD_DEBUG("serum fields \"{}\" \"{}\"", name, match.str(2));
-            std::string passage;
-            if (std::smatch match_passage; std::regex_search(name, match_passage, re_NIID_serum_passage)) {
+            std::string passage, serum_id;
+            if (std::smatch match_passage_type; std::regex_search(name, match_passage_type, re_NIID_serum_passage_type)) {
+                passage = ae::string::uppercase(match_passage_type.str(1));
+                serum_id = fmt::format("{} NO.{}", passage, match.str(2));
+                name = match_passage_type.prefix();
+            }
+            else if (std::smatch match_passage; std::regex_search(name, match_passage, re_NIID_serum_passage)) {
                 passage = ae::string::uppercase(match_passage.str(1));
+                serum_id = fmt::format("NO.{}", match.str(2)); // without passage!
                 name = match_passage.prefix();
             }
+            else {
+                serum_id = ae::string::uppercase(fmt::format("NO.{}", match.str(2)));
+            }
             // AD_DEBUG("serum fields2 \"{}\" \"{}\" \"{}\"", name, passage, match.str(2));
-            return serum_fields_t{
-                .name = name,                                                                     //
-                .serum_id = ae::string::uppercase(fmt::format("{} No.{}", passage, match.str(2))), //
-                .passage = passage                                                                //
-            };
+            return serum_fields_t{.name = name, .serum_id = serum_id, .passage = passage};
         }
     }
     return serum_fields_t{};
