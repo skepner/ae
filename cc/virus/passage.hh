@@ -18,6 +18,7 @@ namespace ae::virus::passage
         {
             std::string name{};
             std::string count{}; // if count empty, name did not parsed
+            std::string subtype{}; // NIID E4(AM2AL2)
             bool new_lab{false};
 
             bool operator==(const element_t& rhs) const = default;
@@ -27,6 +28,7 @@ namespace ae::virus::passage
                 std::string result;
                 result.append(name);
                 result.append(count);
+                result.append(subtype);
                 if (!count.empty() && add_new_lab_separator && new_lab)
                     result.append(1, '/');
                 return result;

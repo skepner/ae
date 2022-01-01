@@ -3,6 +3,7 @@
 
 #include "ext/lexy.hh"
 #include "utils/named-type.hh"
+#include "utils/log.hh"
 #include "virus/passage.hh"
 
 // ======================================================================
@@ -106,6 +107,16 @@ namespace ae::virus::passage
             static constexpr auto value = lexy::callback<std::string>([]() { return "OR"; });
         };
 
+        struct passage_subtype  // (AM2AL2) <- NIID H3
+        {
+            static constexpr auto rule = dsl::peek(OPEN) >> dsl::capture(OPEN + dsl::while_one(dsl::ascii::alpha / dsl::digit<>) + CLOSE);
+            static constexpr auto value = lexy::callback<std::string>([](auto captured) {
+                if ((captured.end() - captured.begin()) > 8)
+                    throw invalid_input{"passage subtype too long"};
+                return string::uppercase(captured.begin(), captured.end());
+            });
+        };
+
         struct passage_name
         {
             static constexpr auto cond = dsl::peek(dsl::ascii::alpha);
@@ -152,15 +163,17 @@ namespace ae::virus::passage
         {
             static constexpr auto rule = //
                 dsl::opt(passage_prefix::cond >> dsl::p<passage_prefix>) +
-                ((passage_or_cs::cond >> (dsl::p<passage_or_cs> + dsl::nullopt + dsl::nullopt)) // nullopt to match value callback arg list
-                 | (passage_name::cond >> (dsl::p<passage_name> + WS + dsl::opt(dsl::p<passage_number>) + WS + dsl::opt(dsl::p<passage_separator>) + WS)));
+                ((passage_or_cs::cond >> (dsl::p<passage_or_cs> + dsl::nullopt + dsl::nullopt + dsl::nullopt)) // nullopt to match value callback arg list
+                 | (passage_name::cond >> (dsl::p<passage_name> + WS + dsl::opt(dsl::p<passage_number>) + dsl::opt(dsl::p<passage_subtype>) + WS + dsl::opt(dsl::p<passage_separator>) + WS)));
 
-            static constexpr auto value = lexy::callback<deconstructed_t::element_t>([](lexy::nullopt, const std::string& name, auto number, auto separator) {
+            static constexpr auto value = lexy::callback<deconstructed_t::element_t>([](lexy::nullopt, const std::string& name, auto number, auto subtype, auto separator) {
                 deconstructed_t::element_t result{.name = name};
                 if constexpr (!std::is_same_v<decltype(number), lexy::nullopt>)
                     result.count.append(number.begin(), number.end());
                 else if (name != "OR" && name != "CS")
                     result.count.append(1, '?');
+                if constexpr (!std::is_same_v<decltype(subtype), lexy::nullopt>)
+                    result.subtype.assign(subtype.begin(), subtype.end());
                 if constexpr (!std::is_same_v<decltype(separator), lexy::nullopt>)
                     result.new_lab = true;
                 // fmt::print(">>>> [passage-parse] part \"{}\" \"{}\"\n", result.name, result.count);
