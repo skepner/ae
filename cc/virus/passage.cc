@@ -164,7 +164,7 @@ namespace ae::virus::passage
             static constexpr auto rule = //
                 dsl::opt(passage_prefix::cond >> dsl::p<passage_prefix>) +
                 ((passage_or_cs::cond >> (dsl::p<passage_or_cs> + dsl::nullopt + dsl::nullopt + dsl::nullopt)) // nullopt to match value callback arg list
-                 | (passage_name::cond >> (dsl::p<passage_name> + WS + dsl::opt(dsl::p<passage_number>) + dsl::opt(dsl::p<passage_subtype>) + WS + dsl::opt(dsl::p<passage_separator>) + WS)));
+                 | (passage_name::cond >> (dsl::p<passage_name> + WS + dsl::opt(dsl::p<passage_number>) + WS + dsl::opt(dsl::p<passage_subtype>) + WS + dsl::opt(dsl::p<passage_separator>) + WS)));
 
             static constexpr auto value = lexy::callback<deconstructed_t::element_t>([](lexy::nullopt, const std::string& name, auto number, auto subtype, auto separator) {
                 deconstructed_t::element_t result{.name = name};
@@ -185,12 +185,14 @@ namespace ae::virus::passage
 
         struct part_without_name
         {
-            static constexpr auto rule = dsl::p<passage_number> + WS + dsl::opt(dsl::p<passage_separator>) + WS;
+            static constexpr auto rule = dsl::p<passage_number> + WS + dsl::opt(dsl::p<passage_subtype>) + WS + dsl::opt(dsl::p<passage_separator>) + WS;
 
-            static constexpr auto value = lexy::callback<part_without_name_t>([](const std::string& number, auto separator) {
+            static constexpr auto value = lexy::callback<part_without_name_t>([](const std::string& number, auto subtype, auto separator) {
                 deconstructed_t::element_t result{.count = number};
                 if constexpr (!std::is_same_v<decltype(separator), lexy::nullopt>)
                     result.new_lab = true;
+                if constexpr (!std::is_same_v<decltype(subtype), lexy::nullopt>)
+                    result.subtype.assign(subtype.begin(), subtype.end());
                 return part_without_name_t{result};
             });
         };
@@ -202,7 +204,7 @@ namespace ae::virus::passage
             static constexpr auto value = lexy::fold_inplace<deconstructed_t>(0, [](deconstructed_t& target, const auto& val) {
                 if constexpr (std::is_same_v<decltype(val), const part_without_name_t&>) {
                     if (!target.elements.empty())
-                        target.elements.push_back({.name = target.elements.back().name, .count = val->count, .new_lab = val->new_lab});
+                        target.elements.push_back({.name = target.elements.back().name, .count = val->count, .subtype = val->subtype, .new_lab = val->new_lab});
                     // else
                     //     fmt::print("> ae::virus::passage::grammar::passages: adding part_without_name_t to an empty passage\n");
                 }
