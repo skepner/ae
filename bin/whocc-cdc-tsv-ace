@@ -319,9 +319,18 @@ def main(args: argparse.Namespace): # input_file :Path, output_dir :Path):
         ae.whocc.ace.DataFixer(ace).process(report=False)
         # print(f"""{table_name:25s}   a:{len(ace["c"]["a"]):3d}   s:{len(ace["c"]["s"]):3d}""")
 
+        table_filename = f"{table_name}.ace"
+        whocc_table_path = ae.whocc.table_dir.WHOCC_TABLES_DIR.joinpath(table_name[:-9], table_filename)
+
         table_dir = output_dir.joinpath(table_name[:-9])
         table_dir.mkdir(exist_ok=True)
-        output_name = table_dir.joinpath(f"{table_name}.ace")
+        output_name = table_dir.joinpath(table_filename)
+
+        if not whocc_table_path.exists():
+            print(f">>> NEW: {output_name} --> {whocc_table_path}", file=sys.stderr)
+        # elif table_diff(ace, whocc_table_path):
+        #     print(f">>> DIFF: {output_name} --> {whocc_table_path}", file=sys.stderr)
+
         with output_name.open("wb") as output:
             output.write(lzma.compress(json_dumps(ace, indent=2, object_fields_sorting_key=object_fields_sorting_key).encode("utf-8"), preset=9|lzma.PRESET_EXTREME))
         # table_no += 1
