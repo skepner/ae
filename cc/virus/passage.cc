@@ -109,7 +109,7 @@ namespace ae::virus::passage
 
         struct passage_subtype  // (AM2AL2) <- NIID H3
         {
-            static constexpr auto rule = dsl::peek(OPEN) >> dsl::capture(OPEN + dsl::while_one(dsl::ascii::alpha / dsl::digit<>) + CLOSE);
+            static constexpr auto rule = dsl::peek(OPEN + dsl::ascii::alpha) >> dsl::capture(OPEN + dsl::while_one(dsl::ascii::alpha / dsl::digit<>) + CLOSE);
             static constexpr auto value = lexy::callback<std::string>([](auto captured) {
                 if ((captured.end() - captured.begin()) > 8)
                     throw invalid_input{"passage subtype too long"};
@@ -221,6 +221,7 @@ namespace ae::virus::passage
         {
             // static constexpr auto rule = WS + dsl::try_(dsl::p<passages> + dsl::opt(OPEN >> dsl::p<passage_date>), dsl::nullopt) + dsl::eof;
             static constexpr auto rule = WS + dsl::try_(dsl::p<passages> + dsl::opt(OPEN >> dsl::p<passage_date>), dsl::recover(dsl::eof)) + dsl::eof;
+            // static constexpr auto rule = WS + dsl::p<passages> + WS + dsl::opt(dsl::peek(OPEN) >> (OPEN + dsl::p<passage_date>)) + dsl::eof;
 
             static constexpr auto value = lexy::callback<deconstructed_t>(
                 [](const deconstructed_t& passages, const std::string& date) {

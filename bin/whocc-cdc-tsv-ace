@@ -316,7 +316,7 @@ def main(args: argparse.Namespace): # input_file :Path, output_dir :Path):
         merge_titers(table_name, ace["c"]["t"]["l"], ace)
         populate_missing_titers(table_name, ace["c"]["t"]["l"], number_of_sera=len(ace["c"]["s"]))
         sort_antigens_sera(ace)
-        ae.whocc.ace.DataFixer(ace).process(report=False)
+        ae.whocc.ace.DataFixer(ace).process(report=True)
         # print(f"""{table_name:25s}   a:{len(ace["c"]["a"]):3d}   s:{len(ace["c"]["s"]):3d}""")
 
         table_dir = output_dir.joinpath(table_name[:-9])
