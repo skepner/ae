@@ -216,6 +216,8 @@ namespace ae::virus::passage
                 }
                 else {
                     target.elements.push_back(val);
+                    if (const auto num_parts = target.elements.size(); num_parts > 1 && target.elements[num_parts - 1].name == target.elements[num_parts - 2].name)
+                        target.elements[num_parts - 2].new_lab = true;
                 }
                 // fmt::print(">>>> [passage-parse] passages \"{}\"\n", target.construct());
                 return target;
