@@ -1,0 +1,559 @@
+#! /usr/bin/env python3
+
+import sys, os, csv, json, re, datetime, lzma, pprint, argparse, traceback
+from pathlib import Path
+import ae_backend
+import ae.whocc.ace, ae.whocc.table_dir
+
+# ======================================================================
+
+# 2021-01-29
+# | Field              | Field_Type | Description                                                        | Notes                                                                                                                    |
+# |--------------------+------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------|
+# | test_id            | int        | Unique test identifier                                             |                                                                                                                          |
+# | test_date          | date       | Test date of antigenic test                                        |                                                                                                                          |
+# | test_file          | string     | Test file excel parsed for information                             |                                                                                                                          |
+# | test_protocol      | string     | Test protocol used                                                 | Currently contains "hi_protocol", "hi_oseltamivir_protocol",  "fra_protocol", and "hint_protocol"                        |
+# | test_subtype       | string     | Test subtype performed                                             | Currently contains "H1 swl", "H3", "B", "B vic",  and "B yam" (older B tests are not split by lineage)                   |
+# | ag_isl_type        | string     | Antigen Isolate Influenza Type                                     | Currently contains "A" and "B"                                                                                           |
+# | ag_ha_type         | string     | Antigen Isolate Influenza Hemagglutinin Type                       | Currently contains "H1", "H3", "VIC", and "YAM"                                                                          |
+# | sr_isl_type        | string     | Sera Isolate Influenza Type                                        | Currently contains "A" and "B"                                                                                           |
+# | sr_ha_type         | string     | Sera Isolate Influenza Hemagglutinin Type                          | Currently contains "H1", "H3", "VIC", and "YAM"                                                                          |
+# | ag_position        | int        | Row position of antigen                                            |                                                                                                                          |
+# | ag_entry_id        | int        | Unique test entry identifier for antigen                           |                                                                                                                          |
+# | ag_cdc_id          | string     | CDC Id of antigen                                                  | CDC id is unique to virus specimen subsequent virus isolates will have distinct "isolate_id"                             |
+# | ag_isolate_id      | int        | Unique CDC isolate identifier of antigen                           | Distinguishes specific passages of specimens                                                                             |
+# | ag_epi_isolate_id  | string     | GISAID Epi Isolate Id of sequenced isolate antigen represenatative |                                                                                                                          |
+# | ag_strain_name     | string     | Strain name of antigen                                             |                                                                                                                          |
+# | ag_passage         | string     | Passage of test antigen                                            |                                                                                                                          |
+# | ag_seq_passage     | string     | Passage of sequenced test antigen                                  |                                                                                                                          |
+# | ag_collection_date | date       | Collection date of antigen                                         |                                                                                                                          |
+# | ag_date_harvested  | date       | Harvest date of antigen                                            |                                                                                                                          |
+# | ag_lab             | boolean    | Antigen is lab generated (T/F)                                     |                                                                                                                          |
+# | ag_type            | string     | Antigen type                                                       | Currently contains "test" and "reference"                                                                                |
+# | ag_is_homologous   | boolean    | Antigen is homologous (T/F)                                        |                                                                                                                          |
+# | ag_do_not_report   | boolean    | Do not report antigen (T/F)                                        | If TRUE - either a repeated antigen or test error                                                                        |
+# | ag_back_titer      | int        | Back titer of antigen                                              |                                                                                                                          |
+# | ag_entry_error     | string     | Entry error comment                                                |                                                                                                                          |
+# | ag_pairing_status  | string     | Antigen passage to sequenced antigen passage pairing/proxy status  | Currently contains "isolate_proxy" (sequenced isolate is a proxy) or "exact_isolate" (test passage == sequenced passage) |
+# | ag_test_for_fra    | boolean    | Flag that antigen is to be tested via "fra_protocol"               | If TRUE then antigen was antigenically characterized by FRA and NOT HI                                                   |
+# | sr_position        | string     | Column letter of sera                                              |                                                                                                                          |
+# | sr_entry_id        | int        | Unique test entry identifier of sera                               |                                                                                                                          |
+# | sr_cdc_id          | string     | CDC Id of sera                                                     |                                                                                                                          |
+# | sr_isolate_id      | int        | Unique CDC isolate identifier of sera                              |                                                                                                                          |
+# | sr_epi_isolate_id  | string     | GISAID Epi Isolate Id of sequenced isolate sera represenatative    |                                                                                                                          |
+# | sr_strain_name     | string     | Strain name of sera                                                |                                                                                                                          |
+# | sr_lot             | string     | Sera lot number                                                    |                                                                                                                          |
+# | sr_ferret          | string     | Sera ferret number                                                 |                                                                                                                          |
+# | sr_passage         | string     | Passage of test sera                                               |                                                                                                                          |
+# | sr_seq_passage     | string     | Passage of sequenced test sera                                     |                                                                                                                          |
+# | sr_collection_date | date       | Collection date of sera                                            |                                                                                                                          |
+# | sr_date_harvested  | date       | Harvest date of sera                                               |                                                                                                                          |
+# | sr_boosted         | boolean    | Sera is boosted (T/F)                                              |                                                                                                                          |
+# | sr_lab             | boolean    | Sera is lab generated (T/F)                                        |                                                                                                                          |
+# | sr_pool            | boolean    | Sera is a pool (T/F)                                               |                                                                                                                          |
+# | sr_do_not_report   | boolean    | Do not report sera (T/F)                                           | If TRUE, then >1 sera in assay for same virus or test error                                                              |
+# | sr_pairing_status  | string     | Sera passage to sequenced sera passage pairing/proxy status        | Currently contains "isolate_proxy" (sequenced isolate is a proxy) or "exact_isolate" (test passage == sequenced passage) |
+# | titer_reportable   | boolean    | Titer value is reportable (T/F)                                    |                                                                                                                          |
+# | titer_error        | boolean    | Titer value entry contains error (T/F)                             |                                                                                                                          |
+# | titer_value        | int        | Titer value                                                        |                                                                                                                          |
+# | titer_log          | float      | Titer log value                                                    |                                                                                                                          |
+# | titer_logfold      | float      | Titer log-fold value                                               |                                                                                                                          |
+
+# missing:
+# RBC - CDC database does not store the RBC information (Becky 2021-02-09 21:38)
+
+# ======================================================================
+
+class Extractor:
+
+    def __init__(self, lab):
+        self.lab = lab
+
+    def extract(self, row):
+        raw_data = {"table": {}, "antigen": {}, "serum": {}}
+        for field_name, field_value in row.items():
+            try:
+                getattr(self, f"get_{field_name}")(field_value.strip(), raw_data)
+            except AttributeError as err:
+                raise RuntimeError(f"Unrecognized source field {field_name}")
+        assay_rbc = raw_data["table"]["assay"].lower()
+        if assay_rbc == "hi":
+            if raw_data["table"]["virus_type_low"] == "h3":
+                assay_rbc = assay_rbc + "-guinea-pig"
+            else:
+                assay_rbc = assay_rbc + "-turkey"
+        raw_data["table"]["name"] = f"""{raw_data["table"]["virus_type_low"]}-{assay_rbc}-{self.lab.lower()}-{raw_data["table"]["date"]}"""
+        for ag_sr in ["antigen", "serum"]:
+            raw_data[ag_sr]["P"] = self.make_passage(raw_data[ag_sr])
+            raw_data[ag_sr].pop("passage", None)
+            raw_data[ag_sr].pop("passage", None)
+        return raw_data
+
+    def get_test_date(self, field_value, raw_data):
+        raw_data["table"]["date"] = self.convert_date(field_value)
+
+    def get_test_protocol(self, field_value, raw_data):
+        if field_value in ["hi_protocol", "hi_oseltamivir_protocol"]:
+            raw_data["table"]["assay"] = "HI"
+        elif field_value == "fra_protocol":
+            raw_data["table"]["assay"] = "FRA"
+        elif field_value == "hint_protocol":
+            raw_data["table"]["assay"] = "HINT"
+        else:
+            raise RuntimeError(f"Unrecognized test protocol: \"{field_value}\"")
+
+    def get_test_subtype(self, field_value, raw_data):
+        if field_value == "H1 swl":
+            raw_data["table"]["virus_type"] = "A(H1N1)"
+            # raw_data["table"]["lineage"] = "PDM09"
+            raw_data["table"]["virus_type_low"] = "h1pdm"
+        elif field_value == "H3":
+            raw_data["table"]["virus_type"] = "A(H3N2)"
+            raw_data["table"]["virus_type_low"] = "h3"
+        elif field_value == "B":
+            raw_data["table"]["virus_type"] = "B"
+            raw_data["table"]["virus_type_low"] = "b"
+        elif field_value == "B vic":
+            raw_data["table"]["virus_type"] = "B"
+            raw_data["table"]["virus_type_low"] = "bvic"
+            raw_data["table"]["lineage"] = "VICTORIA"
+        elif field_value == "B yam":
+            raw_data["table"]["virus_type"] = "B"
+            raw_data["table"]["virus_type_low"] = "byam"
+            raw_data["table"]["lineage"] = "YAMAGATA"
+        else:
+            raise RuntimeError(f"Unrecognized test_subtype: \"{field_value}\"")
+
+    def get_ag_isl_type(self, field_value, raw_data):
+        pass # raw_data["virus_type_a_b"] = field_value
+
+    def get_ag_cdc_id(self, field_value, raw_data):
+        raw_data["antigen"]["l"] = f"CDC#{field_value}"
+
+    def get_ag_strain_name(self, field_value, raw_data):
+        raw_data["antigen"]["N"] = field_value.upper()
+
+    def get_ag_passage(self, field_value, raw_data):
+        raw_data["antigen"]["passage"] = field_value
+
+    def get_ag_collection_date(self, field_value, raw_data):
+        raw_data["antigen"]["D"] = self.convert_date(field_value, output_fmt='%Y-%m-%d')
+
+    def get_ag_date_harvested(self, field_value, raw_data):
+        if field_value:
+            raw_data["antigen"]["passage_date"] = self.convert_date(field_value, output_fmt='%Y-%m-%d')
+
+    def get_ag_do_not_report(self, field_value, raw_data):
+        if field_value.lower() == "true":
+            raw_data["antigen"]["DISTINCT"] = True
+        elif field_value.lower() != "false":
+            raise RuntimeError(f"Unrecognized \"ag_do_not_report\" value: \"{field_value}\"")
+
+    def get_sr_strain_name(self, field_value, raw_data):
+        raw_data["serum"]["N"] = field_value.upper()
+
+    def get_sr_lot(self, field_value, raw_data):
+        raw_data["serum"]["I"] = f"CDC {field_value}"
+
+    def get_sr_passage(self, field_value, raw_data):
+        raw_data["serum"]["passage"] = field_value
+
+    def get_sr_date_harvested(self, field_value, raw_data):
+        if field_value:
+            raw_data["serum"]["passage_date"] = self.convert_date(field_value, output_fmt='%Y-%m-%d')
+
+    def get_sr_boosted(self, field_value, raw_data):
+        if field_value.lower() == "true":
+            raw_data["serum"]["boosted"] = True
+        elif field_value.lower() != "false":
+            raise RuntimeError(f"Unrecognized \"sr_boosted\" value: \"{field_value}\"")
+
+    def get_sr_do_not_report(self, field_value, raw_data):
+        if field_value.lower() == "true":
+            raw_data["serum"]["DISTINCT"] = True
+
+    def get_titer_reportable(self, field_value, raw_data):
+        if field_value.lower() == "false":
+            raw_data["titer_not_reportable"] = True
+
+    def get_titer_error(self, field_value, raw_data):
+        if field_value.lower() == "true":
+            raw_data["titer_error"] = True
+
+    def get_titer_value(self, field_value, raw_data):
+        raw_data["titer"] = field_value
+
+    # ----------------------------------------------------------------------
+    # ignored
+    # ----------------------------------------------------------------------
+
+    def get_test_id(self, field_value, raw_data):
+        pass
+    def get_test_file(self, field_value, raw_data):
+        pass
+    def get_ag_ha_type(self, field_value, raw_data):
+        pass
+    def get_sr_isl_type(self, field_value, raw_data):
+        pass
+    def get_sr_ha_type(self, field_value, raw_data):
+        pass
+    def get_ag_position(self, field_value, raw_data):
+        pass
+    def get_ag_entry_id(self, field_value, raw_data):
+        pass
+    def get_ag_isolate_id(self, field_value, raw_data):
+        pass
+    def get_ag_epi_isolate_id(self, field_value, raw_data):
+        pass                    # reference to gisaid
+    def get_ag_seq_passage(self, field_value, raw_data):
+        pass
+    def get_ag_lab(self, field_value, raw_data):
+        pass
+    def get_ag_type(self, field_value, raw_data):
+        pass                    # "reference", "test"
+    def get_ag_is_homologous(self, field_value, raw_data):
+        pass
+    def get_ag_back_titer(self, field_value, raw_data):
+        pass
+    def get_ag_entry_error(self, field_value, raw_data):
+        pass
+    def get_ag_pairing_status(self, field_value, raw_data):
+        pass
+    def get_ag_test_for_fra(self, field_value, raw_data):
+        pass
+    def get_sr_position(self, field_value, raw_data):
+        pass
+    def get_sr_entry_id(self, field_value, raw_data):
+        pass
+    def get_sr_cdc_id(self, field_value, raw_data):
+        pass
+    def get_sr_isolate_id(self, field_value, raw_data):
+        pass
+    def get_sr_epi_isolate_id(self, field_value, raw_data):
+        pass
+    def get_sr_ferret(self, field_value, raw_data):
+        pass
+    def get_sr_seq_passage(self, field_value, raw_data):
+        pass
+    def get_sr_collection_date(self, field_value, raw_data):
+        pass
+    def get_sr_lab(self, field_value, raw_data):
+        pass
+    def get_sr_pool(self, field_value, raw_data):
+        pass
+    def get_sr_pairing_status(self, field_value, raw_data):
+        pass
+    def get_titer_log(self, field_value, raw_data):
+        pass
+    def get_titer_logfold(self, field_value, raw_data):
+        pass
+
+    # ----------------------------------------------------------------------
+    # utils
+    # ----------------------------------------------------------------------
+
+    def convert_date(self, field, month_first=True, output_fmt="%Y%m%d"):
+        date = None
+        if month_first:
+            fmts = ["%Y-%m-%d", "%m/%d/%Y", "%m/%d/%y", "%d/%m/%Y", "%d/%m/%y"]
+        else:
+            fmts = ["%Y-%m-%d", "%d/%m/%Y", "%m/%d/%Y"]
+        for fmt in fmts:
+            try:
+                date = datetime.datetime.strptime(field, fmt)
+                break
+            except:
+                pass
+        if not date:
+            raise RuntimeError(f"Cannot parse date from {field!r}")
+        return date.strftime(output_fmt)
+
+    def make_passage(self, data):
+        if data.get("passage_date") not in [None, "None", ""]:
+            return f"""{data["passage"]} ({data["passage_date"]})"""
+        else:
+            return data["passage"]
+
+# ----------------------------------------------------------------------
+
+def main(args: argparse.Namespace): # input_file :Path, output_dir :Path):
+    input_file = Path(args.input)
+    if input_file.suffix == ".zip":
+        reader = zip_extract_save_open(input_file)
+    elif input_file.suffix == ".xz":
+        reader = csv.DictReader(lzma.open(input_file, mode="rt"), dialect="excel-tab")
+    else:
+        reader = csv.DictReader(input_file.open(), dialect="excel-tab")
+    tables = {}                 # table -> ace
+    lab = "CDC"
+    extractor = Extractor(lab=lab)
+    rows_read = 0
+    tables = {}
+    for row in reader:
+        row_data = extractor.extract(row)
+        # if row_data.get("titer_not_reportable") or row_data.get("titer_error"):
+        #     print(f">> titer problem:\n{pprint.pformat(row_data)}", file=sys.stderr)
+        if row_data["table"]["name"] not in tables:
+            tables[row_data["table"]["name"]] = make_ace(data=row_data, lab=lab, input_file=input_file)
+
+        antigen = {"N": row_data["antigen"]["N"], "l": [row_data["antigen"]["l"]], "D": row_data["antigen"]["D"], "P": row_data["antigen"]["P"]}
+        serum = {"N": row_data["serum"]["N"], "I": row_data["serum"]["I"], "P": row_data["serum"]["P"]}
+        if row_data["table"]["virus_type"] == "B" and row_data["table"].get("lineage"):
+            antigen["L"] = serum["L"] = row_data["table"]["lineage"]
+        if row_data["serum"].get("boosted"):
+            serum["a"] = serum.get("a", []) + ["BOOSTED"]
+        read_titer(row_data["table"]["name"], tables[row_data["table"]["name"]], antigen=antigen, serum=serum, titer=row_data["titer"])
+
+        rows_read += 1
+        # pprint.pprint(row_data)
+        # break
+
+    output_dir = Path(args.output_dir)
+    output_dir.mkdir(exist_ok=True)
+    # table_no = 1
+    for table_name, ace in tables.items():
+        merge_titers(table_name, ace["c"]["t"]["l"], ace)
+        populate_missing_titers(table_name, ace["c"]["t"]["l"], number_of_sera=len(ace["c"]["s"]))
+        sort_antigens_sera(ace)
+        ae.whocc.ace.DataFixer(ace).process(report=False)
+        # print(f"""{table_name:25s}   a:{len(ace["c"]["a"]):3d}   s:{len(ace["c"]["s"]):3d}""")
+
+        table_dir = output_dir.joinpath(table_name[:-9])
+        table_dir.mkdir(exist_ok=True)
+        output_name = table_dir.joinpath(f"{table_name}.ace")
+        with output_name.open("wb") as output:
+            output.write(lzma.compress(json_dumps(ace, indent=2, object_fields_sorting_key=object_fields_sorting_key).encode("utf-8"), preset=9|lzma.PRESET_EXTREME))
+        # table_no += 1
+
+    print(f">>> rows: {rows_read}", file=sys.stderr)
+    print(f">>> tables: {len(tables)}", file=sys.stderr)
+    # pprint.pprint(tables)
+
+# ----------------------------------------------------------------------
+
+def make_ace(data, lab, input_file):
+    ace = {
+        "  version": "acmacs-ace-v1",
+        "?created": f"imported from {input_file.name} by {os.path.basename(sys.argv[0])} on {datetime.date.today()}",
+        "c": {
+            "i": {
+                "l": lab,
+                "D": data["table"]["date"],
+                "V": data["table"]["virus_type"],
+                "A": data["table"]["assay"],
+            },
+            "a": [], "s": [], "t": {"l": []}
+        }
+    }
+    if data["table"]["assay"] == "HI":
+        ace["c"]["i"]["r"] = "turkey"
+    if data["table"].get("lineage"):
+        ace["c"]["i"]["s"] = data["table"]["lineage"]
+    return ace
+
+# ----------------------------------------------------------------------
+
+def read_titer(table_name, table, antigen, serum, titer): # cdc_id, date, antigen_name, antigen_passage, serum_name, ferret_id, serum_id, serum_passage, serum_boosted :bool, titer):
+    ag_no = antigen_index(table=table, antigen=antigen) # _name=antigen_name, antigen_passage=antigen_passage, cdc_id=cdc_id, date=date)
+    sr_no = serum_index(table=table, serum=serum) # serum_name=serum_name, serum_id=serum_id, serum_passage=serum_passage, serum_boosted=serum_boosted)
+    titer = check_titer(titer, ag_no, sr_no)
+    titers = table["c"]["t"]["l"]
+    while len(titers) <= ag_no:
+        titers.append([])
+    row = titers[ag_no]
+    while len(row) <= sr_no:
+        row.append("*")
+    if row[sr_no] != "*":
+        if isinstance(row[sr_no], list):
+            row[sr_no].append(titer)
+        else:
+            row[sr_no] = [row[sr_no], titer]
+        # print(f">> {table_name}: titer mismatch [AG {ag_no} {antigen_name} {antigen_passage} {cdc_id}   SR {sr_no} {serum_name} {serum_id}]: new: {titer}, old: {row[sr_no]}", file=sys.stderr)
+    else:
+        row[sr_no] = titer
+
+# ----------------------------------------------------------------------
+
+def antigen_index(table, antigen):
+    for no, entry in enumerate(table["c"]["a"]):
+        if entry["N"] == antigen["N"] and entry["P"] == antigen["P"] and entry["l"] == antigen["l"]:
+            if antigen["D"] and entry["D"] != antigen["D"]:
+                print(f">> antigen date mismatch: new: {antigen['D']!r}, old: {entry!r}", file=sys.stderr)
+            return no
+    table["c"]["a"].append(antigen)
+    return len(table["c"]["a"]) - 1
+
+# ----------------------------------------------------------------------
+
+def serum_index(table, serum):
+    for no, entry in enumerate(table["c"]["s"]):
+        if entry["N"] == serum["N"] and entry["I"] == serum["I"] and entry.get("a") == serum.get("a"):
+            if entry["P"] != serum["P"]:
+                print(f">> serum passage mismatch: new: {serum['P']}, old: {entry}", file=sys.stderr)
+            return no
+    table["c"]["s"].append(serum)
+    return len(table["c"]["s"]) - 1
+
+# ----------------------------------------------------------------------
+
+sReTiter = re.compile(r"^([><])?(\d+(?:\.\d*)?)$", re.I)
+
+def check_titer(titer, row_no, column_no):
+    if titer == "5":
+        return "<10"
+    m = sReTiter.match(titer)
+    if m:
+        if m.group(1):
+            return f"{m.group(1)}{round(float(m.group(2)))}"
+        else:
+            return str(round(float(m.group(2))))
+    else:
+        raise RuntimeError(f"Unrecognized titer \"{titer}\" at {row_no}:{column_no}")
+
+# ----------------------------------------------------------------------
+
+def merge_titers(table_name, titers, ace):
+    for ag_no, row in enumerate(titers):
+        for sr_no in range(len(row)):
+            if isinstance(row[sr_no], list):
+                src = row[sr_no]
+                row[sr_no], message = ae_backend.chart_v2.titer_merge(src)
+                # if message:
+                #     print(f">>> titer merged {row[sr_no]} ({message}) <-- {src}", file=sys.stderr)
+            if row[sr_no] and row[sr_no][0] not in ["*", "<", ">"] and int(row[sr_no]) < 10:
+                print(f">> invalid titer {row[sr_no]} for ag:{ag_no} sr:{sr_no}", file=sys.stderr)
+                if int(row[sr_no]) == 0:
+                    row[sr_no] = "*"
+
+# ----------------------------------------------------------------------
+
+def populate_missing_titers(table_name, titers, number_of_sera):
+    for row in titers:
+        while len(row) < number_of_sera:
+            row.append("*")
+
+# ----------------------------------------------------------------------
+
+def sort_antigens_sera(table):
+    serum_names = {sr["N"]: sr_no for sr_no, sr in enumerate(table["c"]["s"])}
+    antigens = table["c"]["a"]
+    antigens_order = sorted(range(len(antigens)), key=lambda ag_no: f"""{serum_names.get(antigens[ag_no]["N"], 999):03d}-{antigens[ag_no].get("D") or "9999"}-{antigens[ag_no]["N"]}-{antigens[ag_no].get("passage", "")}""")
+    # print(f">> antigens_order {antigens_order}", file=sys.stderr)
+    table["c"]["a"] = [antigens[ag_no] for ag_no in antigens_order]
+    table["c"]["t"]["l"] = [table["c"]["t"]["l"][ag_no] for ag_no in antigens_order]
+
+# ----------------------------------------------------------------------
+
+sNameOrder = ["i", "N", "P", "D"]
+
+def object_fields_sorting_key(field_name):
+    try:
+        return f"{sNameOrder.index(field_name):03d}-{field_name}"
+    except ValueError:
+        return f"{len(sNameOrder):03d}-{field_name}"
+
+# ----------------------------------------------------------------------
+
+def json_dumps(data, indent=2, indent_increment=None, toplevel=True, one_line_max_width=200, object_fields_sorting_key=None):
+    """More compact dumper with wide lines."""
+
+    def simple(d):
+        r = True
+        if isinstance(d, dict):
+            r = not any(isinstance(v, (list, tuple, set, dict)) for v in d.values()) and len(d) < 17
+        elif isinstance(d, (tuple, list)):
+            r = not any(isinstance(v, (list, tuple, set, dict)) for v in d)
+        return r
+
+    def end(symbol, indent):
+        if indent > indent_increment:
+            r = "{:{}s}{}".format("", indent - indent_increment, symbol)
+        else:
+            r = symbol
+        return r
+
+    def make_one_line(data):
+        if isinstance(data, set):
+            s = json.dumps(sorted(data, key=object_fields_sorting_key))
+        elif isinstance(data, dict):
+            s = "{"
+            for no, k in enumerate(sorted(data, key=object_fields_sorting_key), start=1):
+                comma = ", " if no < len(data) else ""
+                s += "{}: {}{}".format(json.dumps(k), json_dumps(data[k], indent=0, indent_increment=None, toplevel=False, object_fields_sorting_key=object_fields_sorting_key), comma)
+            s += "}"
+        else:
+            s = json.dumps(data, sort_keys=True)
+        return s
+
+    def make_object(data):
+        if toplevel:
+            r = ["{{{:<{}s}\"_\":\"-*- js-indent-level: {} -*-\",".format("", indent_increment - 1, indent_increment)]
+        else:
+            r = ["{"]
+        for no, k in enumerate(sorted(data, key=object_fields_sorting_key), start=1):
+            comma = "," if no < len(data) else ""
+            r.append("{:{}s}{}: {}{}".format("", indent, json.dumps(k), json_dumps(data[k], indent + indent_increment, indent_increment, toplevel=False, object_fields_sorting_key=object_fields_sorting_key), comma))
+        r.append(end("}", indent))
+        return r
+
+    # --------------------------------------------------
+
+    if indent_increment is None:
+        indent_increment = indent
+    if indent == 0 or simple(data):
+        s = make_one_line(data)
+    else:
+        r = []
+        if isinstance(data, dict):
+            r.extend(make_object(data))
+        elif isinstance(data, (tuple, list)):
+            r.append("[")
+            for no, v in enumerate(data, start=1):
+                comma = "," if no < len(data) else ""
+                r.append("{:{}s}{}{}".format("", indent, json_dumps(v, indent + indent_increment, indent_increment, toplevel=False, object_fields_sorting_key=object_fields_sorting_key), comma))
+            r.append(end("]", indent))
+        else:
+            raise ValueError("Cannot serialize: {!r}".format(data))
+        s = "\n".join(r)
+        if "\n" in s and len(s) < one_line_max_width:
+            s = make_one_line(data)
+    return s
+
+# ----------------------------------------------------------------------
+
+def zip_extract_save_open(input_file: Path) -> csv.DictReader:
+    import zipfile, io
+    with zipfile.ZipFile(input_file) as zip:
+        files = zip.namelist()
+        if len(files) != 1:
+            raise RuntimeError(f"Unsupported number of files in {input_file}: ({len(files)}) {files}")
+        output_name = Path(os.environ["HOME"], "ac/whocc-tables/cdc-h3-hint/tsv", f"cdc-{monday()}.tsv.xz")
+        if not output_name.exists():
+            print(f">>> exporting {output_name}")
+            with lzma.open(output_name, "wb", preset = 9 | lzma.PRESET_EXTREME) as out:
+                out.write(zip.open(files[0], "r").read())
+        else:
+            print(f">> WARNING: {output_name} already exists, not overwriting")
+        return csv.DictReader(io.StringIO(zip.open(files[0], "r").read().decode("utf-8")), dialect="excel-tab")
+
+def monday():
+    day = datetime.date.today()
+    day -= datetime.timedelta(days=day.weekday())
+    return day.strftime("%Y%m%d")
+
+# ======================================================================
+
+try:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('-n', '--no-output', action='store_false', dest='make_output', default=True, help='Do not write output tables.')
+    parser.add_argument("input", type=Path)
+    parser.add_argument("output_dir", nargs='?', type=Path, default=Path("."))
+    args = parser.parse_args()
+    exit_code = main(args)
+except Exception as err:
+    print(f"> {err}\n{traceback.format_exc()}", file=sys.stderr)
+    exit_code = 1
+exit(exit_code)
+
+# ======================================================================
