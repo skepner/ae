@@ -7,6 +7,8 @@ from ..utils import json
 
 class DataFixer:
 
+    sDistinct = "DISTINCT"
+
     def __init__(self, ace_data: dict):
         self.ace_data = ace_data
         self.type_subtype = self.ace_data["c"].get("i", {}).get("V", "")
@@ -22,6 +24,7 @@ class DataFixer:
         self.serum_passages()
         self.antigen_dates()
         self.mark_duplicates_as_distinct()
+        self.detect_reference_antigens() # after mark_duplicates_as_distinct!
         if report:
             self.report()
 
@@ -51,7 +54,15 @@ class DataFixer:
         #         if antigen["D"] != orig_date:
         #             self.report_data.append(f"    AG {no:3d} date: \"{antigen['D']}\" <- \"{orig_date}\"")
 
-    sDistinct = "DISTINCT"
+    def detect_reference_antigens(self):
+        "set refernece attribute for all antigens whose names (without reassortant, annotations, passage) are the same as sera names. call after mark_duplicates_as_distinct!"
+        serum_names = set(serum["N"] for serum in self.ace_data["c"]["s"])
+        for no, antigen in enumerate(self.ace_data["c"]["a"]):
+            if "R" in antigen.get("S", ""):
+                antigen["S"] = antigen["S"].replace("R", "") # remove old reference attribute
+            if self.sDistinct not in antigen.get("a", []) and antigen["N"] in serum_names:
+                antigen.setdefault("S", "")
+                antigen["S"] += "R"
 
     def mark_duplicates_as_distinct(self):
         full_names = {}
