@@ -535,7 +535,7 @@ Usage:
 
     // ======================================================================
 
-    pybind11::class_<detail::AntigenSerum, std::shared_ptr<detail::AntigenSerum>>(mdl, "AntigenSerum")                                              //
+    pybind11::class_<detail::AntigenSerum, std::shared_ptr<detail::AntigenSerum>>(chart_v2_submodule, "AntigenSerum")                                              //
         .def("__str__", [](const detail::AntigenSerum& ag_sr) { return ag_sr.format("{fields}"); })                                                 //
         .def("name", [](const detail::AntigenSerum& ag_sr) { return *ag_sr.name(); })                                                               //
         .def("name_full", &detail::AntigenSerum::name_full)                                                                                         //
@@ -553,13 +553,13 @@ Usage:
         .def("location", &detail::AntigenSerum::location_data)    //
         ;
 
-    pybind11::class_<Antigen, std::shared_ptr<Antigen>, detail::AntigenSerum>(mdl, "AntigenRO") //
+    pybind11::class_<Antigen, std::shared_ptr<Antigen>, detail::AntigenSerum>(chart_v2_submodule, "AntigenRO") //
         .def("date", [](const Antigen& ag) { return *ag.date(); })                              //
         .def("reference", &Antigen::reference)                                                  //
         .def("lab_ids", [](const Antigen& ag) { return *ag.lab_ids(); })                        //
         ;
 
-    pybind11::class_<AntigenModify, std::shared_ptr<AntigenModify>, Antigen>(mdl, "Antigen")                                                        //
+    pybind11::class_<AntigenModify, std::shared_ptr<AntigenModify>, Antigen>(chart_v2_submodule, "Antigen")                                                        //
         .def("name", [](const AntigenModify& ag) { return *ag.name(); })                                                                            //
         .def("name", [](AntigenModify& ag, const std::string& new_name) { ag.name(new_name); })                                                     //
         .def("passage", [](const AntigenModify& ag) { return ag.passage(); })                                                                       //
@@ -581,13 +581,13 @@ Usage:
         .def("clades", [](const AntigenModify& ag) { return *ag.clades(); })                                                                        //
         ;
 
-    pybind11::class_<Serum, std::shared_ptr<Serum>, detail::AntigenSerum>(mdl, "SerumRO") //
+    pybind11::class_<Serum, std::shared_ptr<Serum>, detail::AntigenSerum>(chart_v2_submodule, "SerumRO") //
         .def("serum_id", [](const Serum& sr) { return *sr.serum_id(); })                  //
         .def("serum_species", [](const Serum& sr) { return *sr.serum_species(); })        //
         .def("homologous_antigens", &Serum::homologous_antigens)                          //
         ;
 
-    pybind11::class_<SerumModify, std::shared_ptr<SerumModify>, Serum>(mdl, "Serum")                                                              //
+    pybind11::class_<SerumModify, std::shared_ptr<SerumModify>, Serum>(chart_v2_submodule, "Serum")                                                              //
         .def("name", [](const SerumModify& sr) { return *sr.name(); })                                                                            //
         .def("name", [](SerumModify& sr, const std::string& new_name) { sr.name(new_name); })                                                     //
         .def("passage", [](const SerumModify& sr) { return sr.passage(); })                                                                       //
@@ -611,7 +611,7 @@ Usage:
 
     // ----------------------------------------------------------------------
 
-    pybind11::class_<SelectionData<Antigen>>(mdl, "SelectionDataAntigen")                                                                        //
+    pybind11::class_<SelectionData<Antigen>>(chart_v2_submodule, "SelectionDataAntigen")                                                                        //
         .def_readonly("no", &SelectionData<Antigen>::index)                                                                                      //
         .def_readonly("point_no", &SelectionData<Antigen>::point_no)                                                                             //
         .def_readonly("antigen", &SelectionData<Antigen>::ag_sr)                                                                                 //
@@ -625,7 +625,7 @@ Usage:
         .def("clade_any_of", &ae::py::clade_any_of<Antigen>, "clades"_a) //
         ;
 
-    pybind11::class_<SelectionData<Serum>>(mdl, "SelectionDataSerum")                                                                          //
+    pybind11::class_<SelectionData<Serum>>(chart_v2_submodule, "SelectionDataSerum")                                                                          //
         .def_readonly("no", &SelectionData<Serum>::index)                                                                                      //
         .def_readonly("point_no", &SelectionData<Serum>::point_no)                                                                             //
         .def_readonly("serum", &SelectionData<Serum>::ag_sr)                                                                                   //
@@ -643,7 +643,7 @@ Usage:
 
     // ----------------------------------------------------------------------
 
-    pybind11::class_<SelectedAntigensModify, std::shared_ptr<SelectedAntigensModify>>(mdl, "SelectedAntigens")
+    pybind11::class_<SelectedAntigensModify, std::shared_ptr<SelectedAntigensModify>>(chart_v2_submodule, "SelectedAntigens")
         .def(
             "deselect_by_aa",
             [](SelectedAntigensModify& selected, const std::vector<std::string>& criteria) {
@@ -690,7 +690,7 @@ Usage:
              pybind11::doc("modifier(ag_no, antigen) is called for each selected antigen, antigen fields, e.g. name, can be modified in the function.")) //
         ;
 
-    pybind11::class_<SelectedSeraModify, std::shared_ptr<SelectedSeraModify>>(mdl, "SelectedSera")
+    pybind11::class_<SelectedSeraModify, std::shared_ptr<SelectedSeraModify>>(chart_v2_submodule, "SelectedSera")
         .def(
             "deselect_by_aa",
             [](SelectedSeraModify& selected, const std::vector<std::string>& criteria) {
@@ -728,6 +728,23 @@ Usage:
         .def("for_each", &SelectedSeraModify::for_each, "modifier"_a,
              pybind11::doc("modifier(sr_no, serum) is called for each selected serum, serum fields, e.g. name, can be modified in the function.")) //
         ;
+
+    // ----------------------------------------------------------------------
+
+    chart_v2_submodule.def("titer_merge", [](const std::vector<std::string>& source_titers) {
+        if (source_titers.empty())
+            throw std::invalid_argument{"titer_merge: no source titers"};
+        if (source_titers.size() == 1)
+            return std::make_pair(source_titers[0], std::string{});
+        constexpr double standard_deviation_threshold = 1.0; // lispmds: average-multiples-unless-sd-gt-1-ignore-thresholded-unless-only-entries-then-min-threshold
+        std::vector<ae::chart::v2::Titer> titers(source_titers.size());
+        std::transform(source_titers.begin(), source_titers.end(), std::begin(titers), [](const auto& src) { return ae::chart::v2::Titer{src}; });
+        const auto [merged, report] = ae::chart::v2::TitersModify::merge_titers(titers, ae::chart::v2::TitersModify::more_than_thresholded::adjust_to_next, standard_deviation_threshold);
+        std::string message;
+        if (report != ae::chart::v2::TitersModify::titer_merge::regular_only)
+            message = ae::chart::v2::TitersModify::titer_merge_report_long(report);
+        return std::make_pair(merged.get(), message);
+    }, "source_titers"_a, pybind11::doc("calculates merged titer, return pair: [merged_titer: str, message: str]"));
 }
 
 // ======================================================================
