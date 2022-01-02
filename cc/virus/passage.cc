@@ -120,7 +120,7 @@ namespace ae::virus::passage
         struct passage_name
         {
             static constexpr auto cond = dsl::peek(dsl::ascii::alpha);
-            static constexpr auto rule = dsl::capture(dsl::while_one(dsl::ascii::alpha));
+            static constexpr auto rule = dsl::capture(dsl::ascii::alpha + dsl::while_(dsl::ascii::alpha - X));
             static constexpr auto value = lexy::callback<std::string>([](auto captured) {
                 if ((captured.end() - captured.begin()) > 5)
                     throw invalid_input{"passage name too long"};
@@ -134,7 +134,13 @@ namespace ae::virus::passage
             static constexpr auto symbol = dsl::digit<> / X / dsl::question_mark;
             static constexpr auto cond = dsl::peek(hyphen + dsl::digit<>);
             static constexpr auto rule = dsl::peek(hyphen + symbol) >> (hyphen + dsl::capture(dsl::while_(symbol)));
-            static constexpr auto value = lexy::as_string<std::string>;
+            static constexpr auto value = lexy::callback<std::string>([](auto captured) {
+                const auto num = string::uppercase(captured.begin(), captured.end());
+                if (num.size() == 1 && num[0] == 'X')
+                    return std::string{"?"};
+                else
+                    return num;
+            });
         };
 
         struct passage_separator
