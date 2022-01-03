@@ -14,7 +14,7 @@ def main(args: argparse.Namespace):
         if len(args.tables) > 1:
             print(f">>> {table}", end="\n\n")
         chart = ae_backend.chart_v2.Chart(table)
-        text = chart.table_as_text(layer=args.layer if args.layer is not None else -1, sort=args.sort, org_mode_separators=args.org)
+        text = chart.table_as_text(layer=args.layer if args.layer is not None else -1, sort=args.sort, org_mode_separators=args.org, show_aa=args.show_aa)
         print(text)
         if len(args.tables) > 1:
             print()
@@ -27,6 +27,7 @@ try:
     parser.add_argument("--layer", type=int)
     parser.add_argument("--org", action="store_true", help="insert org-mode separators")
     parser.add_argument("-s", "--sort", action="store_true", help="sort antigens/sera to be able to compare with another table")
+    parser.add_argument("--no-aa", dest="show_aa", action="store_false", default=True, help="do not show aa/nuc sequences presence")
     args = parser.parse_args()
     exit_code = main(args) or 0
 except Exception as err:

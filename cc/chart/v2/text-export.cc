@@ -32,7 +32,7 @@ std::string ae::chart::v2::export_text(const Chart& chart)
 
 // ----------------------------------------------------------------------
 
-std::string ae::chart::v2::export_table_to_text(const Chart& chart, std::optional<size_t> just_layer, bool sort, org_mode_separators_t org_mode_separators)
+std::string ae::chart::v2::export_table_to_text(const Chart& chart, std::optional<size_t> just_layer, bool sort, org_mode_separators_t org_mode_separators, show_aa_t show_aa)
 {
     using namespace std::string_view_literals;
     fmt::memory_buffer result;
@@ -88,10 +88,12 @@ std::string ae::chart::v2::export_table_to_text(const Chart& chart, std::optiona
         row[3] = antigen->format("{date}");
         if (antigen->reference())
             row[4] = ":ref";
-        if (!antigen->sequence_aa().empty())
-            row[5] = ":aa";
-        if (!antigen->sequence_nuc().empty())
-            row[6] = ":nuc";
+        if (show_aa == show_aa_t::yes) {
+            if (!antigen->sequence_aa().empty())
+                row[5] = ":aa";
+            if (!antigen->sequence_nuc().empty())
+                row[6] = ":nuc";
+        }
     }
     if (!just_layer.has_value()) { // merged table
         for (auto [ag_no, antigen_no] : acmacs::enumerate(antigen_order)) {

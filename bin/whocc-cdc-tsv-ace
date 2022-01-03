@@ -330,9 +330,11 @@ def main(args: argparse.Namespace): # input_file :Path, output_dir :Path):
             output.write(lzma.compress(json_dumps(ace, indent=2, object_fields_sorting_key=object_fields_sorting_key).encode("utf-8"), preset=9|lzma.PRESET_EXTREME))
 
         if not whocc_table_path.exists():
-            print(f">>> NEW: {output_name} --> {whocc_table_path}", file=sys.stderr)
+            print(f"> NEW: {output_name} --> {whocc_table_path}", file=sys.stderr)
         elif diffs := table_diff(output_name, whocc_table_path):
-            print(f">>> DIFF: {output_name} --> {whocc_table_path}\n{diffs}", file=sys.stderr)
+            print(f">> diff-ace {output_name} {whocc_table_path}", file=sys.stderr)
+        else:
+            print(f">>> OK: {output_name} --> {whocc_table_path}", file=sys.stderr)
 
         # table_no += 1
 
@@ -365,13 +367,39 @@ def make_ace(data, lab, input_file):
 # ----------------------------------------------------------------------
 
 def table_diff(fn1: Path, fn2: Path):
-    with tempfile.NamedTemporaryFile(buffering=0) as f1, tempfile.NamedTemporaryFile(buffering=0) as f2:
-        f1.write(ae_backend.chart_v2.Chart(fn1).table_as_text(sort=True).encode("utf-8"))
-        f2.write(ae_backend.chart_v2.Chart(fn2).table_as_text(sort=True).encode("utf-8"))
-        f1.flush()
-        f2.flush()
-        status = subprocess.run(["diff", "-b", "-B", f1.name, f2.name], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        return status.stdout.decode("utf-8")
+    d1 = ae_backend.chart_v2.Chart(fn1).table_as_text(sort=True, show_aa=False)
+    d2 = ae_backend.chart_v2.Chart(fn2).table_as_text(sort=True, show_aa=False)
+    return d1 != d2
+
+# def table_diff(fn1: Path, fn2: Path):
+#     with tempfile.TemporaryDirectory() as dirname:
+#         f1name = Path(dirname, f"{fn1.stem}.1.txt")
+#         f2name = Path(dirname, f"{fn2.stem}.2.txt")
+#         # print(f1name, f2name)
+#         os.mkfifo(f1name, mode=0o700)
+#         os.mkfifo(f2name, mode=0o700)
+#         process = subprocess.Popen(["/usr/local/bin/diff", "-b", "-B", "-d", str(f1name), str(f2name)], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+#         f1 = os.open(f1name, os.O_WRONLY)
+#         f2 = os.open(f2name, os.O_WRONLY)
+#         d1 = ae_backend.chart_v2.Chart(fn1).table_as_text(sort=True).split("\n")
+#         d2 = ae_backend.chart_v2.Chart(fn2).table_as_text(sort=True).split("\n")
+#         for no in range(max(len(d1), len(d2))):
+#             if f1 and no < len(d1):
+#                 os.write(f1, (d1[no] + "\n").encode("utf-8"))
+#             elif f1:
+#                 os.close(f1)
+#                 f1 = None
+#             if f2 and no < len(d2):
+#                 os.write(f2, (d2[no] + "\n").encode("utf-8"))
+#             elif f2:
+#                 os.close(f2)
+#                 f2 = None
+#         if f1:
+#             os.close(f1)
+#         if f2:
+#             os.close(f2)
+#         output, _ = process.communicate()
+#         return output.decode("utf-8")
 
 # def table_diff(fn1: Path, fn2: Path):
 #     diffs = []
