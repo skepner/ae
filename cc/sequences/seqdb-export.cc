@@ -205,7 +205,7 @@ std::string ae::sequences::Seqdb::export_to_string() const
         "{{\"_\": \"-*- js-indent-level: 1 -*-\",\n \"  version\": \"sequence-database-v4\",\n \"  date\": \"{:%Y-%m-%d %H:%M %Z}\",\n \"size\": {:d},\n \"subtype\": \"{}\",\n \"data\": [\n",
         fmt::localtime(std::time(nullptr)), entries_.size(), subtype_);
 
-    size_t no{1};
+    size_t entry_no{1};
     for (const auto& entry : entries_) {
         fmt::format_to(std::back_inserter(json), "  {{\"N\": \"{}\"", make_str_for_json(entry.name));
         if (!entry.host.empty())
@@ -297,10 +297,10 @@ std::string ae::sequences::Seqdb::export_to_string() const
         }
 
         fmt::format_to(std::back_inserter(json), "   ]\n  }}"); // end-of "s": [], end-of entry {}
-        if (no < entries_.size())
+        if (entry_no < entries_.size())
             fmt::format_to(std::back_inserter(json), ",");
         fmt::format_to(std::back_inserter(json), "\n");
-        ++no;
+        ++entry_no;
     }
 
     fmt::format_to(std::back_inserter(json), " ]\n}}\n");

@@ -26,6 +26,9 @@
 
 #elif defined(__GNUG__)
 
+#pragma GCC diagnostic ignored "-Weffc++"
+#pragma GCC diagnostic ignored "-Wshadow"
+
 #endif
 
 #include <pybind11/pybind11.h>

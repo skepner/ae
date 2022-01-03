@@ -186,7 +186,7 @@ template <> struct fmt::formatter<ae::xlsx::ncol_t> : fmt::formatter<ae::fmt_hel
         auto coll = *col;
         std::string nn;
         while (true) {
-            nn.append(1, (coll % 26) + 'A');
+            nn.append(1, static_cast<char>(coll % 26) + 'A');
             if (coll < 26)
                 break;
             coll = coll / 26 - 1;

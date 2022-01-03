@@ -19,10 +19,10 @@ namespace ae::sequences
       public:
         struct entry_t
         {
-            std::string name;
-            amino_acid_at_pos1_eq_list_t aa;
-            amino_acid_at_pos1_eq_list_t nuc;
-            std::string set;
+            std::string name{};
+            amino_acid_at_pos1_eq_list_t aa{};
+            amino_acid_at_pos1_eq_list_t nuc{};
+            std::string set{};
         };
 
         using subset_t = std::vector<const entry_t*>;

@@ -20,7 +20,7 @@ namespace ae::xlsx::inline v1
             ae::xlsx::cell_t cell(xlsx::nrow_t row, xlsx::ncol_t col) const override { return data_.at(*row).at(*col); } // row and col are zero based
 
           private:
-            std::vector<std::vector<ae::xlsx::cell_t>> data_;
+            std::vector<std::vector<ae::xlsx::cell_t>> data_{};
             xlsx::ncol_t number_of_columns_{0};
         };
 
