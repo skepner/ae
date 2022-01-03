@@ -15,19 +15,15 @@ static std::string export_style_to_text(const acmacs::PointStyle& aStyle);
 
 std::string ae::chart::v2::export_text(const Chart& chart)
 {
-    fmt::memory_buffer result;
-    fmt::format_to(std::back_inserter(result), "{}",
-                   ae::string::join("\n\n", export_info_to_text(chart), export_table_to_text(chart), export_forced_column_bases_to_text(chart), export_projections_to_text(chart),
-                                        export_plot_spec_to_text(chart), export_extensions_to_text(chart)),
-                   "\n", ae::string::split_emtpy::keep);
-    return fmt::to_string(result);
+    return ae::string::join("\n\n",
+                            export_info_to_text(chart),                //
+                            export_table_to_text(chart),               //
+                            export_forced_column_bases_to_text(chart), //
+                            export_projections_to_text(chart),         //
+                            export_plot_spec_to_text(chart),           //
+                            export_extensions_to_text(chart)           //
+    );
 
-    // // Timeit ti_plot_spec("export plot_spec ");
-    // if (auto plot_spec = aChart.plot_spec(); !plot_spec->empty())
-    //     export_plot_spec(ace["c"]["p"], plot_spec);
-    //   // ti_plot_spec.report();
-    // if (const auto& ext = aChart.extension_fields(); ext.is_object())
-    //      ace["c"]["x"] = ext;
 } // ae::chart::v2::export_text
 
 // ----------------------------------------------------------------------

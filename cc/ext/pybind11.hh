@@ -8,28 +8,21 @@
 
 #if defined(__clang__)
 
-// clang++ 13 2021-10-08
-#pragma GCC diagnostic ignored "-Wreserved-identifier"
-
-// Python.h 3.9 2020-12-06
-#pragma GCC diagnostic ignored "-Wreserved-id-macro"
-#pragma GCC diagnostic ignored "-Wold-style-cast"
-#pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
-#pragma GCC diagnostic ignored "-Wcast-align"
-#pragma GCC diagnostic ignored "-Wpadded"
-
-// pybind11 2.7.1 2021-08-20
-#pragma GCC diagnostic ignored "-Wshadow-field-in-constructor"
-#pragma GCC diagnostic ignored "-Wdocumentation-unknown-command"
-#pragma GCC diagnostic ignored "-Wextra-semi"
-#pragma GCC diagnostic ignored "-Wshadow-uncaptured-local"
-#pragma GCC diagnostic ignored "-Wexit-time-destructors"
+// clang++ 13
 #pragma GCC diagnostic ignored "-Wcovered-switch-default"
-#pragma GCC diagnostic ignored "-Wshadow-field"
 #pragma GCC diagnostic ignored "-Wdocumentation"
-#pragma GCC diagnostic ignored "-Wundefined-reinterpret-cast"
+#pragma GCC diagnostic ignored "-Wdocumentation-unknown-command"
+#pragma GCC diagnostic ignored "-Wexit-time-destructors"
 #pragma GCC diagnostic ignored "-Wfloat-equal"
-#pragma GCC diagnostic ignored "-Wweak-vtables"
+#pragma GCC diagnostic ignored "-Wshadow-field"
+#pragma GCC diagnostic ignored "-Wshadow-field-in-constructor"
+#pragma GCC diagnostic ignored "-Wshadow-uncaptured-local"
+#pragma GCC diagnostic ignored "-Wundefined-reinterpret-cast"
+
+// python 3.9
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#pragma GCC diagnostic ignored "-Wreserved-identifier"
+#pragma GCC diagnostic ignored "-Wreserved-macro-identifier"
 
 #elif defined(__GNUG__)
 

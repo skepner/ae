@@ -4,16 +4,15 @@
 
 #if defined(__clang__)
 
-// 8.0.1, clang 13
-#pragma GCC diagnostic ignored "-Wreserved-identifier" // identifier '_a' is reserved because it starts with '_' at global scope (bug in clang13 ?)
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#pragma GCC diagnostic ignored "-Wdocumentation-unknown-command"
-#pragma GCC diagnostic ignored "-Wsigned-enum-bitfield" // fmt/format.h
-#pragma GCC diagnostic ignored "-Wmissing-noreturn" // fmt/core.h
-#pragma GCC diagnostic ignored "-Wundefined-func-template" // fmt/chrono.h:1182
-#pragma GCC diagnostic ignored "-Wpadded"
+// 8.1.0, clang 13
 #pragma GCC diagnostic ignored "-Wc++20-compat"
-#pragma GCC diagnostic ignored "-Wreserved-identifier"
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations" // fmt/chrono.h
+#pragma GCC diagnostic ignored "-Wdocumentation-unknown-command"
+#pragma GCC diagnostic ignored "-Wmissing-noreturn" // fmt/core.h
+#pragma GCC diagnostic ignored "-Wreserved-identifier" // identifier '_a' is reserved because it starts with '_' at global scope (bug in clang13 ?)
+#pragma GCC diagnostic ignored "-Wsigned-enum-bitfield" // fmt/format.h
+#pragma GCC diagnostic ignored "-Wswitch-enum"
+#pragma GCC diagnostic ignored "-Wundefined-func-template" // fmt/chrono.h:1182
 
 #elif defined(__GNUG__)
 
