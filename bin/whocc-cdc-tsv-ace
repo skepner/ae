@@ -154,7 +154,8 @@ class Extractor:
         raw_data["serum"]["N"] = field_value.upper()
 
     def get_sr_lot(self, field_value, raw_data):
-        raw_data["serum"]["I"] = f"CDC {field_value}"
+        serum_id = field_value.replace(", ", ",")
+        raw_data["serum"]["I"] = f"CDC {serum_id}"
 
     def get_sr_passage(self, field_value, raw_data):
         raw_data["serum"]["passage"] = field_value
@@ -336,11 +337,15 @@ def main(args: argparse.Namespace): # input_file :Path, output_dir :Path):
             output.write(lzma.compress(json_dumps(ace, indent=2, object_fields_sorting_key=object_fields_sorting_key).encode("utf-8"), preset=9|lzma.PRESET_EXTREME))
 
         if not whocc_table_path.exists():
-            print(f"> NEW: {output_name} --> {whocc_table_path}", file=sys.stderr)
+            print(f">> NEW: {output_name} --> {whocc_table_path}", file=sys.stderr)
         elif diffs := table_diff(output_name, whocc_table_path):
-            print(f">> diff-ace {output_name} {whocc_table_path}", file=sys.stderr)
-        else:
-            print(f">>> OK: {output_name} --> {whocc_table_path}", file=sys.stderr)
+            table_date = table_name[-8:]
+            if table_date > "2021":
+                print(f">:a diff-ace {output_name} {whocc_table_path}", file=sys.stderr)
+            else:
+                print(f">:b diff-ace {output_name} {whocc_table_path}", file=sys.stderr)
+        # else:
+        #     print(f">>>> OK: {output_name} --> {whocc_table_path}", file=sys.stderr)
 
     print(f">>> rows: {rows_read}", file=sys.stderr)
     print(f">>> tables: {len(tables)}", file=sys.stderr)
@@ -363,7 +368,10 @@ def make_ace(data, lab, input_file):
         }
     }
     if data["table"]["assay"] == "HI":
-        ace["c"]["i"]["r"] = "turkey"
+        if data["table"]["virus_type"] == "A(H3N2)":
+            ace["c"]["i"]["r"] = "guinea-pig"
+        else:
+            ace["c"]["i"]["r"] = "turkey"
     if data["table"].get("lineage"):
         ace["c"]["i"]["s"] = data["table"]["lineage"]
     return ace
