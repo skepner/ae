@@ -1,11 +1,12 @@
 #include "utils/timeit.hh"
 #include "tree/tree.hh"
+#include "tree/tree-iterator.hh"
 #include "tree/export.hh"
 
 // ======================================================================
 
 using prefix_t = std::vector<std::string>;
-static void export_leaf(fmt::memory_buffer& text, const ae::tree::Leaf& leaf, double edge_step, prefix_t& prefix);
+static void export_leaf(fmt::memory_buffer& text, const ae::tree::Leaf& leaf, double edge_step, const prefix_t& prefix);
 static void export_inode(fmt::memory_buffer& text, const ae::tree::Inode& inode, const ae::tree::Tree& tree, double edge_step, prefix_t& prefix);
 
 // ======================================================================
@@ -24,15 +25,15 @@ std::string ae::tree::export_text(const Tree& tree)
 
 // ----------------------------------------------------------------------
 
-void export_leaf(fmt::memory_buffer& text, const ae::tree::Leaf& leaf, double edge_step, prefix_t& prefix)
+void export_leaf(fmt::memory_buffer& text, const ae::tree::Leaf& leaf, double edge_step, const prefix_t& prefix)
 {
     using namespace fmt::literals;
     const std::string edge_symbol(static_cast<size_t>(*leaf.edge * edge_step), '-');
-    fmt::format_to(std::back_inserter(text), "{prefix}{edge_symbol} \"{name}\" <{node_id}>{aa_transitions}{accession_numbers} edge: {edge}  cumul: {cumul}  v:{vert}\n",
+    fmt::format_to(std::back_inserter(text), fmt::runtime("{prefix}{edge_symbol} \"{name}\" <{node_id}>{aa_transitions}{accession_numbers} edge: {edge}  cumul: {cumul}  v:{vert}\n"),
                    "prefix"_a = fmt::join(prefix, std::string_view{}),                                      //
-                   "edge_symbol"_a = edge_symbol, "edge"_a = *leaf.edge, "cumul"_a = *leaf.cumulative_edge, //
+                   "edge_symbol"_a = edge_symbol, "edge"_a = leaf.edge, "cumul"_a = leaf.cumulative_edge, //
                    "name"_a = leaf.name,                                                                    //
-                   "node_id"_a = leaf.node_id_,                                                             //
+                   "node_id"_a = leaf.node_id_,                                                            //
                    "accession_numbers"_a = "",                                                              // format_accession_numbers(node)),
                    "vert"_a = 0,                                                                            // node.node_id.vertical),
                    "aa_transitions"_a = ""                                                                  // , aa_transitions.empty() ? std::string{} : fmt::format("[{}] ", aa_transitions))
@@ -46,9 +47,10 @@ void export_inode(fmt::memory_buffer& text, const ae::tree::Inode& inode, const 
 {
     using namespace fmt::literals;
     const auto edge_size = static_cast<size_t>(*inode.edge * edge_step);
-    fmt::format_to(std::back_inserter(text), "{prefix}{edge_symbol}\\ >>>> leaves: {leaves} <{node_id}>{aa_transitions} edge: {edge} cumul: {cumul}\n", //
+    const std::string edge_symbol(edge_size, '=');
+    fmt::format_to(std::back_inserter(text), fmt::runtime("{prefix}{edge_symbol}\\ >>>> leaves: {leaves} <{node_id}>{aa_transitions} edge: {edge} cumul: {cumul}\n"), //
                    "prefix"_a = fmt::join(prefix, std::string_view{}),                                                                                  //
-                   "edge_symbol"_a = std::string(edge_size, '='), "edge"_a = *inode.edge, "cumul"_a = *inode.cumulative_edge,                           //
+                   "edge_symbol"_a = edge_symbol, "edge"_a = inode.edge, "cumul"_a = inode.cumulative_edge,                           //
                    "leaves"_a = inode.number_of_leaves,                                                                                                                     // node.number_leaves_in_subtree()),
                    "node_id"_a = inode.node_id_,                                                                                                        //
                    "aa_transitions"_a = "" // aa_transitions.empty() ? std::string{} : fmt::format(" [{}]", aa_transitions))
@@ -92,9 +94,7 @@ std::string ae::tree::export_json(const Tree& tree)
 
     using namespace fmt::literals;
     fmt::memory_buffer text;
-    fmt::format_to(std::back_inserter(text), "{{\"_\": \"-*- js-indent-level: 1 -*-\",\n \"  version\": \"phylogenetic-tree-v3\",\n \"  date\": \"{today:%Y-%m-%d %H:%M %Z}\",\n",
-                   "today"_a = fmt::localtime(std::time(nullptr)) //
-    );
+    fmt::format_to(std::back_inserter(text), "{{\"_\": \"-*- js-indent-level: 1 -*-\",\n \"  version\": \"phylogenetic-tree-v3\",\n \"  date\": \"{:%Y-%m-%d %H:%M %Z}\",\n", fmt::localtime(std::time(nullptr)));
     if (!tree.subtype().empty()) {
         fmt::format_to(std::back_inserter(text), " \"v\": \"{}\",", tree.subtype());
         if (tree.subtype() == virus::type_subtype_t{"B"} && !tree.lineage().empty()) {
