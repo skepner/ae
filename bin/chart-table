@@ -1,0 +1,35 @@
+#! /usr/bin/env python3
+"""
+Parse passage, report errors
+"""
+
+import os, sys, argparse, traceback
+from pathlib import Path
+import ae_backend
+
+# ----------------------------------------------------------------------
+
+def main(args: argparse.Namespace):
+    for table in args.tables:
+        if len(args.tables) > 1:
+            print(f">>> {table}", end="\n\n")
+        chart = ae_backend.chart_v2.Chart(table)
+        text = chart.table_as_text(layer=args.layer if args.layer is not None else -1, sort=args.sort, org_mode_separators=args.org)
+        print(text)
+        if len(args.tables) > 1:
+            print()
+
+# ----------------------------------------------------------------------
+
+try:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("tables", nargs="+", type=Path)
+    parser.add_argument("--layer", type=int)
+    parser.add_argument("--org", action="store_true", help="insert org-mode separators")
+    parser.add_argument("-s", "--sort", action="store_true", help="sort antigens/sera to be able to compare with another table")
+    args = parser.parse_args()
+    exit_code = main(args) or 0
+except Exception as err:
+    print(f"> {err}\n{traceback.format_exc()}", file=sys.stderr)
+    exit_code = 1
+exit(exit_code)
