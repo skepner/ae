@@ -311,8 +311,14 @@ def main(args: argparse.Namespace): # input_file :Path, output_dir :Path):
 
     output_dir = Path(args.output_dir)
     output_dir.mkdir(exist_ok=True)
-    # table_no = 1
-    for table_name, ace in tables.items():
+    previous_table_type = None
+    for table_name in sorted(tables):
+        table_type = table_name[:-9]
+        if table_type != previous_table_type:
+            if previous_table_type:
+                print("\n\n", file=sys.stderr)
+            previous_table_type = table_type
+        ace = tables[table_name]
         merge_titers(table_name, ace["c"]["t"]["l"], ace)
         populate_missing_titers(table_name, ace["c"]["t"]["l"], number_of_sera=len(ace["c"]["s"]))
         sort_antigens_sera(ace)
@@ -320,9 +326,9 @@ def main(args: argparse.Namespace): # input_file :Path, output_dir :Path):
         # print(f"""{table_name:25s}   a:{len(ace["c"]["a"]):3d}   s:{len(ace["c"]["s"]):3d}""")
 
         table_filename = f"{table_name}.ace"
-        whocc_table_path = ae.whocc.table_dir.WHOCC_TABLES_DIR.joinpath(table_name[:-9], table_filename)
+        whocc_table_path = ae.whocc.table_dir.WHOCC_TABLES_DIR.joinpath(table_type, table_filename)
 
-        table_dir = output_dir.joinpath(table_name[:-9])
+        table_dir = output_dir.joinpath(table_type)
         table_dir.mkdir(exist_ok=True)
         output_name = table_dir.joinpath(table_filename)
 
@@ -335,8 +341,6 @@ def main(args: argparse.Namespace): # input_file :Path, output_dir :Path):
             print(f">> diff-ace {output_name} {whocc_table_path}", file=sys.stderr)
         else:
             print(f">>> OK: {output_name} --> {whocc_table_path}", file=sys.stderr)
-
-        # table_no += 1
 
     print(f">>> rows: {rows_read}", file=sys.stderr)
     print(f">>> tables: {len(tables)}", file=sys.stderr)
@@ -370,51 +374,6 @@ def table_diff(fn1: Path, fn2: Path):
     d1 = ae_backend.chart_v2.Chart(fn1).table_as_text(sort=True, show_aa=False)
     d2 = ae_backend.chart_v2.Chart(fn2).table_as_text(sort=True, show_aa=False)
     return d1 != d2
-
-# def table_diff(fn1: Path, fn2: Path):
-#     with tempfile.TemporaryDirectory() as dirname:
-#         f1name = Path(dirname, f"{fn1.stem}.1.txt")
-#         f2name = Path(dirname, f"{fn2.stem}.2.txt")
-#         # print(f1name, f2name)
-#         os.mkfifo(f1name, mode=0o700)
-#         os.mkfifo(f2name, mode=0o700)
-#         process = subprocess.Popen(["/usr/local/bin/diff", "-b", "-B", "-d", str(f1name), str(f2name)], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-#         f1 = os.open(f1name, os.O_WRONLY)
-#         f2 = os.open(f2name, os.O_WRONLY)
-#         d1 = ae_backend.chart_v2.Chart(fn1).table_as_text(sort=True).split("\n")
-#         d2 = ae_backend.chart_v2.Chart(fn2).table_as_text(sort=True).split("\n")
-#         for no in range(max(len(d1), len(d2))):
-#             if f1 and no < len(d1):
-#                 os.write(f1, (d1[no] + "\n").encode("utf-8"))
-#             elif f1:
-#                 os.close(f1)
-#                 f1 = None
-#             if f2 and no < len(d2):
-#                 os.write(f2, (d2[no] + "\n").encode("utf-8"))
-#             elif f2:
-#                 os.close(f2)
-#                 f2 = None
-#         if f1:
-#             os.close(f1)
-#         if f2:
-#             os.close(f2)
-#         output, _ = process.communicate()
-#         return output.decode("utf-8")
-
-# def table_diff(fn1: Path, fn2: Path):
-#     diffs = []
-#     lines1 = ae_backend.chart_v2.Chart(fn1).table_as_text(sort=True).split("\n")
-#     lines2 = ae_backend.chart_v2.Chart(fn2).table_as_text(sort=True).split("\n")
-#     for no in range(max(len(lines1), len(lines2))):
-#         if no < len(lines1):
-#             if no < len(lines2):
-#                 if lines1[no].replace(" ", "") != lines2[no].replace(" ", ""): # ignore spaces
-#                     diffs.append(f"< {lines1[no]}\n> {lines2[no]}")
-#             else:
-#                 diffs.append(f"< {lines1[no]}\n> *empty*")
-#         else:
-#             diffs.append(f"< *empty*\n> {lines2[no]}")
-#     return diffs
 
 # ----------------------------------------------------------------------
 
