@@ -128,12 +128,12 @@ namespace ae::xlsx::inline v1
 
         virtual std::string report_serum_anchors() const = 0;
 
-        std::optional<ncol_t> antigen_name_column_, antigen_date_column_, antigen_passage_column_, antigen_lab_id_column_;
-        std::vector<nrow_t> antigen_rows_;
-        std::vector<ncol_t> serum_columns_;
+        std::optional<ncol_t> antigen_name_column_{}, antigen_date_column_{}, antigen_passage_column_{}, antigen_lab_id_column_{};
+        std::vector<nrow_t> antigen_rows_{};
+        std::vector<ncol_t> serum_columns_{};
 
       private:
-        std::shared_ptr<Sheet> sheet_;
+        std::shared_ptr<Sheet> sheet_{};
         std::string lab_{};
         std::string subtype_{};
         std::string lineage_{};
@@ -177,9 +177,9 @@ namespace ae::xlsx::inline v1
 
         virtual bool serum_index_matches(const cell_t& at_row, const cell_t& at_column) const;
 
-        std::optional<nrow_t> serum_index_row_;
-        std::vector<nrow_t> serum_rows_;
-        std::optional<ncol_t> serum_index_column_, serum_name_column_, serum_id_column_, serum_treated_column_, serum_species_column_, serum_boosted_column_, serum_conc_column_, serum_dilut_column_, serum_passage_column_, serum_pool_column_;
+        std::optional<nrow_t> serum_index_row_{};
+        std::vector<nrow_t> serum_rows_{};
+        std::optional<ncol_t> serum_index_column_{}, serum_name_column_{}, serum_id_column_{}, serum_treated_column_{}, serum_species_column_{}, serum_boosted_column_{}, serum_conc_column_{}, serum_dilut_column_{}, serum_passage_column_{}, serum_pool_column_{};
 
         nrow_t find_serum_row_by_col(ncol_t col) const;
     };
@@ -227,7 +227,7 @@ namespace ae::xlsx::inline v1
 
         std::string report_serum_anchors() const override;
 
-        std::optional<nrow_t> serum_name_row_, serum_passage_row_, serum_id_row_;
+        std::optional<nrow_t> serum_name_row_{}, serum_passage_row_{}, serum_id_row_{};
     };
 
     // ----------------------------------------------------------------------
@@ -252,9 +252,9 @@ namespace ae::xlsx::inline v1
         std::string report_serum_anchors() const override;
         const std::string& get_footnote(const std::string& key, const std::string& if_not_found) const;
 
-        std::optional<nrow_t> serum_name_1_row_, serum_name_2_row_;
-        std::vector<std::pair<std::string, std::string>> footnote_index_subst_;
-        std::vector<std::string> serum_less_than_substitutions_;
+        std::optional<nrow_t> serum_name_1_row_{}, serum_name_2_row_{};
+        std::vector<std::pair<std::string, std::string>> footnote_index_subst_{};
+        std::vector<std::string> serum_less_than_substitutions_{};
     };
 
     class ExtractorCrickPRN : public ExtractorCrick
@@ -271,7 +271,7 @@ namespace ae::xlsx::inline v1
         void find_serum_rows(warn_if_not_found winf) override;
 
       private:
-        std::optional<nrow_t> two_fold_read_row_;
+        std::optional<nrow_t> two_fold_read_row_{};
 
         void find_two_fold_read_row();
     };

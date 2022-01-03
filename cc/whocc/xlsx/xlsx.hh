@@ -42,7 +42,7 @@ namespace ae::xlsx::inline v1
         }
 
       private:
-        std::variant<std::unique_ptr<XlDoc>, std::unique_ptr<csv::Doc>> doc_;
+        std::variant<std::unique_ptr<XlDoc>, std::unique_ptr<csv::Doc>> doc_{};
 
         // friend std::shared_ptr<Doc> open(const std::filesystem::path& filename);
     };
