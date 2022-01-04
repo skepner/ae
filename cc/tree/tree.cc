@@ -354,6 +354,8 @@ std::shared_ptr<ae::tree::Tree> ae::tree::load(const std::filesystem::path& file
     const auto data = file::read(filename, ::simdjson::SIMDJSON_PADDING);
     if (is_newick(data))
         tree = load_newick(data);
+    else if (is_json(data))
+        tree = load_json(data, filename);
     else
         throw std::runtime_error{fmt::format("cannot load tree from \"{}\": unknown file format", filename)};
     tree->calculate_cumulative();

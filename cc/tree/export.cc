@@ -1,3 +1,6 @@
+#include <stack>
+
+#include "ext/simdjson.hh"
 #include "utils/timeit.hh"
 #include "tree/tree.hh"
 #include "tree/tree-iterator.hh"
@@ -189,7 +192,131 @@ std::string ae::tree::export_json(const Tree& tree)
 
 } // ae::tree::export_json
 
+// ======================================================================
+
+bool ae::tree::is_json(std::string_view data)
+{
+    return data.size() > 100 && data[0] == '{' && data.find("\"phylogenetic-tree-v3\"") != std::string_view::npos;
+
+} // ae::tree::is_json
+
 // ----------------------------------------------------------------------
 
+namespace ae::tree
+{
+    class Error : public std::runtime_error
+    {
+      public:
+        template <typename... Args> Error(fmt::format_string<Args...> format, Args&&... args) : std::runtime_error{fmt::format("[tree-json] {}", fmt::format(format, args...))} {}
+    };
 
-// ----------------------------------------------------------------------
+    struct NodeData : public Leaf
+    {
+        size_t number_of_leaves{0}; // for inode
+    };
+
+    static inline void read_node_field(Node& node, std::string_view key, simdjson::simdjson_result<simdjson::fallback::ondemand::value>&& field)
+    {
+        if (key == "I") // node_id
+            node.node_id_ = node_index_t{static_cast<int64_t>(field.value())};
+        else if (key == "l")
+            node.edge = EdgeLength{static_cast<double>(field.value())};
+        else if (key == "c")
+            node.cumulative_edge = EdgeLength{static_cast<double>(field.value())};
+        else
+            fmt::print(">> [tree-json] unhandled node key \"{}\"\n", key);
+    }
+
+    template <typename Arr> static inline void read_subtree(ae::tree::Tree& tree, std::stack<node_index_t>& parents, Arr&& source)
+    {
+        for (auto element : source) {
+            NodeData source_node;
+            Node* current = &source_node;
+            for (auto field : element.get_object()) {
+                if (const std::string_view key = field.unescaped_key(); key == "t") {
+                     // this is inode
+                }
+                else if (key == "n") {
+                    // this is leaf
+                }
+                else {
+                    read_node_field(*current, key, field.value());
+                }
+            }
+            if (current == &source_node) {
+                throw Error{"unrecognized node type"};
+            }
+        }
+    }
+
+    template <typename Obj> static inline void read_tree(ae::tree::Tree& tree, Obj&& source)
+    {
+        std::stack<node_index_t> parents;
+        parents.push(tree.root_index());
+        auto& root_node = tree.root();
+        for (auto field : source) {
+            if (const std::string_view key = field.unescaped_key(); key == "I") { // node_id
+                const node_index_t node_id{static_cast<int64_t>(field.value())};
+                if (node_id != node_index_t{0})
+                    fmt::print(">> [tree-json] node_id (\"I\") for root is {}\n", node_id);
+            }
+            else if (key == "L") { // number of leaves
+                root_node.number_of_leaves = static_cast<uint64_t>(field.value());
+            }
+            else if (key == "t") { // subtree
+                auto subtree = field.value().get_array();
+                read_subtree(tree, parents, subtree);
+            }
+            else if (key == "M") { // ignored
+            }
+            else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
+                fmt::print(">> [tree-json] unhandled \"{}\" in the tree root\n", key);
+        }
+
+    }
+
+} // namespace ae::tree
+
+std::shared_ptr<ae::tree::Tree> ae::tree::load_json(const std::string& data, const std::filesystem::path& filename)
+{
+    auto tree = std::make_shared<Tree>();
+    try {
+        simdjson::ondemand::parser parser;
+        auto doc = parser.iterate(data, data.size() + simdjson::SIMDJSON_PADDING);
+        const auto current_location_offset = [&doc, data] { return doc.current_location().value() - data.data(); };
+        const auto current_location_snippet = [&doc](size_t size) { return std::string_view(doc.current_location().value(), size); };
+
+        try {
+            for (auto field : doc.get_object()) {
+                const std::string_view key = field.unescaped_key();
+                // fmt::print(">>>> key \"{}\"\n", key);
+                if (key == "  version") {
+                    if (const std::string_view ver{field.value()}; ver != "phylogenetic-tree-v3")
+                        throw Error{"unsupported version: \"{}\"", ver};
+                }
+                else if (key == "v") {
+                    tree->subtype(virus::type_subtype_t{field.value()});
+                }
+                else if (key == "l") {
+                    tree->lineage(sequences::lineage_t{field.value()});
+                }
+                else if (key == "tree") {
+                    auto source = field.value().get_object();
+                    read_tree(*tree, source);
+                }
+                else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
+                    fmt::print(">> [tree-json] unhandled \"{}\"\n", key);
+            }
+        }
+        catch (simdjson::simdjson_error& err) {
+            fmt::print("> {} parsing error: {} at {} \"{}\"\n", filename, err.what(), current_location_offset(), current_location_snippet(50));
+        }
+    }
+    catch (simdjson::simdjson_error& err) {
+        fmt::print("> {} json parser creation error: {} (UNESCAPED_CHARS means a char < 0x20)\n", filename, err.what());
+    }
+    return tree;
+
+} // ae::tree::load_json
+
+// ======================================================================

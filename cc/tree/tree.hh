@@ -68,8 +68,8 @@ namespace ae::tree
         Inode& root() { return inodes_[0]; }
         static node_index_t root_index() { return node_index_t{0}; }
 
-        constexpr const auto& subtype() const { return subtype_; }
-        constexpr const auto& lineage() const { return lineage_; }
+        const auto& subtype() const { return subtype_; }
+        const auto& lineage() const { return lineage_; }
 
         const Inode& inode(node_index_t index) const { return inodes_[static_cast<size_t>(-*index)]; }
         Inode& inode(node_index_t index) { return inodes_[static_cast<size_t>(-*index)]; }
@@ -119,6 +119,9 @@ namespace ae::tree
         // unlink passed nodes
         // if a parent inode has no children afterwards, unlink it too
         void remove(const std::vector<node_index_t>& nodes);
+
+        void subtype(const virus::type_subtype_t& subtype) { subtype_ = subtype; }
+        void lineage(const sequences::lineage_t& lineage) { lineage_ = lineage; }
 
       private:
         virus::type_subtype_t subtype_{};
