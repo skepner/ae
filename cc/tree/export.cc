@@ -377,7 +377,6 @@ namespace ae::tree
                 auto [index, leaf] = tree_.add_leaf(parents_.top());
                 assign_current(index, leaf);
                 current_leaf_ = &leaf;
-                // fmt::print(">>>> leaf {}\n", index);
             }
             else if (current_leaf_ == nullptr)
                 throw std::runtime_error{AD_FORMAT("internal: leaf_field() current_leaf_==nullptr")};
@@ -387,6 +386,7 @@ namespace ae::tree
                     current_node_->name = static_cast<std::string_view>(field.value());
                     break;
                 case 'a': // "aligned aa sequence",
+                    current_leaf_->aa = sequences::sequence_aa_t{static_cast<std::string_view>(field.value())};
                     break;
                 case 'N': // "aligned nuc sequence",
                     break;
@@ -412,7 +412,6 @@ namespace ae::tree
                 auto [index, inode] = tree_.add_inode(parents_.top());
                 assign_current(index, inode);
                 current_inode_ = &inode;
-                // fmt::print(">>>> inode {}\n", index);
             }
             else if (current_inode_ == nullptr)
                 throw std::runtime_error{AD_FORMAT("internal: inode_field() current_inode_==nullptr")};
@@ -420,7 +419,6 @@ namespace ae::tree
             switch (key[0]) {
                 case 't': // subtree
                     push_subtree(field);
-                    // fmt::print(stderr, ">>>> subtree in node {}\n", current_inode_->node_id_);
                     break;
                 default:
                     unhandled_key(key);
