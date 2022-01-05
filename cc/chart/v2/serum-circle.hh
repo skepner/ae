@@ -28,8 +28,8 @@ namespace ae::chart::v2
             constexpr bool valid() const { return radius.has_value(); }
             const char* report_reason() const;
 
-            size_t antigen_no;
-            Titer titer;
+            size_t antigen_no{0};
+            Titer titer{};
             std::optional<double> radius{std::nullopt};
             serum_circle_failure_reason failure_reason{serum_circle_failure_reason::not_calculated};
         };
