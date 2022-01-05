@@ -222,7 +222,9 @@ namespace ae::tree
     class TreeReader
     {
       public:
-        TreeReader(ae::tree::Tree& tree) : tree_{tree}, current_node_{&tree_.root()}
+        enum class keep_json_node_id { no, yes };
+
+        TreeReader(ae::tree::Tree& tree, keep_json_node_id keep_node_id) : tree_{tree}, keep_node_id_{keep_node_id}, current_node_{&tree_.root()}
             {
                 parents_.push(tree.root_index());
             }
@@ -255,6 +257,7 @@ namespace ae::tree
         using field_t = decltype(*std::declval<object_iterator>());
 
         ae::tree::Tree& tree_;
+        keep_json_node_id keep_node_id_;
         NodeData temporary_target_node_{};
         Node* current_node_;
         Leaf* current_leaf_{nullptr};
@@ -326,10 +329,12 @@ namespace ae::tree
             // fmt::print(stderr, ">>>> node field {}\n", key);
             switch (key[0]) {
                 case 'I': // <node-id: int (ae only)>,
-                    if (const node_index_t node_id{static_cast<int64_t>(field.value())}; node_id != node_index_t{0})
-                        current_node_->node_id_ = node_id;
-                    // else
-                    //     fmt::print(stderr, ">>>> invalid stored node_id for node {}\n", current_node_->node_id_);
+                    if (keep_node_id_ == keep_json_node_id::yes) {
+                        if (const node_index_t node_id{static_cast<int64_t>(field.value())}; node_id != node_index_t{0})
+                            current_node_->node_id_ = node_id;
+                        // else
+                        //     fmt::print(stderr, ">>>> invalid stored node_id for node {}\n", current_node_->node_id_);
+                    }
                     break;
                 case 'H': // <true if hidden>,
                     //!!! TODO
@@ -389,16 +394,25 @@ namespace ae::tree
                     current_leaf_->aa = sequences::sequence_aa_t{static_cast<std::string_view>(field.value())};
                     break;
                 case 'N': // "aligned nuc sequence",
+                    current_leaf_->nuc = sequences::sequence_nuc_t{static_cast<std::string_view>(field.value())};
                     break;
                 case 'd': // "2019-01-01: isolation date",
+                    current_leaf_->date = static_cast<std::string_view>(field.value());
                     break;
                 case 'C': // "continent",
+                    current_leaf_->continent = static_cast<std::string_view>(field.value());
                     break;
                 case 'D': // "country",
+                    current_leaf_->country = static_cast<std::string_view>(field.value());
                     break;
                 case 'h': // ["hi names"],
+                    AD_WARNING("[tree-json] hi names are not handled");
+                    for (auto hi_name [[maybe_unused]] : field.value().get_array())
+                        ;
                     break;
                 case 'L': // ["clade", "2A1B"]
+                    for (auto clade : field.value().get_array())
+                        current_leaf_->clades.emplace_back(static_cast<std::string_view>(clade));
                     break;
                 default:
                     unhandled_key(key);
@@ -476,7 +490,7 @@ std::shared_ptr<ae::tree::Tree> ae::tree::load_json(const std::string& data, con
                     tree->lineage(sequences::lineage_t{field.value()});
                 }
                 else if (key == "tree") {
-                    TreeReader(*tree).read(field.value().get_object());
+                    TreeReader(*tree, TreeReader::keep_json_node_id::yes).read(field.value().get_object());
                     tree->update_number_of_leaves_in_subtree();
                 }
                 else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')

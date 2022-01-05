@@ -116,7 +116,8 @@ namespace ae::tree
         auto visit_all() const { return visit(tree_visiting::all); }
         auto visit_all() { return visit(tree_visiting::all); }
 
-        void set_node_id();
+        enum class reset_node_id { no, yes };
+        void set_node_id(reset_node_id reset);
         void populate_with_sequences(const virus::type_subtype_t& subtype);
         void populate_with_duplicates(const virus::type_subtype_t& subtype);
         void set_clades(const std::filesystem::path& clades_json_file);

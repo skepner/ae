@@ -134,14 +134,19 @@ void ae::tree::Tree::update_number_of_leaves_in_subtree()
 
 // ----------------------------------------------------------------------
 
-void ae::tree::Tree::set_node_id()
+void ae::tree::Tree::set_node_id(reset_node_id reset)
 {
+    const auto set = [reset](Node& node, node_index_t node_id) {
+        if (reset == reset_node_id::yes || node.node_id_ == node_index_t{0})
+            node.node_id_ = node_id;
+    };
+
     node_index_t inode_id{0};
     for (auto inode = inodes_.begin(); inode != inodes_.end(); ++inode, --inode_id)
-        inode->node_id_ = inode_id;
+        set(*inode, inode_id);
     node_index_t leaf_id{0};
     for (auto leaf = leaves_.begin(); leaf != leaves_.end(); ++leaf, ++leaf_id)
-        leaf->node_id_ = leaf_id;
+        set(*leaf, leaf_id);
 
 } // ae::tree::Tree::set_node_id
 
@@ -368,9 +373,9 @@ std::shared_ptr<ae::tree::Tree> ae::tree::load(const std::filesystem::path& file
     else if (is_json(data))
         tree = load_json(data, filename);
     else
-        throw std::runtime_error{fmt::format("cannot load tree from \"{}\": unknown file format", filename)};
+        throw std::runtime_error{AD_FORMAT("cannot load tree from \"{}\": unknown file format", filename)};
     tree->calculate_cumulative();
-    tree->set_node_id();
+    tree->set_node_id(Tree::reset_node_id::no);
     return tree;
 
 } // ae::tree::load
@@ -393,7 +398,7 @@ void ae::tree::export_tree(const Tree& tree, const std::filesystem::path& filena
     else if (filename.native() == "-" || has_suffix({".txt"sv, ".text"sv}))
         data = export_text(tree);
     else
-        throw std::runtime_error{fmt::format("cannot export tree to \"{}\": unknown file format", filename)};
+        throw std::runtime_error{AD_FORMAT("cannot export tree to \"{}\": unknown file format", filename)};
     file::write(filename, data);
 
 } // ae::tree::export_tree
