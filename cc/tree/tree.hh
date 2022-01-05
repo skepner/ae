@@ -92,10 +92,19 @@ namespace ae::tree
                 return &inode(index);
         }
 
+        Node* node_base(node_index_t index)
+        {
+            if (is_leaf(index))
+                return &leaf(index);
+            else
+                return &inode(index);
+        }
+
         node_index_t parent(node_index_t child) const;
 
         // parent==node_index_t{0} means adding to the root
         std::pair<node_index_t, Inode&> add_inode(node_index_t parent);
+        std::pair<node_index_t, Leaf&> add_leaf(node_index_t parent);
         std::pair<node_index_t, Leaf&> add_leaf(node_index_t parent, std::string_view name, EdgeLength edge);
 
         size_t depth() const; // max nesting level

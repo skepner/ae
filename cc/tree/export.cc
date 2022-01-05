@@ -2,6 +2,7 @@
 
 #include "ext/simdjson.hh"
 #include "utils/timeit.hh"
+#include "utils/log.hh"
 #include "tree/tree.hh"
 #include "tree/tree-iterator.hh"
 #include "tree/export.hh"
@@ -111,7 +112,7 @@ std::string ae::tree::export_json(const Tree& tree)
         fmt::format_to(std::back_inserter(text), "\n");
     }
 
-    fmt::format_to(std::back_inserter(text), " \"tree\"");
+    fmt::format_to(std::back_inserter(text), " \"tree\":");
     std::string indent{" "};
     std::vector<bool> commas{false};
     commas.reserve(tree.depth());
@@ -213,67 +214,272 @@ namespace ae::tree
     struct NodeData : public Leaf
     {
         size_t number_of_leaves{0}; // for inode
+
+        void reset() { *this = NodeData{}; }
     };
 
-    static inline void read_node_field(Node& node, std::string_view key, simdjson::simdjson_result<simdjson::fallback::ondemand::value>&& field)
-    {
-        if (key == "I") // node_id
-            node.node_id_ = node_index_t{static_cast<int64_t>(field.value())};
-        else if (key == "l")
-            node.edge = EdgeLength{static_cast<double>(field.value())};
-        else if (key == "c")
-            node.cumulative_edge = EdgeLength{static_cast<double>(field.value())};
-        else
-            fmt::print(">> [tree-json] unhandled node key \"{}\"\n", key);
-    }
+    // static inline void read_node_field(Node& node, std::string_view key, simdjson::simdjson_result<simdjson::fallback::ondemand::value>&& field)
+    // {
+    //     if (key == "I") // node_id
+    //         node.node_id_ = node_index_t{static_cast<int64_t>(field.value())};
+    //     else if (key == "l")
+    //         node.edge = EdgeLength{static_cast<double>(field.value())};
+    //     else if (key == "c")
+    //         node.cumulative_edge = EdgeLength{static_cast<double>(field.value())};
+    //     else if (key == "M")
+    //         ; // max-cumulative, ignored?
+    //     else
+    //         fmt::print(">> [tree-json] unhandled key \"{}\" for node {}\n", key, node.node_id_);
+    // }
 
-    template <typename Arr> static inline void read_subtree(ae::tree::Tree& tree, std::stack<node_index_t>& parents, Arr&& source)
+    // static inline void read_subtree(ae::tree::Tree& tree, std::stack<node_index_t>& parents, simdjson::simdjson_result<simdjson::ondemand::array> source)
+    // {
+    //     for (auto element : source) {
+    //         NodeData source_node;
+    //         Node* current = &source_node;
+    //         for (auto field : element.get_object()) {
+    //             if (const std::string_view key = field.unescaped_key(); key == "t") {
+    //                  // this is inode
+    //             }
+    //             else if (key == "n") {
+    //                 // this is leaf
+    //             }
+    //             else {
+    //                 read_node_field(*current, key, field.value());
+    //             }
+    //         }
+    //         if (current == &source_node) {
+    //             throw Error{"unrecognized node type"};
+    //         }
+    //     }
+    // }
+
+    class TreeReader
     {
-        for (auto element : source) {
-            NodeData source_node;
-            Node* current = &source_node;
-            for (auto field : element.get_object()) {
-                if (const std::string_view key = field.unescaped_key(); key == "t") {
-                     // this is inode
+      public:
+        TreeReader(ae::tree::Tree& tree) : tree_{tree}, current_node_{&tree_.root()}
+            {
+                parents_.push(tree.root_index());
+            }
+
+        void read(simdjson::simdjson_result<simdjson::ondemand::object> source)
+        {
+            source_objects_.emplace(source.begin(), source.end());
+            while (!source_objects_.empty()) {
+                advance_object_afterwards_ = true;
+                auto field = *source_objects_.top().first;
+                const std::string_view key = field.unescaped_key();
+
+                if (key.size() != 1)
+                    unhandled_key(key);
+                else if (current_node_ == &tree_.root()) // root
+                    root_node_field(key, field);
+                else
+                    node_field(key, field);
+
+                if (advance_object_afterwards_)
+                    ++source_objects_.top().first;
+                check_object_end();
+            }
+        }
+
+      private:
+        using object_iterator = decltype(std::declval<simdjson::simdjson_result<simdjson::ondemand::object>>().begin());
+        using array_iterator = decltype(std::declval<simdjson::simdjson_result<simdjson::ondemand::array>>().begin());
+        using field_t = decltype(*std::declval<object_iterator>());
+
+        ae::tree::Tree& tree_;
+        NodeData temporary_target_node_{};
+        Node* current_node_;
+        Leaf* current_leaf_{nullptr};
+        Inode* current_inode_{nullptr};
+        std::stack<node_index_t> parents_{};
+        std::stack<std::pair<object_iterator, object_iterator>> source_objects_{}; // pair(current, end) iterators of the current node object
+        std::stack<std::pair<array_iterator, array_iterator>> subtree_current_elements_{}; // pair(current, end) iterators of the current subtree "t" array
+        bool advance_object_afterwards_{true}; // reset at the beginning of each main loop in read()
+
+        void unhandled_key(std::string_view key) const { fmt::print(">> [tree-json] unhandled key \"{}\" for node {}\n", key, current_node_->node_id_); }
+
+        void push_subtree_element()
+        {
+            auto new_source_object = (*subtree_current_elements_.top().first).get_object();
+            source_objects_.emplace(new_source_object.begin(), new_source_object.end());
+            temporary_target_node_.reset();
+            current_node_ = &temporary_target_node_;
+        }
+
+        void push_subtree(field_t& field)
+        {
+            auto arr = field.value().get_array();
+            subtree_current_elements_.emplace(arr.begin(), arr.end());
+            push_subtree_element();
+            advance_object_afterwards_ = false;
+        }
+
+        void check_object_end()
+        {
+            if (source_objects_.top().first == source_objects_.top().second) {
+                fmt::print(stderr, ">>>> end of object node:{}\n", current_node_->node_id_);
+                // end of object
+                current_leaf_ = nullptr;
+                current_inode_ = nullptr;
+                source_objects_.pop();
+                parents_.pop();
+                if (!subtree_current_elements_.empty()) {
+                    ++subtree_current_elements_.top().first;
+                    if (subtree_current_elements_.top().first == subtree_current_elements_.top().second) {
+                        // end of subtree
+                        subtree_current_elements_.pop();
+                    }
+                    else { // next element in the subtree
+                        push_subtree_element();
+                        current_node_ = tree_.node_base(parents_.top());
+                    }
                 }
-                else if (key == "n") {
-                    // this is leaf
+                else if (source_objects_.size() != 1) {
+                    throw std::runtime_error{AD_FORMAT("internal error: source_objects.size():{}", source_objects_.size())};
                 }
                 else {
-                    read_node_field(*current, key, field.value());
+                    fmt::print(stderr, ">>>> end of tree? source_objects_:{}\n", source_objects_.size());
+                    // source_objects_.pop(); // end of "tree"
+                    current_node_ = nullptr;
                 }
             }
-            if (current == &source_node) {
-                throw Error{"unrecognized node type"};
-            }
-        }
-    }
-
-    template <typename Obj> static inline void read_tree(ae::tree::Tree& tree, Obj&& source)
-    {
-        std::stack<node_index_t> parents;
-        parents.push(tree.root_index());
-        auto& root_node = tree.root();
-        for (auto field : source) {
-            if (const std::string_view key = field.unescaped_key(); key == "I") { // node_id
-                const node_index_t node_id{static_cast<int64_t>(field.value())};
-                if (node_id != node_index_t{0})
-                    fmt::print(">> [tree-json] node_id (\"I\") for root is {}\n", node_id);
-            }
-            else if (key == "L") { // number of leaves
-                root_node.number_of_leaves = static_cast<uint64_t>(field.value());
-            }
-            else if (key == "t") { // subtree
-                auto subtree = field.value().get_array();
-                read_subtree(tree, parents, subtree);
-            }
-            else if (key == "M") { // ignored
-            }
-            else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
-                fmt::print(">> [tree-json] unhandled \"{}\" in the tree root\n", key);
         }
 
-    }
+        void node_field(std::string_view key, field_t& field)
+        {
+            switch (key[0]) {
+                case 'I': // <node-id: int (ae only)>,
+                    current_node_->node_id_ = node_index_t{static_cast<int64_t>(field.value())};
+                    break;
+                case 'H': // <true if hidden>,
+                    //!!! TODO
+                    break;
+                case 'A': // ["aa subst", "N193K"],
+                    //!!! TODO
+                    break;
+                case 'l': // <edge-length: double>,
+                    current_node_->edge = EdgeLength{static_cast<double>(field.value())};
+                    break;
+                case 'c': // <cumulative-edge-length: double>,
+                    current_node_->cumulative_edge = EdgeLength{static_cast<double>(field.value())};
+                    break;
+                case 'n':
+                case 'a':
+                case 'N':
+                case 'd':
+                case 'C':
+                case 'D':
+                case 'h':
+                case 'L':
+                    leaf_field(key, field);
+                    break;
+                case 't':
+                    inode_field(key, field);
+                    break;
+                default:
+                    fmt::print(stderr, ">>>> node field \"{}\"\n", key);
+                    unhandled_key(key);
+                    break;
+            }
+        }
+
+        void leaf_field(std::string_view key, field_t& field)
+        {
+            if (current_node_ == &temporary_target_node_) {
+                auto [index, leaf] = tree_.add_leaf(parents_.top());
+                static_cast<Node&>(leaf) = *current_node_;
+                current_node_ = &leaf;
+                current_leaf_ = &leaf;
+            }
+            else if (current_leaf_ == nullptr)
+                throw std::runtime_error{AD_FORMAT("internal: leaf_field() current_leaf_==nullptr")};
+
+            switch (key[0]) {
+                case 'n': // "seq_id",
+                    current_node_->name = static_cast<std::string_view>(field.value());
+                    break;
+                case 'a': // "aligned aa sequence",
+                    break;
+                case 'N': // "aligned nuc sequence",
+                    break;
+                case 'd': // "2019-01-01: isolation date",
+                    break;
+                case 'C': // "continent",
+                    break;
+                case 'D': // "country",
+                    break;
+                case 'h': // ["hi names"],
+                    break;
+                case 'L': // ["clade", "2A1B"]
+                    break;
+                default:
+                    unhandled_key(key);
+                    break;
+            }
+        }
+
+        void inode_field(std::string_view key, field_t& field)
+        {
+            if (current_node_ == &temporary_target_node_) {
+                auto [index, inode] = tree_.add_inode(parents_.top());
+                static_cast<Node&>(inode) = *current_node_;
+                current_node_ = &inode;
+                current_inode_ = &inode;
+            }
+            else if (current_inode_ == nullptr)
+                throw std::runtime_error{AD_FORMAT("internal: inode_field() current_inode_==nullptr")};
+
+            switch (key[0]) {
+                case 't': // subtree
+                    break;
+                default:
+                    unhandled_key(key);
+                    break;
+            }
+        }
+
+        void root_node_field(std::string_view key, field_t& field)
+        {
+            // fmt::print(stderr, ">>>> root node field \"{}\"\n", key);
+            switch (key[0]) {
+                case 'I':
+                    if (static_cast<int64_t>(field.value()) != 0)
+                        fmt::print(">> [tree-json] node_id (\"I\") for root is {}\n", static_cast<int64_t>(field.value()));
+                    break;
+                case 'M': // max cumulative
+                    break;
+                case 'L': // number-of-leaves-in-tree
+                    break;
+                case 't': // subtree
+                    push_subtree(field);
+                    fmt::print(stderr, ">>>> subtree in node\n");
+                    break;
+                default:
+                    unhandled_key(key);
+                    break;
+            }
+        }
+    };
+
+    //     // for (auto field : source) {
+    //     //     if (const std::string_view key = field.unescaped_key(); key == "I") { // node_id
+    //     //         const node_index_t node_id{static_cast<int64_t>(field.value())};
+    //     //         if (current_node == &tree.root() && node_id != node_index_t{0})
+    //     //             fmt::print(">> [tree-json] node_id (\"I\") for root is {}\n", node_id);
+    //     //     }
+    //     //     else if (key == "t") { // subtree, this is inode
+    //     //     }
+    //     //     else if (key == "n") { // name, this is leaf
+    //     //     }
+    //     //     else if (key == "L") { // number of leaves
+    //     //         // root_node.number_of_leaves = static_cast<uint64_t>(field.value());
+    //     //     }
+    //     //     else {
+    //     //         read_node_field(*current_node, key, field.value());
+    //     //     }
+
 
 } // namespace ae::tree
 
@@ -301,8 +507,10 @@ std::shared_ptr<ae::tree::Tree> ae::tree::load_json(const std::string& data, con
                     tree->lineage(sequences::lineage_t{field.value()});
                 }
                 else if (key == "tree") {
-                    auto source = field.value().get_object();
-                    read_tree(*tree, source);
+                    TreeReader(*tree).read(field.value().get_object());
+                    // auto source = field.value().get_object();
+                    // read_tree(*tree, source);
+                    //!!! TODO recalculate number of leaves for each inode
                 }
                 else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
                     fmt::print(">> [tree-json] unhandled \"{}\"\n", key);
