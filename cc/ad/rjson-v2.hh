@@ -1404,8 +1404,10 @@ namespace rjson::inline v2
             auto& ar = target[key] = array{};
             for (; first != last; ++first)
 #pragma GCC diagnostic push
-#ifdef __clang__
+#if defined(__clang__)
 #pragma GCC diagnostic ignored "-Wimplicit-int-float-conversion"
+#elif defined(__GNUG__)
+#pragma GCC diagnostic ignored "-Wconversion"
 #endif
                 ar.append(*first);
 #pragma GCC diagnostic pop

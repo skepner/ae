@@ -76,17 +76,17 @@ const char* ae::chart::v2::detail::SerumCirclePerAntigen::report_reason() const
 class TiterDistance
 {
   public:
+    TiterDistance() = default;
     TiterDistance(ae::chart::v2::Titer aTiter, double aColumnBase, double aDistance)
         : titer(aTiter), similarity(aTiter.is_dont_care() ? 0.0 : aTiter.logged_for_column_bases()), final_similarity(std::min(aColumnBase, similarity)), distance(aDistance)
     {
     }
-    TiterDistance() : similarity(0), final_similarity(0), distance(std::numeric_limits<double>::quiet_NaN()) {}
     operator bool() const { return !titer.is_dont_care() && !std::isnan(distance); }
 
-    ae::chart::v2::Titer titer;
-    double similarity;
-    double final_similarity;
-    double distance;
+    ae::chart::v2::Titer titer{};
+    double similarity{0.0};
+    double final_similarity{0.0};
+    double distance{std::numeric_limits<double>::quiet_NaN()};
 };
 
 // ----------------------------------------------------------------------

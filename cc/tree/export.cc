@@ -228,6 +228,8 @@ namespace ae::tree
             {
                 parents_.push(tree.root_index());
             }
+        TreeReader(const TreeReader&) = delete;
+        TreeReader& operator=(const TreeReader&) = delete;
 
         void read(simdjson::simdjson_result<simdjson::ondemand::object> source)
         {

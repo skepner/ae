@@ -14,8 +14,8 @@ namespace ae::chart::v2
         {
             stress_.set_coordinates_of_disconnected(arg_first_, num_args_, 0.0, stress_.number_of_dimensions());
         }
-        DisconnectedPointsHandler(const DisconnectedPointsHandler&) = default;
-        // DisconnectedPointsHandler& operator=(const DisconnectedPointsHandler&) = default;
+        DisconnectedPointsHandler(const DisconnectedPointsHandler&) = delete;
+        DisconnectedPointsHandler& operator=(const DisconnectedPointsHandler&) = delete;
 
         ~DisconnectedPointsHandler() { stress_.set_coordinates_of_disconnected(arg_first_, 0ul, std::numeric_limits<double>::quiet_NaN(), stress_.number_of_dimensions()); }
 
