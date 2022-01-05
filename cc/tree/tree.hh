@@ -131,6 +131,7 @@ namespace ae::tree
 
         void subtype(const virus::type_subtype_t& subtype) { subtype_ = subtype; }
         void lineage(const sequences::lineage_t& lineage) { lineage_ = lineage; }
+        void update_number_of_leaves_in_subtree();
 
       private:
         virus::type_subtype_t subtype_{};
@@ -139,8 +140,6 @@ namespace ae::tree
         std::vector<Leaf> leaves_{Leaf{}};   // first leaf is unused, node_index_t{0} is index of root inode
         mutable size_t depth_{0};
         mutable EdgeLength max_cumulative{-1.0};
-
-        void update_number_of_leaves_in_subtree();
 
         template <lvalue_reference TREE, pointer LEAF, pointer INODE> friend class tree_iterator_t;
     };

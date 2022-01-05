@@ -206,6 +206,7 @@ void ae::tree::Tree::populate_with_duplicates(const virus::type_subtype_t& subty
         // }
         const node_index_t index{static_cast<node_index_base_t>(leaves_.size())};
         parent_for_new_leaf->children.push_back(index);
+        new_leaf.node_id_ = index;
         leaves_.push_back(std::move(new_leaf));
     }
 
