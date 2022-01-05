@@ -92,13 +92,13 @@ namespace ae::tree
                 return &inode(index);
         }
 
-        Node* node_base(node_index_t index)
-        {
-            if (is_leaf(index))
-                return &leaf(index);
-            else
-                return &inode(index);
-        }
+        // Node* node_base(node_index_t index)
+        // {
+        //     if (is_leaf(index))
+        //         return &leaf(index);
+        //     else
+        //         return &inode(index);
+        // }
 
         node_index_t parent(node_index_t child) const;
 

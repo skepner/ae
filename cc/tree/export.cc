@@ -297,6 +297,7 @@ namespace ae::tree
         std::stack<std::pair<object_iterator, object_iterator>> source_objects_{}; // pair(current, end) iterators of the current node object
         std::stack<std::pair<array_iterator, array_iterator>> subtree_current_elements_{}; // pair(current, end) iterators of the current subtree "t" array
         bool advance_object_afterwards_{true}; // reset at the beginning of each main loop in read()
+        node_index_t current_node_id_{0};         // node.node_id_ is read from json and can be different
 
         void unhandled_key(std::string_view key) const { fmt::print(">> [tree-json] unhandled key \"{}\" for node {}\n", key, current_node_->node_id_); }
 
@@ -310,6 +311,7 @@ namespace ae::tree
 
         void push_subtree(field_t& field)
         {
+            parents_.push(current_node_id_); // current_node_->node_id_ is perhaps read from json and can be different
             auto arr = field.value().get_array();
             subtree_current_elements_.emplace(arr.begin(), arr.end());
             push_subtree_element();
@@ -319,21 +321,23 @@ namespace ae::tree
         void check_object_end()
         {
             if (source_objects_.top().first == source_objects_.top().second) {
-                fmt::print(stderr, ">>>> end of object node:{}\n", current_node_->node_id_);
+                fmt::print(stderr, ">>>> end of object node:{} source_objects_:{} parents_:{} subtree_current_elements_:{}\n", current_node_->node_id_, source_objects_.size(), parents_.size(), subtree_current_elements_.size());
                 // end of object
                 current_leaf_ = nullptr;
                 current_inode_ = nullptr;
                 source_objects_.pop();
-                parents_.pop();
+                // parents_.pop();
                 if (!subtree_current_elements_.empty()) {
                     ++subtree_current_elements_.top().first;
                     if (subtree_current_elements_.top().first == subtree_current_elements_.top().second) {
                         // end of subtree
                         subtree_current_elements_.pop();
+                        current_inode_ = &tree_.inode(parents_.top());
+                        current_node_ = current_inode_;
+                        parents_.pop();
                     }
                     else { // next element in the subtree
                         push_subtree_element();
-                        current_node_ = tree_.node_base(parents_.top());
                     }
                 }
                 else if (source_objects_.size() != 1) {
@@ -351,7 +355,10 @@ namespace ae::tree
         {
             switch (key[0]) {
                 case 'I': // <node-id: int (ae only)>,
-                    current_node_->node_id_ = node_index_t{static_cast<int64_t>(field.value())};
+                    if (const node_index_t node_id{static_cast<int64_t>(field.value())}; node_id != node_index_t{0})
+                        current_node_->node_id_ = node_id;
+                    // else
+                    //     fmt::print(stderr, ">>>> invalid stored node_id for node {}\n", current_node_->node_id_);
                     break;
                 case 'H': // <true if hidden>,
                     //!!! TODO
@@ -385,12 +392,20 @@ namespace ae::tree
             }
         }
 
+        template <typename NODE> void assign_current(node_index_t node_id, NODE& node)
+        {
+            current_node_id_ = node_id;
+            static_cast<Node&>(node) = *current_node_;
+            if (node.node_id_ == node_index_t{0})
+                node.node_id_ = node_id;
+            current_node_ = &node;
+        }
+
         void leaf_field(std::string_view key, field_t& field)
         {
             if (current_node_ == &temporary_target_node_) {
                 auto [index, leaf] = tree_.add_leaf(parents_.top());
-                static_cast<Node&>(leaf) = *current_node_;
-                current_node_ = &leaf;
+                assign_current(index, leaf);
                 current_leaf_ = &leaf;
             }
             else if (current_leaf_ == nullptr)
@@ -424,8 +439,7 @@ namespace ae::tree
         {
             if (current_node_ == &temporary_target_node_) {
                 auto [index, inode] = tree_.add_inode(parents_.top());
-                static_cast<Node&>(inode) = *current_node_;
-                current_node_ = &inode;
+                assign_current(index, inode);
                 current_inode_ = &inode;
             }
             else if (current_inode_ == nullptr)
@@ -433,6 +447,8 @@ namespace ae::tree
 
             switch (key[0]) {
                 case 't': // subtree
+                    push_subtree(field);
+                    fmt::print(stderr, ">>>> subtree in node {}\n", current_inode_->node_id_);
                     break;
                 default:
                     unhandled_key(key);
@@ -454,7 +470,7 @@ namespace ae::tree
                     break;
                 case 't': // subtree
                     push_subtree(field);
-                    fmt::print(stderr, ">>>> subtree in node\n");
+                    fmt::print(stderr, ">>>> subtree in root node\n");
                     break;
                 default:
                     unhandled_key(key);
