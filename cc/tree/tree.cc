@@ -387,7 +387,7 @@ void ae::tree::export_tree(const Tree& tree, const std::filesystem::path& filena
     std::string data;
     if (has_suffix({".newick"sv}))
         data = export_newick(tree);
-    else if (has_suffix({".json"sv, ".tjz"sv}))
+    else if (has_suffix({".json"sv, ".tjz"sv}) || filename.native() == "=")
         data = export_json(tree);
     else if (filename.native() == "-" || has_suffix({".txt"sv, ".text"sv}))
         data = export_text(tree);

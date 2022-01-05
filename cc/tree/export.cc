@@ -123,7 +123,8 @@ std::string ae::tree::export_json(const Tree& tree)
         }
         else {
             commas.back() = true;
-            fmt::format_to(std::back_inserter(text), "\n");
+            if (node->node_id_ != node_index_t{0}) // no newline right after "tree":
+                fmt::format_to(std::back_inserter(text), "\n");
         }
 
         fmt::format_to(std::back_inserter(text), "{}{{\n{} \"I\": {},", indent, indent, node->node_id_.get());
