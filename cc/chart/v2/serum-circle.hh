@@ -30,7 +30,7 @@ namespace ae::chart::v2
 
             size_t antigen_no;
             Titer titer;
-            std::optional<double> radius;
+            std::optional<double> radius{std::nullopt};
             serum_circle_failure_reason failure_reason{serum_circle_failure_reason::not_calculated};
         };
         void serum_circle_empirical(const SerumCircle& circle_data, SerumCirclePerAntigen& per_antigen, const Layout& layout, const Titers& titers, double fold, ae::verbose verbose);
@@ -80,8 +80,8 @@ namespace ae::chart::v2
         double fold_ = 2.0;
         double column_basis_;
         double min_radius{2.0}; // Derek 2020-09-16 13:16 (Influenza B report and sig pages)
-        mutable std::vector<detail::SerumCirclePerAntigen> per_antigen_;
-        mutable bool sorted_ = false;
+        mutable std::vector<detail::SerumCirclePerAntigen> per_antigen_{};
+        mutable bool sorted_{false};
 
         void sort() const
         {
@@ -127,9 +127,9 @@ namespace ae::chart::v2
 
     struct SerumCoverageIndexes
     {
-        PointIndexList within;
-        PointIndexList outside;
-        std::optional<size_t> antigen_index;
+        PointIndexList within{};
+        PointIndexList outside{};
+        std::optional<size_t> antigen_index{std::nullopt};
         SerumCoverageIndexes& set(size_t ag_no)
         {
             antigen_index = ag_no;

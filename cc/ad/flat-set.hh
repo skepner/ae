@@ -58,7 +58,7 @@ namespace acmacs
         }
 
       private:
-        std::vector<T> data_;
+        std::vector<T> data_{};
     };
 
 } // namespace acmacs

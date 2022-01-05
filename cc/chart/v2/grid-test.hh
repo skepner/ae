@@ -40,8 +40,8 @@ namespace ae::chart::v2
             size_t point_no;
             diagnosis_t diagnosis;
             PointCoordinates pos;
-            double distance;
-            double contribution_diff;
+            double distance{0.0};
+            double contribution_diff{0.0};
         };
 
         class Results : public std::vector<Result>

@@ -1124,12 +1124,12 @@ std::unique_ptr<TitersModify::titer_merge_report> TitersModify::set_from_layers(
         set_titers_from_layers(more_than_thresholded::adjust_to_next);
         column_bases = computed_column_bases(no_column_bases);
     }
-    auto titer_merge_report = set_titers_from_layers(more_than_thresholded::to_dont_care);
+    auto report = set_titers_from_layers(more_than_thresholded::to_dont_care);
     if (column_bases) {
         chart.forced_column_bases_modify(*column_bases);
         AD_INFO("forced column bases: {}", *chart.forced_column_bases(no_column_bases));
     }
-    return titer_merge_report;
+    return report;
 
 } // TitersModify::set_from_layers
 
@@ -1149,8 +1149,8 @@ std::unique_ptr<TitersModify::titer_merge_report> TitersModify::set_titers_from_
     auto titers = std::make_unique<std::vector<titer_merge_data>>();
     for (auto ag_no : range_from_0_to(number_of_antigens)) {
         for (auto sr_no : range_from_0_to(number_of_sera_)) {
-            auto [titer, titer_merge_report] = titer_from_layers(ag_no, sr_no, mtt, standard_deviation_threshold);
-            titers->emplace_back(std::move(titer), ag_no, sr_no, titer_merge_report);
+            auto [titer, report] = titer_from_layers(ag_no, sr_no, mtt, standard_deviation_threshold);
+            titers->emplace_back(std::move(titer), ag_no, sr_no, report);
         }
     }
 
@@ -1950,13 +1950,13 @@ std::shared_ptr<Layout> ProjectionModify::randomize_layout(ProjectionModify::ran
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<Layout> ProjectionModify::randomize_layout(std::shared_ptr<LayoutRandomizer> randomizer)
+std::shared_ptr<Layout> ProjectionModify::randomize_layout(std::shared_ptr<LayoutRandomizer> a_randomizer)
 {
     modify();
     auto layout = layout_modified();
     const auto number_of_dimensions = layout->number_of_dimensions();
     for (const auto point_no : range_from_0_to(layout->number_of_points())) {
-        const auto point{randomizer->get(number_of_dimensions)};
+        const auto point{a_randomizer->get(number_of_dimensions)};
         layout->update(point_no, point);
     }
     // AD_DEBUG("randomize_layout {}", *layout);
@@ -1966,13 +1966,13 @@ std::shared_ptr<Layout> ProjectionModify::randomize_layout(std::shared_ptr<Layou
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<Layout> ProjectionModify::randomize_layout(const PointIndexList& to_randomize, std::shared_ptr<LayoutRandomizer> randomizer)
+std::shared_ptr<Layout> ProjectionModify::randomize_layout(const PointIndexList& to_randomize, std::shared_ptr<LayoutRandomizer> a_randomizer)
 {
     modify();
     auto layout = layout_modified();
     const auto number_of_dimensions = layout->number_of_dimensions();
     for (auto point_no : to_randomize)
-        layout->update(point_no, randomizer->get(number_of_dimensions));
+        layout->update(point_no, a_randomizer->get(number_of_dimensions));
     return layout;
 
 } // ProjectionModify::randomize_layout

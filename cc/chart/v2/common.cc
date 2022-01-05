@@ -45,9 +45,9 @@ class CommonAntigensSera::Impl
 
     struct MatchEntry
     {
-        size_t primary_index;
-        size_t secondary_index;
-        score_t score;
+        size_t primary_index{0};
+        size_t secondary_index{0};
+        score_t score{score_t::no_match};
         bool use{false};
 
     }; // class MatchEntry
@@ -78,10 +78,10 @@ class CommonAntigensSera::Impl
             }
         }
 
-        std::vector<AgSrEntry> primary_;
-        std::vector<AgSrEntry> secondary_;
-        std::vector<MatchEntry> match_;
-        size_t number_of_common_ = 0;
+        std::vector<AgSrEntry> primary_{};
+        std::vector<AgSrEntry> secondary_{};
+        std::vector<MatchEntry> match_{};
+        size_t number_of_common_{0};
         const size_t primary_base_, secondary_base_; // 0 for antigens, number_of_antigens for sera
         const size_t min_number_ = 0;   // for match_level_t::automatic threshold
 

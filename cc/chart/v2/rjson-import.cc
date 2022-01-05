@@ -224,8 +224,8 @@ namespace
         }
 
       private:
-        mutable std::vector<size_t> sera_;
-        mutable std::vector<size_t>::const_iterator serum_;
+        mutable std::vector<size_t> sera_{};
+        mutable std::vector<size_t>::const_iterator serum_{};
 
         void populate_sera(ae::chart::v2::TiterIterator::Data& data) const
         {

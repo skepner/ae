@@ -206,7 +206,7 @@ namespace ae::chart::v2
           public:
             using titer_getter_t = std::function<Titer (size_t, size_t)>;
 
-            TiterGetterExisting(titer_getter_t getter, size_t number_of_antigens, size_t number_of_sera) : getter_{getter}, number_of_antigens_{number_of_antigens}, number_of_sera_{number_of_sera} {}
+            TiterGetterExisting(titer_getter_t a_getter, size_t number_of_antigens, size_t number_of_sera) : getter_{a_getter}, number_of_antigens_{number_of_antigens}, number_of_sera_{number_of_sera} {}
             void first(TiterIterator::Data& data) const override { set(data, 0, 0); if (!valid(data.titer)) next(data); }
             void last(TiterIterator::Data& data) const override { data.antigen = number_of_antigens_; data.serum = 0; }
             void next(TiterIterator::Data& data) const override

@@ -44,7 +44,7 @@
 //     argument<str>  output_chart{*this, arg_name{"output-chart"}};
 // };
 
-int main(int argc, char* const argv[])
+int main(int /*argc*/, char* const argv[])
 {
     using namespace std::string_view_literals;
     int exit_code = 0;
@@ -54,7 +54,7 @@ int main(int argc, char* const argv[])
         size_t number_of_optimizations{1000};
         ae::chart::v2::number_of_dimensions_t number_of_dimensions{2};
         std::string minimum_column_basis{"none"};
-        bool grid{true};
+        // bool grid{true};
         size_t keep_projections{10};
         int threads{0};
         bool remove_original_projections{false};

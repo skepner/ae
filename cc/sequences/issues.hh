@@ -44,6 +44,8 @@ namespace ae::sequences
             case issue::size_:
                 return ' ';
         }
+        return ' ';             // hey g++13
+
     }
 
     inline issue issue_from_char(char iss)
@@ -68,7 +70,6 @@ namespace ae::sequences
             default:
                 return issue::size_;
         }
-        // return issue::size_;
     }
 
     struct issues_t : public std::bitset<static_cast<size_t>(issue::size_)>

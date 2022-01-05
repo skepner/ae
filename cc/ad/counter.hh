@@ -81,7 +81,7 @@ namespace acmacs
         }
 
      private:
-        container_type counter_;
+        container_type counter_{};
 
         void format_entry(fmt::memory_buffer& out, std::string_view format, const value_type& entry) const
         {
