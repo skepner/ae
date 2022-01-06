@@ -32,6 +32,8 @@ namespace ae::tree
         Leaf(std::string_view a_name, EdgeLength a_edge) : Node{.name{std::string{a_name}}, .edge{a_edge}} {} // g++-11 wants std::string{a_name}
         Leaf(std::string_view a_name, EdgeLength a_edge, EdgeLength a_cumulative_edge) : Node{.name{std::string{a_name}}, .edge{a_edge}, .cumulative_edge{a_cumulative_edge}} {}
 
+        size_t number_of_leaves() const { return 1; }
+
         bool shown{true};
         std::string date{};
         std::string continent{};
@@ -43,8 +45,10 @@ namespace ae::tree
 
     struct Inode : public Node
     {
+        size_t number_of_leaves() const { return number_of_leaves_; }
+
         std::vector<node_index_t> children{};
-        size_t number_of_leaves{0};
+        size_t number_of_leaves_{0};
         // std::vector<std::string> aa_substs;
     };
 
@@ -133,6 +137,9 @@ namespace ae::tree
         void subtype(const virus::type_subtype_t& subtype) { subtype_ = subtype; }
         void lineage(const sequences::lineage_t& lineage) { lineage_ = lineage; }
         void update_number_of_leaves_in_subtree();
+
+        enum class ladderize_method { none, number_of_leaves, max_edge_length };
+        void ladderize(ladderize_method method);
 
       private:
         virus::type_subtype_t subtype_{};

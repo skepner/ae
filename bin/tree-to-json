@@ -50,6 +50,9 @@ def main(args: argparse.Namespace):
         tree.populate_with_sequences(subtype)
         tree.set_clades(os.environ["AC_CLADES_JSON_V2"])
 
+    if args.ladderize:
+        tree.ladderize("number-of-leaves")
+
     if args.output:
         ae_backend.tree.export(tree, args.output)
 
@@ -64,6 +67,7 @@ try:
     parser.add_argument("--remove-if-cumulative-more-than", dest="remove_if_cumulative_more_than", type=float, default=None)
     parser.add_argument("--remove-seq-id", dest="remove_seq_id", default=None, help="comma separated list of seq_id to remove")
     parser.add_argument("--populate", "-p", action="store_true", default=False)
+    parser.add_argument("--ladderize", "-l", action="store_true", default=False)
     args = parser.parse_args()
     exit_code = main(args) or 0
 except Exception as err:

@@ -55,7 +55,7 @@ void export_inode(fmt::memory_buffer& text, const ae::tree::Inode& inode, const 
     fmt::format_to(std::back_inserter(text), fmt::runtime("{prefix}{edge_symbol}\\ >>>> leaves: {leaves} <{node_id}>{aa_transitions} edge: {edge} cumul: {cumul}\n"), //
                    "prefix"_a = fmt::join(prefix, std::string_view{}),                                                                                  //
                    "edge_symbol"_a = edge_symbol, "edge"_a = inode.edge, "cumul"_a = inode.cumulative_edge,                           //
-                   "leaves"_a = inode.number_of_leaves,                                                                                                                     // node.number_leaves_in_subtree()),
+                   "leaves"_a = inode.number_of_leaves(),                                                                                                                     // node.number_leaves_in_subtree()),
                    "node_id"_a = inode.node_id_,                                                                                                        //
                    "aa_transitions"_a = "" // aa_transitions.empty() ? std::string{} : fmt::format(" [{}]", aa_transitions))
     );
@@ -141,8 +141,8 @@ std::string ae::tree::export_json(const Tree& tree)
         if (inode->node_id_ == node_index_t{0}) {
             if (tree.maximum_cumulative() > 0)
                 fmt::format_to(std::back_inserter(text), " \"M\": {:.10g},", tree.maximum_cumulative());
-            if (inode->number_of_leaves > 0)
-                fmt::format_to(std::back_inserter(text), " \"L\": {},", inode->number_of_leaves);
+            if (inode->number_of_leaves() > 0)
+                fmt::format_to(std::back_inserter(text), " \"L\": {},", inode->number_of_leaves());
         }
         // "A": ["aa subst", "N193K"],
         // "H": <true if hidden>,
@@ -214,7 +214,7 @@ namespace ae::tree
 
     struct NodeData : public Leaf
     {
-        size_t number_of_leaves{0}; // for inode
+        // size_t number_of_leaves_{0}; // for inode
 
         void reset() { *this = NodeData{}; }
     };

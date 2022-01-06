@@ -79,9 +79,9 @@ ae::tree::EdgeLength ae::tree::Tree::calculate_cumulative(bool force)
                     [&cumulative, this](Inode* inode) {
                         cumulative -= inode->edge;
                         // post -> update number_of_leaves
-                        inode->number_of_leaves = 0;
+                        inode->number_of_leaves_ = 0;
                         for (const auto child_id : inode->children)
-                            node(child_id).visit([inode](const Inode* sub_inode) { inode->number_of_leaves += sub_inode->number_of_leaves; }, [inode](const Leaf*) { ++inode->number_of_leaves; });
+                            inode->number_of_leaves_ += node(child_id).visit([](const auto* sub_node) { return sub_node->number_of_leaves(); });
                     },
                     [](const Leaf*) {});
         }
@@ -123,14 +123,47 @@ void ae::tree::Tree::update_number_of_leaves_in_subtree()
     for (auto ref : visit(tree_visiting::inodes_post)) {
         ref.visit(
             [this](Inode* inode) {
-                inode->number_of_leaves = 0;
+                inode->number_of_leaves_ = 0;
                 for (const auto child_id : inode->children)
-                    node(child_id).visit([inode](const Inode* sub_inode) { inode->number_of_leaves += sub_inode->number_of_leaves; }, [inode](const Leaf*) { ++inode->number_of_leaves; });
+                    inode->number_of_leaves_ += node(child_id).visit([](const auto* sub_node) { return sub_node->number_of_leaves(); });
             },
             [](const Leaf*) {});
     }
 
 } // ae::tree::Tree::update_number_of_leaves_in_subtree
+
+// ----------------------------------------------------------------------
+
+void ae::tree::Tree::ladderize(ladderize_method method)
+{
+    const auto by_number_of_leaves = [this]() {
+        update_number_of_leaves_in_subtree();
+
+        for (auto ref : visit(tree_visiting::inodes_post)) {
+            auto& inode = *ref.inode();
+            std::sort(inode.children.begin(), inode.children.end(), [this](node_index_t ci1, node_index_t ci2) {
+                const auto number_of_leaves = [](auto child) { return child.visit([](const auto* nod) { return nod->number_of_leaves(); }); };
+                const auto nc1 = number_of_leaves(node(ci1)), nc2 = number_of_leaves(node(ci2));
+                return nc1 < nc2;
+            });
+        }
+    };
+
+    switch (method) {
+        case ladderize_method::max_edge_length:
+            AD_INFO("Ladderizing by max-edge-length");
+            AD_WARNING("Not implemented");
+            break;
+        case ladderize_method::number_of_leaves:
+            AD_INFO("Ladderizing by number-of-leaves");
+            by_number_of_leaves();
+            break;
+        case ladderize_method::none:
+            AD_WARNING("no ladderizing");
+            break;
+    }
+
+} // ae::tree::Tree::ladderize
 
 // ----------------------------------------------------------------------
 
