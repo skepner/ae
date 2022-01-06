@@ -166,6 +166,8 @@ static inline std::unordered_map<int, ae::tree::EdgeLength> calculate_max_edge_l
 
 void ae::tree::Tree::ladderize(ladderize_method method)
 {
+    Timeit ti{"Tree::ladderize", std::chrono::milliseconds{100}};
+
     const auto max_edge_lengths = calculate_max_edge_lengths(*this);
 
     const auto compare_max_edge_length = [&max_edge_lengths](node_index_t ci1, node_index_t ci2) {
@@ -374,7 +376,7 @@ void ae::tree::Tree::remove(const std::vector<node_index_t>& nodes)
 
     const auto child_empty = [this](auto child_id) { return !is_leaf(child_id) && inode(child_id).children.empty(); };
 
-    // normally just one entry in the collection, but there could be meore in complcated cases: multiple single_child_inodes (direct and indirect children) for the same parent
+    // normally just one entry in the collection, but there could be more in complcated cases: multiple single_child_inodes (direct and indirect children) for the same parent
     std::vector<Inode*> single_child_inodes;
     for (auto ref : visit(tree_visiting::inodes_post)) {
         ref.visit(
@@ -411,6 +413,34 @@ void ae::tree::Tree::remove(const std::vector<node_index_t>& nodes)
     calculate_cumulative(true);
 
 } // ae::tree::Tree::remove
+
+// ----------------------------------------------------------------------
+
+void ae::tree::Tree::remove_leaves_isolated_before(std::string_view last_date)
+{
+    // keep at least two children in each inode (attempt to keep tree topology)
+
+    Timeit ti{"Tree::remove_leaves_isolated_before", std::chrono::milliseconds{100}};
+
+    for (auto ref : visit(tree_visiting::inodes_post)) {
+        ref.visit(
+            [this, last_date](Inode* inode) {
+                if (inode->children.size() > 2) {
+                    std::vector<node_index_t> to_remove;
+                    std::copy_if(inode->children.begin(), inode->children.end(), std::back_inserter(to_remove),
+                                 [this, last_date](node_index_t node_id) { return is_leaf(node_id) && leaf(node_id).date < last_date; });
+                    if (to_remove.size() > (inode->children.size() - 2))
+                        to_remove.resize(inode->children.size() - 2); // keep at least two children in inode
+                    inode->children.erase(std::remove_if(inode->children.begin(), inode->children.end(),
+                                                         [&to_remove](node_index_t node_id) { return std::find(to_remove.begin(), to_remove.end(), node_id) != to_remove.end(); }),
+                                          inode->children.end());
+                }
+            },
+            [](Leaf*) {});
+    }
+    calculate_cumulative(true);
+
+} // ae::tree::Tree::remove_leaves_isolated_before
 
 // ----------------------------------------------------------------------
 

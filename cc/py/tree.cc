@@ -89,24 +89,28 @@ void ae::py::tree(pybind11::module_& mdl)
                 tree.remove(indexes);
             },
             "nodes"_a) //
-        .def("ladderize", [](Tree& tree, std::string_view method) {
-            Tree::ladderize_method lm{Tree::ladderize_method::none};
-            if (method == "number-of-leaves"sv)
-                lm = Tree::ladderize_method::number_of_leaves;
-            else if (method == "max-edge-length")
-                lm = Tree::ladderize_method::max_edge_length;
-            else if (method == "none")
-                lm = Tree::ladderize_method::none;
-            else
-                throw std::invalid_argument{fmt::format("unknow ladderization method \"{}\", supported: \"number-of-leaves\", \"max-edge-length\", \"none\"", method)};
-            tree.ladderize(lm);
-        }, "method"_a = "number-of-leaves") //
+        .def(
+            "ladderize",
+            [](Tree& tree, std::string_view method) {
+                Tree::ladderize_method lm{Tree::ladderize_method::none};
+                if (method == "number-of-leaves"sv)
+                    lm = Tree::ladderize_method::number_of_leaves;
+                else if (method == "max-edge-length")
+                    lm = Tree::ladderize_method::max_edge_length;
+                else if (method == "none")
+                    lm = Tree::ladderize_method::none;
+                else
+                    throw std::invalid_argument{fmt::format("unknow ladderization method \"{}\", supported: \"number-of-leaves\", \"max-edge-length\", \"none\"", method)};
+                tree.ladderize(lm);
+            },
+            "method"_a = "number-of-leaves")                                                  //
+        .def("remove_leaves_isolated_before", &Tree::remove_leaves_isolated_before, "date"_a) //
         ;
 
     pybind11::class_<Nodes>(tree_submodule, "Nodes")                                                       //
         .def("sort_by_cumulative", &Nodes::sort_by_cumulative)                                             //
         .def("filter_by_cumulative_more_than", &Nodes::filter_by_cumulative_more_than, "min_cumulative"_a) //
-        .def("filter_seq_id", &Nodes::filter_seq_id, "seq_ids"_a) //
+        .def("filter_seq_id", &Nodes::filter_seq_id, "seq_ids"_a)                                          //
         .def("remove", &Nodes::remove)                                                                     //
         .def("__len__", [](const Nodes& nodes) { return nodes.nodes.size(); })                             //
         .def(

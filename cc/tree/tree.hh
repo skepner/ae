@@ -133,6 +133,7 @@ namespace ae::tree
         // unlink passed nodes
         // if a parent inode has no children afterwards, unlink it too
         void remove(const std::vector<node_index_t>& nodes);
+        void remove_leaves_isolated_before(std::string_view date);
 
         void subtype(const virus::type_subtype_t& subtype) { subtype_ = subtype; }
         void lineage(const sequences::lineage_t& lineage) { lineage_ = lineage; }
