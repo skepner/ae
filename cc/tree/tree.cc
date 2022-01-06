@@ -134,18 +134,66 @@ void ae::tree::Tree::update_number_of_leaves_in_subtree()
 
 // ----------------------------------------------------------------------
 
+static inline std::unordered_map<int, ae::tree::EdgeLength> calculate_max_edge_lengths(const ae::tree::Tree& tree)
+{
+    std::unordered_map<int, ae::tree::EdgeLength> max_edge_lengths;
+    for (auto ref : tree.visit(ae::tree::tree_visiting::all_post)) {
+        if (ref.pre()) {
+            ref.visit(
+                [&max_edge_lengths](const ae::tree::Leaf* leaf) { max_edge_lengths.emplace(*leaf->node_id_, leaf->edge); },
+                [](const ae::tree::Inode*) {}
+            );
+        }
+        else {
+            ref.visit(
+                [](const ae::tree::Leaf*) {},
+                [&max_edge_lengths](const ae::tree::Inode* inode) {
+                    ae::tree::EdgeLength max_edge{0.0};
+                    for (ae::tree::node_index_t child : inode->children)
+                        max_edge = std::max(max_edge, max_edge_lengths.find(*child)->second);
+                    max_edge_lengths.emplace(*inode->node_id_, max_edge);
+                }
+            );
+        }
+    }
+    // AD_DEBUG("max_edge_lengths {}", max_edge_lengths.size());
+
+    return max_edge_lengths;
+
+} // calculate_max_edge_lengths
+
+// ----------------------------------------------------------------------
+
 void ae::tree::Tree::ladderize(ladderize_method method)
 {
-    const auto by_number_of_leaves = [this]() {
+    const auto max_edge_lengths = calculate_max_edge_lengths(*this);
+
+    const auto compare_max_edge_length = [&max_edge_lengths](node_index_t ci1, node_index_t ci2) {
+        const auto e1 = max_edge_lengths.find(*ci1)->second, e2 = max_edge_lengths.find(*ci2)->second;
+        if (e1 == e2)
+            return ci1 < ci2;
+        else
+            return e1 < e2;
+    };
+
+    const auto compare_number_of_leaves = [this, compare_max_edge_length](node_index_t ci1, node_index_t ci2) {
+        const auto number_of_leaves = [](const auto& child) { return child.visit([](const auto* nod) {
+            return nod->number_of_leaves(); });
+        };
+        const auto n1 = node(ci1), n2 = node(ci2);
+        const auto nc1 = number_of_leaves(n1), nc2 = number_of_leaves(n2);
+        if (nc1 == nc2)
+            return compare_max_edge_length(ci1, ci2);
+        else
+            return nc1 < nc2;
+    };
+
+    const auto by_number_of_leaves = [this, compare_number_of_leaves]() {
         update_number_of_leaves_in_subtree();
 
         for (auto ref : visit(tree_visiting::inodes_post)) {
             auto& inode = *ref.inode();
-            std::sort(inode.children.begin(), inode.children.end(), [this](node_index_t ci1, node_index_t ci2) {
-                const auto number_of_leaves = [](auto child) { return child.visit([](const auto* nod) { return nod->number_of_leaves(); }); };
-                const auto nc1 = number_of_leaves(node(ci1)), nc2 = number_of_leaves(node(ci2));
-                return nc1 < nc2;
-            });
+            std::sort(inode.children.begin(), inode.children.end(), compare_number_of_leaves);
         }
     };
 
