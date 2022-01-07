@@ -1,0 +1,39 @@
+# Time-stamp: <2022-01-07 13:10:20 eu>
+* Making weekly tree by incrementally adding new strains to the trees of previous week
+
+** Create and initialize new directory
+
+${AE_ROOT}/proj/weekly-tree/init
+
+** Submit
+
+cd /syn/eu/ac/results/trees/$(date "+%Y-%m%d")
+NODE=i22; SUBTYPE=h3; ${AE_ROOT}/proj/weekly-tree/raxml --node ${NODE} ${SUBTYPE} && ${AE_ROOT}/proj/weekly-tree/garli --node ${NODE} ${SUBTYPE}
+NODE=i20; SUBTYPE=h1; ${AE_ROOT}/proj/weekly-tree/raxml --node ${NODE} ${SUBTYPE} && ${AE_ROOT}/proj/weekly-tree/garli --node ${NODE} ${SUBTYPE}
+NODE=i21; SUBTYPE=bvic; ${AE_ROOT}/proj/weekly-tree/raxml --node ${NODE} ${SUBTYPE} && ${AE_ROOT}/proj/weekly-tree/garli --node ${NODE} ${SUBTYPE}
+
+** Individual steps
+
+cd /syn/eu/ac/results/trees/$(date "+%Y-%m%d")
+
+${AE_ROOT}/proj/weekly-tree/export <subtype>
+${AE_ROOT}/proj/weekly-tree/update-tree <subtype>
+
+${AE_ROOT}/proj/weekly-tree/raxml --node i22 <subtype>
+${AE_ROOT}/proj/weekly-tree/garli --node i22 <subtype>
+
+${AE_ROOT}/proj/weekly-tree/pdf <subtype>
+
+** Update index page
+
+edit /syn/eu/ac/results/trees/weekly.html
+
+* -------------------- local vars ----------------------------------------------------------------------
+  :PROPERTIES:
+  :VISIBILITY: folded
+  :END:
+  #+STARTUP: showall indent
+  Local Variables:
+  eval: (auto-fill-mode 0)
+  eval: (add-hook 'before-save-hook 'time-stamp)
+  End:

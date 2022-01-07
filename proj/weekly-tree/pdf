@@ -1,0 +1,9 @@
+#! /bin/bash
+set -o errexit -o errtrace -o pipefail -o nounset -o xtrace
+if [[ $# -ne 1 ]]; then
+    echo "Usage: $0 <subtype>" >&2
+    exit 1
+fi
+SUBTYPE="$1"
+~/ae/bin/tree-to-json -p -s ${SUBTYPE} --print-cumulative 20 --remove-if-cumulative-more-than 0.2 $(cat ${SUBTYPE}/garli-best.txt) ${SUBTYPE}/${SUBTYPE}.tjz &&
+    tal -s ${SUBTYPE}.tree.tal ${SUBTYPE}/${SUBTYPE}.tjz ${SUBTYPE}/${SUBTYPE}.txt ${SUBTYPE}/${SUBTYPE}.pdf --open

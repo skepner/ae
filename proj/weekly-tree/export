@@ -1,0 +1,269 @@
+#! /usr/bin/env python3
+
+import sys, os, argparse
+from pathlib import Path
+sys.path[:0] = [str(Path(os.environ["AE_ROOT"], dir)) for dir in ["build", "py"]]
+import ae_backend
+from ae.sequences.source import fasta
+
+# ======================================================================
+
+sSubtypeForSeqdb = {"B": "B", "BVIC": "B", "BYAM": "B", "A(H1N1)": "A(H1N1)", "H1": "A(H1N1)", "1": "A(H1N1)", "A(H3N2)": "A(H3N2)", "H3": "A(H3N2)", "3": "A(H3N2)"}
+sSubtypeNorm = {"BV": "BVIC", "BVIC": "BVIC", "BY": "BYAM", "BYAM": "BYAM", "A(H1N1)": "A(H1N1)", "H1": "A(H1N1)", "1": "A(H1N1)", "A(H3N2)": "A(H3N2)", "H3": "A(H3N2)", "3": "A(H3N2)"}
+sSubdirforSubtype = {"BVIC": "bvic", "BYAM": "byam", "A(H1N1)": "h1", "A(H3N2)": "h3"}
+
+def main(args: argparse.Namespace):
+    subtypes = [sSubtypeNorm[st] for st in (args.subtype or ["BVIC", "BYAM", "H1", "H3"])]
+    for subtype in subtypes:
+        sSubtypeToFunc[subtype](subtype=subtype, args=args)
+
+# ----------------------------------------------------------------------
+
+def bvic(subtype: str, args: argparse.Namespace):
+    outgroup = "VICTORIA/830/2013"
+    selected = (
+        ae_backend.seqdb.for_subtype(sSubtypeForSeqdb[subtype])
+        .select_all()
+        .human()
+        .lineage("VICTORIA")
+        .exclude_with_issue()
+        .filter_dates(first="2016-06")
+        .find_masters()         # to be able to use .filter below
+        .exclude(lambda ref: ref.aa["165-"]) # exclude 6-del and MIE/1/2019 with garbage in the middle
+        .exclude_name([
+            "ANHUI_JINGHU/63/2019", # garbage in 406-414 leading to a long branch (2021-0722)
+            "LISBOA/NISU182_17-18/2018", # yamagata, long branch 2021-1117
+            ])
+        .include_name(outgroup)    # outgroup BRISBANE/60/2008, B/CHONGQING BANAN/1840/2017 (V1A)
+        .remove_hash_duplicates()
+        .replace_with_master()
+        .sort("+date")
+        .move_name_to_beginning(outgroup)
+    )
+    report(subtype, selected, expected_nuc_size=1710, limit=0)
+    export(subtype, selected)
+
+# ----------------------------------------------------------------------
+
+def byam(subtype: str, args: argparse.Namespace):
+    outgroup = "MINNESOTA/2/2014"
+    selected = (
+        ae_backend.seqdb.for_subtype(sSubtypeForSeqdb[subtype])
+        .select_all()
+        .human()
+        .lineage("YAMAGATA")
+        .exclude_with_issue()
+        .filter_dates(first="2015")
+        .find_masters()         # to be able to use .filter below
+        .include_name([outgroup]) # , "IDAHO/1/2014", "MASSACHUSETTS/7/2014"])
+        .exclude_name([lin for lin in (line.strip() for line in Path("byam-exclude.txt").open()) if lin and lin[0] != "#"])
+        .remove_hash_duplicates()
+        .replace_with_master()
+        .sort("+date")
+        .move_name_to_beginning(outgroup)
+    )
+    report(subtype, selected, expected_nuc_size=1710, limit=0)
+    export(subtype, selected)
+
+# ----------------------------------------------------------------------
+
+def h1(subtype: str, args: argparse.Namespace):
+    h1_include_txt = Path("h1-include.txt")
+    if not h1_include_txt.exists():
+        h1_include_txt = Path(sys.argv[0]).parent.joinpath(h1_include_txt.name)
+        if not h1_include_txt.exists():
+            raise RuntimeError("> cannot find {h1_include_txt}")
+    to_include = [lin for lin in (line.strip() for line in h1_include_txt.open()) if lin and lin[0] != "#"]
+    # to_include = to_include[:-500]
+    outgroup = "SOUTH_AUSTRALIA/30/2013"
+    selected = (
+        ae_backend.seqdb.for_subtype(sSubtypeForSeqdb[subtype])
+        .select_all()
+        .human()
+        .exclude_with_issue()
+        .filter_dates(first="2019")
+        .find_masters()         # to be able to use .filter below
+        .include_name([
+            outgroup,
+            "MICHIGAN/45/2015",
+            "BRAZIL/5026/2017", # # 183S, trying to show "the different 183P clades has S183P independently", inferred from 2018-0924-ssm tree
+        ] + to_include) # ~/AD/share/conf/h1.183S.2017-2018.seqids
+        .exclude_name([
+            "SWINE/",
+            # 2020-08-10 Sarah: They're not sequenced by a CC or NIC, but by a company.  The sequences don't have obvious errors, but are very different (obviously) from the rest. My feeling is they're either variant viruses (from swine) or a sequencing error.
+            "ANKARA/14015-724/2019",
+            "ANKARA/14017-004/2019",
+            "ANKARA/14015-736/2019",
+            # 2021-06-22 deletion at the end
+            # "BADEN-WURTTEMBERG/1/2020",
+            # long branch 2021-0622
+            "DENMARK/1/2021",
+            "MANITOBA/2/2021",
+            # 2021-1117 long branches
+            "MECKLENBURG-VORPOMMERN/1/2021",
+            "MECKLENBURG-VORPOMMERN/1-A/2021", # refers to MECKLENBURG-VORPOMMERN/1/2021
+            "NETHERLANDS/10370-1/2020",
+            "NETHERLANDS/10370-1A/2020",
+            "NETHERLANDS/10370-2/2020", # refers to NETHERLANDS/10370-1A/2020
+            "NETHERLANDS/GENT-193/2019",
+            "HESSEN/47/2020",
+            "HUBEI WUJIAGANG/1324/2020",
+            "HEBEI HAIGANG/SWL1572/2019",
+            "SHANDONG/204/2021",
+            "YUNNAN MENGZI/1462/2020",
+            "NORTH CAROLINA/15/2020",
+            "WISCONSIN/3/2021",
+            "PARANA/10835/2021",
+            # 2021-1125 long branches
+            "GANSU_XIFENG/1194/2021",
+            "GANSU_XIFENG/1143/2021",
+            "SICHUAN/1208/2021",
+            "TIANJIN/30/2020",
+            "WISCONSIN/5/2021",
+            "WISCONSIN/4/2021",
+            "NORTH_DAKOTA/12226/2021",
+            # 2021-1217 potential long branch
+            "IOWA/1/2021", # --> SWINE/MISSOURI/A01104146/2020 (base), SWINE/MISSOURI/A02525160/2021
+            "IOWA/6/2021", # --> "SWINE/IOWA/A02636087/2021", "SWINE/IOWA/A02636130/2021"
+            "NORTH DAKOTA/12226/2021", # --> "SWINE/IOWA/A02636087/2021", "SWINE/IOWA/A02636130/2021"
+            # 2021-1217 long branches
+            "NETHERLANDS/10370-1A/2020"
+        ])
+        .remove_hash_duplicates()
+        .replace_with_master()
+        .sort("+date")
+        .move_name_to_beginning(outgroup)
+    )
+    report(subtype, selected, expected_nuc_size=1647, limit=0) # aa 549
+    export(subtype, selected)
+
+# ----------------------------------------------------------------------
+
+def h3(subtype: str, args: argparse.Namespace):
+    outgroup = "PERTH/16/2009"
+    selected = (
+        ae_backend.seqdb.for_subtype(sSubtypeForSeqdb[subtype])
+        .select_all()
+        .human()
+        .exclude_with_issue()
+        .filter_dates(first="2018-03")
+        .find_masters()         # to be able to use .filter below
+        .include_name([
+            outgroup,
+            "VICTORIA/361/2011",        # 2011-10-24    3C.3
+            # [2020-09-07] Nearest common ancestor of 2a and 3a in /syn/eu/ac/results/eu/2019-0417-h3-trees/cdc-usa-2009-2019-250-per-year-1.rough-29532.tree.pdf https://notebooks.antigenic-cartography.org/eu/results/eu/2019-0417-h3-trees/
+            "MARYLAND/30/2012",          # 2012-07-26    3C.3
+            # [2020-08-17] Derek thinks that the root (A/STOCKHOLM/6/2014) is not old enough
+            "TEXAS/50/2012",                   # 2012-04-15    3C.3  root in MELB tree 2020
+            "VERMONT/6/2012",
+            "STOCKHOLM/6/2014",                          # 2014-02-06    3a
+            # [2020-02-07] intermediate strains from nextflu https://nextstrain.org/flu/seasonal/h3n2/ha/2y to keep 3a at the top
+            "SWITZERLAND/9715293/2013",   # 2013-12-06    3a
+            "NORWAY/466/2014",             # 2014-02-03    3a
+            "SOUTH_AUSTRALIA/55/2014",               # 2014-06-29    3a
+            "TASMANIA/11/2014",                       # 2014-03-16    3a
+            "KOBE/63/2014",                           # 2014-05-21    3a
+            "PERU/27/2015",                     # 2015-04-13    3a
+            "NEVADA/22/2016",                            # 2016-03-05    3a
+            "IDAHO/33/2016",                             # 2016-06-08    3a
+            "TEXAS/88/2016",                             # 2016-02-25    3a
+            "TEXAS/71/2017",                             # 2017-03-18    3a
+            "BRAZIL/7331/2018",                          # 2018-07-09    3a
+            "KANSAS/14/2017",                          # 2017-12-14    3a, to have serum circles in the sig page
+            "HONG_KONG/4801/2014",              # 2014-02-26    2a
+            "HAWAII/47/2014",                         # 2014-07-18    2a
+            "NORTH_CAROLINA/4/2017",                     # 2017-01-26    2a2
+            "NORTH_CAROLINA/4/2016",                     # 2016-01-14    2a1
+            "ANTANANARIVO/1067/2016",                    # 2016-04-06    2a1
+            "HONG_KONG/2286/2017",              # 2017-05-23    2a1b 135K
+            "WISCONSIN/327/2017",                        # 2017-09-22    2a1b 135K
+            "ABU_DHABI/240/2018",                        # 2018-01-01    2a1b 135K
+            "JAMAICA/1447/2018",                         # 2018-02-19    2a1b 131K
+
+            # Strains before and after T135N substitution to have a better 135N branch placement
+            # Sarah 2021-02-08 17:05
+            "WISCONSIN/85/2016",
+            "SRI_LANKA/56/2017",
+            "SOUTH_CAROLINA/4/2017",
+            "YOKOHAMA/145/2017",
+            "INDIA/9930/2017",
+            "HONG_KONG/3118/2017",
+            "HAWAII/47/2014",
+            "NIIGATA-C/43/2015",
+            "DAKAR/17/2016",
+            # "CAMEROON/16V-9267/2016", # excluded, truncated sequence
+            "LAOS/3008/2016",
+            "YUNNAN_LINXIANG/1718/2016",
+            "HONG_KONG/2302/2016",
+            "ONTARIO/RV2414/2015",
+            "ONTARIO/RV2414/2015",
+            "HONG_KONG/2286/2017",
+            "HONG_KONG/2286/2017",
+            "HONG_KONG/2286/2017",
+            "HONG_KONG/2286/2017",
+            "HONG_KONG/2286/2017",
+        ])
+        .exclude_name([
+            "SWINE/",
+             # long branch (2021-0622)
+            "WISCONSIN/1/2021",
+             # long branch (2021-1117)
+            "HAWAII/28/2020",
+            "SOUTH_AUSTRALIA/85/2018",
+            "SOUTH_AUSTRALIA/1/2021",
+            "MANITOBA/3/2021",
+            "GUANGXI_GANGBEI/190/2019",
+            # 2021-1217 potential long branch
+            "OHIO/6/2021_ISOLATE"
+        ])
+        .remove_hash_duplicates()
+        .replace_with_master()
+        .sort("+date")
+        .move_name_to_beginning(outgroup)
+    )
+    report(subtype, selected, expected_nuc_size=1650, limit=0)
+    export(subtype, selected)
+
+# ----------------------------------------------------------------------
+
+sSubtypeToFunc = {"BVIC": bvic, "BYAM": byam, "A(H1N1)": h1, "A(H3N2)": h3}
+
+# ----------------------------------------------------------------------
+
+def export(subtype: str, selected :ae_backend.seqdb.Selected):
+    fasta.write(file=subtype_dir(subtype).joinpath("source.fas"), selected=selected, aa=False)
+
+# ----------------------------------------------------------------------
+
+def subtype_dir(subtype: str):
+    dir = Path(sSubdirforSubtype[subtype])
+    dir.mkdir(exist_ok=True)
+    return dir
+
+# ----------------------------------------------------------------------
+
+def report(subtype: str, selected :ae_backend.seqdb.Selected, expected_nuc_size: int, limit: int = 20):
+    print(f"{subtype:7s} {len(selected)}")
+    for seq in selected:
+        if len(seq.nuc) != expected_nuc_size:
+            print(f">> wrong size {len(seq.nuc)} of {seq.seq_id()} (expected: {expected_nuc_size}) ")
+    for no, seq in enumerate(selected):
+        if no >= limit:
+            break
+        # print(f"{no:4d} {seq.seq_id():40s} [{seq.date()}] {seq.aa}")
+        print(f"{no:4d} {seq.seq_id():40s} [{seq.date()}]")
+
+# ======================================================================
+
+try:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("subtype", nargs="*", type=lambda src: src.upper())
+    parser.add_argument("-v", "--verbose", dest="verbose", action="store_true", default=False)
+    args = parser.parse_args()
+    exit_code = main(args) or 0
+except Exception as err:
+    print(f"> {err}\n{traceback.format_exc()}", file=sys.stderr)
+    exit_code = 1
+exit(exit_code)
+
+# ======================================================================

@@ -1,0 +1,168 @@
+#! /usr/bin/env python3
+
+import sys, os, re, argparse, logging, datetime, concurrent.futures, subprocess, random, traceback
+from pathlib import Path
+
+# ======================================================================
+
+sSubtypeNorm = {"BV": "BVIC", "BVIC": "BVIC", "BY": "BYAM", "BYAM": "BYAM", "A(H1N1)": "A(H1N1)", "H1": "A(H1N1)", "1": "A(H1N1)", "A(H3N2)": "A(H3N2)", "H3": "A(H3N2)", "3": "A(H3N2)"}
+sSubdirforSubtype = {"BVIC": "bvic", "BYAM": "byam", "A(H1N1)": "h1", "A(H3N2)": "h3"}
+
+sRandomGen = random.SystemRandom()
+
+# ----------------------------------------------------------------------
+
+def main(args: argparse.Namespace):
+    argv = '"' + '" "'.join(sys.argv) + '"'
+    working_dir = Path(args.subdir).resolve()
+    source_fas = working_dir.joinpath("source.fas")
+    source_tree = working_dir.joinpath("source.newick")
+    outgroup = source_fas.open().readline().strip()[1:]
+    try:
+        best_tree_file = raxml_ng(working_dir=working_dir, source_fas=source_fas, outgroup=outgroup, source_tree=source_tree, num_runs=args.num_runs, slurm_nodelist=args.slurm_nodelist, slurm_exclude_nodes=args.slurm_exclude_nodes)
+        subprocess.run(["/usr/bin/mail", "-s", f"completed {sys.argv[0]} {working_dir}", "eu@antigenic-cartography.org"], input=f"cd {working_dir}\n{argv}\n{best_tree_file}\n", text=True)
+        return 0
+    except Exception as err:
+        subprocess.run(["/usr/bin/mail", "-s", f"FAILED {sys.argv[0]} {working_dir}", "eu@antigenic-cartography.org"], input=f"cd {working_dir}\n{argv}\n\n{traceback.format_exc()}\n", text=True)
+        raise
+
+# ----------------------------------------------------------------------
+
+def raxml_ng(working_dir: Path, source_fas: Path, outgroup: str, source_tree: Path, slurm_nodelist: str, slurm_exclude_nodes: str, num_runs: int):
+
+    output_dir = get_output_dir(working_dir, "raxml-ng.")
+
+    raxml_cmd = [
+        "/syn/bin/raxml-ng",
+        "--search",         # (raxml: -f d) run topology search to find the best-scoring ML tree
+        "--model", "GTR+G+I", # raxml: -m GTRGAMMAI -c 4
+        "--msa", str(source_fas),
+        "--msa-format", "FASTA",
+        "--outgroup", outgroup,
+        "--log", "PROGRESS", # VERBOSE, DEBUG
+        "--threads", "1",
+    ]
+    # "--silent", "--no-seq-check"
+
+    if source_tree.exists():
+        raxml_cmd += ["--tree-constraint", str(source_tree), "--tree", "rand{1}"]
+    else:
+        raxml_cmd += ["--tree", "pars{1}"]
+
+    # ----------------------------------------------------------------------
+
+    def prefix(run_id):
+        return f"{output_dir.joinpath(run_id)}"
+
+    def run_raxml_ng(run_id):
+        cmd = (srun_cmd()
+               + [f"--job-name=raxml-ng {working_dir.name} {run_id}", f"--output={output_dir.joinpath(run_id).with_suffix('.stdout')}", f"--error={output_dir.joinpath(run_id).with_suffix('.stderr')}"]
+               + raxml_cmd
+               + ["--prefix", prefix(run_id), "--seed", str(sRandomGen.randint(1, 0xFFFFFFF))])
+        with output_dir.joinpath("commands.txt").open("a") as commands_txt:
+            print(" ".join(cmd), file=commands_txt)
+        # print(cmd)
+        subprocess.check_call(cmd)
+
+    def srun_cmd():
+        cmd = [
+            "srun",
+            "--cpus-per-task=2",
+            "--ntasks=1",
+            "--threads=1",
+            f"--nodelist={slurm_nodelist}",
+        ]
+        if slurm_exclude_nodes:
+            cmd.append(f"--exclude={slurm_exclude_nodes}")
+        return cmd
+
+    # ----------------------------------------------------------------------
+
+    def submit():
+        failures = 0
+        logging.info(f"submitting {num_runs} jobs")
+        with concurrent.futures.ThreadPoolExecutor(max_workers=num_runs) as executor:
+            future_to_runid = {executor.submit(run_raxml_ng, run_id): run_id for run_id in (f"{ri:03d}" for ri in range(num_runs))}
+            for future in concurrent.futures.as_completed(future_to_runid):
+                try:
+                    future.result()
+                except Exception as err:
+                    logging.error(f"raxml-ng {working_dir} {future_to_runid[future]} FAILED: {err}")
+                    failures += 1
+                else:
+                    logging.info(f"raxml-ng run {working_dir} {future_to_runid[future]} completed")
+        if failures:
+            logging.error(f"raxml-ng {working_dir} FAILED: {failures} runs failed")
+        else:
+            logging.info("raxml-ng completed")
+
+    # ----------------------------------------------------------------------
+
+    def results_available():
+        return len(list(output_dir.glob("*.raxml.bestTree"))) > (num_runs / 2)
+
+    # ----------------------------------------------------------------------
+
+    sBestScore = re.compile(r"Final LogLikelihood: -([\d\.]+)", re.I)
+
+    def find_best_result():
+
+        def best_score(log_file_name):
+            mm = sBestScore.search(log_file_name.open().read())
+            if mm:
+                return float(mm.group(1))
+            else:
+                return None
+
+        if not results_available():
+            raise RuntimeError("all submissions FAILED")
+
+        # scores in results are positive numbers
+        results = [[log_file_name, best_score(log_file_name)] for log_file_name in output_dir.glob("*.raxml.log")]
+        results.sort(key=lambda en: en[1])
+        output_dir.parent.joinpath("raxml-best.txt").open("w").write(str(results[0][0].with_suffix(".bestTree")))
+        output_dir.parent.joinpath("raxml-all.txt").open("w").write("\n".join(f"{score:13.6f} {log_name.with_suffix('.bestTree')}" for log_name, score in results))
+        return [results[0][0].with_suffix(".bestTree"), results[0][1]]
+
+    # ----------------------------------------------------------------------
+
+    if not results_available():
+        start = datetime.datetime.now()
+        submit()
+        logging.info(f"raxml-ng elapsed: {datetime.datetime.now() - start}")
+    best_tree_file, best_score = find_best_result()
+    if best_score is None:
+        raise RuntimeError("all submissions FAILED")
+    logging.info(f"raxml-ng best: {best_tree_file}  score: {best_score}")
+    return best_tree_file
+
+# ----------------------------------------------------------------------
+
+def get_output_dir(working_dir, prefix):
+    output_dirs = list(working_dir.glob(prefix + "*"))
+    if output_dirs:
+        output_dir = max(output_dirs)
+    else:
+        output_dir = working_dir.joinpath(prefix + datetime.datetime.now().strftime('%Y-%m%d-%H%M%S'))
+        output_dir.mkdir()
+        output_dir.chmod(0o777)
+    return output_dir
+
+# ======================================================================
+
+try:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("subdir")
+    # parser.add_argument("outgroup")
+    parser.add_argument("-n", "--num-runs", dest="num_runs", type=int, default=16)
+    parser.add_argument("--node", dest="slurm_nodelist", default="i22")
+    parser.add_argument("--exclude-nodes", dest="slurm_exclude_nodes", default=None)
+    args = parser.parse_args()
+    logging.basicConfig(level=logging.DEBUG, format="%(levelname)s %(asctime)s: %(message)s")
+    exit_code = main(args) or 0
+except Exception as err:
+    logging.error(f"> {err}\n{traceback.format_exc()}")
+    exit_code = 1
+exit(exit_code)
+
+# ======================================================================

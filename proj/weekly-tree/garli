@@ -1,0 +1,450 @@
+#! /usr/bin/env python3
+
+import sys, os, re, argparse, logging, time, datetime, concurrent.futures, subprocess, random, traceback
+from pathlib import Path
+
+# ======================================================================
+
+sSubtypeNorm = {"BV": "BVIC", "BVIC": "BVIC", "BY": "BYAM", "BYAM": "BYAM", "A(H1N1)": "A(H1N1)", "H1": "A(H1N1)", "1": "A(H1N1)", "A(H3N2)": "A(H3N2)", "H3": "A(H3N2)", "3": "A(H3N2)"}
+sSubdirforSubtype = {"BVIC": "bvic", "BYAM": "byam", "A(H1N1)": "h1", "A(H3N2)": "h3"}
+
+sRandomGen = random.SystemRandom()
+
+# ----------------------------------------------------------------------
+
+def main(args: argparse.Namespace):
+    argv = '"' + '" "'.join(sys.argv) + '"'
+    working_dir = Path(args.subdir).resolve()
+    if args.start_tree:
+        tree = args.start_tree.resolve()
+    else:
+        tree = Path(working_dir.joinpath("raxml-best.txt").open().read().strip()).resolve()
+    if args.source_fasta:
+        source_fasta = args.source_fasta.resolve()
+    else:
+        source_fasta = working_dir.joinpath("source.fas").resolve()
+    try:
+        best_tree_file = garli(working_dir=working_dir, tree=tree, source_fas=source_fasta, num_runs=args.num_runs, stoptime=args.stoptime, slurm_nodelist=args.slurm_nodelist, slurm_exclude_nodes=args.slurm_exclude_nodes)
+        subprocess.run(["/usr/bin/mail", "-s", f"completed {sys.argv[0]} {working_dir}", "eu@antigenic-cartography.org"], input=f"cd {working_dir}\n{argv}\n{best_tree_file}\n", text=True)
+        return 0
+    except Exception as err:
+        subprocess.run(["/usr/bin/mail", "-s", f"FAILED {sys.argv[0]} {working_dir}", "eu@antigenic-cartography.org"], input=f"cd {working_dir}\n{argv}\n\n{traceback.format_exc()}\n", text=True)
+        raise
+
+# ----------------------------------------------------------------------
+
+def garli(working_dir: Path, tree: Path, source_fas: Path, num_runs: int, stoptime: int, slurm_nodelist: str, slurm_exclude_nodes: str):
+
+    default_required_memory = 7000
+
+    # the number of attachment branches evaluated for each taxon to be added to the tree during the creation of an ML stepwise-addition starting tree (when garli is run without raxml step)
+    attachmentspertaxon =  1000000
+    # termination condition: when no new significantly better scoring topology has been encountered in greater than this number of generations, garli stops
+    genthreshfortopoterm = 20000
+
+    output_dir = get_output_dir(working_dir, "garli.")
+
+    garli_cmd = "/syn/bin/garli"
+    srun_cmd = [
+        "srun",
+        "--cpus-per-task=2",
+        # "--nodes=1",
+        "--ntasks=1",
+        "--threads=1",
+        f"--nodelist={slurm_nodelist}",
+    ]
+    if slurm_exclude_nodes:
+        srun_cmd.append(f"--exclude={slurm_exclude_nodes}")
+
+    # ----------------------------------------------------------------------
+
+    def make_conf(run_id, required_memory):
+        """Returns filename of the written conf file"""
+        # if not outgroup or not isinstance(outgroup, list) or not all(isinstance(e, int) and e > 0 for e in outgroup):
+        #     raise ValueError("outgroup must be non-empty list of taxa indices in the fasta file starting with 1")
+        garli_args = {
+            "source": str(source_fas.resolve()),
+            "availablememory": required_memory or default_required_memory,
+            "streefname": str(tree.resolve()),
+            "output_prefix": str(output_dir.joinpath(run_id)),
+            "attachmentspertaxon": attachmentspertaxon,
+            "randseed": sRandomGen.randint(1, 0xFFFFFFF),
+            "genthreshfortopoterm": genthreshfortopoterm,
+            "searchreps": 1,
+            "stoptime": stoptime,
+            "outgroup": "1" # " ".join(str(e) for e in outgroup),
+            }
+        conf = GARLI_CONF.format(**garli_args)
+        conf_filename = output_dir.joinpath(run_id + ".garli.conf")
+        with conf_filename.open("w") as f:
+            f.write(conf)
+        return conf_filename
+
+    # ----------------------------------------------------------------------
+
+    def find_memory_requirements():
+        sGreat = re.compile(r"\s*great\s+>=\s+(\d+)\s+MB", re.I)
+        conf_file = make_conf(run_id="find_memory_requirements", required_memory=None)
+        start = time.time()
+        proc = subprocess.Popen([garli_cmd, str(conf_file)], stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        required_memory = None # default, in case the code below fails or times out
+        timeout = 60
+        while required_memory is None:
+            line = proc.stdout.readline().decode("utf-8")
+            if mm := sGreat.match(line):
+                required_memory = int(mm.group(1))
+            elif (time.time() - start) > timeout:
+                required_memory = default_required_memory
+                module_logger.warning(f"Cannot obtain memory required by garli in {timeout} seconds: default for {working_dir.name}: {required_memory} will be used")
+        proc.kill()
+        return required_memory
+
+    # ----------------------------------------------------------------------
+
+    def run_garli(run_id, required_memory):
+        conf_file = make_conf(run_id=run_id, required_memory=required_memory)
+        # --mem-per-cpu is half of required_memory because we allocate whole 2 cpus per run to prevent from hyperthreading
+        cmd = (srun_cmd + [f"--mem-per-cpu={int(required_memory / 2) + 1}", f"--job-name='garli {working_dir.name} {run_id}'", f"--output={output_dir.joinpath(run_id).with_suffix('.stdout')}", f"--error={output_dir.joinpath(run_id).with_suffix('.stderr')}"]
+               + [garli_cmd, str(conf_file)])
+        with output_dir.joinpath("commands.txt").open("a") as commands_txt:
+            print(" ".join(cmd), file=commands_txt)
+        # print(cmd)
+        subprocess.check_call(cmd)
+
+    # ----------------------------------------------------------------------
+
+    def submit():
+        required_memory = find_memory_requirements()
+        failures = 0
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            future_to_runid = {executor.submit(run_garli, run_id, required_memory): run_id for run_id in (f"{ri:03d}" for ri in range(num_runs))}
+            for future in concurrent.futures.as_completed(future_to_runid):
+                try:
+                    future.result()
+                except Exception as err:
+                    logging.error(f"garli {working_dir.name} {future_to_runid[future]} FAILED: {err}")
+                    failures += 1
+                else:
+                    logging.info(f"garli run {working_dir.name} {future_to_runid[future]} completed")
+        if failures:
+            logging.error(f"garli {working_dir.name} FAILED: {failures} runs failed")
+        else:
+            logging.info("garli completed")
+
+    # ----------------------------------------------------------------------
+
+    def results_available():
+        return len(list(output_dir.glob("*.best.phy"))) > (num_runs / 2)
+
+    # ----------------------------------------------------------------------
+
+    sReFinalScore = re.compile(r"Final\t-(\d+\.\d+)")
+
+    def find_best_result():
+        # scores in results are positive numbers
+        results = [[log_file_name, float(sReFinalScore.search(log_file_name.open().read()).group(1))] for log_file_name in output_dir.glob("*.log00.log")]
+        if not results:
+            raise Error(f"no results found in {output_dir}/*.log00.log")
+        results.sort(key=lambda en: en[1])
+        output_dir.parent.joinpath("garli-best.txt").open("w").write(str(results[0][0]).replace(".log00.log", ".best.phy"))
+        output_dir.parent.joinpath("garli-all.txt").open("w").write("\n".join(f"{score:13.6f} {str(log_name).replace('.log00.log', '.best.phy')}" for log_name, score in results))
+        return [Path(str(results[0][0]).replace(".log00.log", ".best.phy")), results[0][1]]
+
+    # ----------------------------------------------------------------------
+
+    if not results_available():
+        start = datetime.datetime.now()
+        submit()
+        logging.info(f"[{working_dir}]: garli elapsed: {datetime.datetime.now() - start}")
+    best_tree_file, best_score = find_best_result()
+    logging.info(f"[{working_dir}]: garli best: {best_tree_file}  score: {best_score}")
+    return best_tree_file
+
+# ----------------------------------------------------------------------
+
+GARLI_CONF = """\
+[general]
+datafname = {source}
+streefname = {streefname}
+# Prefix of all output filenames, such as log, treelog, etc. Change
+# this for each run that you do or the program will overwrite previous
+# results.
+ofprefix = {output_prefix}
+
+constraintfile = none
+
+# (1 to infinity) The number of attachment branches evaluated for each
+# taxon to be added to the tree during the creation of an ML
+# stepwise-addition starting tree. Briefly, stepwise addition is an
+# algorithm used to make a tree, and involves adding taxa in a random
+# order to a growing tree. For each taxon to be added, a number of
+# randomly chosen attachment branches are tried and scored, and then
+# the best scoring one is chosen as the location of that taxon. The
+# attachmentspertaxon setting controls how many attachment points are
+# evaluated for each taxon to be added. A value of one is equivalent
+# to a completely random tree (only one randomly chosen location is
+# evaluated). A value of greater than 2 times the number of taxa in
+# the dataset means that all attachment points will be evaluated for
+# each taxon, and will result in very good starting trees (but may
+# take a while on large datasets). Even fairly small values (< 10) can
+# result in starting trees that are much, much better than random, but
+# still fairly different from one another. Default: 50.
+attachmentspertaxon = {attachmentspertaxon}
+
+# -1 - random seed chosen automatically
+randseed = {randseed}
+
+# in Mb
+availablememory = {availablememory}
+
+# The frequency with which the best score is written to the log file, default: 10
+logevery = 1000
+
+# Whether to write three files to disk containing all information
+# about the current state of the population every saveevery
+# generations, with each successive checkpoint overwriting the
+# previous one. These files can be used to restart a run at the last
+# written checkpoint by setting the restart configuration entry. Default: 0
+writecheckpoints = 0
+
+# Whether to restart at a previously saved checkpoint. To use this
+# option the writecheckpoints option must have been used during a
+# previous run. The program will look for checkpoint files that are
+# named based on the ofprefix of the previous run. If you intend to
+# restart a run, NOTHING should be changed in the config file except
+# setting restart to 1. A run that is restarted from checkpoint will
+# give exactly the same results it would have if the run had gone to
+# completion. Default: 0
+restart = 0
+
+# If writecheckpoints or outputcurrentbesttopology are specified, this
+# is the frequency (in generations) at which checkpoints or the
+# current best tree are written to file. default: 100
+saveevery = 1000
+
+# Specifies whether some initial rough optimization is performed on
+# the starting branch lengths and alpha parameter. This is always
+# recommended. Default: 1.
+refinestart = 1
+
+# If true, the current best tree of the current search replicate is
+# written to <ofprefix>.best.current.tre every saveevery
+# generations. In versions before 0.96 the current best topology was
+# always written to file, but that is no longer the case. Seeing the
+# current best tree has no real use apart from satisfying your
+# curiosity about how a run is going. Default: 0.
+outputcurrentbesttopology = 0
+
+# If true, each new topology encountered with a better score than the
+# previous best is written to file. In some cases this can result in
+# really big files (hundreds of MB) though, especially for random
+# starting topologies on large datasets. Note that this file is
+# interesting to get an idea of how the topology changed as the
+# searches progressed, but the collection of trees should NOT be
+# interpreted in any meaningful way. This option is not available
+# while bootstrapping. Default: 0.
+outputeachbettertopology = 0
+
+# Specifies whether the automatic termination conditions will be
+# used. The conditions specified by both of the following two
+# parameters must be met. See the following two parameters for their
+# definitions. If this is false, the run will continue until it
+# reaches the time (stoptime) or generation (stopgen) limit. It is
+# highly recommended that this option be used! Default: 1.
+enforcetermconditions = 1
+
+# This specifies the first part of the termination condition. When no
+# new significantly better scoring topology (see significanttopochange
+# below) has been encountered in greater than this number of
+# generations, this condition is met. Increasing this parameter may
+# improve the lnL scores obtained (especially on large datasets), but
+# will also increase runtimes. Default: 20000.
+genthreshfortopoterm = {genthreshfortopoterm}
+
+# The second part of the termination condition. When the total
+# improvement in score over the last intervallength x intervalstostore
+# generations (default is 500 generations, see below) is less than
+# this value, this condition is met. This does not usually need to be
+# changed. Default: 0.05
+scorethreshforterm = 0.05
+
+# The lnL increase required for a new topology to be considered
+# significant as far as the termination condition is concerned. It
+# probably doesn’t need to be played with, but you might try
+# increasing it slightly if your runs reach a stable score and then
+# take a very long time to terminate due to very minor changes in
+# topology. Default: 0.01
+significanttopochange = 0.01
+
+# Whether a phylip formatted tree files will be output in addition to
+# the default nexus files for the best tree across all replicates
+# (<ofprefix>.best.phy), the best tree for each replicate
+# (<ofprefix>.best.all.phy) or in the case of bootstrapping, the best
+# tree for each bootstrap replicate (<ofprefix.boot.phy>).
+# We use .phy (it's newick tree format), use 1 here!
+outputphyliptree = 1
+
+# Whether to output three files of little general interest: the
+# “fate”, “problog” and “swaplog” files. The fate file shows the
+# parentage, mutation types and scores of every individual in the
+# population during the entire search. The problog shows how the
+# proportions of the different mutation types changed over the course
+# of the run. The swaplog shows the number of unique swaps and the
+# number of total swaps on the current best tree over the course of
+# the run. Default: 0
+outputmostlyuselessfiles = 0
+
+# This option allow for orienting the tree topologies in a consistent
+# way when they are written to file. Note that this has NO effect
+# whatsoever on the actual inference and the specified outgroup is NOT
+# constrained to be present in the inferred trees. If multiple
+# outgroup taxa are specified and they do not form a monophyletic
+# group, this setting will be ignored. If you specify a single
+# outgroup taxon it will always be present, and the tree will always
+# be consistently oriented. To specify an outgroup consisting of taxa
+# 1, 3 and 5 the format is this: outgroup = 1 3 5
+outgroup = {outgroup}
+
+resampleproportion = 1.0
+inferinternalstateprobs = 0
+outputsitelikelihoods = 0
+optimizeinputonly = 0
+collapsebranches = 1
+
+# The number of independent search replicates to perform during a
+# program execution. You should always either do multiple search
+# replicates or multiple program executions with any dataset to get a
+# feel for whether you are getting consistent results, which suggests
+# that the program is doing a decent job of searching. Note that if
+# this is > 1 and you are performing a bootstrap analysis, this is the
+# number of search replicates to be done per bootstrap replicate. That
+# can increase the chance of finding the best tree per bootstrap
+# replicate, but will also increase bootstrap runtimes
+# enormously. Default: 2
+searchreps = {searchreps}
+
+bootstrapreps = 0
+
+# ------------------- FOR NUCLEOTIDES --------------
+datatype=nucleotide
+
+# The number of relative substitution rate parameters (note that the
+# number of free parameters is this value minus one). Equivalent to
+# the “nst” setting in PAUP* and MrBayes. 1rate assumes that
+# substitutions between all pairs of nucleotides occur at the same
+# rate, 2rate allows different rates for transitions and
+# transversions, and 6rate allows a different rate between each
+# nucleotide pair. These rates are estimated unless the fixed option
+# is chosen. New in version 0.96, parameters for any submodel of the
+# GTR model may now be estimated. The format for specifying this is
+# very similar to that used in the “rclass’ setting of PAUP*. Within
+# parentheses, six letters are specified, with spaces between
+# them. The six letters represent the rates of substitution between
+# the six pairs of nucleotides, with the order being A-C, A-G, A-T,
+# C-G, C-T and G-T. Letters within the parentheses that are the same
+# mean that a single parameter is shared by multiple nucleotide
+# pairs. For example, ratematrix = (a b a a b a) would specify the HKY
+# 2-rate model (equivalent to ratematrix = 2rate). This entry,
+# ratematrix = (a b c c b a) would specify 3 estimated rates of
+# subtitution, with one rate shared by A-C and G-T substitutions,
+# another rate shared by A-G and C-T substitutions, and the final rate
+# shared by A-T and C-G substitutions. Default: 6rate
+ratematrix = 6rate
+
+# (equal, empirical, estimate, fixed) Specifies how the equilibrium
+# state frequencies (A, C, G and T) are treated. The empirical setting
+# fixes the frequencies at their observed proportions, and the other
+# options should be self-explanatory. Default: estimate
+statefrequencies = estimate
+
+# (none, gamma, gammafixed) – The model of rate heterogeneity
+# assumed. “gammafixed” requires that the alpha shape parameter is
+# provided, and a setting of “gamma” estimates it. Default: gamma
+ratehetmodel = gamma
+
+# (1 to 20) – The number of categories of variable rates (not
+# including the invariant site class if it is being used). Must be set
+# to 1 if ratehetmodel is set to none. Note that runtimes and memory
+# usage scale linearly with this setting. Default: 4
+numratecats = 4
+
+# (none, estimate, fixed) Specifies whether a parameter representing
+# the proportion of sites that are unable to change (i.e. have a
+# substitution rate of zero) will be included. This is typically
+# referred to as “invariant sites”, but would better be termed
+# “invariable sites”. Default: estimate
+invariantsites = estimate
+
+# ----------------------------------------------------------------------
+
+[master]
+nindivs = 4
+holdover = 1
+selectionintensity = .5
+holdoverpenalty = 0
+
+# The maximum number of generations to run.  Note that this supersedes
+# the automated stopping criterion (see enforcetermconditions above),
+# and should therefore be set to a very large value if automatic
+# termination is desired.
+stopgen = 1000000
+
+# The maximum number of seconds for the run to continue.  Note that
+# this supersedes the automated stopping criterion (see
+# enforcetermconditions above), and should therefore be set to a very
+# large value if automatic termination is desired.
+stoptime = {stoptime}
+
+startoptprec = 0.5
+minoptprec = 0.01
+numberofprecreductions = 20
+treerejectionthreshold = 50.0
+topoweight = 1.0
+modweight = 0.05
+brlenweight = 0.2
+randnniweight = 0.1
+randsprweight = 0.3
+limsprweight =  0.6
+intervallength = 100
+intervalstostore = 5
+
+limsprrange = 6
+meanbrlenmuts = 5
+gammashapebrlen = 1000
+gammashapemodel = 1000
+uniqueswapbias = 0.1
+distanceswapbias = 1.0
+"""
+
+# ----------------------------------------------------------------------
+
+def get_output_dir(working_dir, prefix):
+    output_dirs = list(working_dir.glob(prefix + "*"))
+    if output_dirs:
+        output_dir = max(output_dirs)
+    else:
+        output_dir = working_dir.joinpath(prefix + datetime.datetime.now().strftime('%Y-%m%d-%H%M%S'))
+        output_dir.mkdir()
+        output_dir.chmod(0o777)
+    return output_dir
+
+# ======================================================================
+
+try:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("subdir")
+    parser.add_argument("-n", "--num-runs", dest="num_runs", type=int, default=16)
+    parser.add_argument("-s", "--stoptime", dest="stoptime", default=60*60, type=int, help="termination condition: the maximum number of seconds for the run to continue")
+    parser.add_argument("-t", "--start-tree", dest="start_tree", default=None, type=Path)
+    parser.add_argument("-f", "--source-fasta", dest="source_fasta", default=None, type=Path)
+    parser.add_argument("--node", dest="slurm_nodelist", default="i22", help="one node to run on, to run on multiple nodes use --exclude-nodes")
+    parser.add_argument("--exclude-nodes", dest="slurm_exclude_nodes", default=None)
+    args = parser.parse_args()
+    logging.basicConfig(level=logging.DEBUG, format="%(levelname)s %(asctime)s: %(message)s")
+    exit_code = main(args) or 0
+except Exception as err:
+    logging.error(f"> {err}\n{traceback.format_exc()}")
+    exit_code = 1
+exit(exit_code)
+
+# ======================================================================

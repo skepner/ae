@@ -1,0 +1,8 @@
+#! /bin/bash
+set -o errexit -o errtrace -o pipefail -o nounset # -o xtrace
+if [[ $# -ne 1 ]]; then
+    echo Usage: "$0 <subtype>" >&2
+    exit 1
+fi
+SUBTYPE="$1"
+${AE_ROOT}/bin/tree-update-from-fasta ${SUBTYPE}/previous.newick ${SUBTYPE}/source.fas ${SUBTYPE}/source.newick
