@@ -1,4 +1,4 @@
-project('xlnt_all', 'c', 'cpp'
+project('xlnt_all', 'c', 'cpp',
   version : '1.5.0'
 )
 libstudxml_dir = include_directories('third-party/libstudxml', '.')
