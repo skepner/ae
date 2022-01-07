@@ -17,6 +17,7 @@ sSubtypes = {"H3": "A(H3N2)", "H1": "A(H1N1)", "BVIC": "B", "BYAM": "B"}
 
 def main(args: argparse.Namespace):
     tree = ae_backend.tree.load(args.input)
+    print(f">>> number of leaves: {tree.number_of_leaves()}", file=sys.stderr)
 
     if args.print_cumulative:
         leaves_by_cumulative = tree.select_leaves()
@@ -34,6 +35,7 @@ def main(args: argparse.Namespace):
             leaf = to_remove[ind]
             print(f"  {leaf.cumulative_edge():.8f}  {leaf.node_id():5d} {leaf.name()}")
         to_remove.remove()
+        print(f">>> number of leaves: {tree.number_of_leaves()}", file=sys.stderr)
 
     if args.remove_seq_id:
         to_remove = tree.select_leaves()
@@ -43,18 +45,24 @@ def main(args: argparse.Namespace):
             leaf = to_remove[ind]
             print(f"  {leaf.cumulative_edge():.8f}  {leaf.node_id():5d} {leaf.name()}")
         to_remove.remove()
+        print(f">>> number of leaves: {tree.number_of_leaves()}", file=sys.stderr)
 
     if args.populate:
         subtype = sSubtypes.get(args.subtype.upper(), args.subtype.upper())
         tree.populate_with_duplicates(subtype)
         tree.populate_with_sequences(subtype)
         tree.set_clades(os.environ["AC_CLADES_JSON_V2"])
+        print(f">>> number of leaves: {tree.number_of_leaves()}", file=sys.stderr)
 
     if args.ladderize:
-        tree.ladderize("number-of-leaves")
+        ladderize_method = "number-of-leaves"
+        tree.ladderize(ladderize_method)
+        print(f">>> ladderized by \"{ladderize_method}", file=sys.stderr)
 
     if args.remove_leaves_isolated_before:
+        print(f">>> removing leaves isolated before {args.remove_leaves_isolated_before}, but keeping tree topology", file=sys.stderr)
         tree.remove_leaves_isolated_before(args.remove_leaves_isolated_before)
+        print(f">>> number of leaves: {tree.number_of_leaves()}", file=sys.stderr)
 
     if args.output:
         ae_backend.tree.export(tree, args.output)

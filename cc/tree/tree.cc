@@ -201,11 +201,9 @@ void ae::tree::Tree::ladderize(ladderize_method method)
 
     switch (method) {
         case ladderize_method::max_edge_length:
-            AD_INFO("Ladderizing by max-edge-length");
-            AD_WARNING("Not implemented");
+            AD_WARNING("Ladderizing by max-edge-length Not implemented");
             break;
         case ladderize_method::number_of_leaves:
-            AD_INFO("Ladderizing by number-of-leaves");
             by_number_of_leaves();
             break;
         case ladderize_method::none:

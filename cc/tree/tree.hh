@@ -138,6 +138,7 @@ namespace ae::tree
         void subtype(const virus::type_subtype_t& subtype) { subtype_ = subtype; }
         void lineage(const sequences::lineage_t& lineage) { lineage_ = lineage; }
         void update_number_of_leaves_in_subtree();
+        size_t number_of_leaves() const { return root().number_of_leaves(); }
 
         enum class ladderize_method { none, number_of_leaves, max_edge_length };
         void ladderize(ladderize_method method);

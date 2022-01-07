@@ -105,6 +105,7 @@ void ae::py::tree(pybind11::module_& mdl)
             },
             "method"_a = "number-of-leaves")                                                  //
         .def("remove_leaves_isolated_before", &Tree::remove_leaves_isolated_before, "date"_a) //
+        .def("number_of_leaves", &Tree::number_of_leaves) //
         ;
 
     pybind11::class_<Nodes>(tree_submodule, "Nodes")                                                       //
