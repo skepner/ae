@@ -1,0 +1,181 @@
+{
+    "init": [
+        {"? N": "set", "whocc": true},
+        {"N": "set", "report-cumulative-output": "-", "report-cumulative-max": 30,
+         "?canvas-height": 10000,
+         "ladderize-method": "none"
+        }
+    ],
+
+    "tal": [
+        {"N": "canvas", "height": "$canvas-height"},
+        {"N": "margins", "left": 0.01},
+        {"? N": "clades", "slot": {"width": 0.01}, "width-to-height-ratio": 0.05, "all-clades": {"label": {"scale": 1.5}}},
+        {"N": "node-id-size", "size": 0.0002},
+        "clades-whocc",
+        "hz",
+        "eu-aa-transitions",
+        {"N": "tree", "width-to-height-ratio": 0.41},
+        {"N": "time-series", "start": "2018-05", "end": "2022", "slot": {"width": 0.0085, "?width": 0.00765, "label": {"scale": 0.7, "rotation": "clockwise"}},
+         "dash": {"width": 0.5, "line_width_pixels": 0.1}},
+
+        {"N": "nodes", "select": {"vaccine": {"type": "current", "passage": "cell"}, "report": false}, "apply": "report"},
+        {"?N": "nodes", "select": {"vaccine": {"type": "current", "passage": "cell"}, "report": false}, "apply": {"text": {"text": "Vaccine", "offset": [-0.2, 0], "?absolute_x": 100, "color": "black", "size": 0.01}}},
+        {"N": "nodes", "select": {"seq_id": "GUANGDONG_MAONAN/1536/2019_MDCK2_56880E2C", "report": true}, "apply": {"text": {"text": "A/Guangdong Maonan/1536/2019", "offset": [-0.22, 0.005], "?absolute_x": 100, "color": "black", "size": 0.01}}},
+        {"N": "nodes", "select": {"seq_id": "VICTORIA/2570/2019_SIAT1_0CB77B11", "report": true}, "apply": {"text": {"text": "A/Victoria/2570/2019", "offset": [-0.25, 0.005], "?absolute_x": 100, "color": "black", "size": 0.01}}},
+        {"N": "nodes", "select": {"seq_id": "WISCONSIN/588/2019_MDCK1_0CB77B11", "report": true}, "apply": {"text": {"text": "A/Wisconsin/588/2019", "offset": [-0.25, 0.013], "?absolute_x": 100, "color": "black", "size": 0.01}}},
+
+        {"?N": "nodes", "select": {"seq_id": "AH1N1/MANITOBA/2/2021_V_X1_h93388217", "report": true}, "apply": {"hide": true, "tree-edge-line-color": "red", "tree-edge-line-width": 2.0}},
+
+        {"?N": "nodes", "select": {"top-cumulative-gap": 1.1, "report": true}, "apply": {"hide": true, "tree-edge-line-color": "red"}},
+        {"?N": "nodes", "select": {"cumulative >=": 0.06, "report": true}, "apply": {"hide": true, "tree-edge-line-color": "red"}}
+    ],
+
+    "tal-dash-bar-clades": [
+        {"N": "dash-bar", "id": "bar-183P", "?width-to-height-ratio": 0.009,
+         "nodes": [
+             {"?": "183P-1", "select": {"aa": ["183P", "120T", "233L", "141A", "260N", "302K"], "?nuc": ["1632A", "313C", "547C", "939G"]}, "color": "#a2b324"},
+             {"?": "183P-2", "select": {"aa": ["183P", "233I"], "?nuc": ["547C", "633A", "1389A"]},                                         "color": "#e72f27"},
+             {"?": "183P-3", "select": {"aa": ["183P", "120A"], "?nuc": ["354A", "547C"]},                                                  "color": "#03569b"},
+             {"?": "183P-4", "select": {"aa": ["183P", "141E"], "?nuc": ["339A", "385G", "422A", "547C", "1134G", "1506G"]},                "color": "#742f32"},
+             {"?": "183P-5", "select": {"aa": ["183P", "260D"], "?nuc": ["547C", "1293C", "1416C"]},                                        "color": "#e9a390"},
+             {"?": "183P-6", "select": {"nuc": ["138A", "465G", "547C", "1332T"]},                                                          "color": "#0E68DF"},
+             {"?": "183P-7", "select": {"aa": ["183P", "302T"], "?nuc": ["246G", "905C", "1487G"]},                                         "color": "#a020f0"},
+         ],
+         "labels": [
+             {"text": "183P-1",  "color": "#a2b324", "vertical_position": "middle", "horizontal_position": "left", "offset": [-0.002, -0.26], "scale": 0.01},
+             {"text": "183P-2",  "color": "#e72f27", "vertical_position": "middle", "horizontal_position": "left", "offset": [-0.002, -0.29], "scale": 0.01},
+             {"text": "183P-3",  "color": "#03569b", "vertical_position": "middle", "horizontal_position": "left", "offset": [-0.002, -0.303], "scale": 0.01},
+             {"text": "183P-4",  "color": "#742f32", "vertical_position": "middle", "horizontal_position": "left", "offset": [-0.002, -0.312], "scale": 0.01},
+             {"text": "183P-5A", "color": "#e9a390", "vertical_position": "middle", "horizontal_position": "left", "offset": [-0.002,  0.06], "scale": 0.01},
+             {"text": "183P-5B", "color": "#e9a390", "vertical_position": "middle", "horizontal_position": "left", "offset": [-0.002, -0.12], "scale": 0.01},
+             {"text": "183P-6",  "color": "#0E68DF", "vertical_position": "middle", "horizontal_position": "left", "offset": [-0.002, -0.183], "scale": 0.01},
+             {"text": "183P-7",  "color": "#a020f0", "vertical_position": "middle", "horizontal_position": "left", "offset": [-0.002, -0.345], "scale": 0.01},
+         ],
+        },
+        {"N": "gap", "width-to-height-ratio": 0.009, "?debug-outline": "red"},
+    ],
+
+    "hz": [
+        {"?N": "hz-sections", "report": true,
+         "?line": {"color": "black", "line_width": 1},
+         "?top-gap": 0.01, "?bottom-gap": 0.01,
+         "sections": [
+             {"show": false, "id": "156N-0",                      "L": " ", "first": "SOUTH_AUSTRALIA/30/2013_MDCK1_FCCF3197",    "last": "ORENBURG/CRIE-276/2019_A5024073",             "label": "183P-7",                      "aa_transitions": "",                                                                                                               "All transitions": ""                                                                                                              },
+             {"show": true,  "id": "183P-7",                      "L": "A", "first": "WEST_VIRGINIA/6/2019_OR_2F098AD1",          "last": "MARYLAND/5/2020_OR_ADFAB03B",                 "label": "183P-7",                      "aa_transitions": "I404M E506D K302T N496S S183P",                                                "All transitions": "S84N S162N I216T S74R I295V S164T I404M E506D K302T N496S S183P"                                               },
+             {"show": true,  "id": "183P-1",                      "L": "B", "first": "NEW_YORK/6/2019_OR_29B904FC",               "last": "NEW_JERSEY/26/2019_OR_990FA443",              "label": "183P-1-4",                    "aa_transitions": "",                                                                        "All transitions": "S84N S162N I216T S74R I295V S164T S183P"                                                                       },
+             {"show": false, "id": "183P-6",                      "L": " ", "first": "PADOVA/1/2017_MDCK2/MDCK1_B7DBA873",        "last": "NEWCASTLE/619/2019_MDCK1_9CC40634",           "label": "183P-6",                      "aa_transitions": "",                                                                              "All transitions": "S84N S162N I216T S74R I295V S164T"                                                                             },
+             {"show": true,  "id": "183P-5B",                     "L": "C", "first": "GERMANY/9488/2019_OR_CB74906D",             "last": "DENMARK/302/2019_7AC1B065",             "label": "183P-5B",                     "aa_transitions": "N260D",                                                                  "All transitions": "S84N S162N I216T S74R I295V S164T S183P N260D"                                                                 },
+             {"show": true,  "id": "183P-5A",                     "L": "D", "first": "DENMARK/302/2019_7AC1B065",                 "last": "NORD_PAS-DE-CALAIS/1651/2019_PIX_A1E8AD92",  "label": "183P-5A",                     "aa_transitions": "N260D N129D",                                                            "All transitions": "S84N S162N I216T S74R I295V S164T S183P N260D N129D"                                                           },
+             {"show": true,  "id": "156K-0",                      "L": "E", "first": "NORD_PAS-DE-CALAIS/1651/2019_PIX_A1E8AD92", "last": "INDIA/PUN-NIV312851/2021_OR_3A5C97D2",                  "label": "156K",                        "aa_transitions": "",                                                "All transitions": "S84N S162N I216T S74R I295V S164T S183P N260D N129D T185I N156K"                                               },
+             {"show": true,  "id": "156K-K54Q-A186T-Q189E-E224A", "L": "F", "first": "INDIA/PUN-NIV312851/2021_OR_3A5C97D2",      "last": "BANGLADESH/3006/2021_OR_C861B597",            "label": "156K K54Q A186T Q189E E224A", "aa_transitions": "", "All transitions": "S84N S162N I216T S74R I295V S164T S183P N260D N129D T185I N156K K130N L161I V250A E506D K54Q A186T Q189E E224A"},
+             {"show": true,  "id": "156K-1",                      "L": "G", "first": "WASHINGTON/6/2020_OR_B80F91B7",             "last": "AGADIR/675/2019_MDCK1/MDCK1_BBAAB3C2", "label": "156K",                        "aa_transitions": "K130N L161I V250A E506D",                        "All transitions": "S84N S162N I216T S74R I295V S164T S183P N260D N129D T185I N156K K130N L161I V250A E506D"                       },
+             {"show": true,  "id": "156N-4",                      "L": "H", "first": "AGADIR/675/2019_MDCK1/MDCK1_BBAAB3C2",      "last": "CHILE/4418/2019_OR_E89208E3",                  "label": "156N",                        "aa_transitions": "",                                                      "All transitions": "S84N S162N I216T S74R I295V S164T S183P N260D N129D T185I"                                                     },
+             {"show": true,  "id": "156N-5",                      "L": "I", "first": "CHILE/4418/2019_OR_E89208E3",               "?last": "",                   "label": "156N",                        "aa_transitions": "D187A Q189E",                                          "All transitions": "S84N S162N I216T S74R I295V S164T S183P N260D N129D T185I D187A Q189E"                                         },
+         ]
+        }
+    ],
+
+    "eu-aa-transitions": [
+        {"N": "draw-aa-transitions", "?minimum_number_leaves_in_subtree": 0.0001,
+         "method": "eu-20200915", "?method": ["eu-20210503", "eu-20200915", "eu-20200909", "derek-20200907", "derek-2016", "eu-20200514"],
+         "report": false, "debug": false, "debug-pos": 183,
+         "?non-common-tolerance-per-pos": {"183": 0.7},
+         "?show-same-left-right-for-pos": 183,
+         "?minimum-number-leaves-in-subtree-per-pos": {"259": 40, "308": 40, "54": 40, "186": 140, "189": 40, "224": 40},
+         "minimum-number-leaves-in-subtree-per-pos": {"259": 40, "308": 40, "186": 140, "189": 40, "224": 40},
+         "all-nodes": {"label": {"color": "grey30"}},
+         "?pre-node-fix": "eo tree-transitions-merge <enter> <paste>",
+         "per-node": [
+             {"name": "S84N",        "label": {"offset": [-0.025, 0.01], "?box": [0.024, 0.006]},                 "node_id": "108.32",   "show": true, "?first": "WASHINGTON/38/2017_OR_5630769D",                      "?last": "TOGO/298/2021_OR_DAC55174",                   "?before first": "SHANGHAI_XUHUI/SWL1588/2019_E1/E1_50B727A7",  "?after last": null                                             },
+             {"name": "S162N I216T", "label": {"offset": [-0.04, 0.02], "?box": [0.03, 0.015]},                   "node_id": "202.31",   "show": true, "?first": "MICHIGAN/50/2015_M1_FFBAEC51",                        "?last": "TOGO/298/2021_OR_DAC55174",                   "?before first": "TANZANIA/4777/2017_OR_1017308C",              "?after last": null                                             },
+             {"name": "S74R I295V",  "label": {"offset": [-0.04, 0.02], "?box": [0.03, 0.015]},                   "node_id": "714.28",   "show": true, "?first": "INDIA/2256/2017_X2_08AA618C",                         "?last": "TOGO/298/2021_OR_DAC55174",                   "?before first": "TUNISIA/1033/2017_OR_EA575BB0",               "?after last": null                                             },
+             {"name": "L161I I404M", "label": {"offset": [-0.065, 0.014], "?box": [0.03, 0.015]},                  "node_id": "1645.7",   "show": true, "?first": "NAGANO/2728/2017_MDCK1/MDCK1_C0D449DD",               "?last": "BULGARIA/32/2019_MDCK2/MDCK3_C12AF2B7",       "?before first": "SENDAI/55/2017_MDCK1/MDCK1_422705D7",         "?after last": "INDIA/298/2017_X2_5D2E8C32"                     },
+             {"name": "I372V",       "label": {"offset": [-0.065, 0.01], "?box": [0.03, 0.006]},                   "node_id": "1893.7",   "show": true, "?first": "INDIA/1741154/2017_23D7A7DB",                         "?last": "ENGLAND/190600557/2019_OR_06BECECD",          "?before first": "CAMBODIA/C0625446/2018_SIAT1/MDCK1_E536AAA1", "?after last": "LEBANON/116/2018_OR_B94185B5"                   },
+             {"name": "S164T",       "label": {"offset": [-0.025, 0.01], "?box": [0.03, 0.006]},                  "node_id": "2235.24",  "show": true, "?first": "WASHINGTON/35/2017_OR_89349D1E",                      "?last": "TOGO/298/2021_OR_DAC55174",                   "?before first": "CANTERBURY/13/2017_SIATX/MDCK1_1D9A6C91",     "?after last": null                                             },
+             {"name": "I404M E506D", "label": {"offset": [-0.020, 0.01], "?box": [0.03, 0.015]},                  "node_id": "2508.15",  "show": true, "?first": "ONTARIO/RV2293/2017_X2_F3A59AE3",                     "?last": "MARYLAND/5/2020_OR_ADFAB03B",                 "?before first": "QATAR/10-VI-17-0044041/2017_MDCK1_D0C84EB3",  "?after last": "NEW_YORK/6/2019_OR_29B904FC"                    },
+             {"name": "K302T N496S", "label": {"offset": [-0.028, 0.008], "?box": [0.03, 0.015]},                 "node_id": "2782.13",  "show": true, "?first": "UKRAINE/7842/2018_MDCK2_07C4B145",                    "?last": "MARYLAND/5/2020_OR_ADFAB03B",                 "?before first": "MONTANA/25/2018_OR_B434AE4A",                 "?after last": "NEW_YORK/6/2019_OR_29B904FC"                    },
+             {"name": "S183P",       "label": {"offset": [-0.04, 0.025], "?color": "red", "?box": [0.03, 0.006]}, "node_id": "3098.12",  "show": true, "?first": "WEST_VIRGINIA/6/2019_OR_2F098AD1",                    "?last": "MARYLAND/5/2020_OR_ADFAB03B",                 "?before first": "ORENBURG/CRIE-276/2019_A5024073",             "?after last": "NEW_YORK/6/2019_OR_29B904FC"                    },
+             {"name": "S121N",       "label": {"offset": [-0.033, 0.01], "?box": [0.03, 0.006]},                  "node_id": "3488.9",   "show": true, "?first": "COLORADO/7816/2019_OR_02DCC0CE",                      "?last": "MARYLAND/5/2020_OR_ADFAB03B",                 "?before first": "BAVARIA/88/2019_OR_C15D09CD",                 "?after last": "NEW_YORK/6/2019_OR_29B904FC"                    },
+             {"name": "E68D L161I",  "label": {"offset": [-0.01, 0.011], "?box": [0.03, 0.015]},                  "node_id": "3511.8",   "show": true, "?first": "ABU_DHABI/130/2018_OR_4B320B07",                      "?last": "MARYLAND/5/2020_OR_ADFAB03B",                 "?before first": "COLORADO/7816/2019_OR_02DCC0CE",              "?after last": "NEW_YORK/6/2019_OR_29B904FC"                    },
+             {"name": "T120A",       "label": {"offset": [-0.02, 0.01], "?box": [0.03, 0.006]},                   "node_id": "3714.3",   "show": true, "?first": "GUATEMALA/99/2019_OR_D07DD20E",                       "?last": "MARYLAND/5/2020_OR_ADFAB03B",                 "?before first": "ILLINOIS/23/2019_OR_FDE075FD",                "?after last": "NEW_YORK/6/2019_OR_29B904FC"                    },
+             {"name": "T120A",       "label": {"offset": [-0.06, 0.01], "?box": [0.03, 0.006]},                   "node_id": "3914.8",   "show": true, "?first": "BUEA/19V-3508/2019_OR_EFC25977",                      "?last": "WASHINGTON/321/2019_OR_B31D7212",             "?before first": "FIJI/27/2019_MDCK1_440F3E9C",                 "?after last": "FUJIAN_YANPING/SWL1779/2019_E1/E1_AA735558"     },
+             {"name": "L233I",       "label": {"offset": [-0.05, 0.025], "?box": [0.03, 0.006]},                  "node_id": "4187.9",   "show": true, "?first": "GUANGXI_XIANGSHAN/SWL1614/2019_MDCK1/MDCK1_FA56C552", "?last": "PARANA/406/2019_OR_53221D62",                 "?before first": "FUJIAN_YANPING/SWL1779/2019_E1/E1_AA735558",  "?after last": "YUNNAN_LINXIANG/1557/2019_MDCK1/SIAT1_87257484" },
+             {"name": "V520A",       "label": {"offset": [-0.02, 0.005], "?box": [0.03, 0.006]},                  "node_id": "4246.8",   "show": true, "?first": "PENNSYLVANIA/532/2019_OR_52ED15BE",                   "?last": "PARANA/406/2019_OR_53221D62",                 "?before first": "OKAYAMA/1/2019_OR_F7669E99",                  "?after last": "YUNNAN_LINXIANG/1557/2019_MDCK1/SIAT1_87257484" },
+             {"name": "S183P",       "label": {"offset": [-0.05, 0.012], "?color": "red", "?box": [0.03, 0.006]}, "node_id": "4292.9",   "show": true, "?first": "NEW_YORK/6/2019_OR_29B904FC",                         "?last": "NEW_JERSEY/26/2019_OR_990FA443",              "?before first": "MARYLAND/5/2020_OR_ADFAB03B",                 "?after last": "PADOVA/1/2017_MDCK2/MDCK1_B7DBA873"             },
+             {"name": "N451T",       "label": {"offset": [-0.060, 0.015], "?box": [0.03, 0.006]},                 "node_id": "4877.7",   "show": true, "?first": "INDONESIA/KPG0546/2019_XX/MDCK1_44137F0D",            "?last": "NEW_JERSEY/26/2019_OR_990FA443",              "?before first": "PENNSYLVANIA/760/2019_OR_A744DFD9",           "?after last": "PADOVA/1/2017_MDCK2/MDCK1_B7DBA873"             },
+             {"name": "A215G",       "label": {"offset": [-0.03, 0.012], "?box": [0.03, 0.006]},                  "node_id": "4880.4",   "show": true, "?first": "TEXAS/7899/2019_OR_D49B9A5A",                         "?last": "WISCONSIN/69/2019_OR_58B5365C",               "?before first": "WASHINGTON/153/2019_OR_E4AC4C0E",             "?after last": "NEW_JERSEY/44/2018_OR_93797773"                 },
+             {"name": "P137S V173I", "label": {"offset": [-0.02, 0.012], "?box": [0.03, 0.015]},                  "node_id": "5123.6",   "show": true, "?first": "NEW_JERSEY/44/2018_OR_93797773",                      "?last": "NEW_JERSEY/26/2019_OR_990FA443",              "?before first": "WISCONSIN/69/2019_OR_58B5365C",               "?after last": "PADOVA/1/2017_MDCK2/MDCK1_B7DBA873"             },
+             {"name": "T120A",       "label": {"offset": [-0.06, 0.02], "?box": [0.03, 0.006]},                   "node_id": "5753.11",  "show": true, "?first": "UGANDA/6054/2018_XX_12FA4B58",                        "?last": "NEWCASTLE/619/2019_MDCK1_9CC40634",           "?before first": "NORWAY/3787/2017_MDCK1_DD777393",             "?after last": "GERMANY/9488/2019_OR_CB74906D"                  },
+             {"name": "S183P",       "label": {"offset": [-0.03, 0.01], "?color": "red", "?box": [0.03, 0.006]},  "node_id": "6376.7",   "show": true, "?first": "BERLIN/6/2019_OR_61C327B3",                           "?last": "NEWCASTLE/619/2019_MDCK1_9CC40634",           "?before first": "NORWAY/1854/2018_MDCK1_739CA6D6",             "?after last": "GERMANY/9488/2019_OR_CB74906D"                  },
+             {"name": "V520A",       "label": {"offset": [-0.06, 0.01], "?box": [0.03, 0.006]},                   "node_id": "6929.14",  "show": true, "?first": "ONTARIO/457/2019_OR_20EF3F75",                        "?last": "OKLAHOMA/26/2019_MDCK1_DDEC57D7",             "?before first": "GERMANY/9488/2019_OR_CB74906D",               "?after last": "DENMARK/302/2019_7AC1B065"                      },
+             {"name": "E235D",       "label": {"offset": [-0.07, 0.037], "?box": [0.03, 0.006]},                  "node_id": "6998.13",  "show": true, "?first": "KIEV/359/2017_SX_41033CC2",                           "?last": "OKLAHOMA/26/2019_MDCK1_DDEC57D7",             "?before first": "ONTARIO/457/2019_OR_20EF3F75",                "?after last": "DENMARK/302/2019_7AC1B065"                      },
+             {"name": "K160M",       "label": {"offset": [-0.025, 0.019], "?box": [0.03, 0.006]},                 "node_id": "7070.12",  "show": true, "?first": "HAITI/10484/2019_OR_F488F46F",                        "?last": "OKLAHOMA/26/2019_MDCK1_DDEC57D7",             "?before first": "CAMEROON/8101/2019_OR_100D21C3",              "?after last": "DENMARK/302/2019_7AC1B065"                      },
+             {"name": "T216K",       "label": {"offset": [-0.022, 0.008], "?box": [0.03, 0.006]},                 "node_id": "7126.11",  "show": true, "?first": "TEXAS/7504/2018_OR_7DF22F56",                         "?last": "OKLAHOMA/26/2019_MDCK1_DDEC57D7",             "?before first": "GUADELOUPE/657/2019_OR_92CC1E31",             "?after last": "DENMARK/302/2019_7AC1B065"                      },
+             {"name": "K130N",       "label": {"offset": [-0.028, 0.025], "?box": [0.03, 0.006]},                 "node_id": "7230.10",  "show": true, "?first": "TRINIDAD/2028/2019_MDCK3_17D0556E",                   "?last": "OKLAHOMA/26/2019_MDCK1_DDEC57D7",             "?before first": "JAMAICA/9153/2019_OR_1BE2F6E5",               "?after last": "DENMARK/302/2019_7AC1B065"                      },
+             {"name": "H296N",       "label": {"offset": [-0.03, 0.025], "?box": [0.03, 0.006]},                  "node_id": "7632.8",   "show": true, "?first": "ALABAMA/34/2018_OR_8FDEAFF9",                         "?last": "OKLAHOMA/26/2019_MDCK1_DDEC57D7",             "?before first": "SAO_PAULO/1315119-IAL/2019_OR_65686594",      "?after last": "DENMARK/302/2019_7AC1B065"                      },
+             {"name": "S183P N260D", "label": {"offset": [-0.04, 0.02], "?color": "red", "?box": [0.03, 0.015]},  "node_id": "8036.20",  "show": true, "?first": "GERMANY/9488/2019_OR_CB74906D",                       "?last": "TOGO/298/2021_OR_DAC55174",                   "?before first": "NEWCASTLE/619/2019_MDCK1_9CC40634",           "?after last": null                                             },
+             {"name": "P137S",       "label": {"offset": [-0.03, 0.007], "?box": [0.03, 0.006]},                   "node_id": "8417.5",   "show": true, "?first": "RIO_GRANDE_DO_SUL/870/2019_OR_FD91BA0F",              "?last": "OKLAHOMA/26/2019_MDCK1_DDEC57D7",             "?before first": "PERU/819/2019_OR_84D7271A",                   "?after last": "DENMARK/302/2019_7AC1B065"                      },
+             {"name": "N129D",       "label": {"offset": [-0.04, 0.02], "?box": [0.03, 0.006]},                   "node_id": "9212.19",  "show": true, "?first": "DENMARK/302/2019_7AC1B065",                           "?last": "TOGO/298/2021_OR_DAC55174",                   "?before first": "OKLAHOMA/26/2019_MDCK1_DDEC57D7",             "?after last": null                                             },
+             {"name": "T185I",       "label": {"offset": [-0.03, 0.01], "?box": [0.03, 0.006]},                 "node_id": "9831.18",  "show": true, "?first": "SINGAPORE/KK0997/2018_OR_6F2D5730",                   "?last": "TOGO/298/2021_OR_DAC55174",                   "?before first": "SERBIA/5188/2019_OR_CA09C83D",                "?after last": null                                             },
+             {"name": "Q189L",       "label": {"offset": [-0.050,  0.020], "?box": [0.030, 0.006]}, "node_id":  "10898.4",                  "show": true,  "?first": "SAINT_PETERSBURG/RII-240S/2018_OR_B411A379",          "?last": "RHEINLAND-PFALZ/3/2019_MDCK1/MDCK1_4FAD7658", "?before first": "WASHINGTON/534/2019_OR_07D394E6",                     "?after last": "BRISBANE/54/2019_5E9120B1"},
+             {"name": "A186T",       "label": {"offset": [-0.050,  0.020], "?box": [0.030, 0.006]}, "node_id":  "11729.5",                  "show": true,  "?first": "PERTH/1005/2019_SIAT1_D90C32DE",                      "?last": "WASHINGTON/560/2019_OR_093B094B",             "?before first": "BELGIUM/G0319/2019_OR_B478B25F",                      "?after last": "PENNSYLVANIA/45/2019_OR_20609FD6"},
+             {"name": "K504R",       "label": {"offset": [-0.05, 0.01], "?box": [0.03, 0.006]},                   "node_id": "12911.6",  "show": true, "?first": "YOKOHAMA/26/2019_A4A1_6A03955C",                      "?last": "ULAN_UDE/9/2019_MDCK1_9331B5F0",              "?before first": "TOAMASINA/806/2020_OR_837B29E4",              "?after last": "ENGLAND/675/2018_OR_64B1DB29"                   },
+             {"name": "V520A",       "label": {"offset": [-0.06, 0.02], "?box": [0.03, 0.006]},                   "node_id": "13764.6",  "show": true, "?first": "SAUDI_ARABIA/1294131/2019_OR_7C390282",               "?last": "ORENBURG/5/2020_MDCK3/MDCK1/MDCK1_A798B2A9",  "?before first": "PORTUGAL/SU304/2020_OR_B166042B",             "?after last": "NORD_PAS-DE-CALAIS/1651/2019_PIX_A1E8AD92"      },
+             {"name": "N156K",       "label": {"offset": [-0.04, 0.02], "?box": [0.03, 0.006]},                   "node_id": "14334.9",  "show": true, "?first": "NORD_PAS-DE-CALAIS/1651/2019_PIX_A1E8AD92",           "?last": "MALAYSIA/33075487/2020_MDCK1/SIAT1_93CAFAA2", "?before first": "ORENBURG/5/2020_MDCK3/MDCK1/MDCK1_A798B2A9",  "?after last": "AGADIR/675/2019_MDCK1/MDCK1_BBAAB3C2"           },
+             {"name": "K130N L161I", "label": {"offset": [-0.019, 0.01], "?box": [0.03, 0.015]},                  "node_id": "14438.8",  "show": true, "?first": "QATAR/16-VI-19-0068514/2019_OR_3BE2B9B6",             "?last": "MALAYSIA/33075487/2020_MDCK1/SIAT1_93CAFAA2", "?before first": "BANGLADESH/2049/2019_OR_7AD18E30",            "?after last": "AGADIR/675/2019_MDCK1/MDCK1_BBAAB3C2"           },
+             {"name": "V250A E506D", "label": {"offset": [-0.02, 0.01], "?box": [0.03, 0.015]},                   "node_id": "14641.7",  "show": true, "?first": "HAITI/230/2020_OR_178A45D6",                          "?last": "MALAYSIA/33075487/2020_MDCK1/SIAT1_93CAFAA2", "?before first": "CYPRUS/122/2020_OR_01A0EC8D",                 "?after last": "AGADIR/675/2019_MDCK1/MDCK1_BBAAB3C2"           },
+             {"name": "K54Q A186T Q189E E224A", "label": {"offset": [0.04,  -0.04], "show": true,  "?box": [0.030, 0.031]}, "node_id":  "14822.6", "?first": "INDIA/PUN-NIV312851/2021_OR_3A5C97D2",                "?last": "BANGLADESH/3005/2021_OR_6A6A86B5",            "?before first": "TEXAS/124/2020_OR_4D687E87",                          "?after last": "WASHINGTON/6/2020_OR_B80F91B7"},
+             {"name": "R259K K308R",            "label": {"offset": [0.01,  0.015],  "show": true,  "?box": [0.030, 0.015]}, "node_id":  "14828.5", "?first": "INDIA/PUN-NIV321627/2021_MDCKXP2_4B1A4856",           "?last": "BANGLADESH/3005/2021_OR_6A6A86B5",            "?before first": "INDIA/PUN-NIV312851/2021_OR_3A5C97D2",                "?after last": "WASHINGTON/6/2020_OR_B80F91B7"},
+             {"name": "T474A",       "label": {"offset": [-0.04, 0.01], "?box": [0.03, 0.006]},                   "node_id": "15208.6",  "show": true, "?first": "WISCONSIN/55/2020_OR_2FE3F182",                       "?last": "COLORADO/12107/2020_OR_AB098415",             "?before first": "PENNSYLVANIA/281/2020_OR_2EDC5F61",           "?after last": "ONTARIO/483/2019_OR_FD051F32"                   },
+             {"name": "K209M",       "label": {"offset": [-0.03, 0.01], "?box": [0.03, 0.006]},                   "node_id": "16028.4",  "show": true, "?first": "HONG_KONG/4394/2019_MDCK1/MDCK1_292659C0",            "?last": "MALAYSIA/33075487/2020_MDCK1/SIAT1_93CAFAA2", "?before first": "BALTIMORE/R0716/2020_F22FD808",               "?after last": "AGADIR/675/2019_MDCK1/MDCK1_BBAAB3C2"           },
+             {"name": "D187A Q189E", "label": {"offset": [-0.04, 0.02], "?box": [0.03, 0.015]},                   "node_id": "16981.14", "show": true, "?first": "DENMARK/191/2020_FE15D7F3",                           "?last": "TOGO/298/2021_OR_DAC55174",                   "?before first": "MARRAKECH/1738/2019_MDCK1/MDCK1_71927644",    "?after last": null                                             },
+             {"name": "R45K",        "label": {"offset": [-0.045, 0.01], "?box": [0.024, 0.006]},                 "node_id": "18261.7",  "show": true, "?first": "IRELAND/80604/2019_9C32DDDF",                         "?last": "QUEBEC/212/2019_OR_1B792D8B",                 "?before first": "VALLADOLID/13/2020_MDCK1/MDCK2_395A55AF",     "?after last": "TAIWAN/82630/2019_D17713C4"                     },
+             {"name": "T120I",       "label": {"offset": [-0.055, 0.03], "?box": [0.03, 0.006]},                  "node_id": "18327.5",  "show": true, "?first": "IRELAND/87733/2019_MDCK2_F096E004",                   "?last": "QUEBEC/212/2019_OR_1B792D8B",                 "?before first": "IRELAND/87733/2019_93527B58",                 "?after last": "TAIWAN/82630/2019_D17713C4"                     },
+
+             {"?last": ""}
+         ],
+         "?last": ""
+        }
+    ],
+
+    "clades-whocc": [
+        "clades-{virus-type/lineage-subset}",
+        {"N": "clades",
+         "per-clade": [
+             {"name": "6B",    "show": false},
+             {"name": "6B1",   "show": false},
+             {"name": "6B1.A", "show": false},
+             {"name": "6B2",   "show": false},
+
+             {"name": "155E",  "show": false, "section-exclusion-tolerance": 2},
+             {"name": "156S",  "show": false, "section-exclusion-tolerance": 2},
+
+             {"name": "156D",  "show": false},
+             {"name": "156K",  "show": false,  "section-exclusion-tolerance": 10},
+             {"name": "156N",  "show": false,  "section-inclusion-tolerance": 12}
+         ]
+        },
+
+        {"N": "gap", "width-to-height-ratio": 0.005},
+
+        {"N": "dash-bar-aa-at", "id": "bar-156", "?width-to-height-ratio": 0.009,
+         "pos": 156,
+         "?colors": ["<most-frequent>, <second>"],
+         "colors": {"X": "grey"},
+         "labels": [
+             {"text": "156N", "vertical_position": "middle", "horizontal_position": "right", "offset": [0.002, -0.0], "scale": 0.01},
+             {"text": "156K", "vertical_position": "middle", "horizontal_position": "right", "offset": [0.002, 0.25], "scale": 0.01},
+             {"text": "156D", "vertical_position": "middle", "horizontal_position": "right", "offset": [0.002, -0.153], "scale": 0.01},
+             {"text": "156X", "vertical_position": "bottom", "horizontal_position": "right", "offset": [0.002, -0.030], "scale": 0.01}
+         ],
+         "?labels": {"A": "red", "T": "blue"},
+         "dash": {"width": 1.0, "line_width_pixels": 0.5}, "?": "dash width is a fraction of area width"
+        },
+
+        {"N": "gap", "width-to-height-ratio": 0.03},
+
+        {"?N": "dash-bar-aa-at", "id": "bar-260", "pos": 260, "dash": {"width": 1.0, "line_width_pixels": 0.1}},
+
+    ]
+}
