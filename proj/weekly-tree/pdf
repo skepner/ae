@@ -11,5 +11,7 @@ SUBTYPE="$1"
 TAL="$(dirname $0)/${SUBTYPE}.tal"
 declare -A CUMUL=([bvic]=10 [h1]=0.1 [h3]=10)
 
-~/ae/bin/tree-to-json -s ${SUBTYPE} --populate --ladderize --print-cumulative 20 --remove-if-cumulative-more-than ${CUMUL[${SUBTYPE}]} $(cat ${SUBTYPE}/garli-best.txt) ${SUBTYPE}/${SUBTYPE}.tjz
+if [[ ! -f ${SUBTYPE}/${SUBTYPE}.tjz ]]; then
+    ~/ae/bin/tree-to-json -s ${SUBTYPE} --populate --ladderize --print-cumulative 20 --remove-if-cumulative-more-than ${CUMUL[${SUBTYPE}]} $(cat ${SUBTYPE}/garli-best.txt) ${SUBTYPE}/${SUBTYPE}.tjz
+fi
 tal -s ${TAL} ${SUBTYPE}/${SUBTYPE}.tjz ${SUBTYPE}/${SUBTYPE}.txt ${SUBTYPE}/${SUBTYPE}.pdf
