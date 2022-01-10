@@ -73,23 +73,23 @@ def regular_name_parser(name: str, lab_hint: str, context: Context):
 # writer
 # ======================================================================
 
-def write(file: Union[io.TextIOWrapper, Path], selected :ae_backend.seqdb.Selected, aa: bool, wrap_pos: int = 0, name=lambda ref: ref.seq_id()):
+def write(filename_or_stream: Union[io.TextIOWrapper, Path], selected :ae_backend.seqdb.Selected, aa: bool, wrap_pos: int = 0, name=lambda ref: ref.seq_id()):
     def do_wrap(data: str):
         if wrap_pos:
             return "\n".join(data[i:i+wrap_pos] for i in range(0, len(data), wrap_pos))
         else:
             return data
 
-    if isinstance(file, (Path, str)):
-        if file == "-":
+    if isinstance(filename_or_stream, (Path, str)):
+        if str(filename_or_stream) == "-":
             fil = sys.stdout
         else:
-            fil = file.open("w")
+            fil = filename_or_stream.open("w")
     else:
-        fil = file
+        fil = filename_or_stream
     for ref in selected:
         fil.write(f">{name(ref)}\n{do_wrap(str(ref.aa if aa else ref.nuc))}\n")
-    if isinstance(file, (Path, str)) and file != "-":
+    if isinstance(filename_or_stream, (Path, str)) and str(filename_or_stream) != "-":
         fil.close()
 
 # ======================================================================

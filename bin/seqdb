@@ -14,31 +14,46 @@ import ae_backend
 
 # ----------------------------------------------------------------------
 
-sSubtypeFix = {"B": "B", "A(H1N1)": "A(H1N1)", "H1": "A(H1N1)", "1": "A(H1N1)", "A(H3N2)": "A(H3N2)", "H3": "A(H3N2)", "3": "A(H3N2)"}
+sSubtypeFix = {"B": "B", "BVIC": "B", "BV": "B", "BY": "B", "BYAM": "B", "A(H1N1)": "A(H1N1)", "H1": "A(H1N1)", "1": "A(H1N1)", "A(H3N2)": "A(H3N2)", "H3": "A(H3N2)", "3": "A(H3N2)"}
 
 def main(args: argparse.Namespace):
-    if subtype := args.name and sSubtypeFix.get(args.name[0].upper()):
-        find(subtype, args.name[1:], args)
+    subtype = args.name and sSubtypeFix.get(args.name[0].upper())
+    if subtype and subtype[0] == "B" and len(subtype) > 1:
+        lineage = subtype[1]
+    else:
+        lineage = None
+    if subtype:
+        find(subtype, lineage=lineage, names=args.name[1:], args=args)
     else:
         for subtype in ["B", "A(H1N1)", "A(H3N2)"]:
-            find(subtype, args.name, args)
+            find(subtype, lineage=None, names=args.name, args=args)
 
 # ----------------------------------------------------------------------
 
-def find(subtype: str, names: list[str], args: argparse.Namespace):
-    selected = (ae_backend.seqdb.for_subtype(subtype)
-                .select_all()
-                .exclude_with_issue(not args.with_issues)
-                .filter_dates(args.start_date, args.end_date)
-                )
+def find(subtype: str, lineage: str, names: list[str], args: argparse.Namespace):
+    selected = ae_backend.seqdb.for_subtype(subtype).select_all()
+    selected.exclude_with_issue(not args.with_issues)
+    if lineage:
+        subtype.lineage(lineage)
+    selected.filter_dates(args.start_date, args.end_date)
+
+    reporting = args.aa or args.country or args.continent or names
+    if not reporting:
+        selected.remove_hash_duplicates().replace_with_master()
+    else:
+        selected.find_masters()
+
     if names:
         selected.filter_name([name.upper() for name in names])
-    else:
-        (selected
-         # .find_masters()
-         .remove_hash_duplicates()
-         .replace_with_master()
-         )
+    if args.country:
+        args.country = args.country.upper()
+        if args.country == "USA":
+            args.country = "UNITED STATES OF AMERICA"
+        selected.filter(lambda ref: ref.country() == args.country)
+    if args.continent:
+        selected.filter(lambda ref: ref.continent() == args.continent)
+    if args.aa:
+        selected.filter(lambda ref: ref.aa[args.aa])
     selected.sort(args.sort_order)
     if not args.any_host:
         if args.host and (host := args.host.upper()) != "HUMAN":
@@ -47,24 +62,43 @@ def find(subtype: str, names: list[str], args: argparse.Namespace):
             selected.human()
 
     print_names = True
+    max_names = 20 if not reporting else 0
+
     if args.fasta_aa:
         fasta.write(args.fasta_aa, selected, aa=True, wrap_pos=80 if args.wrap else 0, name=lambda ref: ref.seq_id())
         print_names = False
     if args.fasta_nuc:
         fasta.write(args.fasta_nuc, selected, aa=False, wrap_pos=80 if args.wrap else 0, name=lambda ref: ref.seq_id())
         print_names = False
-    print(f">>> {subtype:7s} {len(selected)}")
+    if not reporting:
+        print(f">>> {subtype:7s} {len(selected)}", file=sys.stderr)
     if print_names:
         if clades_file := os.environ.get("AC_CLADES_JSON_V2"):
             selected.find_clades(clades_file)
-        max_names = 20 if not names else 0
+
+        if args.format:
+            def output(seq):
+                return args.format.format(
+                    seq_id=seq.seq_id(),
+                    name=seq.name(),
+                    aa=seq.aa,
+                    date=seq.date(),
+                    clades=" ".join(seq.clades) if seq.clades else "",
+                    country=seq.country(),
+                    continent=seq.continent(),
+                    issues=seq.issues()
+                )
+        else:
+            def output(seq):
+                if clades := seq.clades:
+                    display_clades = " (\"" + '" "'.join(clades) + "\")"
+                else:
+                    display_clades = ""
+                issues = f" issues:{seq.issues()}" if seq.has_issues() else ""
+                return f"{seq.seq_id()} [{seq.date()}]{display_clades}{issues}"
+
         for no, seq in enumerate(selected):
-            if clades := seq.clades:
-                display_clades = " (\"" + '" "'.join(clades) + "\")"
-            else:
-                display_clades = ""
-            issues = f" issues:{seq.issues()}" if seq.has_issues() else ""
-            print(f"{seq.seq_id()} [{seq.date()}]{display_clades}{issues}")
+            print(output(seq))
             if max_names and no >= max_names:
                 break
 
@@ -100,6 +134,10 @@ try:
     parser.add_argument("--wrap", dest="wrap", action="store_true", default=False)
     parser.add_argument("--any-host", dest="any_host", action="store_true", default=False)
     parser.add_argument("--host", dest="host")
+    parser.add_argument("--country")
+    parser.add_argument("--continent")
+    parser.add_argument("--aa")
+    parser.add_argument("-f", "--format", help="output format: {seq_id} {date} {aa} {clades} {name} {country} {continent} {issues}")
     parser.add_argument("name", nargs="*")
     parser.add_argument("-v", "--verbose", dest="verbose", action="store_true", default=False)
     args = parser.parse_args()
