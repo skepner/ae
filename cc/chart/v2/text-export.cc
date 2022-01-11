@@ -78,7 +78,8 @@ std::string ae::chart::v2::export_table_to_text(const Chart& chart, std::optiona
     for (auto [ag_no, antigen_no] : acmacs::enumerate(antigen_order)) {
         auto antigen = antigens->at(antigen_no);
         auto& row = table[ag_no + serum_data_rows];
-        row[0] = fmt::format("{}", ag_no);
+        if (!sort)
+            row[0] = fmt::format("{}", ag_no);
         row[1] = antigen->format("{name_anntotations_reassortant}");
         row[2] = antigen->format("{passage}");
         row[3] = antigen->format("{date}");
@@ -146,7 +147,8 @@ std::string ae::chart::v2::export_table_to_text(const Chart& chart, std::optiona
     for (auto [sr_no, serum_no] : acmacs::enumerate(serum_order)) {
         auto serum = sera->at(serum_no);
         auto& row = serum_table[sr_no];
-        row[0] = fmt::format("{}", sr_no);
+        if (!sort)
+            row[0] = fmt::format("{}", sr_no);
         row[1] = serum->format("{name_anntotations_reassortant}");
         row[2] = serum->format("{passage}");
         row[3] = serum->format("{serum_id}");
