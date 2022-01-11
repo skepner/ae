@@ -33,7 +33,7 @@ def get_clade_data(source_dir: Path, ha1_offset: int, ha2_offset: int) -> list:
         res = {}
         if mutations.get("HA1") or mutations.get("HA2"):
             res["aa"] = [ha1_mut[1:] for ha1_mut in mutations.get("HA1", [])] + [f"{int(ha2_mut[1:-1]) + ha2_offset_aa}{ha2_mut[-1]}" for ha2_mut in mutations.get("HA2", [])]
-        elif mutations.get("nuc"):                   # h1, nuc only for 6B.1A
+        if mutations.get("nuc"):                   # h1, nuc only for 6B.1A
             res["nuc"] = [f"{int(nuc_mut[1:-1]) - ha1_offset}{nuc_mut[-1]}" for nuc_mut in mutations.get("nuc", [])]
         return res
 
