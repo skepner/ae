@@ -1,0 +1,106 @@
+#! /usr/bin/env python3
+import sys, os, argparse, subprocess, json, pprint, traceback
+from pathlib import Path
+
+# ======================================================================
+
+def main(args: argparse.Namespace):
+    args.output_dir.mkdir(exist_ok=True)
+    nextclade_dir = clone(output_dir=args.output_dir)
+    recent_dirs = find_recent_versions(nextclade_dir)
+    for subtype, sdir in recent_dirs.items():
+        extract_clades(subtype=subtype, source_dir=sdir)
+
+# ----------------------------------------------------------------------
+
+def extract_clades(subtype: str, source_dir: Path):
+    ha2_offset = get_ha2_offset(source_dir) # 0-based
+    # print(subtype, ha2_offset)
+    raw_clades = get_clade_data(source_dir, ha2_offset=ha2_offset)
+    print(subtype)
+    pprint.pprint(raw_clades, width=200)
+
+# ----------------------------------------------------------------------
+
+def get_clade_data(source_dir: Path, ha2_offset: int) -> list:
+
+    def convert_mutations(mutations: dict):
+        aa = [ha1_mut[1:] for ha1_mut in mutations.get("HA1", [])] + [f"{int(ha2_mut[1:-1]) + ha2_offset}{ha2_mut[-1]}" for ha2_mut in mutations.get("HA2", [])]
+        return aa
+
+    clades = []
+    def collect_clades(root):
+        clade = root.get("branch_attrs", {}).get("labels", {}).get("clade")
+        if clade:
+            mutations = root["branch_attrs"]["mutations"]
+            # print(clade, mutations)
+            clades.append({"name": clade, "aa": convert_mutations(mutations)})
+        for child in root.get("children", []):
+            collect_clades(child)
+
+    data = json.load(source_dir.joinpath("tree.json").open())
+    collect_clades(data["tree"])
+    return clades
+
+# ----------------------------------------------------------------------
+
+def get_ha2_offset(source_dir: Path) -> int:
+    # 0-based in amino-acid positions
+    # https://m.ensembl.org/info/website/upload/gff3.html
+    ha1_offset = 0
+    ha2_offset = 0
+    for line in source_dir.joinpath("genemap.gff").open():
+        if line[0] != "#":
+            seqid, source, type_, start, end, score, strand, phase, attributes = line.strip().split("\t")
+            if "HA1" in attributes:
+                ha1_offset = int(start) - 1
+            elif "HA2" in attributes:
+                ha2_offset = int(start) - 1
+    return (ha2_offset - ha1_offset) // 3
+
+# ----------------------------------------------------------------------
+
+sIgnoreDirs = [".git", ".github", "infra", "scripts", "sars-cov-2"]
+sSubtype = {"flu_yam_ha": "byam", "flu_vic_ha": "bvic", "flu_h1n1pdm_ha": "h1", "flu_h3n2_ha": "h3"}
+
+def find_recent_versions(nextclade_dir: Path):
+    all_dirs = []
+    for root, dirs, files in os.walk(nextclade_dir):
+        if "tree.json" in files:
+            all_dirs.append(Path(root))
+        else:
+            for idir in sIgnoreDirs:
+                if idir in dirs:
+                    dirs.remove(idir)
+    all_dirs.sort(key=lambda dd: dd.parent.name, reverse=True)
+    recent_dirs = {}
+    for adir in all_dirs:
+        subtype = sSubtype[adir.parents[4].name]
+        if not subtype in recent_dirs:
+            recent_dirs[subtype] = adir
+    return recent_dirs
+
+# ----------------------------------------------------------------------
+
+def clone(output_dir: Path) -> Path:
+    nextclade_dir = output_dir.joinpath("nextclade_data")
+    if nextclade_dir.exists():
+        subprocess.check_call(["git", "-C", str(nextclade_dir), "pull"])
+    else:
+        subprocess.check_call(["git", "-C", str(output_dir), "clone", "https://github.com/nextstrain/nextclade_data/"])
+    return nextclade_dir
+
+# ======================================================================
+
+
+try:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("output_dir", type=Path)
+    args = parser.parse_args()
+    exit_code = main(args) or 0
+except Exception as err:
+    print(f"> {err}\n{traceback.format_exc()}", file=sys.stderr)
+    exit_code = 1
+exit(exit_code)
+
+# ======================================================================
