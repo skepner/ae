@@ -1,5 +1,5 @@
 #! /usr/bin/env python3
-import sys, os, argparse, subprocess, json, pprint, traceback
+import sys, os, argparse, subprocess, json, datetime, pprint, traceback
 from pathlib import Path
 
 # ======================================================================
@@ -8,17 +8,22 @@ def main(args: argparse.Namespace):
     args.output_dir.mkdir(exist_ok=True)
     nextclade_dir = clone(output_dir=args.output_dir)
     recent_dirs = find_recent_versions(nextclade_dir)
+    result = {
+        "  version": "clades-v2",
+        "  date": datetime.date.today().strftime("%Y-%m-%d"),
+        "  creator": sys.argv[0],
+        }
     for subtype, sdir in recent_dirs.items():
-        extract_clades(subtype=subtype, source_dir=sdir)
+        result[subtype] = extract_clades(subtype=subtype, source_dir=sdir)
+    print(json.dumps(result, indent=4))
+
 
 # ----------------------------------------------------------------------
 
-def extract_clades(subtype: str, source_dir: Path):
+def extract_clades(subtype: str, source_dir: Path) -> list:
     ha1_offset, ha2_offset = get_ha_offset(source_dir) # 0-based in nuc pos
     # print(subtype, ha2_offset)
-    raw_clades = get_clade_data(source_dir, ha1_offset=ha1_offset, ha2_offset=ha2_offset)
-    print(subtype)
-    pprint.pprint(raw_clades, width=200)
+    return get_clade_data(source_dir, ha1_offset=ha1_offset, ha2_offset=ha2_offset)
 
 # ----------------------------------------------------------------------
 
@@ -29,7 +34,7 @@ def get_clade_data(source_dir: Path, ha1_offset: int, ha2_offset: int) -> list:
         res = {}
         if mutations.get("HA1") or mutations.get("HA2"):
             res["aa"] = [ha1_mut[1:] for ha1_mut in mutations.get("HA1", [])] + [f"{int(ha2_mut[1:-1]) + ha2_offset_aa}{ha2_mut[-1]}" for ha2_mut in mutations.get("HA2", [])]
-        else:                   # h1, nuc only for 6B.1A
+        elif mutations.get("nuc"):                   # h1, nuc only for 6B.1A
             res["nuc"] = [f"{int(nuc_mut[1:-1]) - ha1_offset}{nuc_mut[-1]}" for nuc_mut in mutations.get("nuc", [])]
         return res
 
@@ -39,7 +44,7 @@ def get_clade_data(source_dir: Path, ha1_offset: int, ha2_offset: int) -> list:
         if clade:
             mutations = root["branch_attrs"]["mutations"]
             # print(clade, mutations)
-            clades.append({"name": clade, **convert_mutations(mutations)})
+            clades.append({"N": clade, **convert_mutations(mutations)})
         for child in root.get("children", []):
             collect_clades(child)
 
@@ -66,7 +71,7 @@ def get_ha_offset(source_dir: Path) -> int:
 # ----------------------------------------------------------------------
 
 sIgnoreDirs = [".git", ".github", "infra", "scripts", "sars-cov-2"]
-sSubtype = {"flu_yam_ha": "byam", "flu_vic_ha": "bvic", "flu_h1n1pdm_ha": "h1", "flu_h3n2_ha": "h3"}
+sSubtype = {"flu_yam_ha": "B/Yam", "flu_vic_ha": "B/Vic", "flu_h1n1pdm_ha": "A(H1N1)", "flu_h3n2_ha": "A(H3N2)"}
 
 def find_recent_versions(nextclade_dir: Path):
     all_dirs = []
@@ -90,7 +95,7 @@ def find_recent_versions(nextclade_dir: Path):
 def clone(output_dir: Path) -> Path:
     nextclade_dir = output_dir.joinpath("nextclade_data")
     if nextclade_dir.exists():
-        subprocess.check_call(["git", "-C", str(nextclade_dir), "pull"])
+        subprocess.check_call(["git", "-C", str(nextclade_dir), "pull", "-q"])
     else:
         subprocess.check_call(["git", "-C", str(output_dir), "clone", "https://github.com/nextstrain/nextclade_data/"])
     return nextclade_dir
