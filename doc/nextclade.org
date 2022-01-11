@@ -1,0 +1,28 @@
+# Time-stamp: <2022-01-11 12:30:55 eu>
+* Obtaining clade definitions from https://github.com/nextstrain/nextclade_data/
+** Oriane
+
+~/ae/proj/nextclade/get-clade-data ~/tmp
+
+then put output into ${ACMACS_DATA}/clades.json
+
+** Manually
+
+git clone https://github.com/nextstrain/nextclade_data/
+--> 155Mb
+
+find the most recent version flu related directories with tree.json and genemap.gff
+for set_name in flu_h1n1pdm_ha flu_h3n2_ha flu_vic_ha flu_yam_ha; do ver_dir=$(fdfind tree.json nextclade_data/data/datasets/${set_name} | sort | tail -n 1) ${set_name}.json; done
+
+--> flu_h1n1pdm_ha.json flu_h3n2_ha.json flu_vic_ha.json flu_yam_ha.json
+
+
+* -------------------- local vars ----------------------------------------------------------------------
+:PROPERTIES:
+:VISIBILITY: folded
+:END:
+#+STARTUP: showall indent
+Local Variables:
+eval: (auto-fill-mode 0)
+eval: (add-hook 'before-save-hook 'time-stamp)
+End:
