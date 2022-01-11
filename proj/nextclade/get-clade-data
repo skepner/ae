@@ -15,8 +15,7 @@ def main(args: argparse.Namespace):
         }
     for subtype, sdir in recent_dirs.items():
         result[subtype] = extract_clades(subtype=subtype, source_dir=sdir)
-    print(json.dumps(result, indent=4))
-
+    generate_clades_v2(result)
 
 # ----------------------------------------------------------------------
 
@@ -89,6 +88,28 @@ def find_recent_versions(nextclade_dir: Path):
         if not subtype in recent_dirs:
             recent_dirs[subtype] = adir
     return recent_dirs
+
+# ----------------------------------------------------------------------
+
+def generate_clades_v2(data: dict, indent: int = 4):
+    # print(json.dumps(data, indent=indent))
+    key_order = ["  version", "  date", "  creator", "A(H1N1)", "A(H3N2)", "B/Vic", "B/Yam"]
+    print("{")
+    for key in key_order:
+        val = data.get(key)
+        if isinstance(val, str):
+            print(f"{' ':{indent}}\"{key}\": \"{val}\",")
+        else:
+            print(f"{' ':{indent}}\"{key}\": [")
+            for en in val[:-1]:
+                print(f"{' ':{indent * 2}}{json.dumps(en)},")
+            print(f"{' ':{indent * 2}}{json.dumps(val[-1])}\n{' ':{indent}}],")
+    for k, v in data.items():
+        if k not in key_order:
+            print(f"{' ':{indent}}\"{key}\": {json.dumps(val)},")
+
+    print(f"{' ':{indent}}\" \": \"\"")
+    print("}")
 
 # ----------------------------------------------------------------------
 
