@@ -3,7 +3,7 @@
         {"N": "set",
          "?report-cumulative-output": "-", "report-cumulative-max": 30,
          "gap-bvic-after-3del-bar": 0.025,
-         "canvas-height": 4000,
+         "?canvas-height": 4000,
          "ladderize-method": "none"
         }
     ],
