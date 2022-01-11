@@ -82,6 +82,7 @@ def find(subtype: str, lineage: str, names: list[str], args: argparse.Namespace)
                     seq_id=seq.seq_id(),
                     name=seq.name(),
                     aa=seq.aa,
+                    nuc=seq.nuc,
                     date=seq.date(),
                     clades=" ".join(seq.clades) if seq.clades else "",
                     country=seq.country(),
@@ -137,7 +138,7 @@ try:
     parser.add_argument("--country")
     parser.add_argument("--continent")
     parser.add_argument("--aa")
-    parser.add_argument("-f", "--format", help="output format: {seq_id} {date} {aa} {clades} {name} {country} {continent} {issues}")
+    parser.add_argument("-f", "--format", help="output format: {seq_id} {date} {aa} {nuc} {clades} {name} {country} {continent} {issues}")
     parser.add_argument("name", nargs="*")
     parser.add_argument("-v", "--verbose", dest="verbose", action="store_true", default=False)
     args = parser.parse_args()
