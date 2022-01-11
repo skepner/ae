@@ -14,19 +14,24 @@ def main(args: argparse.Namespace):
 # ----------------------------------------------------------------------
 
 def extract_clades(subtype: str, source_dir: Path):
-    ha2_offset = get_ha2_offset(source_dir) # 0-based
+    ha1_offset, ha2_offset = get_ha_offset(source_dir) # 0-based in nuc pos
     # print(subtype, ha2_offset)
-    raw_clades = get_clade_data(source_dir, ha2_offset=ha2_offset)
+    raw_clades = get_clade_data(source_dir, ha1_offset=ha1_offset, ha2_offset=ha2_offset)
     print(subtype)
     pprint.pprint(raw_clades, width=200)
 
 # ----------------------------------------------------------------------
 
-def get_clade_data(source_dir: Path, ha2_offset: int) -> list:
+def get_clade_data(source_dir: Path, ha1_offset: int, ha2_offset: int) -> list:
 
+    ha2_offset_aa = (ha2_offset - ha1_offset) // 3
     def convert_mutations(mutations: dict):
-        aa = [ha1_mut[1:] for ha1_mut in mutations.get("HA1", [])] + [f"{int(ha2_mut[1:-1]) + ha2_offset}{ha2_mut[-1]}" for ha2_mut in mutations.get("HA2", [])]
-        return aa
+        res = {}
+        if mutations.get("HA1") or mutations.get("HA2"):
+            res["aa"] = [ha1_mut[1:] for ha1_mut in mutations.get("HA1", [])] + [f"{int(ha2_mut[1:-1]) + ha2_offset_aa}{ha2_mut[-1]}" for ha2_mut in mutations.get("HA2", [])]
+        else:                   # h1, nuc only for 6B.1A
+            res["nuc"] = [f"{int(nuc_mut[1:-1]) - ha1_offset}{nuc_mut[-1]}" for nuc_mut in mutations.get("nuc", [])]
+        return res
 
     clades = []
     def collect_clades(root):
@@ -34,7 +39,7 @@ def get_clade_data(source_dir: Path, ha2_offset: int) -> list:
         if clade:
             mutations = root["branch_attrs"]["mutations"]
             # print(clade, mutations)
-            clades.append({"name": clade, "aa": convert_mutations(mutations)})
+            clades.append({"name": clade, **convert_mutations(mutations)})
         for child in root.get("children", []):
             collect_clades(child)
 
@@ -44,8 +49,8 @@ def get_clade_data(source_dir: Path, ha2_offset: int) -> list:
 
 # ----------------------------------------------------------------------
 
-def get_ha2_offset(source_dir: Path) -> int:
-    # 0-based in amino-acid positions
+def get_ha_offset(source_dir: Path) -> int:
+    # 0-based in nuc positions
     # https://m.ensembl.org/info/website/upload/gff3.html
     ha1_offset = 0
     ha2_offset = 0
@@ -56,7 +61,7 @@ def get_ha2_offset(source_dir: Path) -> int:
                 ha1_offset = int(start) - 1
             elif "HA2" in attributes:
                 ha2_offset = int(start) - 1
-    return (ha2_offset - ha1_offset) // 3
+    return ha1_offset, ha2_offset
 
 # ----------------------------------------------------------------------
 
