@@ -69,11 +69,16 @@ namespace ae::py
 
     // ----------------------------------------------------------------------
 
-    inline void populate_from_seqdb(const std::shared_ptr<ae::chart::v2::ChartModify>& chart)
+    inline void populate_from_seqdb(const std::shared_ptr<ae::chart::v2::ChartModify>& chart, bool remove_old_sequences_clades = false)
     {
         const auto subtype = chart->info()->virus_type();
         const auto& seqdb = ae::sequences::seqdb_for_subtype(subtype);
-        const auto populate = [&seqdb](size_t /*no*/, auto ag_sr_ptr) {
+        const auto populate = [&seqdb, remove_old_sequences_clades](size_t /*no*/, auto ag_sr_ptr) {
+            if (remove_old_sequences_clades) {
+                ag_sr_ptr->sequence_aa({});
+                ag_sr_ptr->sequence_nuc({});
+                ag_sr_ptr->remove_all_clades();
+            }
             auto selected = seqdb.select_all();
             selected->filter_name(ag_sr_ptr->name(), ag_sr_ptr->reassortant(), ag_sr_ptr->passage().to_string());
             if (!selected->empty()) {
@@ -243,7 +248,7 @@ void ae::py::chart_v2(pybind11::module_& mdl)
         .def("number_of_sera", &Chart::number_of_sera)
         .def("number_of_projections", &Chart::number_of_projections)
 
-        .def("populate_from_seqdb", &ae::py::populate_from_seqdb, pybind11::doc("populate with sequences from seqdb")) //
+        .def("populate_from_seqdb", &ae::py::populate_from_seqdb, "remove_old_sequences_clades"_a = false, pybind11::doc("populate with sequences from seqdb")) //
 
         .def(
             "relax", //

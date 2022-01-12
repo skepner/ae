@@ -1,0 +1,86 @@
+#! /usr/bin/env python3
+"""
+Reading seqdb test
+"""
+
+import sys, os, argparse, traceback, json, pprint, datetime
+from pathlib import Path
+if os.environ.get("DYLD_INSERT_LIBRARIES"):
+    sys.path[:0] = [str(Path(os.environ["AE_ROOT"], dir)) for dir in ["build.debug", "py"]]
+else:
+    sys.path[:0] = [str(Path(os.environ["AE_ROOT"], dir)) for dir in ["build", "py"]]
+import ae_backend
+import ae.utils.open_file
+
+# ----------------------------------------------------------------------
+
+def main(args: argparse.Namespace):
+    data = json.load(ae.utils.open_file.for_reading(args.input_chart))
+    # pprint.pprint(data)
+    if not (subtype := data["c"].get("i", {}).get("V")):
+        raise RuntimeError("Subtype is not specified in the chart")
+    seqdb = ae_backend.seqdb.for_subtype(subtype)
+    subtype_prefix = f"{subtype}/"
+
+    num_antigens_found = sum(find_seqdb_ref(seqdb, antigen, subtype_prefix=subtype_prefix, force=args.force, verbose=args.verbose) for antigen in data["c"]["a"])
+    antigens_with_sequences = sum(1 for antigen in data["c"]["a"] if antigen.get("A"))
+    num_sera_found = sum(find_seqdb_ref(seqdb, serum, subtype_prefix=subtype_prefix, force=args.force, verbose=args.verbose) for serum in data["c"]["s"])
+    sera_with_sequences = sum(1 for serum in data["c"]["s"] if serum.get("A"))
+    print(f">>> {Path(sys.argv[0]).name}: antigens: new:{num_antigens_found} sequenced:{antigens_with_sequences} total:{len(data['c']['a'])}  sera: new:{num_sera_found} sequenced:{sera_with_sequences} total:{len(data['c']['s'])}")
+
+    if not args.no_chart_update and (args.output_chart or (num_antigens_found + num_sera_found) > 0): # replace only if updated
+        data.pop("_", None)
+        data["?created"] = f"ae {Path(sys.argv[0]).name} on {datetime.datetime.now():%Y-%m-%d %H:%M %Z}"
+        with ae.utils.open_file.for_writing(args.output_chart or args.input_chart) as file:
+            file.write(json.dumps(data, indent=1).encode("utf-8"))
+
+# ----------------------------------------------------------------------
+
+sNoCladesFileWarningPrinted = False
+
+def find_seqdb_ref(seqdb: ae_backend.seqdb.SeqdbForSubtype, ag_sr: dict, subtype_prefix: str, force: bool, verbose: bool) -> int:
+    "return 1 if match found"
+    if not force and ag_sr.get("A"):
+        return 0                # already matched
+    name = ag_sr["N"]
+    if name[:len(subtype_prefix)] == subtype_prefix:
+        name = name[len(subtype_prefix):]
+    reassortant = ag_sr.get("R", "")
+    passage = ag_sr.get("P", "")
+    if verbose:
+        print(f">>>> \"{name}\" R:\"{reassortant}\" P:\"{passage}\"")
+    selected = seqdb.select_all().filter_name(name=name, reassortant=reassortant, passage=passage)
+    if selected:
+        selected.find_masters()
+        global sNoCladesFileWarningPrinted
+        if clades_file := os.environ.get("AC_CLADES_JSON_V2"):
+            selected.find_clades(clades_file)
+        elif not sNoCladesFileWarningPrinted:
+            print(f">> cannot set clades: env AC_CLADES_JSON_V2 not set")
+            sNoCladesFileWarningPrinted = True
+        ag_sr["A"] = str(selected[0].aa)
+        ag_sr["B"] = str(selected[0].nuc)
+        ag_sr["c"] = selected[0].clades
+        if verbose:
+            print(f">>>>     \"{selected[0].seq_id()}\"")
+        return 1
+    else:
+        return 0
+
+# ----------------------------------------------------------------------
+
+try:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("input_chart", type=Path)
+    parser.add_argument("output_chart", nargs='?', type=Path)
+    parser.add_argument("-v", "--verbose", action="store_true", default=False)
+    parser.add_argument("-f", "--force", action="store_true", default=False, help="do re-populate")
+    parser.add_argument("-n", "--no-chart-update", action="store_true", dest="no_chart_update", default=False, help="do not update chart")
+    args = parser.parse_args()
+    exit_code = main(args) or 0
+except Exception as err:
+    print(f"> {err}\n{traceback.format_exc()}", file=sys.stderr)
+    exit_code = 1
+exit(exit_code)
+
+# ======================================================================

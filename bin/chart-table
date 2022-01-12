@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 """
-Parse passage, report errors
+Prints tables of the charts
 """
 
 import os, sys, argparse, traceback
