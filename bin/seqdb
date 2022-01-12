@@ -78,17 +78,45 @@ def find(subtype: str, lineage: str, names: list[str], args: argparse.Namespace)
 
         if args.format:
             def output(seq):
-                return args.format.format(
-                    seq_id=seq.seq_id(),
-                    name=seq.name(),
-                    aa=seq.aa,
-                    nuc=seq.nuc,
-                    date=seq.date(),
-                    clades=" ".join(seq.clades) if seq.clades else "",
-                    country=seq.country(),
-                    continent=seq.continent(),
-                    issues=seq.issues()
-                )
+
+                class FormatMap (dict):
+
+                    def __missing__(self, key):
+                        if key in ["seq_id", "seq-id", "seqid"]:
+                            return seq.seq_id()
+                        elif key == "name":
+                            return seq.name()
+                        elif key == "date":
+                            return seq.date()
+                        elif key == "clades":
+                            if seq.clades:
+                                return " ".join(seq.clades)
+                            else:
+                                return ""
+                        elif key == "country":
+                            return seq.country()
+                        elif key == "continent":
+                            return seq.continent()
+                        elif key == "issues":
+                            return seq.issues()
+                        elif key == "aa":
+                            return seq.aa
+                        elif key[:3] == "aa-":
+                            try:
+                                return seq.aa[int(key[3:])]
+                            except:
+                                return f"{{{key}}}"
+                        elif key == "nuc":
+                            return seq.nuc
+                        elif key[:3] == "nuc-":
+                            try:
+                                return seq.nuc[int(key[3:])]
+                            except:
+                                return f"{{{key}}}"
+                        else:
+                            return f"{{{key}}}"
+
+                return args.format.format_map(FormatMap())
         else:
             def output(seq):
                 if clades := seq.clades:
@@ -138,7 +166,7 @@ try:
     parser.add_argument("--country")
     parser.add_argument("--continent")
     parser.add_argument("--aa")
-    parser.add_argument("-f", "--format", help="output format: {seq_id} {date} {aa} {nuc} {clades} {name} {country} {continent} {issues}")
+    parser.add_argument("-f", "--format", help="output format: {seq_id} {date} {aa} {aa-163} {nuc} {nuc-163} {clades} {name} {country} {continent} {issues}")
     parser.add_argument("name", nargs="*")
     parser.add_argument("-v", "--verbose", dest="verbose", action="store_true", default=False)
     args = parser.parse_args()
