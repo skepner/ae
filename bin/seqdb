@@ -106,11 +106,21 @@ def find(subtype: str, lineage: str, names: list[str], args: argparse.Namespace)
                                 return seq.aa[int(key[3:])]
                             except:
                                 return f"{{{key}}}"
+                        elif key[:4] == "laa-":
+                            try:
+                                return f"{key[4:]}{seq.aa[int(key[4:])]}"
+                            except:
+                                return f"{{{key}}}"
                         elif key == "nuc":
                             return seq.nuc
-                        elif key[:3] == "nuc-":
+                        elif key[:4] == "nuc-":
                             try:
-                                return seq.nuc[int(key[3:])]
+                                return seq.nuc[int(key[4:])]
+                            except:
+                                return f"{{{key}}}"
+                        elif key[:5] == "lnuc-":
+                            try:
+                                return f"{key[5:]}{seq.nuc[int(key[5:])]}"
                             except:
                                 return f"{{{key}}}"
                         else:
@@ -166,7 +176,7 @@ try:
     parser.add_argument("--country")
     parser.add_argument("--continent")
     parser.add_argument("--aa")
-    parser.add_argument("-f", "--format", help="output format: {seq_id} {date} {aa} {aa-163} {nuc} {nuc-163} {clades} {name} {country} {continent} {issues}")
+    parser.add_argument("-f", "--format", help="output format: {seq_id} {date} {aa} {aa-163} {laa-163} {nuc} {nuc-163} {lnuc-163} {clades} {name} {country} {continent} {issues}")
     parser.add_argument("name", nargs="*")
     parser.add_argument("-v", "--verbose", dest="verbose", action="store_true", default=False)
     args = parser.parse_args()
