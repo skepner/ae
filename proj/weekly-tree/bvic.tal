@@ -23,24 +23,14 @@
 
         {"N": "gap", "width-to-height-ratio": 0.03},
 
-        {"N": "time-series", "start": "2016-07", "end": "2022",
+        {"N": "time-series", "start": "2016-07", "end": "2022-02",
          "slot": {"width": 0.0058, "label": {"scale": 1.0, "rotation": "clockwise"}},
          "dash": {"width": 0.5, "line_width_pixels": 0.1}},
 
-        {"N": "clades", "slot": {"width": 0.007}, "width-to-height-ratio": 0.015,
-         "all-clades": {"label": {"scale": 1.4}},
-         "per-clade": [
-             {"name": "V1A.1",   "section-inclusion-tolerance": 40, "slot": 4, "section-exclusion-tolerance": 33, "display_name": "V1A.1",                          "label": {"rotation_degrees": 90, "scale": 1.4}},
-             {"name": "V1A.3",   "section-inclusion-tolerance": 20, "slot": 4, "section-exclusion-tolerance": 20, "display_name": ["V1A.2", "V1A.3", "3del extra"], "label": {"rotation_degrees": 90, "scale": 1.4}},
-             {"name": "V1A.3a",  "section-inclusion-tolerance": 50, "slot": 2, "section-exclusion-tolerance": 11, "display_name": "V1A.3a",                         "label": {"rotation_degrees": 90, "scale": 1.4}},
-             {"name": "V1A.3a1", "section-inclusion-tolerance": 50, "slot": 0, "section-exclusion-tolerance": 11, "display_name": "V1A.3a1",                        "label": {"rotation_degrees": 90, "scale": 1.4}},
-             {"name": "V1A.3a2", "section-inclusion-tolerance": 50, "slot": 0, "section-exclusion-tolerance": 11, "display_name": "V1A.3a2",                        "label": {"rotation_degrees": 90, "scale": 1.4}}
-         ]
-        },
         {"N": "nodes", "select": {"vaccine": {"type": "current", "?passage": "cell"}, "report": false}, "apply": "report"},
         {"?N": "nodes", "select": {"vaccine": {"type": "current", "passage": "egg"}, "report": false}, "apply": {"text": {"text": "B/Austria/1359417/2021",         "offset": [-0.5, 0.005], "absolute_x": 0.52, "color": "black", "size": 0.01}}},
-        {"N": "nodes", "select": {"seq_id": "WASHINGTON/2/2019_OR_E2E43FFE", "report": true}, "apply": {"text": {"text": "B/Washington/2/2019",         "offset": [-0.4, 0.005], "absolute_x": 0.52, "color": "black", "size": 0.01}}},
-        {"N": "nodes", "select": {"seq_id": "AUSTRIA/1359417/2021_E3_BE8EB703", "report": true}, "apply": {"text": {"text": "B/Austria/1359417/2021",         "offset": [-0.46, 0.005], "absolute_x": 0.52, "color": "black", "size": 0.01}}},
+        {"N": "nodes", "select": {"seq_id": "WASHINGTON/2/2019_OR_E2E43FFE", "report": true}, "apply": {"text": {"text": "B/Washington/2/2019",         "offset": [-0.45, 0.005], "absolute_x": 0.52, "color": "black", "size": 0.01}}},
+        {"N": "nodes", "select": {"seq_id": "AUSTRIA/1359417/2021_E3_BE8EB703", "report": true}, "apply": {"text": {"text": "B/Austria/1359417/2021",         "offset": [-0.49, 0.005], "absolute_x": 0.52, "color": "black", "size": 0.01}}},
 
         {"N": "nodes", "select": {"seq_id": "(B/VIRGINIA/10007/2019_OR_h89CCD37C|B/MISSISSIPPI/10054/2019_OR_h89CCD37C|B/MISSOURI/9919/2019_OR_h89CCD37C|B/VIRGINIA/10128/2019_OR_h89CCD37C|B/VIRGINIA/10129/2019_OR_h89CCD37C|B/VIRGINIA/10131/2019_OR_h89CCD37C|B/VIRGINIA/10261/2019_OR_h89CCD37C|B/VIRGINIA/10262/2019_OR_h89CCD37C|B/VIRGINIA/10263/2019_OR_h89CCD37C|B/VIRGINIA/10264/2019_OR_h89CCD37C|B/VIRGINIA/10265/2019_OR_h89CCD37C|B/VIRGINIA/10266/2019_OR_h89CCD37C|B/VIRGINIA/10268/2019_OR_h89CCD37C|B/MISSOURI/10211/2019_OR_h89CCD37C|B/VIRGINIA/10269/2019_OR_h89CCD37C|B/GEORGIA/10207/2019_OR_h89CCD37C|B/VIRGINIA/10270/2019_OR_h89CCD37C|B/VIRGINIA/10271/2019_OR_h89CCD37C|B/VIRGINIA/10273/2019_OR_h89CCD37C|B/VIRGINIA/10275/2019_OR_h89CCD37C|B/VIRGINIA/10276/2019_OR_h89CCD37C|B/VIRGINIA/10277/2019_OR_h89CCD37C|B/VIRGINIA/10278/2019_OR_h89CCD37C|B/VIRGINIA/10280/2019_OR_h89CCD37C|B/TEXAS/11058/2019_OR_h89CCD37C|B/VIRGINIA/10420/2019_OR_h89CCD37C|B/VIRGINIA/10422/2019_OR_h89CCD37C|B/VIRGINIA/10423/2019_OR_h89CCD37C|B/VIRGINIA/10424/2019_OR_h89CCD37C|B/VIRGINIA/10425/2019_OR_h89CCD37C|B/VIRGINIA/10426/2019_OR_h89CCD37C|B/VIRGINIA/10427/2019_OR_h89CCD37C|B/VIRGINIA/10430/2019_OR_h89CCD37C|B/VIRGINIA/10431/2019_OR_h89CCD37C|B/VIRGINIA/10432/2019_OR_h89CCD37C|B/VIRGINIA/10707/2019_OR_h89CCD37C|B/VIRGINIA/10710/2019_OR_h89CCD37C|B/VIRGINIA/10434/2019_OR_h89CCD37C|B/VIRGINIA/10711/2019_OR_h89CCD37C|B/VIRGINIA/10712/2019_OR_h89CCD37C|B/GEORGIA/10588/2019_OR_h89CCD37C|B/GEORGIA/10589/2019_OR_h89CCD37C|B/VIRGINIA/10717/2019_OR_h89CCD37C|B/VIRGINIA/10718/2019_OR_h89CCD37C|B/VIRGINIA/10722/2019_OR_h89CCD37C|B/VIRGINIA/10723/2019_OR_h89CCD37C|B/VIRGINIA/10725/2019_OR_h89CCD37C|B/VIRGINIA/10728/2019_OR_h89CCD37C|B/VIRGINIA/10727/2019_OR_h89CCD37C|B/VIRGINIA/10730/2019_OR_h89CCD37C|B/VIRGINIA/10731/2019_OR_h89CCD37C|B/VIRGINIA/10732/2019_OR_h89CCD37C|B/VIRGINIA/10734/2019_OR_h89CCD37C|B/VIRGINIA/11067/2019_OR_h89CCD37C|B/VIRGINIA/11068/2019_OR_h89CCD37C|B/VIRGINIA/11069/2019_OR_h89CCD37C|B/OKLAHOMA/10999/2019_OR_h89CCD37C|B/VIRGINIA/11070/2020_OR_h89CCD37C|B/VIRGINIA/11071/2020_OR_h89CCD37C|B/VIRGINIA/11453/2020_OR_h89CCD37C|B/NEBRASKA/11375/2020_OR_h89CCD37C|B/COLORADO/11336/2020_OR_h89CCD37C|B/TEXAS/11445/2020_OR_h89CCD37C|B/NEW_YORK/11386/2020_OR_h89CCD37C|B/VIRGINIA/11835/2020_OR_h89CCD37C|B/VIRGINIA/11836/2020_OR_h89CCD37C|B/UTAH/11832/2020_OR_h89CCD37C|B/MARYLAND/11756/2020_OR_h89CCD37C|B/VIRGINIA/11957/2020_OR_h89CCD37C|B/COLORADO/12049/2020_OR_h89CCD37C)"},
          "apply": {"hide": true}, "?": "Sarah 2021-07-06 18:57: hide 70 U.S. AIR FORCE SCHOOL OF AEROSPACE MEDICINE strains of the B/WASHINGTON/2/2019 region in the tree"},
@@ -48,11 +38,25 @@
         "hz"
     ],
 
+    "clades-whocc": [
+        {"N": "clades", "slot": {"width": 0.007}, "width-to-height-ratio": 0.015,
+         "all-clades": {"label": {"scale": 1.4}},
+         "per-clade": [
+             {"name": "V1A.1",    "section-inclusion-tolerance": 40,   "slot": 4,   "section-exclusion-tolerance": 33,   "display_name": "V1A.1",   "label": {"rotation_degrees": 90, "scale": 1.4}},
+             {"name": "V1A.2",    "section-inclusion-tolerance": 10,   "slot": 4,   "section-exclusion-tolerance": 1,    "display_name": "V1A.2",   "label": {"rotation_degrees": 90, "scale": 1.4}},
+             {"name": "V1A.3",    "section-inclusion-tolerance": 20,   "slot": 4,   "section-exclusion-tolerance": 20,   "display_name": "V1A.3",   "label": {"rotation_degrees": 90, "scale": 1.4}},
+             {"name": "V1A.3a",   "section-inclusion-tolerance": 50,   "slot": 2,   "section-exclusion-tolerance": 11,   "display_name": "V1A.3a",  "label": {"rotation_degrees": 90, "scale": 1.4}},
+             {"name": "V1A.3a.1", "section-inclusion-tolerance": 50,   "slot": 0,   "section-exclusion-tolerance": 11,   "display_name": "V1A.3a.1", "label": {"rotation_degrees": 90, "scale": 1.4}},
+             {"name": "V1A.3a.2", "section-inclusion-tolerance": 50,   "slot": 0,   "section-exclusion-tolerance": 11,   "display_name": "V1A.3a.2", "label": {"rotation_degrees": 90, "scale": 1.4}}
+         ]
+        }
+    ],
+
     "hz": [
         {"N": "hz-sections", "report": true,
          "?line": {"color": "black", "line_width": 1},
          "?top-gap": 0.01, "?bottom-gap": 0.01,
-         "sections": [
+         "?sections": [
              {"show": true,  "id": "V1A.3-0",   "L": "A", "V": [ 3384,  3465], "first": "KANAGAWA/1/2019_MDCK2/MDCK1_28437632",      "last": "CANBERRA/1/2019_MDCK1_5787F988",                 "label": "V1A.2",   "aa_transitions": "K209N I180T",       "All transitions": "I117V N129D V146I K209N K162- N163- D164- I180T"                                    },
              {"show": true,  "id": "V1A.1-0",   "L": "B", "V": [ 4746,  6888], "first": "DOMINICAN_REPUBLIC/9932/2016_OR_32AFD72B",  "last": "INDIA/PUN-1920794/2019_F17A6976",                "label": "V1A.1",   "aa_transitions": "R498K I180V",       "All transitions": "I117V N129D V146I R498K I180V"                                                      },
              {"show": true,  "id": "V1A.3-1",   "L": "C", "V": [ 6891,  7474], "first": "INDIA/PUN-1920794/2019_F17A6976",           "last": "NIGER/6117/2018_OR_A6C0445D",                    "label": "V1A.3",   "aa_transitions": "",                  "All transitions": "I117V N129D V146I K136E K162- N163- D164-"                                          },
