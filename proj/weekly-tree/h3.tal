@@ -1,6 +1,6 @@
 {
     "init": [
-        {"N": "set", "report-cumulative-output": "-", "report-cumulative-max": 30,
+        {"N": "set", "?report-cumulative-output": "-", "report-cumulative-max": 30,
          "?canvas-height": 10000,
          "ladderize-method": "none"
         }
@@ -16,16 +16,13 @@
 
         {"N": "time-series", "start": "2018-02", "?end": "2021-06", "slot": {"width": 0.006, "label": {"scale": 0.9, "rotation": "clockwise"}},
          "dash": {"width": 0.5, "line_width_pixels": 0.1}},
-        {"N": "clades", "slot": {"width": 0.005}, "width-to-height-ratio": 0.06,
-         "all-clades": {"label": {"scale": 1.4}},
-         "per-clade": [
-             {"?name": "3C.2A1B", "label": {"scale": 1.4}}
-         ]
-        },
+
         "eu-aa-transitions",
         {"N": "nodes", "select": {"vaccine": {"type": "current", "passage": "cell"}, "report": false}, "apply": "report"},
-        {"N": "nodes", "select": {"seq_id": "AH3N2/SOUTH_AUSTRALIA/34/2019_SIAT2_hCCC44034", "report": true}, "apply": {"text": {"text": "A/South Australia/34/2019", "offset": [-0.25, 0], "?absolute_x": 100, "color": "black", "size": 0.01}}},
-        {"N": "nodes", "select": {"seq_id": "AH3N2/HONG_KONG/45/2019_SIAT2_h4D7113C9", "report": true}, "apply": {"text": {"text": "A/Hong Kong/45/2019", "offset": [-0.25, 0], "?absolute_x": 100, "color": "black", "size": 0.01}}},
+        {"N": "nodes", "select": {"seq_id": "SOUTH_AUSTRALIA/34/2019_SIAT1_0BBCB117", "report": true}, "apply": {"text": {"text": "A/South Australia/34/2019", "offset": [-0.25, 0], "?absolute_x": 100, "color": "black", "size": 0.01}}},
+        {"N": "nodes", "select": {"seq_id": "HONG_KONG/45/2019_SIAT2_97FBACE8", "report": true}, "apply": {"text": {"text": "A/Hong Kong/45/2019", "offset": [-0.25, 0], "?absolute_x": 100, "color": "black", "size": 0.01}}},
+        {"N": "nodes", "select": {"seq_id": "DARWIN/9/2021_SIAT1_A462D2B2", "report": true}, "apply": {"text": {"text": "A/Darwin/9/2021", "offset": [-0.32, 0], "?absolute_x": 100, "color": "black", "size": 0.01}}},
+        {"N": "nodes", "select": {"seq_id": "DARWIN/6/2021_QMC2_F7C9EFF5", "report": true}, "apply": {"text": {"text": "A/Darwin/6/2021", "offset": [-0.31, 0], "?absolute_x": 100, "color": "black", "size": 0.01}}},
 
         {"?N": "nodes", "select": {"top-cumulative-gap": 2.0, "report": true}, "apply": {"?hide": true, "tree-edge-line-color": "red"}},
         {"?N": "nodes", "select": {"cumulative >=": 0.06, "report": true}, "apply": {"hide": true, "tree-edge-line-color": "red"}},
@@ -203,45 +200,31 @@
     ],
 
     "clades-whocc": [
-        "clades-{virus-type/lineage-subset}",
         {"N": "clades",
+         "slot": {"width": 0.005}, "width-to-height-ratio": 0.06,
+         "all-clades": {"label": {"scale": 1.4}},
          "per-clade": [
-             {"name": "3C.3",              "show": false},
-             {"name": "3C.2A",             "show": false},
-             {"name": "3C.2A1",            "show": false},
-             {"name": "3C.2A1A",           "show": false},
-             {"name": "3C.2A1B",           "show": false},
-             {"name": "3C.2A4",            "show": false},
-
-             {"name": "3C.3A",             "show": true, "display_name": "3a", "slot": 1,               "label": {"rotation_degrees": 90, "scale": 2.7}, "section-inclusion-tolerance": 40},
-             {"name": "3C.3B",             "show": false, "display_name": "3b", "slot": 1,                "label": {"rotation_degrees": 90, "scale": 2.7}, "section-inclusion-tolerance": 40},
-             {"name": "3C.2A3",            "show": true, "display_name": "2a3", "slot": 1,               "label": {"rotation_degrees": 90, "scale": 2.7}},
-             {"name": "3C.2A2",            "show": true, "display_name": "2a2", "slot": 1,               "label": {"rotation_degrees": 90, "scale": 2.7}, "section-inclusion-tolerance": 15},
-             {"name": "3C.2A1B+135K",      "show": true, "display_name": "2a1b.1", "slot": 6, "label": {"rotation_degrees": 90, "scale": 2.7}, "section-inclusion-tolerance": 12, "section-exclusion-tolerance": 12},
-             {"name": "3C.2A1B+131K",      "show": true, "display_name": "2a1b.2", "slot": 6, "label": {"rotation_degrees": 90, "scale": 2.7}, "section-inclusion-tolerance": 55},
-
-             {"name": "3C.2A1B1A",    "show": true, "display_name": "2a1b1a",       "slot": 1, "label": {"rotation_degrees": 90, "scale": 2.0, "?offset": [0.002, -0.002]}, "section-inclusion-tolerance": 12, "?section-exclusion-tolerance": 15},
-             {"name": "3C.2A1B1B",    "show": true, "display_name": "2a1b1b",       "slot": 1, "label": {"rotation_degrees": 90, "scale": 2.0, "?offset": [0.002, -0.002]}, "section-inclusion-tolerance": 12, "?section-exclusion-tolerance": 15},
-             {"name": "3C.2A1B2A",    "show": true, "display_name": "2a1b2a",       "slot": 3, "label": [{"rotation_degrees": 90, "scale": 2.0, "?offset": [0.004,  0.03]}, {"show": false}], "section-inclusion-tolerance": 60, "?section-exclusion-tolerance": 15},
-             {"name": "3C.2A1B2A+186S",    "show": true, "display_name": "2a1b.2a1",       "slot": 0, "label": [{"rotation_degrees": 90, "scale": 2.0, "offset": [0.004,  -0.013]}, {"show": false}], "section-inclusion-tolerance": 60, "?section-exclusion-tolerance": 15},
-             {"name": "3C.2A1B2A+159N",    "show": true, "display_name": "2a1b.2a2",       "slot": 0, "label": [{"rotation_degrees": 90, "scale": 2.0, "?offset": [0.004,  0.03]}, {"show": false}], "section-inclusion-tolerance": 60, "?section-exclusion-tolerance": 15},
-             {"name": "3C.2A1B2B",    "show": true, "display_name": "2a1b2b",       "slot": 3, "label": {"rotation_degrees": 90, "scale": 2.0, "?offset": [0.002, -0.002]}, "section-inclusion-tolerance": 35, "?section-exclusion-tolerance": 15},
-
-             {"?N": "VCM 2021-02-17"},
-             {"?name": "3C.2A1B+193S",      "show": false},
-             {"?name": "3C.2A1B+131K+197R", "show": false},
-             {"?name": "3C.2A1B+135K+186D", "show": false, "display_name": "+186D", "slot": 0, "label": {"rotation_degrees": 90, "scale": 1.5, "offset": [0.004, -0.01]}, "section-inclusion-tolerance": 12},
-
-             {"?N": "disabled of Sarahs request 2021-01-28 15:09"},
-             {"?name": "3C.2A1B+131K+94N",  "show": true, "display_name": "+94N",   "slot": 0, "label": [{"rotation_degrees": 90, "scale": 0.8, "offset": [0.002, -0.002]}, {"rotation_degrees": 90, "scale": 0.8, "offset": [0.002, 0.00]}], "section-inclusion-tolerance": 40},
-             {"?name": "3C.2A1B+135K-A",    "show": true,                           "slot": 0, "label": {"rotation_degrees": 90, "scale": 1.0, "?offset": [0.002, -0.002]}, "section-inclusion-tolerance": 12, "section-exclusion-tolerance": 15},
-             {"?name": "3C.2A1B+135K+137F", "show": true, "display_name": "2a1b+135K-B", "slot": 0, "label": {"rotation_degrees": 90, "scale": 1.0}, "section-inclusion-tolerance": 12},
-             {"?name": "3C.2A1B+131K-A",    "show": true, "?display_name": "A",      "slot": 1, "label": [{"rotation_degrees": 90, "scale": 1.0, "?offset": [0.004, -0.003]}, {"rotation_degrees": 90, "scale": 1.5, "offset": [0.004, 0.01]}], "section-inclusion-tolerance": 40},
-             {"?name": "3C.2A1B+131K-B",    "show": true, "?display_name": "B",      "slot": 1, "label": [{"rotation_degrees": 90, "scale": 1.0, "?offset": [0.004, -0.003]}, {"rotation_degrees": 90, "scale": 1.5, "offset": [0.004, 0.01]}], "section-inclusion-tolerance": 25},
-
-             {"?N": "TC1 summary"},
-
-             {"?N": ""}
+             {"name": "3C",           "show": false},
+             {"name": "3C.3",         "show": false},
+             {"name": "3C.3a",        "show": true,    "display_name": "3a",        "slot": 1,   "label": {"rotation_degrees": 90, "scale": 2.7},                                                 "section-inclusion-tolerance": 70},
+             {"name": "3C.3a1",       "show": false},
+             {"name": "3C.3b",        "show": false},
+             {"name": "3C.2a",        "show": false},
+             {"name": "3C.2a1",       "show": false},
+             {"name": "3C.2a1a",      "show": false},
+             {"name": "3C.2a1b",      "show": false},
+             {"name": "3C.2a4",       "show": false},
+             {"name": "3C.2a3",       "show": true,    "display_name": "2a3",       "slot": 1,   "label": {"rotation_degrees": 90, "scale": 2.7}},
+             {"name": "3C.2a2",       "show": true,    "display_name": "2a2",       "slot": 1,   "label": {"rotation_degrees": 90, "scale": 2.7},                                                 "section-inclusion-tolerance": 15},
+             {"name": "3C.2a1b.1",    "show": true,    "display_name": "2a1b.1",    "slot": 6,   "label": {"rotation_degrees": 90, "scale": 2.7},                                                 "section-inclusion-tolerance": 12,    "section-exclusion-tolerance": 12},
+             {"name": "3C.2a1b.1a",   "show": true,    "display_name": "2a1b.1a",   "slot": 1,   "label": {"rotation_degrees": 90, "scale": 2.0, "?offset": [0.002, -0.002]},                     "section-inclusion-tolerance": 12,    "?section-exclusion-tolerance": 15},
+             {"name": "3C.2a1b.1b",   "show": true,    "display_name": "2a1b.1b",   "slot": 1,   "label": {"rotation_degrees": 90, "scale": 2.0, "?offset": [0.002, -0.002]},                     "section-inclusion-tolerance": 12,    "?section-exclusion-tolerance": 15},
+             {"name": "3C.2a1b.2",    "show": true,    "display_name": "2a1b.2",    "slot": 6,   "label": {"rotation_degrees": 90, "scale": 2.7},                                                 "section-inclusion-tolerance": 200},
+             {"name": "3C.2a1b.2a",   "show": true,    "display_name": "2a1b.2a",   "slot": 3,   "label": [{"rotation_degrees": 90, "scale": 2.0, "?offset": [0.004, 0.03]}, {"show": false}],    "section-inclusion-tolerance": 60,    "?section-exclusion-tolerance": 15},
+             {"name": "3C.2a1b.2a.1", "show": true,    "display_name": "2a1b.2a.1", "slot": 0,   "label": [{"rotation_degrees": 90, "scale": 2.0, "offset": [0.004, -0.013]}, {"show": false}],   "section-inclusion-tolerance": 60,    "?section-exclusion-tolerance": 15},
+             {"name": "3C.2a1b.2a.2", "show": true,    "display_name": "2a1b.2a.2", "slot": 0,   "label": [{"rotation_degrees": 90, "scale": 2.0, "?offset": [0.004, 0.03]}, {"show": false}],    "section-inclusion-tolerance": 60,    "?section-exclusion-tolerance": 15},
+             {"name": "3C.2a1b.2b",   "show": true,    "display_name": "2a1b.2b",   "slot": 3,   "label": {"rotation_degrees": 90, "scale": 2.0, "?offset": [0.002, -0.002]},                     "section-inclusion-tolerance": 35,    "?section-exclusion-tolerance": 15},
+             "?last"
          ]
         },
 
