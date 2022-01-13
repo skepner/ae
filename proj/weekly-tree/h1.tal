@@ -31,7 +31,23 @@
     ],
 
     "tal-dash-bar-clades": [
-        {"N": "dash-bar", "id": "bar-183P", "?width-to-height-ratio": 0.009,
+        {"N": "dash-bar-clades", "id": "bar-1A-clades", "?width-to-height-ratio": 0.009,
+         "clades": [
+             {"name": "6B.1A.1",     "color": "#a2b324", "label": {"text": "6B.1A.1", "color": "#a2b324"}},
+             {"name": "6B.1A.2",     "color": "#e72f27", "label": {"text": "6B.1A.2", "color": "#e72f27"}},
+             {"name": "6B.1A.3",     "color": "#03569b", "label": {"text": "6B.1A.3", "color": "#03569b"}},
+             {"name": "6B.1A.4",     "color": "#742f32", "label": {"text": "6B.1A.4", "color": "#742f32", "offset": [-0.002, -0.003]}},
+             {"?name": "6B.1A.5",    "color": "#e9a390", "label": {"text": "6B.1A.5", "color": "#e9a390"}},
+             {"name": "6B.1A.5a",    "color": "#dc6e50", "label": {"text": "6B.1A.5a", "color": "#dc6e50", "offset": [-0.002, -0.17]}},
+             {"name": "6B.1A.5a.1",  "color": "#e9a390", "label": {"text": "6B.1A.5a.1", "color": "#e9a390"}},
+             {"name": "6B.1A.5a.2",  "color": "#e990aa", "label": {"text": "6B.1A.5a.2", "color": "#e990aa"}},
+             {"name": "6B.1A.6",     "color": "#0E68DF", "label": {"text": "6B.1A.6", "color": "#0E68DF"}},
+             {"name": "6B.1A.5b",    "color": "#dcb550", "label": {"text": "6B.1A.5b", "color": "#dcb550"}},
+             {"name": "6B.1A.7",     "color": "#a020f0", "label": {"text": "6B.1A.7", "color": "#a020f0"}}
+         ]
+        },
+        {"?N": "gap", "width-to-height-ratio": 0.03, "?debug-outline": "red"},
+        {"?N": "dash-bar", "id": "bar-183P", "?width-to-height-ratio": 0.009,
          "nodes": [
              {"?": "183P-1", "select": {"aa": ["183P", "120T", "233L", "141A", "260N", "302K"], "?nuc": ["1632A", "313C", "547C", "939G"]}, "color": "#a2b324"},
              {"?": "183P-2", "select": {"aa": ["183P", "233I"], "?nuc": ["547C", "633A", "1389A"]},                                         "color": "#e72f27"},
@@ -50,7 +66,7 @@
              {"text": "183P-5B", "color": "#e9a390", "vertical_position": "middle", "horizontal_position": "left", "offset": [-0.002, -0.12], "scale": 0.01},
              {"text": "183P-6",  "color": "#0E68DF", "vertical_position": "middle", "horizontal_position": "left", "offset": [-0.002, -0.183], "scale": 0.01},
              {"text": "183P-7",  "color": "#a020f0", "vertical_position": "middle", "horizontal_position": "left", "offset": [-0.002, -0.345], "scale": 0.01},
-         ],
+         ]
         },
         {"N": "gap", "width-to-height-ratio": 0.009, "?debug-outline": "red"},
     ],
@@ -140,6 +156,7 @@
 
     "clades-whocc": [
         {"N": "clades",
+         "all-clades": {"show": false},
          "per-clade": [
              {"name": "6B",         "show": false},
              {"name": "6B.2",       "show": false},
@@ -156,12 +173,6 @@
              {"name": "6B.1A.5b"},
              {"name": "6B.1A.6"},
              {"name": "6B.1A.7"},
-
-             {"name": "155E",       "show": false,   "section-exclusion-tolerance": 2},
-             {"name": "156S",       "show": false,   "section-exclusion-tolerance": 2},
-             {"name": "156D",       "show": false},
-             {"name": "156K",       "show": false,   "section-exclusion-tolerance": 10},
-             {"name": "156N",       "show": false,   "section-inclusion-tolerance": 12}
          ]
         },
 
