@@ -2,7 +2,7 @@
     "init": [
         {"? N": "set", "whocc": true},
         {"N": "set", "?report-cumulative-output": "-", "report-cumulative-max": 30,
-         "canvas-height": 10000,
+         "?canvas-height": 10000,
          "ladderize-method": "none"
         }
     ],
@@ -33,17 +33,17 @@
     "tal-dash-bar-clades": [
         {"N": "dash-bar-clades", "id": "bar-1A-clades", "?width-to-height-ratio": 0.009,
          "clades": [
-             {"name": "6B.1A.1",     "color": "#a2b324", "label": {"text": "6B.1A.1", "color": "#a2b324"}},
-             {"name": "6B.1A.2",     "color": "#e72f27", "label": {"text": "6B.1A.2", "color": "#e72f27"}},
-             {"name": "6B.1A.3",     "color": "#03569b", "label": {"text": "6B.1A.3", "color": "#03569b"}},
-             {"name": "6B.1A.4",     "color": "#742f32", "label": {"text": "6B.1A.4", "color": "#742f32", "offset": [-0.002, -0.003]}},
-             {"?name": "6B.1A.5",    "color": "#e9a390", "label": {"text": "6B.1A.5", "color": "#e9a390"}},
-             {"name": "6B.1A.5a",    "color": "#dc6e50", "label": {"text": "6B.1A.5a", "color": "#dc6e50", "offset": [-0.002, -0.17]}},
+             {"name": "6B.1A.1",     "color": "#a2b324", "label": {"text": "6B.1A.1",    "color": "#a2b324"}},
+             {"name": "6B.1A.2",     "color": "#e72f27", "label": {"text": "6B.1A.2",    "color": "#e72f27"}},
+             {"name": "6B.1A.3",     "color": "#03569b", "label": {"text": "6B.1A.3",    "color": "#03569b"}},
+             {"name": "6B.1A.4",     "color": "#742f32", "label": {"text": "6B.1A.4",    "color": "#742f32", "offset": [-0.002, -0.003]}},
+             {"name": "6B.1A.5",     "color": "#e9a390", "label": {"text": "6B.1A.5",    "color": "#e9a390", "offset": [-0.002, 0.083], "vertical_position": "top"}},
+             {"name": "6B.1A.5a",    "color": "#dc6e50", "label": {"text": "6B.1A.5a",   "color": "#dc6e50", "offset": [-0.002, -0.17]}},
              {"name": "6B.1A.5a.1",  "color": "#e9a390", "label": {"text": "6B.1A.5a.1", "color": "#e9a390"}},
              {"name": "6B.1A.5a.2",  "color": "#e990aa", "label": {"text": "6B.1A.5a.2", "color": "#e990aa"}},
-             {"name": "6B.1A.6",     "color": "#0E68DF", "label": {"text": "6B.1A.6", "color": "#0E68DF"}},
-             {"name": "6B.1A.5b",    "color": "#dcb550", "label": {"text": "6B.1A.5b", "color": "#dcb550"}},
-             {"name": "6B.1A.7",     "color": "#a020f0", "label": {"text": "6B.1A.7", "color": "#a020f0"}}
+             {"name": "6B.1A.6",     "color": "#0E68DF", "label": {"text": "6B.1A.6",    "color": "#0E68DF"}},
+             {"name": "6B.1A.5b",    "color": "#dcb550", "label": {"text": "6B.1A.5b",   "color": "#dcb550"}},
+             {"name": "6B.1A.7",     "color": "#a020f0", "label": {"text": "6B.1A.7",    "color": "#a020f0"}}
          ]
         },
         {"?N": "gap", "width-to-height-ratio": 0.03, "?debug-outline": "red"},
