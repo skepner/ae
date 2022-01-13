@@ -66,10 +66,10 @@ def find(subtype: str, lineage: str, names: list[str], args: argparse.Namespace)
 
     if args.fasta_aa:
         fasta.write(args.fasta_aa, selected, aa=True, wrap_pos=80 if args.wrap else 0, name=lambda ref: ref.seq_id())
-        print_names = False
+        print_names = len(selected) < 20
     if args.fasta_nuc:
         fasta.write(args.fasta_nuc, selected, aa=False, wrap_pos=80 if args.wrap else 0, name=lambda ref: ref.seq_id())
-        print_names = False
+        print_names = len(selected) < 20
     if not reporting:
         print(f">>> {subtype:7s} {len(selected)}", file=sys.stderr)
     if print_names:

@@ -1,8 +1,8 @@
 {
     "init": [
         {"? N": "set", "whocc": true},
-        {"N": "set", "report-cumulative-output": "-", "report-cumulative-max": 30,
-         "?canvas-height": 10000,
+        {"N": "set", "?report-cumulative-output": "-", "report-cumulative-max": 30,
+         "canvas-height": 10000,
          "ladderize-method": "none"
         }
     ],
@@ -10,7 +10,6 @@
     "tal": [
         {"N": "canvas", "height": "$canvas-height"},
         {"N": "margins", "left": 0.01},
-        {"? N": "clades", "slot": {"width": 0.01}, "width-to-height-ratio": 0.05, "all-clades": {"label": {"scale": 1.5}}},
         {"N": "node-id-size", "size": 0.0002},
         "clades-whocc",
         "hz",
@@ -140,20 +139,29 @@
     ],
 
     "clades-whocc": [
-        "clades-{virus-type/lineage-subset}",
         {"N": "clades",
          "per-clade": [
-             {"name": "6B",    "show": false},
-             {"name": "6B1",   "show": false},
-             {"name": "6B1.A", "show": false},
-             {"name": "6B2",   "show": false},
+             {"name": "6B",         "show": false},
+             {"name": "6B.2",       "show": false},
+             {"name": "6B.1",       "show": false},
+             {"name": "6B.1A",      "show": false},
+             {"name": "6B.1A.1"},
+             {"name": "6B.1A.2"},
+             {"name": "6B.1A.3"},
+             {"name": "6B.1A.4"},
+             {"name": "6B.1A.5",   "?section-inclusion-tolerance": 80},
+             {"name": "6B.1A.5a"},
+             {"name": "6B.1A.5a.1",   "section-inclusion-tolerance": 20},
+             {"name": "6B.1A.5a.2"},
+             {"name": "6B.1A.5b"},
+             {"name": "6B.1A.6"},
+             {"name": "6B.1A.7"},
 
-             {"name": "155E",  "show": false, "section-exclusion-tolerance": 2},
-             {"name": "156S",  "show": false, "section-exclusion-tolerance": 2},
-
-             {"name": "156D",  "show": false},
-             {"name": "156K",  "show": false,  "section-exclusion-tolerance": 10},
-             {"name": "156N",  "show": false,  "section-inclusion-tolerance": 12}
+             {"name": "155E",       "show": false,   "section-exclusion-tolerance": 2},
+             {"name": "156S",       "show": false,   "section-exclusion-tolerance": 2},
+             {"name": "156D",       "show": false},
+             {"name": "156K",       "show": false,   "section-exclusion-tolerance": 10},
+             {"name": "156N",       "show": false,   "section-inclusion-tolerance": 12}
          ]
         },
 
