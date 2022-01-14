@@ -78,15 +78,15 @@ def find(subtype: str, lineage: str, names: list[str], args: argparse.Namespace)
 
     if selected and args.fasta_aa:
         fasta.write(args.fasta_aa, selected, aa=True, wrap_pos=80 if args.wrap else 0, name=lambda ref: ref.seq_id())
-        print_names = len(selected) < 20
+        print_names = print_names and len(selected) < 20
     if selected and args.fasta_nuc:
         fasta.write(args.fasta_nuc, selected, aa=False, wrap_pos=80 if args.wrap else 0, name=lambda ref: ref.seq_id())
-        print_names = len(selected) < 20
+        print_names = print_names and len(selected) < 20
     if clades_file := os.environ.get("AC_CLADES_JSON_V2"):
         selected.find_clades(clades_file)
     if selected and args.json:
         write_json(args.json, selected)
-        print_names = len(selected) < 20
+        print_names = print_names and len(selected) < 20
     if not reporting:
         print(f">>> {subtype:7s} {len(selected)}", file=sys.stderr)
     if print_names:
