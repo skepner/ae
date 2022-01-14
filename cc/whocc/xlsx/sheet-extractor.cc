@@ -350,7 +350,7 @@ void ae::xlsx::v1::Extractor::find_titers(warn_if_not_found winf)
 
 bool ae::xlsx::v1::Extractor::is_virus_name(nrow_t row, ncol_t col) const
 {
-    return ae::virus::name::is_good(fmt::format("{}", sheet().cell(row, col)));
+    return ae::virus::name::is_good(ae::string::strip(fmt::format("{}", sheet().cell(row, col))));
 
 } // ae::xlsx::v1::Extractor::is_virus_name
 
@@ -404,7 +404,7 @@ void ae::xlsx::v1::Extractor::remove_redundant_antigen_rows(warn_if_not_found wi
         ranges::actions::remove_if(antigen_rows_, [this, are_titers_increasing_numers, winf](nrow_t row) {
             const auto no_name = !is_virus_name(row, *antigen_name_column_);
             if (no_name && !are_titers_increasing_numers(row))
-                AD_WARNING(winf == warn_if_not_found::yes, "row {} has titers but no name: {}", row, sheet().cell(row, *antigen_name_column_));
+                AD_WARNING(winf == warn_if_not_found::yes, "row {} has titers but no name: \"{}\"", row, sheet().cell(row, *antigen_name_column_));
             return no_name;
         });
     }

@@ -21,7 +21,8 @@ namespace ae::string
             return {};
         else
             source.remove_prefix(first);
-        source.remove_suffix(source.size() - source.find_last_not_of(spaces));
+        if (const auto last = source.find_last_not_of(spaces); last != std::string_view::npos)
+                source.remove_suffix(source.size() - last - 1);
         return source;
     }
 
