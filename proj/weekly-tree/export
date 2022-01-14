@@ -231,7 +231,7 @@ sSubtypeToFunc = {"BVIC": bvic, "BYAM": byam, "A(H1N1)": h1, "A(H3N2)": h3}
 # ----------------------------------------------------------------------
 
 def export(subtype: str, selected :ae_backend.seqdb.Selected):
-    fasta.write(file=subtype_dir(subtype).joinpath("source.fas"), selected=selected, aa=False)
+    fasta.write(filename_or_stream=subtype_dir(subtype).joinpath("source.fas"), selected=selected, aa=False)
 
 # ----------------------------------------------------------------------
 
