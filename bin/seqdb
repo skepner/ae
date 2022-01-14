@@ -3,7 +3,7 @@
 Seqdb lookup
 """
 
-import os, sys, argparse, traceback
+import os, sys, json, argparse, traceback
 from pathlib import Path
 # if os.environ.get("DYLD_INSERT_LIBRARIES"):
 #     sys.path[:0] = [str(Path(os.environ["AE_ROOT"], dir)) for dir in ["build.debug", "py"]]
@@ -17,20 +17,32 @@ import ae_backend
 sSubtypeFix = {"B": "B", "BVIC": "B", "BV": "B", "BY": "B", "BYAM": "B", "A(H1N1)": "A(H1N1)", "H1": "A(H1N1)", "1": "A(H1N1)", "A(H3N2)": "A(H3N2)", "H3": "A(H3N2)", "3": "A(H3N2)"}
 
 def main(args: argparse.Namespace):
-    subtype = args.name and sSubtypeFix.get(args.name[0].upper())
+    subtype = (args.name and sSubtypeFix.get(args.name[0].upper())) or None
     if subtype and subtype[0] == "B" and len(subtype) > 1:
         lineage = subtype[1]
     else:
         lineage = None
     if subtype:
-        find(subtype, lineage=lineage, names=args.name[1:], args=args)
+        names = args.name[1:]
+    else:
+        names = args.name
+    if args.from_file:
+        names.extend([name.strip() for name in args.from_file.open()])
+    if subtype:
+        find(subtype, lineage=lineage, names=names, args=args)
     else:
         for subtype in ["B", "A(H1N1)", "A(H3N2)"]:
-            find(subtype, lineage=None, names=args.name, args=args)
+            find(subtype, lineage=None, names=names, args=args)
 
 # ----------------------------------------------------------------------
 
 def find(subtype: str, lineage: str, names: list[str], args: argparse.Namespace):
+    def fix_name(name):
+        if name.startswith(f"{subtype}/"):
+            return name[len(subtype) + 1:]
+        else:
+            return name
+
     selected = ae_backend.seqdb.for_subtype(subtype).select_all()
     selected.exclude_with_issue(not args.with_issues)
     if lineage:
@@ -44,7 +56,7 @@ def find(subtype: str, lineage: str, names: list[str], args: argparse.Namespace)
         selected.find_masters()
 
     if names:
-        selected.filter_name([name.upper() for name in names])
+        selected.filter_name([fix_name(name).upper() for name in names])
     if args.country:
         args.country = args.country.upper()
         if args.country == "USA":
@@ -64,17 +76,20 @@ def find(subtype: str, lineage: str, names: list[str], args: argparse.Namespace)
     print_names = True
     max_names = 20 if not reporting else 0
 
-    if args.fasta_aa:
+    if selected and args.fasta_aa:
         fasta.write(args.fasta_aa, selected, aa=True, wrap_pos=80 if args.wrap else 0, name=lambda ref: ref.seq_id())
         print_names = len(selected) < 20
-    if args.fasta_nuc:
+    if selected and args.fasta_nuc:
         fasta.write(args.fasta_nuc, selected, aa=False, wrap_pos=80 if args.wrap else 0, name=lambda ref: ref.seq_id())
+        print_names = len(selected) < 20
+    if clades_file := os.environ.get("AC_CLADES_JSON_V2"):
+        selected.find_clades(clades_file)
+    if selected and args.json:
+        write_json(args.json, selected)
         print_names = len(selected) < 20
     if not reporting:
         print(f">>> {subtype:7s} {len(selected)}", file=sys.stderr)
     if print_names:
-        if clades_file := os.environ.get("AC_CLADES_JSON_V2"):
-            selected.find_clades(clades_file)
 
         if args.format:
             def output(seq):
@@ -143,22 +158,12 @@ def find(subtype: str, lineage: str, names: list[str], args: argparse.Namespace)
 
 # ----------------------------------------------------------------------
 
-# def write_fasta(selected :ae_backend.seqdb.Selected, filename: Path, aa: bool, wrap: bool):
-#     def do_wrap(data: str):
-#         if wrap:
-#             size = 80
-#             return "\n".join(data[i:i+size] for i in range(0, len(data), size))
-#         else:
-#             return data
-
-#     if filename == "-":
-#         fil = sys.stdout
-#     else:
-#         fil = filename.open("w")
-#     for ref in selected:
-#         fil.write(f">{ref.seq_id()}\n{do_wrap(ref.aa() if aa else ref.nuc())}\n")
-#     if filename != "-":
-#         fil.close()
+def write_json(filename: Path, selected: ae_backend.seqdb.Selected):
+    data = []
+    for ref in selected:
+        data.append({"name": ref.name(), "seq_id": ref.seq_id(), "date": ref.date(), "clades": ref.clades, "aa": str(ref.aa), "nuc": str(ref.nuc)})
+    print(f">>>> json {filename} {len(data)}", file=sys.stderr)
+    json.dump(data, filename.open("w"), indent=1)
 
 # ----------------------------------------------------------------------
 
@@ -170,6 +175,7 @@ try:
     parser.add_argument("-s", "--sort", dest="sort_order", default="+date", help="date, +date, -date, name, +name, -name")
     parser.add_argument("--fas-aa", dest="fasta_aa", type=Path)
     parser.add_argument("--fas-nuc", dest="fasta_nuc", type=Path)
+    parser.add_argument("--json", dest="json", type=Path)
     parser.add_argument("--wrap", dest="wrap", action="store_true", default=False)
     parser.add_argument("--any-host", dest="any_host", action="store_true", default=False)
     parser.add_argument("--host", dest="host")
@@ -177,6 +183,7 @@ try:
     parser.add_argument("--continent")
     parser.add_argument("--aa")
     parser.add_argument("-f", "--format", help="output format: {seq_id} {date} {aa} {aa-163} {laa-163} {nuc} {nuc-163} {lnuc-163} {clades} {name} {country} {continent} {issues}")
+    parser.add_argument("--from", dest="from_file", type=Path)
     parser.add_argument("name", nargs="*")
     parser.add_argument("-v", "--verbose", dest="verbose", action="store_true", default=False)
     args = parser.parse_args()
