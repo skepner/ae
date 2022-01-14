@@ -162,7 +162,7 @@ def write_json(filename: Path, selected: ae_backend.seqdb.Selected):
     data = []
     for ref in selected:
         data.append({"name": ref.name(), "seq_id": ref.seq_id(), "date": ref.date(), "clades": ref.clades, "aa": str(ref.aa), "nuc": str(ref.nuc)})
-    print(f">>>> json {filename} {len(data)}", file=sys.stderr)
+    # print(f">>>> json {filename} {len(data)}", file=sys.stderr)
     json.dump(data, filename.open("w"), indent=1)
 
 # ----------------------------------------------------------------------
