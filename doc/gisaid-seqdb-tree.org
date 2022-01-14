@@ -1,0 +1,104 @@
+Time-stamp: <2022-01-14 10:18:33 eu>
+* already downloaded from gisaid: ~/ac/sequences
+ls -l ~/ac/sequences/gis*.fas.xz
+
+* [[https://platform.gisaid.org/epi3/start][GISAID]]
+ *Download A and B separately: perhaps bug in gisaid*
+
+** SUBMISSION date (see last date in ~/ac/sequences/)
+** Required Segments: HA (checkbox at the left of HA)
+** Click Search
+** Click leftmost checkbox in header to select all, number of slected must not exceed 20k (gisaid does not allow downloading more)
+** Click Download
+** Format: Sequences (DNA) as FASTA (second radio button)
+** DNA: HA (checkbox to the left from HA)
+** FASTA Header:
+Isolate name_|_a=Isolate ID_|_b=Type_|_c=Passage details/history_|_d=Lineage_|_e=Collection date_|_f=Submitter_|_g=Sample ID by sample provider_|_h=Sample ID by submitting lab_|_i=Last modified_|_j=Originating lab_|_k=Submitting lab_|_l=Segment_|_m=Segment number_|_n=Identifier_|_o=DNA Accession no._|_p=DNA INSDC_|_
+-- FASTA header field is max 350 chars, has to use abbreviated field names
+** FASTA Header: Isolate name | Isolate ID | Type | Passage details/history | Lineage | Collection date | Submitter | Sample ID by sample provider | Sample ID by submitting lab | Last modified | Originating lab | Submitting lab | Segment | Segment number | Identifier | DNA Accession no. | DNA INSDC
+** Date format: YYYY-MM-DD
+** Click download
+
+
+* seqdb-v4
+
+#+BEGIN_SRC bash
+dos2unix /r/gisaid_epiflu_sequence*.fasta
+ln -sf ~/ac/sequences/ae.py /r
+~/ae/bin/seqdb-update -m a -n /r/gisaid_epiflu_sequence*.fasta
+no=0; for f in /r/gisaid_epiflu_sequence*.fasta; do no=$((no+1)); t=gisaid-$(date +%Y-%m%d)-${no}.fas.xz; xz -9ec ${f} >/r/${t}; mv -i /r/${t} ~/ac/sequences/; done
+~/ae/bin/seqdb-update -m a ~/ac/sequences/gisaid-$(date +%Y-%m%d)-*.fas.xz
+seqdb-put
+ssa
+#+END_SRC
+
+** re-build from scratch
+
+#+BEGIN_SRC bash
+rm -f /r/seqdb-*.v4.json.xz; env SEQDB_V4=/r ~/ae/bin/seqdb-update ~/ac/sequences/gisaid-{19,201,2020}*.fas.xz ~/ac/sequences/gisaid-20210101-20210917.fas.xz ~/ac/sequences/n*.fas.xz ~/ac/sequences/ncbi ~/ac/sequences/gisaid-202?-*.fas.xz
+--> 5m
+#+END_SRC
+
+* Weekly trees
+[[file:../proj/weekly-tree/README.org][Make weekly trees]]
+
+* [[https://www.ncbi.nlm.nih.gov/genomes/FLU/Database/nph-select.cgi?go=database][NCBI]] (not updated since 2020-10-13 ?)
+https://ftp.ncbi.nih.gov/genomes/INFLUENZA
+
+- Select sequence type: Nucleotide
+- Segment: HA
+
+** ncbi-get
+
+<H-9> ncbi-get --> ~13m 23Mb (~/bin/ncbi-get)
+
+#+BEGIN_SRC bash
+cd ~/ac/sequences/ncbi/ && scp -q i19:/syn/eu/ac/ncbi/$(date '+%Y-%m%d')/\* . && ls -la
+#+END_SRC
+
+*** ncbi-get
+:PROPERTIES:
+:VISIBILITY: folded
+:END:
+
+#+BEGIN_SRC bash ~/bin/ncbi-get
+#! /bin/bash
+TODAY=$(date +%Y-%m%d)
+OUTPUT_DIR="/syn/eu/ac/ncbi/${TODAY}"
+URI="https://ftp.ncbi.nih.gov/genomes/INFLUENZA"
+
+function failed { exit 1; }
+trap failed ERR
+
+mkdir -p "${OUTPUT_DIR}"
+cd "${OUTPUT_DIR}"
+curl -s -O "${URI}/README"
+# genomeset.dat.gz influenza.cds.gz influenza.dat.gz influenza.faa.gz influenza.fna.gz influenza_aa.dat.gz influenza_na.dat.gz
+for filename in influenza.fna.gz influenza_na.dat.gz; do
+    echo "${filename}"
+    curl -s "${URI}/${filename}" | gzip -cd | xz -9e >"$(basename ${filename} .gz).xz"
+done
+realpath .
+ls -l
+du -sh .
+#+END_SRC
+
+wget --recursive --relative --level=1 --cut-dirs=3 --no-directories --no-parent -nH -e robots=off -R "index.html*" https://ftp.ncbi.nih.gov/genomes/INFLUENZA/updates/2020-04-02/
+
+
+** check ncbi
+
+#+BEGIN_SRC bash
+seqdb3-scan --ncbi ~/ac/sequences/ncbi
+#+END_SRC
+
+
+* COMMENT ========== local vars
+:PROPERTIES:
+:VISIBILITY: folded
+:END:
+#+STARTUP: showall indent
+Local Variables:
+eval: (add-hook 'before-save-hook 'time-stamp)
+eval: (progn (make-local-variable org-confirm-elisp-link-function) (setq org-confirm-elisp-link-function nil))
+End:

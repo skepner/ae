@@ -1,0 +1,120 @@
+# Time-stamp: <2020-01-17 14:48:41 eu>
+* Genetic code
+https://en.wikipedia.org/wiki/Genetic_code
+
+AAA   K
+AAC   N
+AAG   K
+AAT   N
+AAU   N
+ACA   T
+ACC   T
+ACG   T
+ACT   T
+ACU   T
+AGA   R
+AGC   S
+AGG   R
+AGT   S
+AGU   S
+ATA   I
+ATC   I
+ATG   M
+ATT   I
+AUA   I
+AUC   I
+AUG   M
+AUU   I
+CAA   Q
+CAC   H
+CAG   Q
+CAT   H
+CAU   H
+CCA   P
+CCC   P
+CCG   P
+CCT   P
+CCU   P
+CGA   R
+CGC   R
+CGG   R
+CGT   R
+CGU   R
+CTA   L
+CTC   L
+CTG   L
+CTT   L
+CUA   L
+CUC   L
+CUG   L
+CUU   L
+GAA   E
+GAC   D
+GAG   E
+GAT   D
+GAU   D
+GCA   A
+GCC   A
+GCG   A
+GCT   A
+GCU   A
+GGA   G
+GGC   G
+GGG   G
+GGT   G
+GGU   G
+GTA   V
+GTC   V
+GTG   V
+GTT   V
+GUA   V
+GUC   V
+GUG   V
+GUU   V
+TAA   *
+TAC   Y
+TAG   *
+TAR   *
+TAT   Y
+TCA   S
+TCC   S
+TCG   S
+TCT   S
+TGA   *
+TGC   C
+TGG   W
+TGT   C
+TRA   *
+TTA   L
+TTC   F
+TTG   L
+TTT   F
+UAA   *
+UAC   Y
+UAG   *
+UAR   *
+UAU   Y
+UCA   S
+UCC   S
+UCG   S
+UCU   S
+UGA   *
+UGC   C
+UGG   W
+UGU   C
+URA   *
+UUA   L
+UUC   F
+UUG   L
+UUU   F
+
+* COMMENT local vars ======================================================================
+:PROPERTIES:
+:VISIBILITY: folded
+:END:
+#+STARTUP: showall
+#+STARTUP: indent
+# Local Variables:
+# eval: (auto-fill-mode 0)
+# eval: (add-hook 'before-save-hook 'time-stamp)
+# End:
