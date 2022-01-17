@@ -17,6 +17,12 @@ def main(args: argparse.Namespace):
     for ag_no, ag in chart.select_all_antigens():
         result.append([ag.name_full(), ag.date(), *position_data(ag, args.positions), " ".join(ag.clades())])
     # pprint.pprint(result, width=300)
+    col_width = [0] * len(result[0])
+    for row in result:
+        for col_no, col in enumerate(row):
+            col_width[col_no] = max(col_width[col_no], len(col))
+    for row in result:
+        print("  ".join(f"{col:{col_width[col_no]}s}" for col_no, col in enumerate(row)))
 
 # ----------------------------------------------------------------------
 
