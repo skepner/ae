@@ -84,7 +84,7 @@ def find(subtype: str, lineage: str, names: list[str], args: argparse.Namespace)
         print_names = print_names and len(selected) < 20
     if clades_file := os.environ.get("AC_CLADES_JSON_V2"):
         selected.find_clades(clades_file)
-    if selected and args.json:
+    if args.json:
         write_json(args.json, selected)
         print_names = print_names and len(selected) < 20
     if not reporting:
