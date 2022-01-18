@@ -30,6 +30,8 @@ def main(args: argparse.Namespace):
         names.extend([name.strip() for name in args.from_file.open()])
     if subtype:
         find(subtype, lineage=lineage, names=names, args=args)
+    elif args.json:
+        raise RuntimeError("subtype is required when --json is used")
     else:
         for subtype in ["B", "A(H1N1)", "A(H3N2)"]:
             find(subtype, lineage=None, names=names, args=args)
