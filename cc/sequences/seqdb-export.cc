@@ -123,7 +123,7 @@ inline void load_entry(ae::sequences::SeqdbEntry& entry, simdjson::ondemand::obj
 
 void ae::sequences::Seqdb::load()
 {
-    Timeit ti{fmt::format("Loading seqdb for {}", subtype_), std::chrono::milliseconds{1000}};
+    Timeit ti{fmt::format("Loading seqdb for {}", subtype_), std::chrono::milliseconds{5000}};
     if (const auto db_filename = filename(); std::filesystem::exists(db_filename)) {
         if (is_verbose())
             fmt::print(">>>> load \"{}\" {}\n", subtype_, db_filename);

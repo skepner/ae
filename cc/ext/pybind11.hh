@@ -28,6 +28,7 @@
 
 #pragma GCC diagnostic ignored "-Weffc++"
 #pragma GCC diagnostic ignored "-Wshadow"
+#pragma GCC diagnostic ignored "-Wnonnull" // subprojects/pybind11-2.9.0/include/pybind11/pybind11.h:210:21: warning: ‘this’ pointer is null
 
 #endif
 

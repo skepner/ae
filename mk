@@ -48,6 +48,17 @@ build_debug()
 
 # ----------------------------------------------------------------------
 
+build_debug_no_asan()
+{
+    # run python using ~/bin/python-address-sanitizer
+    BUILD_DIR="${BUILD_DEBUG_DIR}"
+    SETUP_ARGS="-Doptimization=g"
+    export CPPFLAGS=-fno-omit-frame-pointer
+    build
+}
+
+# ----------------------------------------------------------------------
+
 run_test()
 {
     meson test -C "${BUILD_DIR}" --print-errorlogs
@@ -136,11 +147,14 @@ for arg in "$@"; do
         debug)
             build_debug
             ;;
+        debug_no_asan|debug-no-asan)
+            build_debug_no_asan
+            ;;
         test)
             run_test
             ;;
         -h)
-            fail "Usage: $0 [-h] [clean] [debug] [test]"
+            fail "Usage: $0 [-h] [clean] [debug] [debug-no-asan] [test]"
             ;;
         *)
             fail "Unknown arg: ${arg}"

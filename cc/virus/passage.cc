@@ -254,25 +254,22 @@ namespace ae::virus::passage
     {
         struct error_sink
         {
-            // std::size_t _count;
             using return_type = std::size_t;
 
             template <typename Production, typename Input, typename Reader, typename Tag>
             void operator()(const lexy::error_context<Production, Input>& /*context*/, const lexy::error<Reader, Tag>& /*error*/)
             {
                 // _detail::write_error(lexy::cfile_output_iterator{stderr}, context, error, {lexy::visualize_fancy});
-                // ++_count;
+                ++_count;
             }
 
             return_type finish() &&
             {
-                // if (_count != 0)
-                //     std::fputs("\n", stderr);
-                // return _count;
-                return 0;
+                return _count;
             }
 
             const report_error& report_error_;
+            return_type _count{0};
         };
 
         constexpr auto sink() const { return error_sink{*this}; }
@@ -294,8 +291,11 @@ ae::virus::passage::deconstructed_t ae::virus::passage::parse(std::string_view s
     }
 
     try {
-        const auto parsing_result = lexy::parse<grammar::whole>(lexy::string_input<lexy::utf8_encoding>{source}, report_error{messages, message_location});
-        // fmt::print(">>>> [passage-parse] parsing_result \"{}\" good:{}\n", parsing_result.value().construct(), parsing_result.value().good());
+        // AD_DEBUG("[passage-parse] \"{}\"", source);
+        report_error error_reporter{messages, message_location};
+        const auto parsing_result = lexy::parse<grammar::whole>(lexy::string_input<lexy::utf8_encoding>{source}, error_reporter);
+        if (!parsing_result.has_value())
+            throw grammar::invalid_input{"parser reported an error"};
         if (!parsing_result.value().good())
             throw grammar::invalid_input{fmt::format("invalid result: \"{}\"", parsing_result.value().construct())};
         return parsing_result.value();
