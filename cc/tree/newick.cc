@@ -180,25 +180,24 @@ namespace ae::tree::newick
     {
         struct error_sink
         {
-            // std::size_t _count;
             using return_type = std::size_t;
 
             template <typename Production, typename Input, typename Reader, typename Tag>
             void operator()(const lexy::error_context<Production, Input>& /*context*/, const lexy::error<Reader, Tag>& /*error*/)
             {
                 // _detail::write_error(lexy::cfile_output_iterator{stderr}, context, error, {lexy::visualize_fancy});
-                // ++_count;
+                ++_count;
             }
 
             return_type finish() &&
             {
                 // if (_count != 0)
                 //     std::fputs("\n", stderr);
-                // return _count;
-                return 0;
+                return _count;
             }
 
             const report_error& report_error_;
+            std::size_t _count;
         };
 
         constexpr auto sink() const { return error_sink{*this}; }

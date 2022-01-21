@@ -666,6 +666,11 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
         lexy::trace<grammar::parts>(stderr, lexy::string_input<lexy::utf8_encoding>{source});
     }
     const auto parsing_result = lexy::parse<grammar::parts>(lexy::string_input<lexy::utf8_encoding>{source}, report_error{source, settings.report_errors()});
+    if (!parsing_result.has_value()) {
+        messages.add(Message::unhandled_virus_name, settings.type_subtype_hint(), "*parsing failed*", source, message_location);
+        return result;
+    }
+
     const auto parts = parsing_result.value();
     // if (source == "A(H1N1)/NIB/4/1988")
     //     fmt::print(">>>> parsing \"{}\" -> {}\n", source, parts);
