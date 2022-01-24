@@ -148,7 +148,7 @@ std::string ae::chart::v2::export_table_to_text(const Chart& chart, std::optiona
     fmt::format_to(std::back_inserter(result), "\n");
 
     // serum table
-    const size_t serum_table_columns = 4; // no, name, passage, id
+    const size_t serum_table_columns = 5; // no, name, passage, id, clades
     std::vector<std::vector<std::string>> serum_table(sera->size(), std::vector<std::string>(serum_table_columns));
     for (auto [sr_no, serum_no] : acmacs::enumerate(serum_order)) {
         auto serum = sera->at(serum_no);
@@ -158,6 +158,8 @@ std::string ae::chart::v2::export_table_to_text(const Chart& chart, std::optiona
         row[1] = serum->format("{name_anntotations_reassortant}");
         row[2] = serum->format("{passage}");
         row[3] = serum->format("{serum_id}");
+        if (show_clades == show_clades_t::yes)
+            row[4] = ae::string::join(" ", serum->clades());
     }
     for (const auto col_no : range_from_0_to(serum_table_columns)) {
         size_t col_width = 0;
