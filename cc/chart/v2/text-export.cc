@@ -54,28 +54,30 @@ std::string ae::chart::v2::export_table_to_text(const Chart& chart, std::optiona
     if (org_mode_separators == org_mode_separators_t::yes)
         fmt::format_to(std::back_inserter(result), "-*- Org -*-\n\n");
 
-    // row: ag_no, antigen_name, ag_passage, ag_date, clades, :ref, :aa, :nuc, serum ...
-    enum table_column : size_t {tc_ag_no = 0, tc_antigen_name, tc_ag_passage, tc_ag_date, tc_clades, tc_ref, tc_aa, tc_nuc};
-    // column: serum_no, name, passage, serum_id, sep, antigens
+    // row: ag_no, antigen_name, ag_passage, ag_date, ag_clades, :ref, :aa, :nuc, serum ...
+    enum table_column : size_t {tc_ag_no = 0, tc_antigen_name, tc_ag_passage, tc_ag_date, tc_ag_clades, tc_ref, tc_aa, tc_nuc, antigen_data_columns};
+    // column: sr_no, serum_name, sr_passage, serum_id, sr_clades, sep, antigens
+    enum table_row : size_t {tr_sr_no = 0, tr_serum_name, tr_sr_passage, tr_serum_id, tr_sr_clades, tr_sr_sep, serum_data_rows};
 
-    const size_t antigen_data_columns = 8;
-    const size_t serum_data_rows = 5;
     const auto number_of_columns = sera->size() + antigen_data_columns;
     const auto number_of_rows = antigens->size() + serum_data_rows;
     std::vector<std::vector<std::string>> table(number_of_rows, std::vector<std::string>(number_of_columns));
     // header
-    auto& row_serum_no = table[0];
-    auto& row_serum_name = table[1];
-    auto& row_serum_passage = table[2];
-    auto& row_serum_id = table[3];
+    auto& row_serum_no = table[tr_sr_no];
+    auto& row_serum_name = table[tr_serum_name];
+    auto& row_serum_passage = table[tr_sr_passage];
+    auto& row_serum_id = table[tr_serum_id];
+    auto& row_serum_clades = table[tr_sr_clades];
     for (auto index : range_from_0_to(sera->size())) {
         const auto serum_no = serum_order[index];
         row_serum_no[antigen_data_columns + index] = fmt::format("{}", index);
         row_serum_name[antigen_data_columns + index] = sera->at(serum_no)->format("{location_abbreviated}/{year2}");
         row_serum_passage[antigen_data_columns + index] = sera->at(serum_no)->format("{passage}");
         row_serum_id[antigen_data_columns + index] = sera->at(serum_no)->format("{serum_id}");
+        if (show_clades == show_clades_t::yes)
+            row_serum_clades[antigen_data_columns + index] = ae::string::join(" ", sera->at(serum_no)->clades());
     }
-    table[4][0] = "---";
+    table[tr_sr_sep][0] = "---";
     // antigens
     for (auto [ag_no, antigen_no] : acmacs::enumerate(antigen_order)) {
         auto antigen = antigens->at(antigen_no);
@@ -93,9 +95,8 @@ std::string ae::chart::v2::export_table_to_text(const Chart& chart, std::optiona
             if (!antigen->sequence_nuc().empty())
                 row[tc_nuc] = ":nuc";
         }
-        if (show_clades == show_clades_t::yes) {
-            row[tc_clades] = ae::string::join(" ", antigen->clades());
-        }
+        if (show_clades == show_clades_t::yes)
+            row[tc_ag_clades] = ae::string::join(" ", antigen->clades());
     }
     if (!just_layer.has_value()) { // merged table
         for (auto [ag_no, antigen_no] : acmacs::enumerate(antigen_order)) {
