@@ -7,10 +7,11 @@
 namespace ae::chart::v2
 {
     enum class org_mode_separators_t { no, yes };
+    enum class show_clades_t { no, yes };
     enum class show_aa_t { no, yes };
 
     std::string export_text(const Chart& chart);
-    std::string export_table_to_text(const Chart& chart, std::optional<size_t> just_layer = std::nullopt, bool sort = false, org_mode_separators_t org_mode_separators = org_mode_separators_t::no, show_aa_t show_aa = show_aa_t::yes);
+    std::string export_table_to_text(const Chart& chart, std::optional<size_t> just_layer = std::nullopt, bool sort = false, show_clades_t show_clades = show_clades_t::no, org_mode_separators_t org_mode_separators = org_mode_separators_t::no, show_aa_t show_aa = show_aa_t::yes);
     std::string export_info_to_text(const Chart& chart);
 
     template <typename SA, typename SS> std::string export_names_to_text(const Chart& chart, std::string_view format, const SA& antigens, const SS& sera)

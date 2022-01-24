@@ -28,7 +28,7 @@ std::string ae::chart::v2::export_text(const Chart& chart)
 
 // ----------------------------------------------------------------------
 
-std::string ae::chart::v2::export_table_to_text(const Chart& chart, std::optional<size_t> just_layer, bool sort, org_mode_separators_t org_mode_separators, show_aa_t show_aa)
+std::string ae::chart::v2::export_table_to_text(const Chart& chart, std::optional<size_t> just_layer, bool sort, show_clades_t show_clades, org_mode_separators_t org_mode_separators, show_aa_t show_aa)
 {
     using namespace std::string_view_literals;
     fmt::memory_buffer result;
@@ -54,9 +54,11 @@ std::string ae::chart::v2::export_table_to_text(const Chart& chart, std::optiona
     if (org_mode_separators == org_mode_separators_t::yes)
         fmt::format_to(std::back_inserter(result), "-*- Org -*-\n\n");
 
-    // row: ag_no, antigen_name, ag_passage, ag_date, :ref, :aa, :nuc, serum ...
+    // row: ag_no, antigen_name, ag_passage, ag_date, clades, :ref, :aa, :nuc, serum ...
+    enum table_column : size_t {tc_ag_no = 0, tc_antigen_name, tc_ag_passage, tc_ag_date, tc_clades, tc_ref, tc_aa, tc_nuc};
     // column: serum_no, name, passage, serum_id, sep, antigens
-    const size_t antigen_data_columns = 7;
+
+    const size_t antigen_data_columns = 8;
     const size_t serum_data_rows = 5;
     const auto number_of_columns = sera->size() + antigen_data_columns;
     const auto number_of_rows = antigens->size() + serum_data_rows;
@@ -80,16 +82,19 @@ std::string ae::chart::v2::export_table_to_text(const Chart& chart, std::optiona
         auto& row = table[ag_no + serum_data_rows];
         if (!sort)
             row[0] = fmt::format("{}", ag_no);
-        row[1] = antigen->format("{name_anntotations_reassortant}");
-        row[2] = antigen->format("{passage}");
-        row[3] = antigen->format("{date}");
+        row[tc_antigen_name] = antigen->format("{name_anntotations_reassortant}");
+        row[tc_ag_passage] = antigen->format("{passage}");
+        row[tc_ag_date] = antigen->format("{date}");
         if (antigen->reference())
-            row[4] = ":ref";
+            row[tc_ref] = ":ref";
         if (show_aa == show_aa_t::yes) {
             if (!antigen->sequence_aa().empty())
-                row[5] = ":aa";
+                row[tc_aa] = ":aa";
             if (!antigen->sequence_nuc().empty())
-                row[6] = ":nuc";
+                row[tc_nuc] = ":nuc";
+        }
+        if (show_clades == show_clades_t::yes) {
+            row[tc_clades] = ae::string::join(" ", antigen->clades());
         }
     }
     if (!just_layer.has_value()) { // merged table

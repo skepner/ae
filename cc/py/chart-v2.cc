@@ -184,11 +184,13 @@ void ae::py::chart_v2(pybind11::module_& mdl)
             pybind11::doc("returns name of the chart with the stress of the passed projection"))           //
         .def(
             "table_as_text", //
-            [](const ChartModify& chart, int layer_no, bool sort, bool org_mode_separators, bool show_aa) {
+            [](const ChartModify& chart, int layer_no, bool sort, bool clades, bool org_mode_separators, bool show_aa) {
                 const auto layer{layer_no >= 0 ? std::optional<size_t>{static_cast<size_t>(layer_no)} : std::nullopt};
-                return ae::chart::v2::export_table_to_text(chart, layer, sort, org_mode_separators ? org_mode_separators_t::yes : org_mode_separators_t::no, show_aa ? show_aa_t::yes : show_aa_t::no);
+                const show_clades_t show_clades{clades ? show_clades_t::yes : show_clades_t::no};
+                const org_mode_separators_t org_mode_sep{org_mode_separators ? org_mode_separators_t::yes : org_mode_separators_t::no};
+                return ae::chart::v2::export_table_to_text(chart, layer, sort, show_clades, org_mode_sep, show_aa ? show_aa_t::yes : show_aa_t::no);
             },                                                                                                                                                            //
-            "layer"_a = -1, "sort"_a = false, "org_mode_separators"_a = false, "show_aa"_a = true,                                                                                                                      //
+            "layer"_a = -1, "sort"_a = false, "show_clades"_a = false, "org_mode_separators"_a = false, "show_aa"_a = true,                                                                                                                      //
             pybind11::doc("returns table as text\nif layer >= 0 shows corresponding layer\nif sort is True sort antigens/sera to be able to compare with another table")) //
         .def(
             "names_as_text",                                                                                                                  //
