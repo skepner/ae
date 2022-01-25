@@ -20,22 +20,25 @@ def main(args: argparse.Namespace):
             detected = detect_m.detect(sheet)
             # print(detected)
             extractor = ae_backend.whocc.xlsx.extractor(sheet, detected)
-            if args.serum_name_row is not None:
-                extractor.force_serum_name_row(args.serum_name_row - 1)
-            if args.serum_passage_row is not None:
-                extractor.force_serum_passage_row(args.serum_passage_row - 1)
-            if args.serum_id_row is not None:
-                extractor.force_serum_id_row(args.serum_id_row - 1)
-            print(">>>", extractor.format_assay_data(args.format))
-            if not args.assay_information:
-                extractor.report_data_anchors()
-                extractor.check_export_possibility()
-                info = ae.whocc.torg.export_to_file(extractor, args.output_dir)
-                print(info)
-                ace_filename, ace_prn_read_filename = ae.whocc.table_dir.subtype_assay_lab_ace_pathname(extractor=extractor, prn_read=info["assay"] == "PRN" and info["multivalue_titer"], ace_dir=args.output_dir)
-                torg_to_ace(torg_filename=info["torg_filename"], ace_filename=ace_filename, prn_read=False, prn_remove_concentration=False, check_by_seqdb=True, check_by_hidb=True)
-                if ace_prn_read_filename:
-                    torg_to_ace(torg_filename=info["torg_filename"], ace_filename=ace_prn_read_filename, prn_read=True, prn_remove_concentration=False, check_by_seqdb=False, check_by_hidb=False)
+            if extractor:
+                if args.serum_name_row is not None:
+                    extractor.force_serum_name_row(args.serum_name_row - 1)
+                if args.serum_passage_row is not None:
+                    extractor.force_serum_passage_row(args.serum_passage_row - 1)
+                if args.serum_id_row is not None:
+                    extractor.force_serum_id_row(args.serum_id_row - 1)
+                    print(">>>", extractor.format_assay_data(args.format), file=sys.stderr)
+                if not args.assay_information:
+                    extractor.report_data_anchors()
+                    extractor.check_export_possibility()
+                    info = ae.whocc.torg.export_to_file(extractor, args.output_dir)
+                    print(info)
+                    ace_filename, ace_prn_read_filename = ae.whocc.table_dir.subtype_assay_lab_ace_pathname(extractor=extractor, prn_read=info["assay"] == "PRN" and info["multivalue_titer"], ace_dir=args.output_dir)
+                    torg_to_ace(torg_filename=info["torg_filename"], ace_filename=ace_filename, prn_read=False, prn_remove_concentration=False, check_by_seqdb=True, check_by_hidb=True)
+                    if ace_prn_read_filename:
+                        torg_to_ace(torg_filename=info["torg_filename"], ace_filename=ace_prn_read_filename, prn_read=True, prn_remove_concentration=False, check_by_seqdb=False, check_by_hidb=False)
+            else:
+                print(f">> no extractor for sheet {sheet_no}", file=sys.stderr)
 
 # ----------------------------------------------------------------------
 
