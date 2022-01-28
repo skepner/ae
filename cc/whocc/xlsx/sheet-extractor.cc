@@ -57,6 +57,7 @@ static const std::regex re_CRICK_serum_name_1{"^([AB]/[A-Z '_-]+|NYMC\\s+X-[0-9]
 static const std::regex re_CRICK_serum_name_2{"^[A-Z0-9-/]+$", regex_icase};
 #define pattern_CRICK_serum_id "F[0-9]+/[0-2][0-9]"
 static const std::regex re_CRICK_serum_id{R"(^(?:[A-Z\s]+\s+)?\s*((?:St +Jude's +)?F[0-9]+/[0-2][0-9]|SH[\s\d,/]+)(?:\*(\d)(?:,\d)?)?$)", regex_icase};
+static const std::regex re_CRICK_passage_concentration{" 10-[0-9]+.*$", regex_icase};
 static const std::regex re_CRICK_less_than{R"(^\s*<\s*=\s*(<\d+)\s*$)", regex_icase};
 static const std::regex re_CRICK_less_than_2{R"(^Superscripts.*\s+(\d)\s*<\s*=\s*(<\d+)\s*$)", regex_icase};
 static const std::regex re_CRICK_less_than_multi{R"(^\s*\d\s*<\s*=\s*<\d+\s*[;,])", regex_icase};
@@ -533,7 +534,8 @@ std::string ae::xlsx::v1::Extractor::make_date(const std::string& src) const
 
 std::string ae::xlsx::v1::Extractor::make_passage(const std::string& src) const
 {
-    ae::virus::Passage passage(src);
+    ae::virus::Passage passage(src); // , ae::virus::Passage::parse::yes, ae::virus::passage::parse_settings::tracing::yes);
+    // AD_DEBUG("passage \"{}\" -> \"{}\"", src, passage);
     if (!passage.good()) {
         AD_WARNING("passage parsing failed: \"{}\" -> \"{}\"", src, passage);
         return src;
@@ -1265,6 +1267,17 @@ std::string ae::xlsx::v1::ExtractorCrick::make_date(const std::string& src) cons
     return ExtractorWithSerumRowsAbove::make_date(src);
 
 } // ae::xlsx::v1::ExtractorVIDRL::make_date
+
+// ----------------------------------------------------------------------
+
+std::string ae::xlsx::v1::ExtractorCrick::make_passage(const std::string& src) const
+{
+    if (std::smatch match; std::regex_search(src, match, re_CRICK_passage_concentration))
+        return ExtractorWithSerumRowsAbove::make_passage(src.substr(0, match.position(0))) + match.str(0);
+    else
+        return ExtractorWithSerumRowsAbove::make_passage(src);
+
+} // ae::xlsx::v1::ExtractorCrick::make_passage
 
 // ----------------------------------------------------------------------
 

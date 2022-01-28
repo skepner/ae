@@ -239,7 +239,9 @@ namespace ae::xlsx::inline v1
 
         serum_fields_t serum(size_t sr_no) const override;
         std::string titer(size_t ag_no, size_t sr_no) const override;
+
         std::string make_date(const std::string& src) const override;
+        std::string make_passage(const std::string& src) const override;
 
         void check_export_possibility() const override; // throws Error if exporting is not possible
 

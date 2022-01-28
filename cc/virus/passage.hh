@@ -99,10 +99,10 @@ namespace ae::virus::passage
 
     deconstructed_t parse(std::string_view source, const parse_settings& settings, Messages& messages, const MessageLocation& location);
 
-    inline deconstructed_t parse(std::string_view source)
+    inline deconstructed_t parse(std::string_view source, parse_settings::tracing tracing = parse_settings::tracing::no)
     {
         Messages messages;
-        return parse(source, parse_settings{}, messages, MessageLocation{});
+        return parse(source, parse_settings{tracing}, messages, MessageLocation{});
     }
 
     inline bool is_good(std::string_view source)
@@ -124,10 +124,10 @@ namespace ae::virus
         Passage() = default;
         Passage(const Passage&) = default;
         Passage(Passage&&) = default;
-        explicit Passage(std::string_view src, parse pars = parse::yes)
+        explicit Passage(std::string_view src, parse pars = parse::yes, passage::parse_settings::tracing tracing = passage::parse_settings::tracing::no)
         {
             if (pars == parse::yes)
-                deconstructed_ = passage::parse(src);
+                deconstructed_ = passage::parse(src, tracing);
             else
                 deconstructed_.elements.push_back(passage::deconstructed_t::element_t{.name{std::string{src}}}); // g++-11 wants std::string{src}
         }
