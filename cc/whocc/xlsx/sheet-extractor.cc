@@ -1258,6 +1258,16 @@ void ae::xlsx::v1::ExtractorCrick::check_export_possibility() const
 
 // ----------------------------------------------------------------------
 
+std::string ae::xlsx::v1::ExtractorCrick::make_date(const std::string& src) const
+{
+    if (src == "-")             // no date?
+        return {};
+    return ExtractorWithSerumRowsAbove::make_date(src);
+
+} // ae::xlsx::v1::ExtractorVIDRL::make_date
+
+// ----------------------------------------------------------------------
+
 ae::xlsx::v1::ExtractorCrickPRN::ExtractorCrickPRN(std::shared_ptr<Sheet> a_sheet)
     : ExtractorCrick(a_sheet)
 {
