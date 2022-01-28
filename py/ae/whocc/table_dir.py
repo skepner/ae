@@ -45,7 +45,7 @@ def subtype_assay_lab_ace_pathname(extractor: ae_backend.whocc.xlsx.Extractor, p
         if ace_dir:
             prn_read_dir = ace_dir
         else:
-            prn_read_dir = ace_dir.joinpath("prn-read")
+            prn_read_dir = output_dir.joinpath("prn-read")
             if not prn_read_dir.exists():
                 raise RuntimeError(f"""prn_read_dir "{prn_read_dir}" does not exist""")
     ace_filename = subtype_assay_lab_stem(extractor=extractor) + ".ace"
