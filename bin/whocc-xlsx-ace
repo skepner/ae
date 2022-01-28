@@ -24,6 +24,8 @@ def main(args: argparse.Namespace):
             extractor = ae_backend.whocc.xlsx.extractor(sheet, detected)
             if extractor:
                 target_xlsx = check_output_existance(extractor=extractor, overwrite=args.overwrite)
+                if target_xlsx.exists():
+                    target_xlsx.unlink()
                 target_xlsx.hardlink_to(source)
                 if args.serum_name_row is not None:
                     extractor.force_serum_name_row(args.serum_name_row - 1)
