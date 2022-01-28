@@ -13,6 +13,9 @@ if not WHOCC_TABLES_DIR:
 def subtype_assay_lab_output_dir(extractor: ae_backend.whocc.xlsx.Extractor):
     return WHOCC_TABLES_DIR.joinpath(extractor.format_assay_data("{virus_type_lineage}-{assay_low_rbc}-{lab_low}"))
 
+def subtype_assay_lab_stem(extractor: ae_backend.whocc.xlsx.Extractor):
+    return extractor.format_assay_data("{virus_type_lineage}-{assay_low_rbc}-{lab_low}-{table_date:%Y%m%d}")
+
 # ----------------------------------------------------------------------
 
 def subtype_assay_lab_torg_pathname(extractor: ae_backend.whocc.xlsx.Extractor, torg_dir: Path = None):
@@ -20,7 +23,14 @@ def subtype_assay_lab_torg_pathname(extractor: ae_backend.whocc.xlsx.Extractor, 
         torg_dir = subtype_assay_lab_output_dir(extractor=extractor).joinpath("torg")
     if not torg_dir.exists():
         raise RuntimeError(f"""Torg output dir "{torg_dir}" does not exist""")
-    return torg_dir.joinpath(extractor.format_assay_data("{virus_type_lineage}-{assay_low_rbc}-{lab_low}-{table_date:%Y%m%d}") + ".torg")
+    return torg_dir.joinpath(subtype_assay_lab_stem(extractor=extractor) + ".torg")
+
+def subtype_assay_lab_xlsx_pathname(extractor: ae_backend.whocc.xlsx.Extractor, xlsx_dir: Path = None):
+    if not xlsx_dir:
+        xlsx_dir = subtype_assay_lab_output_dir(extractor=extractor).joinpath("xlsx")
+    if not xlsx_dir.exists():
+        raise RuntimeError(f"""Xlsx output dir "{xlsx_dir}" does not exist""")
+    return xlsx_dir.joinpath(subtype_assay_lab_stem(extractor=extractor) + ".xlsx")
 
 # ----------------------------------------------------------------------
 
@@ -38,7 +48,7 @@ def subtype_assay_lab_ace_pathname(extractor: ae_backend.whocc.xlsx.Extractor, p
             prn_read_dir = ace_dir.joinpath("prn-read")
             if not prn_read_dir.exists():
                 raise RuntimeError(f"""prn_read_dir "{prn_read_dir}" does not exist""")
-    ace_filename = extractor.format_assay_data("{virus_type_lineage}-{assay_low_rbc}-{lab_low}-{table_date:%Y%m%d}") + ".ace"
+    ace_filename = subtype_assay_lab_stem(extractor=extractor) + ".ace"
     return [
         output_dir.joinpath(ace_filename),
         prn_read_dir.joinpath(ace_filename) if prn_read else None

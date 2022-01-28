@@ -8,6 +8,8 @@ import ae.utils.load_module, ae.utils.open_file, ae.utils.json
 
 SEP = "> ===================================================================================================="
 
+class Error (RuntimeError): pass
+
 # ----------------------------------------------------------------------
 
 def main(args: argparse.Namespace):
@@ -21,6 +23,8 @@ def main(args: argparse.Namespace):
             # print(detected)
             extractor = ae_backend.whocc.xlsx.extractor(sheet, detected)
             if extractor:
+                target_xlsx = check_output_existance(extractor=extractor, overwrite=args.overwrite)
+                target_xlsx.hardlink_to(source)
                 if args.serum_name_row is not None:
                     extractor.force_serum_name_row(args.serum_name_row - 1)
                 if args.serum_passage_row is not None:
@@ -64,6 +68,25 @@ def torg_to_ace(torg_filename: Path, ace_filename: Path, prn_read: bool = False,
 
 # ----------------------------------------------------------------------
 
+def check_output_existance(extractor: ae_backend.whocc.xlsx.Extractor, overwrite: bool):
+    exist = []
+    if (xlsx := ae.whocc.table_dir.subtype_assay_lab_xlsx_pathname(extractor=extractor)).exists():
+        exist.append(str(xlsx))
+    if (torg := ae.whocc.table_dir.subtype_assay_lab_torg_pathname(extractor=extractor)).exists():
+        exist.append(str(torg))
+    ace, ace_prn = ae.whocc.table_dir.subtype_assay_lab_ace_pathname(extractor=extractor)
+    if ace.exists():
+        exist.append(str(ace))
+    if exist:
+        exist_list = "    " + "\n    ".join(exist)
+        if overwrite:
+            print(">> Output files exist and will be overwritten:\n>>  " + "\n>>  ".join(exist), file=sys.stderr)
+        else:
+            raise Error("Output files exist:\n>   " + "\n>   ".join(exist))
+    return xlsx
+
+# ----------------------------------------------------------------------
+
 try:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("filenames", nargs="+", type=Path, metavar="file.xlsx")
@@ -73,11 +96,15 @@ try:
     parser.add_argument("--serum-name-row", dest="serum_name_row", type=int, help="force serum name row (1 based)")
     parser.add_argument("--serum-passage-row", dest="serum_passage_row", type=int, help="force serum passage row (1 based)")
     parser.add_argument("--serum-id-row", dest="serum_id_row", type=int, help="force serum id row (1 based)")
+    parser.add_argument("--overwrite", action="store_true")
     args = parser.parse_args()
     exit_code = main(args) or 0
+except Error as err:
+    print(f"> {err}", file=sys.stderr)
+    exit_code = 1
 except Exception as err:
     print(f"> {err}\n{traceback.format_exc()}", file=sys.stderr)
-    exit_code = 1
+    exit_code = 2
 exit(exit_code)
 
 # ======================================================================
