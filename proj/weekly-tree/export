@@ -127,7 +127,9 @@ def h1(subtype: str, args: argparse.Namespace):
             "IOWA/6/2021", # --> "SWINE/IOWA/A02636087/2021", "SWINE/IOWA/A02636130/2021"
             "NORTH DAKOTA/12226/2021", # --> "SWINE/IOWA/A02636087/2021", "SWINE/IOWA/A02636130/2021"
             # 2021-1217 long branches
-            "NETHERLANDS/10370-1A/2020"
+            "NETHERLANDS/10370-1A/2020",
+            # 2022-0131 potential long branch
+            "DENMARK/36/2021",
         ])
         .remove_hash_duplicates()
         .replace_with_master()
