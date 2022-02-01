@@ -118,7 +118,8 @@ namespace ae::tree::newick
         {
             static constexpr auto whitespace = dsl::ascii::space / dsl::ascii::newline;
             static constexpr auto lit_not = OPEN / CLOSE / dsl::semicolon / dsl::comma / dsl::colon;
-            static constexpr auto rule = dsl::capture(dsl::while_(dsl::code_point - lit_not - whitespace));
+            static constexpr auto exclude = lit_not / whitespace;
+            static constexpr auto rule = dsl::capture(dsl::while_(dsl::code_point - exclude));
             static constexpr auto value = lexy::as_string<std::string>;
         };
 
@@ -197,7 +198,7 @@ namespace ae::tree::newick
             }
 
             const report_error& report_error_;
-            std::size_t _count;
+            std::size_t _count{0};
         };
 
         constexpr auto sink() const { return error_sink{*this}; }

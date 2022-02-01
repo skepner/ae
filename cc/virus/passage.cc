@@ -120,7 +120,8 @@ namespace ae::virus::passage
         struct passage_name
         {
             static constexpr auto cond = dsl::peek(dsl::ascii::alpha);
-            static constexpr auto rule = dsl::capture(dsl::ascii::alpha + dsl::while_(dsl::ascii::alpha - X));
+            static constexpr auto letter_not_x = dsl::ascii::alpha - dsl::lit_c<'X'> - dsl::lit_c<'x'>;
+            static constexpr auto rule = dsl::capture(dsl::ascii::alpha + dsl::while_(letter_not_x));
             static constexpr auto value = lexy::callback<std::string>([](auto captured) {
                 if ((captured.end() - captured.begin()) > 5)
                     throw invalid_input{"passage name too long"};
