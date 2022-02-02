@@ -42,6 +42,8 @@
         {"N": "clades", "slot": {"width": 0.007}, "width-to-height-ratio": 0.015,
          "all-clades": {"label": {"scale": 1.4}},
          "per-clade": [
+             {"name": "V1A",      "section-inclusion-tolerance": 40,   "slot": 4,   "section-exclusion-tolerance": 33,   "display_name": "V1A", "show": false},
+             {"name": "V1B",      "section-inclusion-tolerance": 40,   "slot": 4,   "section-exclusion-tolerance": 33,   "display_name": "V1A", "show": false},
              {"name": "V1A.1",    "section-inclusion-tolerance": 40,   "slot": 4,   "section-exclusion-tolerance": 33,   "display_name": "V1A.1",    "label": {"rotation_degrees": 90, "scale": 1.4}},
              {"name": "V1A.2",    "section-inclusion-tolerance": 10,   "slot": 4,   "section-exclusion-tolerance": 1,    "display_name": "V1A.2",    "label": {"rotation_degrees": 90, "scale": 1.4}},
              {"name": "V1A.3",    "section-inclusion-tolerance": 20,   "slot": 4,   "section-exclusion-tolerance": 20,   "display_name": "V1A.3",    "label": {"rotation_degrees": 90, "scale": 1.4}},

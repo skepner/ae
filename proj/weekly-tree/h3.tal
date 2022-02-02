@@ -130,7 +130,10 @@
          "slot": {"width": 0.005}, "width-to-height-ratio": 0.06,
          "all-clades": {"label": {"scale": 1.4}},
          "per-clade": [
+             {"name": "3B",           "show": false},
              {"name": "3C",           "show": false},
+             {"name": "3C.1",         "show": false},
+             {"name": "3C.2",         "show": false},
              {"name": "3C.3",         "show": false},
              {"name": "3C.3a",        "show": true,    "display_name": "3a",        "slot": 1,   "label": {"rotation_degrees": 90, "scale": 2.7},                                                 "section-inclusion-tolerance": 70},
              {"name": "3C.3a1",       "show": false},
