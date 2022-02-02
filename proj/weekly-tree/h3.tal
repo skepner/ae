@@ -130,6 +130,10 @@
          "slot": {"width": 0.005}, "width-to-height-ratio": 0.06,
          "all-clades": {"label": {"scale": 1.4}},
          "per-clade": [
+             {"name": "",             "show": false},
+             {"name": "5",            "show": false},
+             {"name": "6",            "show": false},
+             {"name": "3A",           "show": false},
              {"name": "3B",           "show": false},
              {"name": "3C",           "show": false},
              {"name": "3C.1",         "show": false},
