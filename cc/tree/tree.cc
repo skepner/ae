@@ -414,19 +414,28 @@ void ae::tree::Tree::remove(const std::vector<node_index_t>& nodes)
 
 // ----------------------------------------------------------------------
 
-void ae::tree::Tree::remove_leaves_isolated_before(std::string_view last_date)
+void ae::tree::Tree::remove_leaves_isolated_before(std::string_view last_date, const std::vector<std::string>& important)
 {
     // keep at least two children in each inode (attempt to keep tree topology)
 
     Timeit ti{"Tree::remove_leaves_isolated_before", std::chrono::milliseconds{100}};
 
+    const auto is_important = [this, &important](node_index_t node_id) -> bool {
+        if (important.empty())
+            return false;
+        const auto& name = leaf(node_id).name;
+        const auto node_important = std::find_if(std::begin(important), std::end(important), [&name](const auto& imp) { return name.find(imp) != std::string::npos; }) != std::end(important);
+        // AD_DEBUG(node_important, "important {}", name);
+        return node_important;
+    };
+
     for (auto ref : visit(tree_visiting::inodes_post)) {
         ref.visit(
-            [this, last_date](Inode* inode) {
+            [this, last_date, is_important](Inode* inode) {
                 if (inode->children.size() > 2) {
                     std::vector<node_index_t> to_remove;
                     std::copy_if(inode->children.begin(), inode->children.end(), std::back_inserter(to_remove),
-                                 [this, last_date](node_index_t node_id) { return is_leaf(node_id) && leaf(node_id).date < last_date; });
+                                 [this, last_date, is_important](node_index_t node_id) { return is_leaf(node_id) && leaf(node_id).date < last_date && !is_important(node_id); });
                     if (to_remove.size() > (inode->children.size() - 2))
                         to_remove.resize(inode->children.size() - 2); // keep at least two children in inode
                     inode->children.erase(std::remove_if(inode->children.begin(), inode->children.end(),

@@ -61,7 +61,12 @@ def main(args: argparse.Namespace):
 
     if args.remove_leaves_isolated_before:
         print(f">>> removing leaves isolated before {args.remove_leaves_isolated_before}, but keeping tree topology", file=sys.stderr)
-        tree.remove_leaves_isolated_before(args.remove_leaves_isolated_before)
+        if args.important:
+            important = args.important.split(",")
+            print(f">>> keep {len(important)} important strains", file=sys.stderr)
+        else:
+            important = []
+        tree.remove_leaves_isolated_before(date=args.remove_leaves_isolated_before, important=important)
         print(f">>> number of leaves: {tree.number_of_leaves()}", file=sys.stderr)
 
     if args.output:
@@ -80,6 +85,7 @@ try:
     parser.add_argument("--populate", "-p", action="store_true", default=False)
     parser.add_argument("--ladderize", "-l", action="store_true", default=False)
     parser.add_argument("--remove-leaves-isolated-before", dest="remove_leaves_isolated_before", default=None, help="removes leaves isolated before the date, but keep tree topology")
+    parser.add_argument("--important", "-I", help="comma separated list of important strains (seq_id prefixes) to keep in case of --remove-leaves-isolated-before")
     args = parser.parse_args()
     exit_code = main(args) or 0
 except Exception as err:

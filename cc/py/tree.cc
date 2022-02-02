@@ -104,7 +104,7 @@ void ae::py::tree(pybind11::module_& mdl)
                 tree.ladderize(lm);
             },
             "method"_a = "number-of-leaves")                                                  //
-        .def("remove_leaves_isolated_before", &Tree::remove_leaves_isolated_before, "date"_a) //
+        .def("remove_leaves_isolated_before", &Tree::remove_leaves_isolated_before, "date"_a, "important"_a = std::vector<std::string>{}) //
         .def("number_of_leaves", &Tree::number_of_leaves) //
         ;
 
