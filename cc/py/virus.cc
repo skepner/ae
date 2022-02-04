@@ -36,10 +36,8 @@ void ae::py::virus(pybind11::module_& mdl)
     mdl.def(
         "virus_name_parse",
         [](pybind11::object source, std::string_view type_subtype, bool trace, pybind11::object filename, size_t line_no) {
-            ae::virus::name::parse_settings settings{
-                trace ? ae::virus::name::parse_settings::tracing::yes : ae::virus::name::parse_settings::tracing::no,
-                ae::virus::name::parse_settings::report::no,
-                type_subtype};
+            ae::virus::name::parse_settings settings{trace ? ae::virus::name::parse_settings::tracing::yes : ae::virus::name::parse_settings::tracing::no, ae::virus::name::parse_settings::report::no,
+                                                     type_subtype};
             ae::Messages messages;
             auto parts = ae::virus::name::parse(std::string{pybind11::str(source)}, settings, messages, ae::MessageLocation{std::string{pybind11::str(filename)}, line_no});
             return VirusNameParsingResult{std::move(parts), std::move(messages)};
@@ -66,6 +64,16 @@ void ae::py::virus(pybind11::module_& mdl)
         ;
 
     // ----------------------------------------------------------------------
+
+    pybind11::class_<ae::virus::Passage>(mdl, "Passage")                    //
+        .def("__str__", &ae::virus::Passage::to_string)                     //
+        .def("good", &ae::virus::Passage::good)                             //
+        .def("empty", &ae::virus::Passage::empty)                           //
+        .def("number_of_elements", &ae::virus::Passage::number_of_elements) //
+        .def("is_egg", &ae::virus::Passage::is_egg)                         //
+        .def("is_cell", &ae::virus::Passage::is_cell)                       //
+        .def("without_date", &ae::virus::Passage::without_date)             //
+        ;
 
     mdl.def(
         "passage_parse",

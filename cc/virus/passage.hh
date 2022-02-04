@@ -126,10 +126,12 @@ namespace ae::virus
         Passage(Passage&&) = default;
         explicit Passage(std::string_view src, parse pars = parse::yes, passage::parse_settings::tracing tracing = passage::parse_settings::tracing::no)
         {
-            if (pars == parse::yes)
-                deconstructed_ = passage::parse(src, tracing);
-            else
-                deconstructed_.elements.push_back(passage::deconstructed_t::element_t{.name{std::string{src}}}); // g++-11 wants std::string{src}
+            if (!src.empty()) {
+                if (pars == parse::yes)
+                    deconstructed_ = passage::parse(src, tracing);
+                else
+                    deconstructed_.elements.push_back(passage::deconstructed_t::element_t{.name{std::string{src}}}); // g++-11 wants std::string{src}
+            }
         }
 
         Passage& operator=(const Passage&) = default;
@@ -146,6 +148,7 @@ namespace ae::virus
         operator std::string() const { return deconstructed_.construct(); }
         std::string to_string() const { return deconstructed_.construct(); }
         size_t size() const { return deconstructed_.construct().size(); }
+        size_t number_of_elements() const { return deconstructed_.elements.size(); }
 
         // std::string_view last_number() const; // E2/E3 -> 3, X? -> ?
         // std::string_view last_type() const; // MDCK3/SITA1 -> SIAT

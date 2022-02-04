@@ -190,7 +190,7 @@ void ae::py::chart_v2(pybind11::module_& mdl)
                 const org_mode_separators_t org_mode_sep{org_mode_separators ? org_mode_separators_t::yes : org_mode_separators_t::no};
                 return ae::chart::v2::export_table_to_text(chart, layer, sort, show_clades, org_mode_sep, show_aa ? show_aa_t::yes : show_aa_t::no);
             },                                                                                                                                                            //
-            "layer"_a = -1, "sort"_a = false, "show_clades"_a = false, "org_mode_separators"_a = false, "show_aa"_a = true,                                                                                                                      //
+            "layer"_a = -1, "sort"_a = false, "show_clades"_a = false, "org_mode_separators"_a = false, "show_aa"_a = true,                                               //
             pybind11::doc("returns table as text\nif layer >= 0 shows corresponding layer\nif sort is True sort antigens/sera to be able to compare with another table")) //
         .def(
             "names_as_text",                                                                                                                  //
@@ -542,9 +542,9 @@ Usage:
 
     // ======================================================================
 
-    pybind11::class_<detail::AntigenSerum, std::shared_ptr<detail::AntigenSerum>>(chart_v2_submodule, "AntigenSerum")                                              //
+    pybind11::class_<detail::AntigenSerum, std::shared_ptr<detail::AntigenSerum>>(chart_v2_submodule, "AntigenSerum")                               //
         .def("__str__", [](const detail::AntigenSerum& ag_sr) { return ag_sr.format("{fields}"); })                                                 //
-        .def("name", [](const detail::AntigenSerum& ag_sr) { return *ag_sr.name(); })                                                               //
+        .def("name", [](const detail::AntigenSerum& ag_sr) -> std::string { return std::string{*ag_sr.name()}; })                                   //
         .def("name_full", &detail::AntigenSerum::name_full)                                                                                         //
         .def("passage", &detail::AntigenSerum::passage)                                                                                             //
         .def("lineage", [](const detail::AntigenSerum& ag_sr) { return ag_sr.lineage().to_string(); })                                              //
@@ -561,16 +561,17 @@ Usage:
         ;
 
     pybind11::class_<Antigen, std::shared_ptr<Antigen>, detail::AntigenSerum>(chart_v2_submodule, "AntigenRO") //
-        .def("date", [](const Antigen& ag) { return *ag.date(); })                              //
-        .def("reference", &Antigen::reference)                                                  //
-        .def("lab_ids", [](const Antigen& ag) { return *ag.lab_ids(); })                        //
+        .def("date", [](const Antigen& ag) { return *ag.date(); })                                             //
+        .def("reference", &Antigen::reference)                                                                 //
+        .def("lab_ids", [](const Antigen& ag) { return *ag.lab_ids(); })                                       //
         ;
 
-    pybind11::class_<AntigenModify, std::shared_ptr<AntigenModify>, Antigen>(chart_v2_submodule, "Antigen")                                                        //
+    pybind11::class_<AntigenModify, std::shared_ptr<AntigenModify>, Antigen>(chart_v2_submodule, "Antigen")                                         //
         .def("name", [](const AntigenModify& ag) { return *ag.name(); })                                                                            //
         .def("name", [](AntigenModify& ag, const std::string& new_name) { ag.name(new_name); })                                                     //
         .def("passage", [](const AntigenModify& ag) { return ag.passage(); })                                                                       //
         .def("passage", [](AntigenModify& ag, const std::string& new_passage) { ag.passage(ae::virus::Passage{new_passage}); })                     //
+        .def("passage", [](AntigenModify& ag, const ae::virus::Passage& new_passage) { ag.passage(new_passage); })                                  //
         .def("reassortant", [](const AntigenModify& ag) { return *ag.reassortant(); })                                                              //
         .def("reassortant", [](AntigenModify& ag, const std::string& new_reassortant) { ag.reassortant(ae::virus::Reassortant{new_reassortant}); }) //
         .def("add_annotation", &AntigenModify::add_annotation)                                                                                      //
@@ -589,16 +590,17 @@ Usage:
         ;
 
     pybind11::class_<Serum, std::shared_ptr<Serum>, detail::AntigenSerum>(chart_v2_submodule, "SerumRO") //
-        .def("serum_id", [](const Serum& sr) { return *sr.serum_id(); })                  //
-        .def("serum_species", [](const Serum& sr) { return *sr.serum_species(); })        //
-        .def("homologous_antigens", &Serum::homologous_antigens)                          //
+        .def("serum_id", [](const Serum& sr) { return *sr.serum_id(); })                                 //
+        .def("serum_species", [](const Serum& sr) { return *sr.serum_species(); })                       //
+        .def("homologous_antigens", &Serum::homologous_antigens)                                         //
         ;
 
-    pybind11::class_<SerumModify, std::shared_ptr<SerumModify>, Serum>(chart_v2_submodule, "Serum")                                                              //
-        .def("name", [](const SerumModify& sr) { return *sr.name(); })                                                                            //
+    pybind11::class_<SerumModify, std::shared_ptr<SerumModify>, Serum>(chart_v2_submodule, "Serum")                                               //
+        .def("name", [](const SerumModify& sr) -> std::string { return std::string{*sr.name()}; })                                                //
         .def("name", [](SerumModify& sr, const std::string& new_name) { sr.name(new_name); })                                                     //
         .def("passage", [](const SerumModify& sr) { return sr.passage(); })                                                                       //
         .def("passage", [](SerumModify& sr, const std::string& new_passage) { sr.passage(ae::virus::Passage{new_passage}); })                     //
+        .def("passage", [](SerumModify& sr, const ae::virus::Passage& new_passage) { sr.passage(new_passage); })                                  //
         .def("reassortant", [](const SerumModify& sr) { return *sr.reassortant(); })                                                              //
         .def("reassortant", [](SerumModify& sr, const std::string& new_reassortant) { sr.reassortant(ae::virus::Reassortant{new_reassortant}); }) //
         .def("add_annotation", &SerumModify::add_annotation)                                                                                      //
@@ -618,7 +620,7 @@ Usage:
 
     // ----------------------------------------------------------------------
 
-    pybind11::class_<SelectionData<Antigen>>(chart_v2_submodule, "SelectionDataAntigen")                                                                        //
+    pybind11::class_<SelectionData<Antigen>>(chart_v2_submodule, "SelectionDataAntigen")                                                         //
         .def_readonly("no", &SelectionData<Antigen>::index)                                                                                      //
         .def_readonly("point_no", &SelectionData<Antigen>::point_no)                                                                             //
         .def_readonly("antigen", &SelectionData<Antigen>::ag_sr)                                                                                 //
@@ -632,7 +634,7 @@ Usage:
         .def("clade_any_of", &ae::py::clade_any_of<Antigen>, "clades"_a) //
         ;
 
-    pybind11::class_<SelectionData<Serum>>(chart_v2_submodule, "SelectionDataSerum")                                                                          //
+    pybind11::class_<SelectionData<Serum>>(chart_v2_submodule, "SelectionDataSerum")                                                           //
         .def_readonly("no", &SelectionData<Serum>::index)                                                                                      //
         .def_readonly("point_no", &SelectionData<Serum>::point_no)                                                                             //
         .def_readonly("serum", &SelectionData<Serum>::ag_sr)                                                                                   //
@@ -738,20 +740,23 @@ Usage:
 
     // ----------------------------------------------------------------------
 
-    chart_v2_submodule.def("titer_merge", [](const std::vector<std::string>& source_titers) {
-        if (source_titers.empty())
-            throw std::invalid_argument{"titer_merge: no source titers"};
-        if (source_titers.size() == 1)
-            return std::make_pair(source_titers[0], std::string{});
-        constexpr double standard_deviation_threshold = 1.0; // lispmds: average-multiples-unless-sd-gt-1-ignore-thresholded-unless-only-entries-then-min-threshold
-        std::vector<ae::chart::v2::Titer> titers(source_titers.size());
-        std::transform(source_titers.begin(), source_titers.end(), std::begin(titers), [](const auto& src) { return ae::chart::v2::Titer{src}; });
-        const auto [merged, report] = ae::chart::v2::TitersModify::merge_titers(titers, ae::chart::v2::TitersModify::more_than_thresholded::adjust_to_next, standard_deviation_threshold);
-        std::string message;
-        if (report != ae::chart::v2::TitersModify::titer_merge::regular_only)
-            message = ae::chart::v2::TitersModify::titer_merge_report_long(report);
-        return std::make_pair(merged.get(), message);
-    }, "source_titers"_a, pybind11::doc("calculates merged titer, return pair: [merged_titer: str, message: str]"));
+    chart_v2_submodule.def(
+        "titer_merge",
+        [](const std::vector<std::string>& source_titers) {
+            if (source_titers.empty())
+                throw std::invalid_argument{"titer_merge: no source titers"};
+            if (source_titers.size() == 1)
+                return std::make_pair(source_titers[0], std::string{});
+            constexpr double standard_deviation_threshold = 1.0; // lispmds: average-multiples-unless-sd-gt-1-ignore-thresholded-unless-only-entries-then-min-threshold
+            std::vector<ae::chart::v2::Titer> titers(source_titers.size());
+            std::transform(source_titers.begin(), source_titers.end(), std::begin(titers), [](const auto& src) { return ae::chart::v2::Titer{src}; });
+            const auto [merged, report] = ae::chart::v2::TitersModify::merge_titers(titers, ae::chart::v2::TitersModify::more_than_thresholded::adjust_to_next, standard_deviation_threshold);
+            std::string message;
+            if (report != ae::chart::v2::TitersModify::titer_merge::regular_only)
+                message = ae::chart::v2::TitersModify::titer_merge_report_long(report);
+            return std::make_pair(merged.get(), message);
+        },
+        "source_titers"_a, pybind11::doc("calculates merged titer, return pair: [merged_titer: str, message: str]"));
 }
 
 // ======================================================================
