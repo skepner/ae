@@ -216,7 +216,10 @@ def h3(subtype: str, args: argparse.Namespace):
             "MANITOBA/3/2021",
             "GUANGXI_GANGBEI/190/2019",
             # 2021-1217 potential long branch
-            "OHIO/6/2021_ISOLATE"
+            "OHIO/6/2021_ISOLATE",
+            # 2022-0204 potential long branch
+            "FRANCE/ARA-HCL021219268801/2021",
+            "FRANCE/ARA-HCL021220304101/2021",
         ])
         .remove_hash_duplicates()
         .replace_with_master()
