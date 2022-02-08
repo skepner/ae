@@ -66,6 +66,7 @@ inline void load_seq(ae::sequences::SeqdbSeq& seq, simdjson::ondemand::object& j
                         fmt::print("> seqdb load_seq redundant insertion value at {}: {}\n", ind, val);
                     ++ind;
                 }
+                seq.aa_insertions.push_back(std::move(ins));
             }
         }
         else if (key == "H"sv)

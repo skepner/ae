@@ -136,7 +136,7 @@ void ae::py::sequences(pybind11::module_& mdl)
 
     pybind11::class_<SeqdbSeqRef>(seqdb_submodule, "SeqdbSeqRef")                                        //
         .def("seq_id", [](const SeqdbSeqRef& ref) { return ref.seq_id().get(); })                        //
-        .def("name", [](const SeqdbSeqRef& ref) { return ref.entry->name; })                        //
+        .def("name", [](const SeqdbSeqRef& ref) { return ref.entry->name; })                             //
         .def("date", &SeqdbSeqRef::date)                                                                 //
         .def_property_readonly("aa", &SeqdbSeqRef::aa)                                                   //
         .def_property_readonly("nuc", &SeqdbSeqRef::nuc)                                                 //
@@ -144,6 +144,8 @@ void ae::py::sequences(pybind11::module_& mdl)
         .def_readonly("clades", &SeqdbSeqRef::clades)                                                    //
         .def("has_issues", [](const SeqdbSeqRef& ref) { return ref.seq->issues.has_issues(); })          //
         .def("issues", [](const SeqdbSeqRef& ref) { return ref.seq->issues.to_strings(); })              //
+        .def("has_insertions", [](const SeqdbSeqRef& ref) { return !ref.seq->aa_insertions.empty(); })   //
+        .def("insertions", [](const SeqdbSeqRef& ref) { return ref.seq->aa_insertions; })   //
         .def("country", [](const SeqdbSeqRef& ref) { return ref.entry->country; })                       //
         .def("continent", [](const SeqdbSeqRef& ref) { return ref.entry->continent; })                   //
         .def("host", [](const SeqdbSeqRef& ref) { return ref.entry->host; })                             //

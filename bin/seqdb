@@ -146,12 +146,16 @@ def find(subtype: str, lineage: str, names: list[str], args: argparse.Namespace)
                 return args.format.format_map(FormatMap())
         else:
             def output(seq):
+                if seq.has_insertions():
+                    insertions = f" ins:" # {str(seq.insertions())}"
+                else:
+                    insertions = ""
                 if clades := seq.clades:
                     display_clades = " (\"" + '" "'.join(clades) + "\")"
                 else:
                     display_clades = ""
                 issues = f" issues:{seq.issues()}" if seq.has_issues() else ""
-                return f"{seq.seq_id()} [{seq.date()}]{display_clades}{issues}"
+                return f"{seq.seq_id()} [{seq.date()}]{insertions}{display_clades}{issues}"
 
         for no, seq in enumerate(selected):
             print(output(seq))
