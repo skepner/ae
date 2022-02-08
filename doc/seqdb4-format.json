@@ -5,33 +5,34 @@
     "subtype": "A(H3N2)",
     "data": [
         {
-            "N": "<name> - without subtype, e.g. LAOS/1742/2020",
-            "d": ["YYYY-MM-DD"],
-            "C": "continent",
-            "c": "country",
-            "l": "V[ICTORIA]|Y[AMAGATA]",
-            "h": "<host> - human omitted",
-            "s": [
-                {
-                    "a": "sequence-amino-acids",
-                    "n": "sequence-nucleotides",
-                    "H": "hash of nucs, xxhash32 hex encoded",
-                    "r": ["reassortant"],
-                    "A": ["annotations"],
-                    "p": ["passage"],
-                    "i": "<issues (letters): i - insertions, s - short, b - garbage_at_the_beginning, e - garbage_at_the_end, h - high_hamming_distance_bin>",
-                    "l": {"lab": ["lab_id"]},
-                    "G": {         //? gisaid, ncbi data
-                        "i": ["accession_number"],
-                        "S": ["submitters"],
-                        "m": ["gisaid_last_modified"],
-                        "o": ["originating_lab"],
-                        "t": ["gisaid_identifier"],
-                        "D": ["gisaid_dna_accession_no"],
-                        "d": ["gisaid_dna_insdc"]
-                    }
-                },
-            ]
-        }
+        "N": "<name> - without subtype, e.g. LAOS/1742/2020",
+        "d": ["YYYY-MM-DD"],
+        "C": "continent",
+        "c": "country",
+        "l": "V[ICTORIA]|Y[AMAGATA]",
+        "h": "<host> - human omitted",
+        "s": [
+            {
+            "a": "sequence-amino-acids",
+            "n": "sequence-nucleotides",
+            "I": [[pos, "aas"]], // aa insertions
+            "H": "hash of nucs, xxhash32 hex encoded",
+            "r": ["reassortant"],
+            "A": ["annotations"],
+            "p": ["passage"],
+            "i": "<issues (letters): i - insertions, s - short, b - garbage_at_the_beginning, e - garbage_at_the_end, h - high_hamming_distance_bin>",
+            "l": {"lab": ["lab_id"]},
+            "G": {         //? gisaid, ncbi data
+                "i": ["accession_number"],
+                "S": ["submitters"],
+                "m": ["gisaid_last_modified"],
+                "o": ["originating_lab"],
+                "t": ["gisaid_identifier"],
+                "D": ["gisaid_dna_accession_no"],
+                "d": ["gisaid_dna_insdc"]
+            }
+        },
+        ]
+    }
     ]
 }

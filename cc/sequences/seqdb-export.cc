@@ -273,11 +273,15 @@ std::string ae::sequences::Seqdb::export_to_string() const
 
             bool comma{false};
             fmt::format_to(std::back_inserter(json), "   {{");
-            const auto nl_after_seq = seq.nuc.empty() ? newline::no : newline::yes;
-            const auto nl_after_i = seq.issues.data_.empty() ? nl_after_seq : newline::no;
+            auto nl_after_seq = seq.nuc.empty() ? newline::no : newline::yes;
             add_str("a", seq.aa, newline::yes, comma);
             add_str("n", seq.nuc, newline::yes, comma);
+            if (!seq.aa_insertions.empty()) {
+                add_val("I", fmt::format("[{}]", fmt::join(seq.aa_insertions, ", ")), nl_after_seq, comma);
+                nl_after_seq = newline::no;
+            }
             add_str("i", seq.issues.data_, nl_after_seq, comma);
+            const auto nl_after_i = seq.issues.data_.empty() ? nl_after_seq : newline::no;
             add_str("H", seq.hash, nl_after_i, comma);
             add_vec("r", seq.reassortants, newline::no, comma);
             add_vec("A", seq.annotations, newline::no, comma);

@@ -1,6 +1,7 @@
 #include <numeric>
 
 #include "utils/messages.hh"
+#include "utils/log.hh"
 #include "sequences/deletions.hh"
 #include "sequences/master.hh"
 
@@ -21,7 +22,8 @@ struct deletions_insertions_t
         auto operator<=>(const pos_num_t&) const = default;
     };
 
-    std::vector<pos_num_t> deletions{}, insertions{};
+    std::vector<pos_num_t> deletions{};
+    std::vector<pos_num_t> insertions{};
 
     bool empty() const { return deletions.empty() && insertions.empty(); }
 
@@ -67,10 +69,15 @@ template <> struct fmt::formatter<deletions_insertions_t::pos_num_t> : fmt::form
 template <> struct fmt::formatter<deletions_insertions_t> : fmt::formatter<ae::fmt_helper::default_formatter> {
     template <typename FormatCtx> auto format(const deletions_insertions_t& value, FormatCtx& ctx)
     {
-        if (value.empty())
-            return format_to(ctx.out(), "{}", "{}");
+        if (!value.empty()) {
+            if (!value.deletions.empty())
+                format_to(ctx.out(), "del:{}", value.deletions);
+            if (!value.insertions.empty())
+                format_to(ctx.out(), "ins:{}", value.insertions);
+            return ctx.out();
+        }
         else
-            return format_to(ctx.out(), "{}", value.deletions);
+            return format_to(ctx.out(), "{}", "{}");
     }
 };
 
@@ -261,9 +268,14 @@ inline deletions_insertions_t find_deletions_insertions(const ae::sequences::Raw
         }
         else if (N_deletions_at(deletions, 2, pos1_t{164}) && sequence.sequence.aa.substr(pos1_t{160}, 6) == "VPKNNK") {
             // B/GANSU_ANDING/1194/2021 etc.
-            // Vic 3del with insertion at 165: "VPKNNK" -> "VP---NNK"
+            // Vic 3del with insertion at 166: "VPKNNK" -> "VP---KNK"
             deletions.deletions[0] = deletions_insertions_t::pos_num_t{pos1_t{162}, 3};
-            deletions.insertions.push_back(deletions_insertions_t::pos_num_t{pos1_t{165}, 1});
+            deletions.insertions.push_back(deletions_insertions_t::pos_num_t{pos1_t{166}, 1});
+            AD_INFO("B/Vic 3del with 166N {}", sequence.name);
+            // // Vic 3del with insertion at 165: "VPKNNK" -> "VP---NNK"
+            // deletions.deletions[0] = deletions_insertions_t::pos_num_t{pos1_t{162}, 3};
+            // deletions.insertions.push_back(deletions_insertions_t::pos_num_t{pos1_t{165}, 1});
+            // AD_INFO("B/Vic 3del with 165K {}", sequence.name);
         }
     }
 

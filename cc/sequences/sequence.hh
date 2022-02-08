@@ -6,6 +6,7 @@
 #include <algorithm>
 
 #include "utils/named-type.hh"
+#include "ext/string.hh"
 #include "sequences/pos.hh"
 
 // ======================================================================
@@ -85,6 +86,7 @@ namespace ae::sequences
     {
         pos0_t pos;
         std::string insertion;
+        auto operator<=>(const insertion_t&) const = default;
     };
 
     using insertions_t = std::vector<insertion_t>;
@@ -94,5 +96,16 @@ namespace ae::sequences
     using hash_t = ae::named_string_t<std::string, struct sequences_hash_tag>;
 
 } // namespace ae::sequences
+
+// ----------------------------------------------------------------------
+
+// used for json output -> [pos, insertion]
+template <> struct fmt::formatter<ae::sequences::insertion_t> : fmt::formatter<ae::fmt_helper::default_formatter> {
+    template <typename FormatCtx> auto format(const ae::sequences::insertion_t& value, FormatCtx& ctx)
+    {
+        return format_to(ctx.out(), "[{}, \"{}\"]", value.pos, value.insertion);
+    }
+};
+
 
 // ======================================================================

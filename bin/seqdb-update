@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 """
 Updates seqdb with sequences read from fasta and/or ncbi
+set SEQDB_V4 to use another seqdb location
 """
 
 import os, sys, re, collections, pprint, argparse, traceback

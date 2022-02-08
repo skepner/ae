@@ -316,6 +316,15 @@ bool ae::sequences::SeqdbSeq::update(const RawSequence& raw_sequence, bool keep_
             throw Error{"SeqdbSeq::update keep_sequence={} raw_sequence.hash={} hash={} hash difference", keep_sequence, raw_sequence.hash_nuc, hash};
     }
 
+    if (!raw_sequence.aa_insertions.empty()) {
+        if (aa_insertions.empty()) {
+            aa_insertions = raw_sequence.aa_insertions;
+            updated = true;
+        }
+        else if (aa_insertions != raw_sequence.aa_insertions)
+            throw Error{"SeqdbSeq::update different aa_insertions sets: existing:{} new:{}", aa_insertions, raw_sequence.aa_insertions};
+    }
+
     update_vec(annotations, raw_sequence.annotations);
     update_vec(reassortants, raw_sequence.reassortant);
     update_vec(passages, raw_sequence.passage);
