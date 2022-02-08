@@ -53,6 +53,21 @@ inline void load_seq(ae::sequences::SeqdbSeq& seq, simdjson::ondemand::object& j
             seq.aa = std::string_view{field.value()};
         else if (key == "n"sv)
             seq.nuc = std::string_view{field.value()};
+        else if (key == "I"sv) {
+            for (auto insertions_en : field.value().get_array()) {
+                ae::sequences::insertion_t ins;
+                size_t ind{0};
+                for (auto val : insertions_en.get_array()) {
+                    if (ind == 0)
+                        ins.pos = ae::sequences::pos1_t{static_cast<uint64_t>(val)};
+                    else if (ind == 1)
+                        ins.insertion = static_cast<std::string_view>(val);
+                    else
+                        fmt::print("> seqdb load_seq redundant insertion value at {}: {}\n", ind, val);
+                    ++ind;
+                }
+            }
+        }
         else if (key == "H"sv)
             seq.hash = std::string_view{field.value()};
         else if (key == "r"sv)

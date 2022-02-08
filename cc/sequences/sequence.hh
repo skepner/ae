@@ -84,8 +84,8 @@ namespace ae::sequences
 
     struct insertion_t
     {
-        pos0_t pos;
-        std::string insertion;
+        pos0_t pos{0};
+        std::string insertion{};
         auto operator<=>(const insertion_t&) const = default;
     };
 
