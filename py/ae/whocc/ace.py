@@ -102,6 +102,7 @@ class DataFixer:
 
     def _name(self, entry: dict, ag_sr: str, no: int):
         parsing_result = ae_backend.virus_name_parse(entry["N"], type_subtype=self.type_subtype)
+        print(f">>>> parsing \"{entry['N']}\": {parsing_result.good()}", file=sys.stderr)
         if parsing_result.good():
             name_parts = parsing_result.parts
             if self.type_subtype:
@@ -123,12 +124,20 @@ class DataFixer:
                 entry["a"].append(extra)
                 self.report_data.append(f">>  {ag_sr} {no:3d} extra: \"{entry['a']}\"")
         else:
-            messages = [f"{msg.type}: {msg.value}" for msg in parsing_result.messages]
+            try:
+                messages = [f"{msg.type}: {msg.value}" for msg in parsing_result.messages]
+            except UnicodeDecodeError as err:
+                print(f">> parsing_result.messages {parsing_result.messages}", file=sys.stderr)
+                messages = [f"{msg.type}: {err}" for msg in parsing_result.messages]
+                print(f">> {ag_sr} {no}: {messages}", file=sys.stderr)
             self.report_data.append(f">>  {ag_sr} {no:3d} name parsing failed \"{entry['N']}\": {messages}")
             # print(f">> name parsing failed: \"{entry['N']}\":",
             #       "\n    ".join(f"{msg.type}: {msg.value}" for msg in parsing_result.messages),
             #       sep="\n    ", file=sys.stderr)
-            self.not_found_locations |= parsing_result.messages.unrecognized_locations()
+            try:
+                self.not_found_locations |= parsing_result.messages.unrecognized_locations()
+            except UnicodeDecodeError as err:
+                pass
 
     def _passage(self, entry: dict, ag_sr: str, no: int):
         if orig_passage := entry["P"]:

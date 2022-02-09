@@ -65,7 +65,7 @@ def _json_dumps(data, indent=2, indent_increment=None, simple=_json_simple, topl
                 s += "{}: {}{}".format(json.dumps(k, cls=JSONEncoder), _json_dumps(data[k], indent=0, indent_increment=None, simple=simple, toplevel=False, object_fields_sorting_key=object_fields_sorting_key), comma)
             s += "}"
         else:
-            s = json.dumps(data, sort_keys=True, cls=JSONEncoder)
+            s = json.dumps(data, sort_keys=True, ensure_ascii=False, cls=JSONEncoder)
         return s
 
     def make_object(data):

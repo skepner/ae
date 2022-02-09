@@ -39,10 +39,11 @@ def main(args: argparse.Namespace):
                     extractor.check_export_possibility()
                     info = ae.whocc.torg.export_to_file(extractor, args.output_dir)
                     print(info)
-                    ace_filename, ace_prn_read_filename = ae.whocc.table_dir.subtype_assay_lab_ace_pathname(extractor=extractor, prn_read=info["assay"] == "PRN" and info["multivalue_titer"], ace_dir=args.output_dir)
-                    torg_to_ace(torg_filename=info["torg_filename"], ace_filename=ace_filename, prn_read=False, prn_remove_concentration=False, check_by_seqdb=True, check_by_hidb=True)
-                    if ace_prn_read_filename:
-                        torg_to_ace(torg_filename=info["torg_filename"], ace_filename=ace_prn_read_filename, prn_read=True, prn_remove_concentration=False, check_by_seqdb=False, check_by_hidb=False)
+                    if args.make_ace:
+                        ace_filename, ace_prn_read_filename = ae.whocc.table_dir.subtype_assay_lab_ace_pathname(extractor=extractor, prn_read=info["assay"] == "PRN" and info["multivalue_titer"], ace_dir=args.output_dir)
+                        torg_to_ace(torg_filename=info["torg_filename"], ace_filename=ace_filename, prn_read=False, prn_remove_concentration=False, check_by_seqdb=True, check_by_hidb=True)
+                        if ace_prn_read_filename:
+                            torg_to_ace(torg_filename=info["torg_filename"], ace_filename=ace_prn_read_filename, prn_read=True, prn_remove_concentration=False, check_by_seqdb=False, check_by_hidb=False)
             else:
                 print(f">> no extractor for sheet {sheet_no}", file=sys.stderr)
 
@@ -99,6 +100,7 @@ try:
     parser.add_argument("--serum-passage-row", dest="serum_passage_row", type=int, help="force serum passage row (1 based)")
     parser.add_argument("--serum-id-row", dest="serum_id_row", type=int, help="force serum id row (1 based)")
     parser.add_argument("--overwrite", action="store_true")
+    parser.add_argument("--no-ace", action="store_false", dest="make_ace", default=True)
     args = parser.parse_args()
     exit_code = main(args) or 0
 except Error as err:
