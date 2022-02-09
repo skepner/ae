@@ -271,11 +271,7 @@ inline deletions_insertions_t find_deletions_insertions(const ae::sequences::Raw
             // Vic 3del with insertion at 166: "VPKNNK" -> "VP---KNK"
             deletions.deletions[0] = deletions_insertions_t::pos_num_t{pos1_t{162}, 3};
             deletions.insertions.push_back(deletions_insertions_t::pos_num_t{pos1_t{166}, 1});
-            AD_INFO("B/Vic 3del with 166N {}", sequence.name);
-            // // Vic 3del with insertion at 165: "VPKNNK" -> "VP---NNK"
-            // deletions.deletions[0] = deletions_insertions_t::pos_num_t{pos1_t{162}, 3};
-            // deletions.insertions.push_back(deletions_insertions_t::pos_num_t{pos1_t{165}, 1});
-            // AD_INFO("B/Vic 3del with 165K {}", sequence.name);
+            // AD_INFO("B/Vic 3del with 166N {}\n{}---{}\n{}---------{}", sequence.name, sequence.sequence.aa.substr(pos1_t{160}, 2), sequence.sequence.aa.substr(pos1_t{162}, 10), sequence.sequence.nuc.substr(pos0_t{159 * 3}, 6), sequence.sequence.nuc.substr(pos0_t{161 * 3}, 30));
         }
     }
 
