@@ -270,8 +270,8 @@ inline deletions_insertions_t find_deletions_insertions(const ae::sequences::Raw
             // B/GANSU_ANDING/1194/2021 etc.
             // Vic 3del with insertion at 166: "VPKNNK" -> "VP---KNK"
             deletions.deletions[0] = deletions_insertions_t::pos_num_t{pos1_t{162}, 3};
-            deletions.insertions.push_back(deletions_insertions_t::pos_num_t{pos1_t{166}, 1});
-            // AD_INFO("B/Vic 3del with 166N {}\n{}---{}\n{}---------{}", sequence.name, sequence.sequence.aa.substr(pos1_t{160}, 2), sequence.sequence.aa.substr(pos1_t{162}, 10), sequence.sequence.nuc.substr(pos0_t{159 * 3}, 6), sequence.sequence.nuc.substr(pos0_t{161 * 3}, 30));
+            deletions.insertions.push_back(deletions_insertions_t::pos_num_t{pos1_t{167}, 1}); // can be 166 and 167, Sarah reports that the labs use 167
+            // AD_INFO("B/Vic 3del with 167N {}\n{}---{}\n{}---------{}", sequence.name, sequence.sequence.aa.substr(pos1_t{160}, 2), sequence.sequence.aa.substr(pos1_t{162}, 10), sequence.sequence.nuc.substr(pos0_t{159 * 3}, 6), sequence.sequence.nuc.substr(pos0_t{161 * 3}, 30));
         }
     }
 
