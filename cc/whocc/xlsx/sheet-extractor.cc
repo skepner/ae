@@ -930,6 +930,22 @@ ae::xlsx::v1::ExtractorAc21::ExtractorAc21(std::shared_ptr<Sheet> a_sheet)
 
 // ----------------------------------------------------------------------
 
+bool ae::xlsx::v1::ExtractorAc21::is_virus_name(nrow_t row, ncol_t col) const
+{
+    if (ExtractorCDC::is_virus_name(row, col))
+        return true;
+
+    // CNIC may have BV/ prefix for B/Vic names
+    auto name = ae::string::uppercase(ae::string::strip(fmt::format("{}", sheet().cell(row, col))));
+    if (name.size() > 3 && name[0] == 'B' && (name[1] == 'V' || name[1] == 'Y') && name[2] == '/' && ae::virus::name::is_good("B/" + name.substr(3)))
+        return true;
+
+    return false;
+
+} // ae::xlsx::v1::ExtractorAc21::is_virus_name
+
+// ----------------------------------------------------------------------
+
 // bool ae::xlsx::v1::ExtractorAc21::is_lab_id(const cell_t& cell) const
 // {
 //     return true;

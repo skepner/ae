@@ -195,6 +195,7 @@ namespace ae::xlsx::inline v1
         bool serum_index_matches(const cell_t& at_row, const cell_t& at_column) const override;
 
       protected:
+        bool is_virus_name(nrow_t row, ncol_t col) const override;
         // bool is_lab_id(const cell_t& cell) const override;
         void find_antigen_lab_id_column(warn_if_not_found winf) override;
         void find_serum_rows(warn_if_not_found winf) override;
