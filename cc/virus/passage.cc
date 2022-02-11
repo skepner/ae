@@ -132,7 +132,7 @@ namespace ae::virus::passage
         struct passage_number
         {
             static constexpr auto hyphen = dsl::while_(dsl::hyphen);
-            static constexpr auto symbol = dsl::digit<> / X / dsl::question_mark;
+            static constexpr auto symbol = dsl::digit<> | X | dsl::question_mark;
             static constexpr auto cond = dsl::peek(hyphen + dsl::digit<>);
             static constexpr auto rule = dsl::peek(hyphen + symbol) >> (hyphen + dsl::capture(dsl::while_(symbol)));
             static constexpr auto value = lexy::callback<std::string>([](auto captured) {
@@ -146,14 +146,14 @@ namespace ae::virus::passage
 
         struct passage_separator
         {
-            static constexpr auto symbol = dsl::slash / dsl::backslash / dsl::comma / PLUS;
+            static constexpr auto symbol = dsl::slash | dsl::backslash | dsl::comma | PLUS;
             static constexpr auto rule = symbol >> dsl::capture(dsl::while_(symbol));
             static constexpr auto value = lexy::as_string<std::string>;
         };
 
         struct passage_date
         {
-            static constexpr auto rule = dsl::capture(dsl::while_(dsl::digit<> / dsl::hyphen / dsl::slash)) + dsl::if_(dsl::peek(CLOSE) >> CLOSE);
+            static constexpr auto rule = dsl::capture(dsl::while_(dsl::digit<> | dsl::hyphen | dsl::slash)) + dsl::if_(dsl::peek(CLOSE) >> CLOSE);
             static constexpr auto value = lexy::as_string<std::string>;
         };
 
@@ -162,7 +162,7 @@ namespace ae::virus::passage
             static constexpr auto prefix = P + A + S + S + A + G + E;
             static constexpr auto prefix_details = D + E + T + A + I + L + S;
             static constexpr auto cond = dsl::peek(prefix);
-            static constexpr auto rule = prefix + (WS / dsl::hyphen) + dsl::opt(dsl::peek(prefix_details) >> (prefix_details + WS)) + dsl::opt(dsl::peek(dsl::colon) >> dsl::colon) + WS;
+            static constexpr auto rule = prefix + (WS | dsl::hyphen) + dsl::opt(dsl::peek(prefix_details) >> (prefix_details + WS)) + dsl::opt(dsl::peek(dsl::colon) >> dsl::colon) + WS;
             static constexpr auto value = lexy::callback<lexy::nullopt>([](auto...) { return lexy::nullopt{}; });
         };
 
