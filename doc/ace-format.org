@@ -1,0 +1,95 @@
+# Time-stamp: <2022-02-13 11:06:34 eu>
+* acmacs-ace-v1 format to store chart data
+
+fields with names starting with ? are ignored
+
+|             |     |     | type                             | description                                                                                                                                                    |
+|-------------+-----+-----+----------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| "  version" |     |     | str                              | "acmacs-ace-v1"                                                                                                                                                |
+| "?created"  |     |     | any                              | comment                                                                                                                                                        |
+| "c"         |     |     | key-value pairs                  | single chart data                                                                                                                                              |
+|-------------+-----+-----+----------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|             | "i" |     | key-value pairs                  | chart meta information                                                                                                                                         |
+|             |     | "v" | str                              | virus, e.g. INFLUENZA (default, if omitted), HPV, generic, DENGE                                                                                               |
+|             |     | "V" | str                              | virus type and subtype, e.g. B or A(H3N2) or serotype                                                                                                          |
+|             |     | "A" | str                              | assay: HI, HINT, FRA, FOCUST REDUCTION, PRNT                                                                                                                   |
+|             |     | "D" | str, date YYYYMMDD.NNN           | table/assay date and number (if multiple on that day), e.g. 20160602.002                                                                                       |
+|             |     | "N" | str                              | user supplied name                                                                                                                                             |
+|             |     | "l" | str                              | lab                                                                                                                                                            |
+|             |     | "r" | str                              | RBCs species of HI assay, e.g. "turkey"                                                                                                                        |
+|             |     | "s" | str                              | subset/lineage, e.g. "2009PDM"                                                                                                                                 |
+|             |     | "T" | str                              | table type "A[NTIGENIC]" - default, "G[ENETIC]"                                                                                                                |
+|             |     | "S" | array of key-value pairs         | source table info list, each entry is like "i"                                                                                                                 |
+|-------------+-----+-----+----------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|             | "a" |     | array of key-value pairs         | Antigen list                                                                                                                                                   |
+|             |     | "N" | str, mandatory                   | name: TYPE(SUBTYPE)/[HOST/]LOCATION/ISOLATION/YEAR or CDC_ABBR NAME or UNRECOGNIZED NAME                                                                       |
+|             |     | "a" | array of str                     | annotations that distinguish antigens (prevent from merging): ["DISTINCT"], mutation information, unrecognized extra data                                      |
+|             |     | "D" | str, date YYYYMMDD or YYYY-MM-DD | isolation date                                                                                                                                                 |
+|             |     | "L" | str                              | lineage: "Y[AMAGATA]" or "V[ICTORIA]"                                                                                                                          |
+|             |     | "P" | str                              | passage, e.g. "MDCK2/SIAT1 (2016-05-12)"                                                                                                                       |
+|             |     | "R" | str                              | reassortant, e.g. "NYMC-51C"                                                                                                                                   |
+|             |     | "l" | array of str                     | lab ids ([lab#id]), e.g. ["CDC#2013706008"]                                                                                                                    |
+|             |     | "A" | str                              | aligned amino-acid sequence                                                                                                                                    |
+|             |     | "B" | str                              | aligned nucleotide sequence                                                                                                                                    |
+|             |     | "s" | key-value  pairs                 | semantic attributes by group (see below the table)                                                                                                             |
+|             |     | "C" | str                              | (DEPRECATED, use "s") continent: "ASIA", "AUSTRALIA-OCEANIA", "NORTH-AMERICA", "EUROPE", "RUSSIA", "AFRICA", "MIDDLE-EAST", "SOUTH-AMERICA", "CENTRAL-AMERICA" |
+|             |     | "c" | array of str                     | (DEPRECATED, use "s") clades, e.g. ["5.2.1"]                                                                                                                   |
+|             |     | "S" | str                              | (DEPRECATED, use "s") single letter semantic boolean attributes: R - reference, E - egg, V - current vaccine, v - previous vaccine, S - vaccine surrogate      |
+|-------------+-----+-----+----------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|             | "s" |     | array of key-value pairs         | Serum list                                                                                                                                                     |
+|             |     | "N" | str, mandatory                   | name: TYPE(SUBTYPE)/[HOST/]LOCATION/ISOLATION/YEAR or CDC_ABBR NAME or UNRECOGNIZED NAME                                                                       |
+|             |     | "a" | array of str                     | annotations that distinguish sera (prevent from merging), e.g. ["BOOSTED", "CONC 2:1", "HA-Y156T"]                                                             |
+|             |     | "s" | str                              | serum species, e.g "FERRET"                                                                                                                                    |
+|             |     | "L" | str                              | lineage: "Y[AMAGATA]" or "V[ICTORIA]"                                                                                                                          |
+|             |     | "P" | str                              | passage, e.g. "MDCK2/SIAT1 (2016-05-12)"                                                                                                                       |
+|             |     | "R" | str                              | reassortant, e.g. "NYMC-51C"                                                                                                                                   |
+|             |     | "I" | str                              | serum id, e.g "CDC 2016-045"                                                                                                                                   |
+|             |     | "h" | array of numbers                 | homologous antigen indices, e.g. [0]                                                                                                                           |
+|             |     | "A" | str                              | aligned amino-acid sequence                                                                                                                                    |
+|             |     | "B" | str                              | aligned nucleotide sequence                                                                                                                                    |
+|             |     | "s" | key-value  pairs                 | semantic attributes by group (see below the table)                                                                                                             |
+|             |     | "C" | str                              | (DEPRECATED, use "s") continent: "ASIA", "AUSTRALIA-OCEANIA", "NORTH-AMERICA", "EUROPE", "RUSSIA", "AFRICA", "MIDDLE-EAST", "SOUTH-AMERICA", "CENTRAL-AMERICA" |
+|             |     | "c" | array of str                     | (DEPRECATED, use "s") clades, e.g. ["5.2.1"]                                                                                                                   |
+|             |     | "S" | str                              | (DEPRECATED, use "s") single letter semantic boolean attributes: R - reference, E - egg, V - current vaccine, v - previous vaccine, S - vaccine surrogate      |
+|-------------+-----+-----+----------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|             | "t" |     | key-value pairs                  | Titers                                                                                                                                                         |
+|             |     | "l" | array of arrays of str           | dense matrix of titers                                                                                                                                         |
+|             |     | "d" | array of key(str)-value(str)     | sparse matrix, entry for each antigen present, key is serum index, value is titer, dont-care titers omitted                                                    |
+|             |     | "L" | array of arrays of key-value     | layers of titers, each top level array element as in "d" or "l"                                                                                                |
+|-------------+-----+-----+----------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|             | "C" |     | array of floats                  | forced column bases for a new projections                                                                                                                      |
+|-------------+-----+-----+----------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|             | "P" |     | array of key-value pairs         | Projections                                                                                                                                                    |
+|-------------+-----+-----+----------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|             | "R" |     | key-value(key-value) pairs       | sematic attributes based plot specifications                                                                                              |
+|-------------+-----+-----+----------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|             | "p" |     | key-value pairs                  | legacy lispmds stype plot specification                                                                                                                        |
+|-------------+-----+-----+----------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|             | "x" |     | key-value pairs                  | extensions not used by acmacs                                                                                                                                  |
+|             |     |     |                                  |                                                                                                                                                                |
+
+additional drawing marks, e.g. serum circles
+
+* semantic attributes by group
+
+Group name (key in the key-value pair) is a unique string, few predefined groups
+"clades": ["clade", "clade"]
+"continent": "ASIA"
+"country": "UNITED KINGDOM"
+"vaccine": "previous", "current", "surrogate"
+"num-tables": total number of tables from hidb
+"recent-table": "CDC:HI:guinea-pig:20141009" - the most recent table id from hidb
+"ts": "2021-12" time series
+"layer": 1 - table series
+"sc": [] - serum coverage data, N-fold for each serum
+
+
+* -------------------- Local vars ----------------------------------------------------------------------
+:PROPERTIES:
+:VISIBILITY: folded
+:END:
+#+STARTUP: showall indent
+Local Variables:
+eval: (auto-fill-mode 0)
+eval: (add-hook 'before-save-hook 'time-stamp)
+End:
