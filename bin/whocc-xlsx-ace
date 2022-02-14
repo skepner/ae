@@ -23,7 +23,7 @@ def main(args: argparse.Namespace):
             # print(detected)
             extractor = ae_backend.whocc.xlsx.extractor(sheet, detected)
             if extractor:
-                target_xlsx = check_output_existance(extractor=extractor, overwrite=args.overwrite)
+                target_xlsx = check_output_existance(extractor=extractor, output_dir=args.output_dir, overwrite=args.overwrite)
                 if target_xlsx.exists():
                     target_xlsx.unlink()
                 target_xlsx.hardlink_to(source)
@@ -71,13 +71,13 @@ def torg_to_ace(torg_filename: Path, ace_filename: Path, prn_read: bool = False,
 
 # ----------------------------------------------------------------------
 
-def check_output_existance(extractor: ae_backend.whocc.xlsx.Extractor, overwrite: bool):
+def check_output_existance(extractor: ae_backend.whocc.xlsx.Extractor, output_dir: Path, overwrite: bool):
     exist = []
-    if (xlsx := ae.whocc.table_dir.subtype_assay_lab_xlsx_pathname(extractor=extractor)).exists():
+    if (xlsx := ae.whocc.table_dir.subtype_assay_lab_xlsx_pathname(extractor=extractor, xlsx_dir=output_dir)).exists():
         exist.append(str(xlsx))
-    if (torg := ae.whocc.table_dir.subtype_assay_lab_torg_pathname(extractor=extractor)).exists():
+    if (torg := ae.whocc.table_dir.subtype_assay_lab_torg_pathname(extractor=extractor, torg_dir=output_dir)).exists():
         exist.append(str(torg))
-    ace, ace_prn = ae.whocc.table_dir.subtype_assay_lab_ace_pathname(extractor=extractor)
+    ace, ace_prn = ae.whocc.table_dir.subtype_assay_lab_ace_pathname(extractor=extractor, ace_dir=output_dir)
     if ace.exists():
         exist.append(str(ace))
     if exist:
