@@ -102,7 +102,7 @@ class DataFixer:
 
     def _name(self, entry: dict, ag_sr: str, no: int):
         parsing_result = ae_backend.virus_name_parse(entry["N"], type_subtype=self.type_subtype)
-        print(f">>>> parsing \"{entry['N']}\": {parsing_result.good()}", file=sys.stderr)
+        # print(f">>>> parsing \"{entry['N']}\": {parsing_result.good()}", file=sys.stderr)
         if parsing_result.good():
             name_parts = parsing_result.parts
             if self.type_subtype:

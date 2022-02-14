@@ -1,0 +1,43 @@
+#! /usr/bin/env python3
+
+import sys, os, subprocess, pprint, argparse, traceback
+from pathlib import Path
+import ae_backend
+
+# ----------------------------------------------------------------------
+
+def main(args: argparse.Namespace):
+    failures = 0
+    for name in args.names:
+        print(name)
+        res = ae_backend.virus_name_parse(name, trace=args.trace)
+        if res.good():
+            print(res.parts.name())
+            if res.messages:
+                print(res.messages)
+        else:
+            failures += 1
+            # print(f">> \"{name}\" --> {res.parts.name()}", file=sys.stderr)
+            for msg in res.messages:
+                print(f">> {msg.type}", file=sys.stderr)
+                print(f">> {msg}", file=sys.stderr)
+            print("", file=sys.stderr)
+    return failures
+
+# ----------------------------------------------------------------------
+
+try:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("names", nargs="+", type=str, metavar="name")
+    parser.add_argument("-v", "--trace", action="store_true", dest='trace', default=False)
+    args = parser.parse_args()
+    exit_code = main(args) or 0
+# except Error as err:
+#     print(f"> {err}", file=sys.stderr)
+#     exit_code = 1
+except Exception as err:
+    print(f"> {err}\n{traceback.format_exc()}", file=sys.stderr)
+    exit_code = 2
+exit(exit_code)
+
+# ======================================================================

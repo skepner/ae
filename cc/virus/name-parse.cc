@@ -6,6 +6,7 @@
 #include "ext/lexy.hh"
 #include "ext/date.hh"
 #include "ext/from_chars.hh"
+#include "utils/log.hh"
 #include "utils/string.hh"
 #include "utils/messages.hh"
 #include "virus/name-parse.hh"
@@ -27,7 +28,7 @@ namespace ae::virus::name::inline v1
         while (first != last && std::isspace(*first))
             ++first; // remove leading spaces
         std::string res(static_cast<size_t>(last - first), '?');
-        auto output_end = std::transform(first, last, res.begin(), [](unsigned char cc) { return std::toupper(cc); });
+        auto output_end = std::transform(first, last, res.begin(), [](unsigned char cc) { return (cc >= 'a' && cc <= 'z') ? (cc - 0x20) : cc; }); // std::toupper handles unicode stuff (CNIC) incorrectly
         if ((output_end - res.begin()) > 1) { // output is not empty
             --output_end;
             while (output_end != res.begin() && std::isspace(*output_end))
@@ -286,6 +287,8 @@ namespace ae::virus::name::inline v1
         static constexpr auto PLUS = dsl::lit_c<'+'>;
         static constexpr auto OPT_SPACES = dsl::while_(dsl::ascii::blank);
 
+        static constexpr auto LETTERS = dsl::unicode::alpha;
+
         // ----------------------------------------------------------------------
 
         struct subtype_a_hn
@@ -404,12 +407,13 @@ namespace ae::virus::name::inline v1
         struct letters
         {
             static constexpr auto whitespace = dsl::ascii::blank; // auto skip whitespaces
-            static constexpr auto letters_only = dsl::ascii::alpha / letter_extra / dsl::lit_c<'_'> / dsl::lit_c<'?'> / dsl::hyphen / dsl::ascii::blank / dsl::period / dsl::apostrophe;
+            static constexpr auto letters_only = LETTERS / letter_extra / dsl::lit_c<'_'> / dsl::lit_c<'?'> / dsl::hyphen / dsl::ascii::blank / dsl::period / dsl::apostrophe;
             static constexpr auto mixed = letters_only / dsl::ascii::digit / dsl::colon / dsl::period / PLUS / OPEN / CLOSE;
 
             static constexpr auto rule = dsl::peek(OPT_SPACES + dsl::ascii::alpha / letter_extra) //
                 >> (dsl::capture(dsl::while_(letters_only)) + dsl::opt(dsl::peek_not(dsl::lit_c<'/'>) >> dsl::capture(dsl::while_(mixed))));
             static constexpr auto value = lexy::callback<part_t>([](auto lex1, auto lex2) {
+                // AD_DEBUG("grammar::letters \"{}\" \"{}\"", std::string(lex1.begin(), lex1.end()), uppercase_strip(lex1));
                 if constexpr (std::is_same_v<decltype(lex2), lexy::nullopt>)
                     return part_t{lex1, part_type::letters_only};
                 else
@@ -660,9 +664,9 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
     const auto& locdb = locdb::get();
     Parts result;
 
-    // fmt::print(">>>> parsing \"{}\"\n", source);
+    // AD_DEBUG("parsing \"{}\"", source);
     if (settings.trace()) {
-        fmt::print(">>> parsing \"{}\"\n", source);
+        AD_INFO("parsing \"{}\"", source);
         lexy::trace<grammar::parts>(stderr, lexy::string_input<lexy::utf8_encoding>{source});
     }
     const auto parsing_result = lexy::parse<grammar::parts>(lexy::string_input<lexy::utf8_encoding>{source}, report_error{source, settings.report_errors()});
@@ -767,6 +771,7 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
         // IVR-213(A/Pennsylvania/1025/2019)
         result.subtype = parts[0];
         std::tie(result.location, result.continent, result.country) = fix_location(parts[1], source, result, messages, message_location);
+        // AD_DEBUG("fix location \"{}\" -> \"{}\"", parts[1], result.location);
         result.isolation = fix_isolation(parts[2], source, result, messages, message_location);
         result.year = fix_year(parts[3], source, result, messages, message_location);
         if (type_match(parts[4], part_type::reassortant)) {

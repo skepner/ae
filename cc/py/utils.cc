@@ -9,6 +9,7 @@ void ae::py::utils(pybind11::module_& mdl)
     using namespace pybind11::literals;
 
     pybind11::class_<ae::Message>(mdl, "Message")                                                                          //
+        .def("__str__", [](const ae::Message& msg) { return fmt::format("{} \"{}\" {}", ae::Message::format_long(msg.type), msg.value, msg.context); })        //
         .def_property_readonly("type", [](const ae::Message& msg) { return fmt::format("{}", msg.type); })                 //
         .def_property_readonly("type_subtype", [](const ae::Message& msg) { return fmt::format("{}", msg.type_subtype); }) //
         .def_readonly("value", &ae::Message::value)                                                                        //

@@ -4,6 +4,7 @@
 #include <cstdlib>
 
 #include "locdb/v3/locdb.hh"
+#include "utils/log.hh"
 #include "utils/string.hh"
 #include "ext/fmt.hh"
 
@@ -119,6 +120,7 @@ std::string_view ae::locdb::v3::Db::continent(std::string_view country) const
 
 std::pair<std::string_view, const ae::locdb::v3::Db::location*> ae::locdb::v3::Db::find(std::string_view look_for) const
 {
+    // AD_DEBUG("locdb find replacement \"{}\": {}", look_for, replacements_.find(look_for) != replacements_.end());
     if (const auto name_found = names_.find(look_for); name_found != names_.end())
         return {name_found->first, &locations_.find(name_found->second)->second};
     else if (const auto replacement_found = replacements_.find(look_for); replacement_found != replacements_.end())
