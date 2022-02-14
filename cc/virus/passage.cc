@@ -25,12 +25,15 @@ namespace ae::virus::passage
 #endif
 
         const static std::array table{
-            C{"C", "MDCK"},    //
-            C{"CELL", "MDCK"}, //
-            C{"MDKC", "MDCK"}, //
-            C{"S", "SIAT"},    //
-            C{"EGG", "E"},     //
-            C{"ORIGINAL", "OR"},     //
+            C{"C", "MDCK"},      //
+            C{"CELL", "MDCK"},   //
+            C{"MDKC", "MDCK"},   //
+            C{"S", "SIAT"},      //
+            C{"EGG", "E"},       //
+            C{"M", "MK"},        // Monkey Kidney Cell line
+            C{"PM", "PMK"},      //
+            C{"PRM", "PRMK"},    // Primary Rhesus Monkey Kidney Cell line
+            C{"ORIGINAL", "OR"}, //
         };
 
 #pragma GCC diagnostic pop
