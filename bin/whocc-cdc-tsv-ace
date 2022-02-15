@@ -337,7 +337,7 @@ def main(args: argparse.Namespace): # input_file :Path, output_dir :Path):
             output.write(lzma.compress(json_dumps(ace, indent=2, object_fields_sorting_key=object_fields_sorting_key).encode("utf-8"), preset=9|lzma.PRESET_EXTREME))
 
         if not whocc_table_path.exists():
-            print(f">> NEW: {output_name} --> {whocc_table_path}", file=sys.stderr)
+            print(f">> mv -i {output_name} {whocc_table_path}", file=sys.stderr)
         elif diffs := table_diff(output_name, whocc_table_path):
             table_date = table_name[-8:]
             if table_date > "2021":
