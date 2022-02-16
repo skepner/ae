@@ -23,6 +23,7 @@ constexpr auto regex_icase = std::regex::icase | std::regex::ECMAScript | std::r
 
 // static const std::regex re_antigen_passage{"^(MDCK|QMC|C|SIAT|S|E|HCK|X)[0-9X]", regex_icase};
 static const std::regex re_serum_passage{"^(MDCK|QMC|C|SIAT|S|E|HCK|CELL|EGG)", regex_icase};
+static const std::regex re_CRICK_serum_passage{"^(MDCK|QMC|C|SIAT|S|E|HCK|CELL|EGG)$", regex_icase};
 
 // static const std::regex re_CDC_antigen_passage{R"(^((?:MDCK|SIAT|S|E|HCK|QMC|C|X)[0-9X][^\s\(]*)\s*(?:\(([\d/]+)\))?[A-Z]*$)", regex_icase};
 static const std::regex re_CDC_antigen_lab_id{"^[0-9]{10}$", regex_icase};
@@ -133,8 +134,10 @@ std::shared_ptr<ae::xlsx::Extractor> ae::xlsx::v1::extractor_factory(std::shared
                 extractor->lineage(detected.lineage);
                 extractor->rbc(detected.rbc);
             }
-            else if (detected.assay == "PRN")
+            else if (detected.assay == "PRN") {
                 extractor = std::make_unique<ExtractorCrickPRN>(sheet);
+                extractor->subtype(detected.subtype);
+            }
             else
                 throw std::exception{};
         }
@@ -1102,7 +1105,7 @@ ae::xlsx::v1::ExtractorCrick::ExtractorCrick(std::shared_ptr<Sheet> a_sheet)
 void ae::xlsx::v1::ExtractorCrick::find_serum_rows(warn_if_not_found winf)
 {
     find_serum_name_rows(winf);
-    find_serum_passage_row(re_serum_passage, winf);
+    find_serum_passage_row(re_CRICK_serum_passage, winf);
     find_serum_id_row(re_CRICK_serum_id, winf);
     find_serum_less_than_substitutions(winf);
 
@@ -1301,7 +1304,7 @@ ae::xlsx::v1::ExtractorCrickPRN::ExtractorCrickPRN(std::shared_ptr<Sheet> a_shee
     : ExtractorCrick(a_sheet)
 {
     assay("PRN");
-    subtype("A(H3N2)");
+    // subtype("A(H3N2)");
 
 } // ae::xlsx::v1::ExtractorCrick::ExtractorCrick
 
