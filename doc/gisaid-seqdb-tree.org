@@ -1,11 +1,11 @@
-Time-stamp: <2022-01-14 10:18:33 eu>
+Time-stamp: <2022-02-18 10:05:29 eu>
 * already downloaded from gisaid: ~/ac/sequences
 ls -l ~/ac/sequences/gis*.fas.xz
 
 * [[https://platform.gisaid.org/epi3/start][GISAID]]
  *Download A and B separately: perhaps bug in gisaid*
 
-** SUBMISSION date (see last date in ~/ac/sequences/)
+** SUBMISSION date From 2021-01-01
 ** Required Segments: HA (checkbox at the left of HA)
 ** Click Search
 ** Click leftmost checkbox in header to select all, number of slected must not exceed 20k (gisaid does not allow downloading more)
@@ -23,10 +23,9 @@ Isolate name_|_a=Isolate ID_|_b=Type_|_c=Passage details/history_|_d=Lineage_|_e
 * seqdb-v4
 
 #+BEGIN_SRC bash
-dos2unix /r/gisaid_epiflu_sequence*.fasta
-ln -sf ~/ac/sequences/ae.py /r
-~/ae/bin/seqdb-update -m a -n /r/gisaid_epiflu_sequence*.fasta
-no=0; for f in /r/gisaid_epiflu_sequence*.fasta; do no=$((no+1)); t=gisaid-$(date +%Y-%m%d)-${no}.fas.xz; xz -9ec ${f} >/r/${t}; mv -i /r/${t} ~/ac/sequences/; done
+dos2unix /r/gisaid_epiflu_sequence*.fasta && ln -sf ~/ac/sequences/ae.py /r && ~/ae/bin/seqdb-update -m a -n /r/gisaid_epiflu_sequence*.fasta
+# no=0; for f in /r/gisaid_epiflu_sequence*.fasta; do no=$((no+1)); t=gisaid-$(date +%Y-%m%d)-${no}.fas.xz; xz -9ec ${f} >/r/${t}; mv -i /r/${t} ~/ac/sequences/; done
+no=0; for f in /r/gisaid_epiflu_sequence*.fasta; do no=$((no+1)); t=gisaid-$(date +%Y-%m%d)-${no}.fas.br; brotli -c ${f} >/r/${t}; mv -i /r/${t} ~/ac/sequences/; done
 ~/ae/bin/seqdb-update -m a ~/ac/sequences/gisaid-$(date +%Y-%m%d)-*.fas.xz
 seqdb-put
 ssa

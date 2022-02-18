@@ -1,4 +1,4 @@
-# Time-stamp: <2022-02-13 12:28:06 eu>
+# Time-stamp: <2022-02-18 10:04:16 eu>
 * acmacs-ace-v1 format to store chart data
 
 fields with names starting with ? are ignored
@@ -124,15 +124,15 @@ fields with names starting with ? are ignored
 * semantic attributes by group
 
 Group name (key in the key-value pair) is a unique string, few predefined groups
-"clades": ["clade", "clade"]
-"continent": "ASIA"
-"country": "UNITED KINGDOM"
-"vaccine": "previous", "current", "surrogate"
-"num-tables": total number of tables from hidb
-"recent-table": "CDC:HI:guinea-pig:20141009" - the most recent table id from hidb
-"ts": "2021-12" time series
-"layer": 1 - table series
-"sc": [] - serum coverage data, N-fold for each serum
+"C": ["clade", "clade"]
+? "continent": "ASIA"
+? "country": "UNITED KINGDOM"
+"V": "p(revious)", "c(urrent)", "s(urrogate)"
+"NT": total number of tables from hidb
+"RT": "CDC:HI:guinea-pig:20141009" - the most recent table id from hidb
+"TS": "2021-12" time series
+? "layer": 1 - table series
+"SC": [] - serum coverage data, N-fold for each serum
 
 
 * -------------------- Local vars ----------------------------------------------------------------------
