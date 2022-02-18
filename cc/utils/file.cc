@@ -8,6 +8,7 @@
 #include <filesystem>
 
 #include "utils/file.hh"
+#include "ext/brotli.hh"
 #include "ext/xz.hh"
 #include "ext/bzip2.hh"
 #include "ext/gzip.hh"
@@ -19,14 +20,16 @@ namespace ae::file::detail
 {
     inline std::unique_ptr<Compressor> compressor_factory(std::string_view initial_bytes, const std::filesystem::path& filename, force_compression fc, size_t padding)
     {
-        if ((!initial_bytes.empty() && xz_compressed(initial_bytes)) || extension_of(filename, {".xz", ".tjz", ".jxz"}))
+        if ((!initial_bytes.empty() && brotli_compressed(initial_bytes)) || extension_of(filename, {".br", ".tjb", ".jbr"}))
+            return std::make_unique<Brotli_Compressor>(padding);
+        else if ((!initial_bytes.empty() && xz_compressed(initial_bytes)) || extension_of(filename, {".xz", ".tjz", ".jxz"}))
             return std::make_unique<XZ_Compressor>(padding);
         else if ((!initial_bytes.empty() && bz2_compressed(initial_bytes)) || extension_of(filename, {".bz2"}))
             return std::make_unique<BZ2_Compressor>(padding);
         else if ((!initial_bytes.empty() && gzip_compressed(initial_bytes)) || extension_of(filename, {".gz"}))
             return std::make_unique<GZIP_Compressor>(padding);
         else if (fc == force_compression::yes)
-            return std::make_unique<XZ_Compressor>(padding);
+            return std::make_unique<Brotli_Compressor>(padding);
         else
             return nullptr;
 
@@ -137,7 +140,7 @@ void ae::file::backup(const std::filesystem::path& to_backup, const std::filesys
 
         auto extension = to_backup.extension();
         auto stem = to_backup.stem();
-        if ((extension == ".bz2" || extension == ".xz" || extension == ".gz") && !stem.extension().empty()) {
+        if ((extension == ".br" || extension == ".bz2" || extension == ".xz" || extension == ".gz") && !stem.extension().empty()) {
             extension = stem.extension();
             extension += to_backup.extension();
             stem = stem.stem();
@@ -196,7 +199,7 @@ void ae::file::write(const std::filesystem::path& filename, std::string_view dat
             throw std::runtime_error(fmt::format("Cannot open {}: {}", filename, strerror(errno)));
     }
     try {
-        if (aForceCompression == force_compression::yes || extension_of(filename, {".xz", ".gz", ".tjz", ".jxz"})) {
+        if (aForceCompression == force_compression::yes || extension_of(filename, {".br", ".tjb", "jbr", ".xz", ".gz", ".tjz", ".jxz"})) {
             std::string compressed_data;
             if (auto compressor = detail::compressor_factory({}, filename, aForceCompression, 0); compressor) {
                 compressed_data = compressor->compress(data);

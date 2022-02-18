@@ -53,6 +53,8 @@ xxhash = dependency('libxxhash')
 subproject('fmt')
 fmt = dependency('fmt')
 
+brotli_enc = dependency('libbrotlienc')
+brotli_dec = dependency('libbrotlidec')
 zlib = dependency('zlib', version : '>=1.2.8')
 xz = dependency('liblzma')
 bzip2 = meson.get_compiler('cpp').find_library('bz2', required : false)
@@ -181,7 +183,7 @@ libae = library(
             sources_utils +
             sources_chart_v2 + sources_ad,
   include_directories : include_cc,
-  dependencies : [alglib, xxhash, fmt, simdjson, range_v3, lexy, omp, xlnt, bzip2, zlib, xz],
+  dependencies : [alglib, xxhash, fmt, simdjson, range_v3, lexy, omp, xlnt, brotli_enc, brotli_dec, bzip2, xz, zlib],
   link_args : libomp_dir,
   install : true)
 

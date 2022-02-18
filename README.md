@@ -19,11 +19,14 @@
      if older version of cmake is installed by apt
      pip3 install --user meson
      ```
+- brotli
+  - macOS: brew install brotli
+  - Ubuntu: apt install libbrotli-dev
 - zlib (brew install zlib)
 - libbz2
 - liblzma
   - macOS: brew install xz
-  - Ubuntu: apt install liblzma-dev)
+  - Ubuntu: apt install liblzma-dev
 
 ## Build
 
