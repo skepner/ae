@@ -220,6 +220,8 @@ def h3(subtype: str, args: argparse.Namespace):
             # 2022-0204 potential long branch
             "FRANCE/ARA-HCL021219268801/2021",
             "FRANCE/ARA-HCL021220304101/2021",
+            # 2022-0209 long branch, eight X, R in nuc
+            "ONTARIO/RV2002/2019_P1_0F1E8F1E",
         ])
         .remove_hash_duplicates()
         .replace_with_master()
