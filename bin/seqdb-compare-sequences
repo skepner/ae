@@ -1,0 +1,82 @@
+#! /usr/bin/env python3
+"""
+Seqdb compare sequences
+"""
+
+import os, sys, pprint, argparse, traceback
+from pathlib import Path
+import ae_backend
+
+# ----------------------------------------------------------------------
+
+sSubtypeFix = {"B": "B", "BVIC": "B", "BV": "B", "BY": "B", "BYAM": "B", "A(H1N1)": "A(H1N1)", "H1": "A(H1N1)", "1": "A(H1N1)", "A(H3N2)": "A(H3N2)", "H3": "A(H3N2)", "3": "A(H3N2)"}
+
+def main(args: argparse.Namespace):
+    sources = args_to_groups(args.seq_id)
+    for group, names in sources["groups"].items():
+        sources["groups"][group] = [nm for nm in (name_to_seq(name, sources) for name in names)]
+    pprint.pprint(sources)
+    # if subtype:
+    #     find(subtype, lineage=lineage, names=names, args=args)
+    # else:
+    #     for subtype in ["B", "A(H1N1)", "A(H3N2)"]:
+    #         find(subtype, lineage=None, names=names, args=args)
+
+# ----------------------------------------------------------------------
+
+def name_to_seq(name: str, sources: dict):
+
+    def find(subtype: str):
+        look_for = name[len(subtype) + 1:] if name.startswith(f"{subtype}/") else name
+        selected = ae_backend.seqdb.for_subtype(subtype).select_all()
+        selected.exclude_with_issue()
+        selected.filter_name([look_for.upper()])
+        if selected:
+            return [[seq.seq_id(), seq] for no, seq in enumerate(selected)]
+        else:
+            return None
+
+    subtypes = [sources["subtype"]] if sources.get("subtype") else ["B", "A(H1N1)", "A(H3N2)"]
+    data = None
+    for subtype in subtypes:
+        if data := find(subtype):
+            if not sources.get("subtype"):
+                sources["subtype"] = subtype
+            break
+    if not data:
+        print(f">> \"{name}\": nothing selected", file=sys.stderr)
+    return data
+
+# ----------------------------------------------------------------------
+
+def args_to_groups(args: list):
+    subtype = (args and sSubtypeFix.get(args[0].upper())) or None
+    if subtype and subtype[0] == "B" and len(subtype) > 1:
+        lineage = subtype[1]
+    else:
+        lineage = None
+    groups = {}
+    group = "A"
+    for name in (args[1:] if subtype else args):
+        if name[0] == ":":
+            group = name[1:] or chr(ord("A") + len(groups))
+        else:
+            groups.setdefault(group, []).append(name)
+    return {"subtype": subtype, "lineage": lineage, "groups": groups}
+
+# ----------------------------------------------------------------------
+
+try:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--html")
+    parser.add_argument("--nuc", action="store_true", default=False)
+    parser.add_argument("--open", action="store_true", default=False)
+    parser.add_argument("seq_id", nargs="+", help="seq-id or :<group> or :")
+    args = parser.parse_args()
+    exit_code = main(args) or 0
+except Exception as err:
+    print(f"> {err}\n{traceback.format_exc()}", file=sys.stderr)
+    exit_code = 1
+exit(exit_code)
+
+# ======================================================================
