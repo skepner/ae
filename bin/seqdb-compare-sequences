@@ -3,7 +3,7 @@
 Seqdb compare sequences
 """
 
-import os, sys, pprint, argparse, traceback
+import os, sys, collections, pprint, argparse, traceback
 from pathlib import Path
 import ae_backend
 
@@ -14,7 +14,10 @@ sSubtypeFix = {"B": "B", "BVIC": "B", "BV": "B", "BY": "B", "BYAM": "B", "A(H1N1
 def main(args: argparse.Namespace):
     sources = args_to_groups(args.seq_id)
     for group, names in sources["groups"].items():
-        sources["groups"][group] = [nm for nm in (name_to_seq(name, sources) for name in names)]
+        seqs = [nm for nms in (name_to_seq(name, sources, args.nuc) for name in names) for nm in nms]
+        longest = max(len(seq["seq"]) for seq in seqs) + 1
+        counters = [collections.Counter(seq["seq"][pos] for seq in seqs) for pos in range(1, longest)]
+        sources["groups"][group] = {"seqs": seqs, "counters": counters}
     pprint.pprint(sources)
     # if subtype:
     #     find(subtype, lineage=lineage, names=names, args=args)
@@ -24,7 +27,7 @@ def main(args: argparse.Namespace):
 
 # ----------------------------------------------------------------------
 
-def name_to_seq(name: str, sources: dict):
+def name_to_seq(name: str, sources: dict, nuc: bool):
 
     def find(subtype: str):
         look_for = name[len(subtype) + 1:] if name.startswith(f"{subtype}/") else name
@@ -32,7 +35,7 @@ def name_to_seq(name: str, sources: dict):
         selected.exclude_with_issue()
         selected.filter_name([look_for.upper()])
         if selected:
-            return [[seq.seq_id(), seq] for no, seq in enumerate(selected)]
+            return [{"seq_id": seq.seq_id(), "seq": getattr(seq, "nuc" if nuc else "aa")} for no, seq in enumerate(selected)]
         else:
             return None
 
@@ -45,6 +48,8 @@ def name_to_seq(name: str, sources: dict):
             break
     if not data:
         print(f">> \"{name}\": nothing selected", file=sys.stderr)
+    for en in data:
+        print(en["seq_id"], len(en["seq"]))
     return data
 
 # ----------------------------------------------------------------------
