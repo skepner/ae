@@ -9,48 +9,124 @@ import ae_backend
 
 # ----------------------------------------------------------------------
 
-sSubtypeFix = {"B": "B", "BVIC": "B", "BV": "B", "BY": "B", "BYAM": "B", "A(H1N1)": "A(H1N1)", "H1": "A(H1N1)", "1": "A(H1N1)", "A(H3N2)": "A(H3N2)", "H3": "A(H3N2)", "3": "A(H3N2)"}
-
-def main(args: argparse.Namespace):
-    sources = args_to_groups(args.seq_id)
-    for group, names in sources["groups"].items():
-        seqs = [nm for nms in (name_to_seq(name, sources, args.nuc) for name in names) for nm in nms]
-        longest = max(len(seq["seq"]) for seq in seqs) + 1
-        counters = [collections.Counter(seq["seq"][pos] for seq in seqs) for pos in range(1, longest)]
-        sources["groups"][group] = {"seqs": seqs, "counters": counters}
-    pprint.pprint(sources)
-    # if subtype:
-    #     find(subtype, lineage=lineage, names=names, args=args)
-    # else:
-    #     for subtype in ["B", "A(H1N1)", "A(H3N2)"]:
-    #         find(subtype, lineage=None, names=names, args=args)
+sAllSubtypes = ["B", "A(H1N1)", "A(H3N2)"]
 
 # ----------------------------------------------------------------------
 
-def name_to_seq(name: str, sources: dict, nuc: bool):
+class Group:
 
-    def find(subtype: str):
-        look_for = name[len(subtype) + 1:] if name.startswith(f"{subtype}/") else name
-        selected = ae_backend.seqdb.for_subtype(subtype).select_all()
-        selected.exclude_with_issue()
-        selected.filter_name([look_for.upper()])
-        if selected:
-            return [{"seq_id": seq.seq_id(), "seq": getattr(seq, "nuc" if nuc else "aa")} for no, seq in enumerate(selected)]
-        else:
-            return None
+    class Seq:
 
-    subtypes = [sources["subtype"]] if sources.get("subtype") else ["B", "A(H1N1)", "A(H3N2)"]
-    data = None
-    for subtype in subtypes:
-        if data := find(subtype):
-            if not sources.get("subtype"):
-                sources["subtype"] = subtype
-            break
-    if not data:
-        print(f">> \"{name}\": nothing selected", file=sys.stderr)
-    for en in data:
-        print(en["seq_id"], len(en["seq"]))
-    return data
+        def __init__(self, seq, nuc: bool):
+            self.seq_id = seq.seq_id()
+            self.seq = getattr(seq, "nuc" if nuc else "aa")
+
+    def __init__(self, name: str, seqs: list, nuc: bool):
+        self.name = name
+        self.seqs = [self.Seq(seq=seq, nuc=nuc) for seq in seqs]
+        self.longest = max(len(seq.seq) for seq in self.seqs)
+        self.counters = [collections.Counter(seq.seq[pos] for seq in self.seqs if len(seq.seq) >= pos) for pos in range(1, self.longest + 1)]
+
+    def most_frequent(self, positions: list):
+        return {pos: self.counters[pos].most_common(1)[0] for pos in positions}
+
+    def make_summary(self, positions: list, most_frequent: dict, threshold: float):
+        num_rows = max(len(cnt) for cnt in self.counters)
+        rows = []
+        for row_no in range(num_rows):
+            name = self.name if row_no == 0 else ""
+            if row_no == 0 and most_frequent:
+                def format_pos(source, pos):
+                    return "." if source == most_frequent[pos][0] else source
+                rows.append([name] + [format_pos(self.counters[pos].most_common()[row_no][0], pos=pos) for pos in positions])
+            else:
+                def format_pos(source):
+                    if row_no < len(source):
+                        return source[row_no][0]
+                    else:
+                        return " "
+                rows.append([name] + [format_pos(self.counters[pos].most_common()) for pos in positions])
+        return rows
+
+    def __repr__(self):
+        return f"{self.name}:{{seqs: {len(self.seqs)} }}"
+
+# ----------------------------------------------------------------------
+
+class Groups:
+
+    def __init__(self, sources: dict, nuc: bool):
+        self.subtype = sources.get("subtype")
+        self.lineage = sources.get("lineage")
+        self.groups = [Group(name=group, seqs=[s2 for s1 in (self.name_to_seq(name, sources) for name in names) for s2 in s1], nuc=nuc) for group, names in sources["groups"].items()]
+
+    def name_to_seq(self, name: str, sources: dict):
+
+        def find(subtype: str):
+            look_for = name[len(subtype) + 1:] if name.startswith(f"{subtype}/") else name
+            selected = ae_backend.seqdb.for_subtype(subtype).select_all()
+            selected.exclude_with_issue()
+            selected.filter_name([look_for.upper()])
+            selected.find_masters()
+            if selected:
+                return list(selected)
+            else:
+                return None
+
+        subtypes = [sources["subtype"]] if sources.get("subtype") else sAllSubtypes
+        data = None
+        for subtype in subtypes:
+            if data := find(subtype):
+                if not sources.get("subtype"):
+                    sources["subtype"] = subtype
+                break
+        if not data:
+            print(f">> \"{name}\": nothing selected", file=sys.stderr)
+        # for en in data:
+        #     print(en["seq_id"], len(en["seq"]))
+        return data
+
+    def positions_to_report(self):
+        merged_counters = {pos: collections.Counter() for pos in range(max(gr.longest for gr in self.groups))}
+        for group in self.groups:
+            for pos in range(len(group.counters)):
+                merged_counters[pos].update(group.counters[pos])
+        return [pos for pos, cnt in merged_counters.items() if len(cnt) > 1]
+
+    def format_summary(self, threshold: float = None):
+        positions = self.positions_to_report()
+        # print(f">>>> {positions}", file=sys.stderr)
+        rows = [["", *(f"{pos + 1:3d}" for pos in positions)]]
+        most_frequent = self.groups[0].most_frequent(positions=positions)
+        for no, group in enumerate(self.groups):
+            rows += group.make_summary(positions=positions, most_frequent=None if no == 0 else most_frequent, threshold=threshold)
+        # pprint.pprint(rows, width=300)
+        return format_table(rows)
+
+# ----------------------------------------------------------------------
+
+def format_table(rows, column_space: int = 2):
+    col_width = [0 for col in rows[0]]
+    for row in rows:
+        for no, col in enumerate(row):
+            col_width[no] = max(col_width[no], len(col))
+    output = ""
+    col_space = " " * column_space
+    for row in rows:
+        output += f"{row[0]:<{col_width[0]}}"
+        for no, col in enumerate(row[1:], start=1):
+            output += f"{col_space}{col:^{col_width[no]}}"
+        output += "\n"
+    return output
+
+# ----------------------------------------------------------------------
+
+sSubtypeFix = {"B": "B", "BVIC": "B", "BV": "B", "BY": "B", "BYAM": "B", "A(H1N1)": "A(H1N1)", "H1": "A(H1N1)", "1": "A(H1N1)", "A(H3N2)": "A(H3N2)", "H3": "A(H3N2)", "3": "A(H3N2)"}
+
+def main(args: argparse.Namespace):
+    groups = Groups(sources=args_to_groups(args.seq_id), nuc=args.nuc)
+    # pprint.pprint(groups.groups)
+    print(groups.format_summary())
 
 # ----------------------------------------------------------------------
 
