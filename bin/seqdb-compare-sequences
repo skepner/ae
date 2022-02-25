@@ -103,6 +103,9 @@ class Groups:
         # pprint.pprint(rows, width=300)
         return format_table(rows)
 
+    def format_html(self):
+        return "", ""
+
 # ----------------------------------------------------------------------
 
 def format_table(rows, column_space: int = 2):
@@ -126,7 +129,14 @@ sSubtypeFix = {"B": "B", "BVIC": "B", "BV": "B", "BY": "B", "BYAM": "B", "A(H1N1
 def main(args: argparse.Namespace):
     groups = Groups(sources=args_to_groups(args.seq_id), nuc=args.nuc)
     # pprint.pprint(groups.groups)
-    print(groups.format_summary())
+    if args.html:
+        html, json = groups.format_html()
+        with args.html.open("w") as out:
+            out.write(html)
+        with args.html.with_suffix(".data.js").open("w") as out:
+            out.write(json)
+    else:
+        print(groups.format_summary())
 
 # ----------------------------------------------------------------------
 
@@ -149,7 +159,7 @@ def args_to_groups(args: list):
 
 try:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--html")
+    parser.add_argument("--html", type=Path)
     parser.add_argument("--nuc", action="store_true", default=False)
     parser.add_argument("--open", action="store_true", default=False)
     parser.add_argument("seq_id", nargs="+", help="seq-id or :<group> or :")
