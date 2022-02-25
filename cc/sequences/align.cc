@@ -1,5 +1,6 @@
 #include "utils/messages.hh"
 #include "utils/hash.hh"
+#include "utils/log.hh"
 #include "sequences/align.hh"
 #include "sequences/raw-sequence.hh"
 #include "sequences/detect.hh"
@@ -135,6 +136,8 @@ bool ae::sequences::align(RawSequence& sequence, Messages& messages)
             sequence.issues.set(issue::prefix_x);
         }
         else {
+            // if (aligned_data->type_subtype == ae::virus::type_subtype_t{"A(H3)"} && sequence.sequence.aa[aligned_data->aa_shift] != 'Q')
+            //     AD_DEBUG("\"{}\" shift:{} \"{}\"\n{}\n", aligned_data->type_subtype, aligned_data->aa_shift, sequence.name, sequence.sequence.aa);
             sequence.sequence.remove_prefix_aa(aligned_data->aa_shift);
         }
         update_type_subtype(sequence, *aligned_data, messages); // after adjusting sequence.aa!

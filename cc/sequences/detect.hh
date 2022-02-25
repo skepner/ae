@@ -4,6 +4,7 @@
 #include <optional>
 
 #include "utils/string.hh"
+#include "utils/log.hh"
 #include "virus/type-subtype.hh"
 
 // ======================================================================
@@ -115,7 +116,12 @@ namespace ae::sequences::detect
     {
         inline bool mktii(std::string_view not_aligned_aa, std::optional<aligned_data_t>& aligned_data)
         {
-            if (const auto pos = find_in_sequence(not_aligned_aa, 20, {"MKTII"sv}); pos != std::string::npos && (not_aligned_aa[pos + 16] == 'Q' || not_aligned_aa[pos + 15] == 'A')) {
+            if (const auto pos2 = find_in_sequence(not_aligned_aa, 30, {"MKTIIALSNILCLVFA"sv}); pos2 != std::string::npos && not_aligned_aa[pos2 + 17] == 'Q' && not_aligned_aa[pos2 + 16] != 'Q') {
+                aligned_data = aligned_data_t{pos2, 17, H3, "MKTIIALSNILCLVFA-17"sv};
+                // AD_DEBUG("{}", not_aligned_aa);
+                return true;
+            }
+            else if (const auto pos = find_in_sequence(not_aligned_aa, 20, {"MKTII"sv}); pos != std::string::npos && (not_aligned_aa[pos + 16] == 'Q' || not_aligned_aa[pos + 15] == 'A')) {
                 // not_aligned_aa.substr(pos + 15, 2) != "DR") { // DR[ISV]C - start of the B sequence (signal peptide is 15 aas!)
                 aligned_data = aligned_data_t{pos, 16, H3, "MKTII"sv};
                 return true;
