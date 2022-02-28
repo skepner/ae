@@ -3,7 +3,7 @@
 Seqdb compare sequences
 """
 
-import os, sys, collections, pprint, argparse, traceback
+import os, sys, collections, json, pprint, argparse, traceback
 from pathlib import Path
 import ae_backend
 
@@ -50,6 +50,13 @@ class Group:
 
     def __repr__(self):
         return f"{self.name}:{{seqs: {len(self.seqs)} }}"
+
+    def format_json(self, positions: list):
+        return {
+            "name": self.name,
+            "pos1": {str(pos0+1): [xxx] for pos0 in positions},
+            "seq": [{"id": seq.seq_id, "seq": seq.seq} for seq in self.seqs]
+        }
 
 # ----------------------------------------------------------------------
 
@@ -103,6 +110,14 @@ class Groups:
         # pprint.pprint(rows, width=300)
         return format_table(rows)
 
+    def format_json(self):
+        positions = self.positions_to_report()
+        data = {
+            "pos1": [(pos0 + 1) for pos0 in positions],
+            "groups": [group.format_json(positions) for group in self.groups],
+        }
+        return json.dumps(data, indent=1)
+
     def format_html(self):
         return "", ""
 
@@ -130,11 +145,12 @@ def main(args: argparse.Namespace):
     groups = Groups(sources=args_to_groups(args.seq_id), nuc=args.nuc)
     # pprint.pprint(groups.groups)
     if args.html:
-        html, json = groups.format_html()
-        with args.html.open("w") as out:
-            out.write(html)
-        with args.html.with_suffix(".data.js").open("w") as out:
-            out.write(json)
+        print(groups.format_json())
+        # html, json = groups.format_html()
+        # with args.html.open("w") as out:
+        #     out.write(html)
+        # with args.html.with_suffix(".data.js").open("w") as out:
+        #     out.write(json)
     else:
         print(groups.format_summary())
 
