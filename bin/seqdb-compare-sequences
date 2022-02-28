@@ -3,7 +3,7 @@
 Seqdb compare sequences
 """
 
-import os, sys, collections, json, pprint, argparse, traceback
+import os, sys, collections, json, subprocess, pprint, argparse, traceback
 from pathlib import Path
 import ae_backend
 
@@ -118,9 +118,6 @@ class Groups:
         }
         return json.dumps(data, indent=1)
 
-    def format_html(self):
-        return "", ""
-
 # ----------------------------------------------------------------------
 
 def format_table(rows, column_space: int = 2):
@@ -145,12 +142,12 @@ def main(args: argparse.Namespace):
     groups = Groups(sources=args_to_groups(args.seq_id), nuc=args.nuc)
     # pprint.pprint(groups.groups)
     if args.html:
-        print(groups.format_json())
-        # html, json = groups.format_html()
-        # with args.html.open("w") as out:
-        #     out.write(html)
-        # with args.html.with_suffix(".data.js").open("w") as out:
-        #     out.write(json)
+        data_json = groups.format_json()
+        with args.html.open("w") as out:
+            var_name_suffix = args.html.stem.replace("-", "_")
+            out.write(make_html(data_json=data_json, var_name=f"compare_sequences_{var_name_suffix}"))
+        if args.open:
+            subprocess.call(["/usr/bin/open", str(args.html)])
     else:
         print(groups.format_summary())
 
@@ -170,6 +167,498 @@ def args_to_groups(args: list):
         else:
             groups.setdefault(group, []).append(name)
     return {"subtype": subtype, "lineage": lineage, "groups": groups}
+
+# ----------------------------------------------------------------------
+
+sHTML = """
+<html>
+ <head>
+  <meta charset="utf-8" />
+  <title>Compare sequences</title>
+  <style>
+   %(amino_acid_nucleotide_color_css)s
+  </style>
+  <style>
+   %(compare_sequences_css)s
+  </style>
+  <script>
+   %(data)s
+  </script>
+  <script>
+   %(compare_sequences_js)s
+  </script>
+  <script>
+   document.addEventListener("DOMContentLoaded", function() { compare_sequences(%(var_name)s); });
+  </script>
+ </head>
+ <body>
+  <h2>Compare sequences</h2>
+  <div id="compare-sequences" class="compare-sequences">
+      <div class="clear-differences"></div>
+      <div class="most-frequent-per-group"></div>
+      <div class="frequency-per-group"></div>
+      <div class="positions-with-diversity"></div>
+      <div class="full-sequences"></div>
+  </div>
+ </body>
+</html>
+"""
+
+sAmino_acid_nucleotide_color_css = """
+    .aaD {color: #F7CF08} /* negative */
+    .aaE {color: #CD8D00}
+
+    .aaR {color: #B2A1FF} /* positive */
+    .aaH {color: #7571BC}
+    .aaK {color: #440FAE}
+
+    .aaN {color: #18E0F7} /* polar uncharged */
+    .aaQ {color: #0080FF}
+    .aaS {color: #0F52BA}
+    .aaT {color: #000080}
+
+    .aaC {color: #00F000} /* special */
+    .aaG {color: #4CBB1 }
+    .aaP {color: #1A4F30}
+
+    .aaA {color: #EB1919} /* hydrophobic */
+    .aaI {color: #F93BBB}
+    .aaL {color: #FF2976}
+    .aaM {color: #FF5A3D}
+    .aaF {color: #C34822}
+    .aaW {color: #A30000}
+    .aaY {color: #941651}
+    .aaV {color: #681226}
+
+    .aaX {color: #808080}
+
+    .nucA {color: #0080FF}
+    .nucC {color: #4CBB17}
+    .nucG {color: #EB1919}
+    .nucT {color: #CD8D00}
+"""
+
+sCompare_sequences_css = """
+.compare-sequences .title { font-size: 1.2em; font-weight: bold; margin: 2em 0 0 0; }
+.compare-sequences table { border-collapse: collapse; }
+
+.compare-sequences td.group-name { white-space: nowrap; vertical-align: top; font-weight: bold; padding-right: 1em; }
+.compare-sequences td.seq-id { white-space: nowrap; padding-right: 1em; }
+.compare-sequences tr.group-space { background: #F8F8F8; }
+.compare-sequences tr.group-space td { padding-top: 0.5em;  }
+
+.full-sequences td.sep-left-zero { border-left: 1px solid #C0C0C0; }
+.full-sequences td.sep-left-six { border-left: 1px solid #E0E0E0; }
+.full-sequences .aa { padding: 0.1em; vertical-align: middle; font-family: monospace; font-size: 1.2em; }
+.full-sequences .aa-ruler { text-align: center; }
+.full-sequences td.seq-id { white-space: nowrap; }
+
+.positions-with-diversity .aa { padding: 0.1em 0.7em; vertical-align: middle; font-family: monospace; font-size: 1.2em; }
+.positions-with-diversity .position-ruler { text-align: center; }
+.positions-with-diversity td.sep-left-six { border-left: 1px solid #E0E0E0; }
+
+.clear-differences .aa { padding: 0.1em 0.7em; vertical-align: middle; font-family: monospace; font-size: 1.2em; }
+.clear-differences .position-ruler { text-align: center; }
+.clear-differences td.sep-left-six { border-left: 1px solid #E0E0E0; }
+
+.most-frequent-per-group .aa { padding: 0.1em 0.7em; vertical-align: middle; font-family: monospace; font-size: 1.2em; }
+.most-frequent-per-group .position-ruler { text-align: center; }
+.most-frequent-per-group td.sep-left-six { border-left: 1px solid #E0E0E0; }
+
+.frequency-per-group .aa { padding: 0.1em 0.7em; vertical-align: middle; font-family: monospace; font-size: 1.2em; }
+.frequency-per-group .aa-and-count { padding: 0.1em 0.7em; vertical-align: middle; }
+.frequency-per-group .aa-count { color: #808080; text-align: right; }
+.frequency-per-group .position-ruler { text-align: center; }
+.frequency-per-group td.sep-left-six { border-left: 1px solid #E0E0E0; }
+
+/* highlight column https://css-tricks.com/simple-css-row-column-highlighting/ */
+table { overflow: hidden; }
+tr:hover { background: #f8f8ff; border: 1px solid #a0a0ff; }
+td { position: relative; }
+td:hover::after {
+    content: ""; position: absolute;
+    background-color: #f8f8ff;
+    border: 1px solid #a0a0ff;
+    left: 0; top: -5000px; height: 10000px; width: 100%; z-index: -1;
+}
+"""
+
+sCompare_sequences_js = """
+function compare_sequences(compare_sequences_data)
+{
+    // console.log("compare_sequences_data", compare_sequences_data);
+    show_clear_differences(compare_sequences_data, document.querySelector("#compare-sequences .clear-differences"));
+    show_most_frequent_per_group(compare_sequences_data, document.querySelector("#compare-sequences .most-frequent-per-group"));
+    show_frequency_per_group(compare_sequences_data, document.querySelector("#compare-sequences .frequency-per-group"));
+    show_positions_with_diversity(compare_sequences_data, document.querySelector("#compare-sequences .positions-with-diversity"));
+    show_full_sequences(compare_sequences_data, document.querySelector("#compare-sequences .full-sequences"));
+}
+
+// --------------------------------------------------------------------------------
+
+function show_full_sequences(compare_sequences_data, div)
+{
+    const find_master = function(group) {
+        let index = 0;
+        for (const seq of group.seq) {
+            if (Object.keys(group.pos1).every(function(pos1) { return group.pos1[pos1][0].a == seq.seq[pos1 - 1]; }))
+                return index;
+            ++index;
+        }
+        console.warn("master not found");
+        return 0;
+    };
+
+    // move master sequence (the one having most frequent aas at all positions) to the first element of the group
+    const rearrange_group = function(group) {
+        const master_index = find_master(group);
+        if (master_index > 0)
+            group.seq.splice(0, 0, group.seq.splice(master_index, 1)[0]);
+    };
+
+    const add_sequence = function(tr, seq_s, master) {
+        const seq = [...seq_s];
+        seq.forEach(function(aa, pos0) {
+            aa = normalize_aa(aa);
+            const aa_td = document.createElement("td");
+            aa_td.classList.add(`aa${aa}`);
+            aa_td.classList.add("aa");
+            if (pos0 % 10 == 9)
+                aa_td.classList.add("sep-left-zero");
+            else if (pos0 % 10 == 4)
+                aa_td.classList.add("sep-left-six");
+            if (master.length > pos0 && aa == master[pos0])
+                aa_td.innerHTML = '&#xB7;';
+            else
+                aa_td.innerHTML = aa;
+            tr.appendChild(aa_td);
+        });
+    };
+
+    const add_ruler = function() {
+        const tr = document.createElement("tr");
+        tr.classList.add("aa-ruler");
+        tr.innerHTML = `<td colspan="2"></td>`; // group-name + sequence-name
+        for (let pos1 = 1; pos1 < 550; ++pos1) {
+            const td = document.createElement("td");
+            if (pos1 % 10 == 0) {
+                td.classList.add("sep-left-zero");
+                let pos_s = "" + pos1;
+                td.innerHTML = pos_s;
+                td.setAttribute("colspan", pos_s.length);
+                pos1 += pos_s.length - 1;
+            }
+            else if (pos1 % 10 == 5) {
+                td.classList.add("sep-left-six");
+                //td.innerHTML = ".";
+            }
+            // else
+            //     td.innerHTML = ".";
+            tr.appendChild(td);
+        }
+        return tr;
+    };
+
+    // ----------------------------------------------------------------------
+
+    const title = document.createElement("p");
+    title.classList.add("title");
+    title.innerHTML = "Full sequences";
+    div.appendChild(title);
+
+    rearrange_group(compare_sequences_data.groups[0]);
+
+    const tab1 = document.createElement("table");
+    tab1.appendChild(add_ruler());
+    for (let group of compare_sequences_data.groups) {
+        group.seq.forEach(function(id_seq, index) {
+            const is_master = id_seq.id == compare_sequences_data.groups[0].seq[0].id;
+            if (index == 0 && !is_master) {
+                const tr_space = document.createElement("tr");
+                tr_space.classList.add("group-space");
+                tr_space.innerHTML = `<td colspan="${id_seq.seq.length + 2}"></td>`;
+                tab1.appendChild(tr_space);
+            }
+            const tr = document.createElement("tr");
+            if (index == 0)
+                tr.innerHTML = `<td class="group-name" rowspan="${group.seq.length}">${group.name}</td><td class="seq-id">${id_seq.id}</td>`;
+            else
+                tr.innerHTML = `<td class="seq-id">${id_seq.id}</td>`;
+            add_sequence(tr, id_seq.seq, is_master ? "" : compare_sequences_data.groups[0].seq[0].seq);
+            tab1.appendChild(tr);
+        });
+    }
+    tab1.appendChild(add_ruler());
+    div.appendChild(tab1);
+}
+
+// --------------------------------------------------------------------------------
+
+function position_ruler(positions, initial_tds)
+{
+        const tr = document.createElement("tr");
+        tr.classList.add("position-ruler");
+        tr.innerHTML = `<td colspan="${initial_tds}"></td>`; // group-name + sequence-name
+        positions.forEach(function(pos1, index) {
+            const td = document.createElement("td");
+            if (index > 0 && (index % 10 == 0 || index % 10 == 5))
+                td.classList.add("sep-left-six");
+            td.innerHTML = "" + pos1;
+            tr.appendChild(td);
+        });
+        return tr;
+}
+
+// --------------------------------------------------------------------------------
+
+function normalize_aa(aa)
+{
+    if (aa < "A" || aa > "Z")
+        aa = "-";
+    return aa;
+}
+
+// ----------------------------------------------------------------------
+
+function show_positions(compare_sequences_data, div, positions)
+{
+    const add_ruler = function() { return position_ruler(positions, 2); };
+
+    const add_sequence = function(tr, seq, master) {
+        positions.forEach(function(pos1, index) {
+            const pos0 = pos1 - 1;
+            const aa = normalize_aa(seq[pos0]);
+            const aa_td = document.createElement("td");
+            aa_td.classList.add(`aa${aa}`);
+            aa_td.classList.add("aa");
+            if (index > 0 && (index % 10 == 0 || index % 10 == 5))
+                aa_td.classList.add("sep-left-six");
+            if (master.length > pos0 && aa == master[pos0])
+                aa_td.innerHTML = '&#xB7;';
+            else
+                aa_td.innerHTML = aa;
+            tr.appendChild(aa_td);
+        });
+    };
+
+    // ----------------------------------------------------------------------
+
+    const tab1 = document.createElement("table");
+    tab1.appendChild(add_ruler());
+    for (let group of compare_sequences_data.groups) {
+        group.seq.forEach(function(id_seq, index) {
+            const is_master = id_seq.id == compare_sequences_data.groups[0].seq[0].id;
+            if (index == 0 && !is_master) {
+                const tr_space = document.createElement("tr");
+                tr_space.classList.add("group-space");
+                tr_space.innerHTML = `<td colspan="${positions.length + 2}"></td>`;
+                tab1.appendChild(tr_space);
+            }
+            const tr = document.createElement("tr");
+            if (index == 0)
+                tr.innerHTML = `<td class="group-name" rowspan="${group.seq.length}">${group.name}</td><td class="seq-id">${id_seq.id}</td>`;
+            else
+                tr.innerHTML = `<td class="seq-id">${id_seq.id}</td>`;
+            add_sequence(tr, id_seq.seq, is_master ? "" : compare_sequences_data.groups[0].seq[0].seq);
+            tab1.appendChild(tr);
+        });
+    }
+    tab1.appendChild(add_ruler());
+    div.appendChild(tab1);
+}
+
+// ----------------------------------------------------------------------
+
+function show_positions_with_diversity(compare_sequences_data, div)
+{
+    const title = document.createElement("p");
+    title.classList.add("title");
+    title.innerHTML = "Positions with diversity";
+    div.appendChild(title);
+
+    show_positions(compare_sequences_data, div, compare_sequences_data.pos1);
+}
+
+// --------------------------------------------------------------------------------
+
+function show_most_frequent_per_group(compare_sequences_data, div)
+{
+    const add_ruler = function() { return position_ruler(compare_sequences_data.pos1, 1); }
+
+    const add_aas = function(tr, positions, master_positions) {
+        compare_sequences_data.pos1.forEach(function(pos1, index) {
+            const aa = normalize_aa(positions[pos1][0].a);
+            const aa_td = document.createElement("td");
+            aa_td.classList.add(`aa${aa}`);
+            aa_td.classList.add("aa");
+            if (index > 0 && (index % 10 == 0 || index % 10 == 5))
+                aa_td.classList.add("sep-left-six");
+            if (master_positions && aa == master_positions[pos1][0].a)
+                aa_td.innerHTML = '&#xB7;';
+            else
+                aa_td.innerHTML = aa;
+            tr.appendChild(aa_td);
+        });
+    };
+
+    // ----------------------------------------------------------------------
+
+    const title = document.createElement("p");
+    title.classList.add("title");
+    title.innerHTML = "Most frequent per group";
+    div.appendChild(title);
+
+    const tab1 = document.createElement("table");
+    tab1.appendChild(add_ruler());
+    compare_sequences_data.groups.forEach(function(group, index) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td class="group-name">${group.name}</td>`;
+        add_aas(tr, group.pos1, index == 0 ? null : compare_sequences_data.groups[0].pos1);
+        tab1.appendChild(tr);
+    });
+    div.appendChild(tab1);
+}
+
+// --------------------------------------------------------------------------------
+
+function show_frequency_per_group(compare_sequences_data, div)
+{
+    const add_ruler = function() { return position_ruler(compare_sequences_data.pos1, 1); }
+
+    const max_aas_per_group = function(group) {
+        let max = 0;
+        for (const ens of Object.values(group))
+            max = Math.max(max, ens.length);
+        return max;
+    };
+
+    const add_aas = function(tr, positions, row) {
+        compare_sequences_data.pos1.forEach(function(pos1, index) {
+            const en = positions[pos1];
+            const aa_td = document.createElement("td");
+            if (row < en.length) {
+                aa_td.classList.add("aa-and-count");
+                const aa = normalize_aa(en[row].a);
+                aa_td.innerHTML = `<table><tr><td class="aa aa${aa}">${aa}</td><td class="aa-count">${en[row].c}</td></tr></table>`;
+                // aa_td.classList.add(`aa${aa}`);
+                // aa_td.classList.add("aa");
+                // aa_td.innerHTML = aa;
+            }
+            else {
+            }
+            if (index > 0 && (index % 10 == 0 || index % 10 == 5))
+                aa_td.classList.add("sep-left-six");
+            tr.appendChild(aa_td);
+        });
+    };
+
+    // ----------------------------------------------------------------------
+
+    const title = document.createElement("p");
+    title.classList.add("title");
+    title.innerHTML = "Frequency per group";
+    div.appendChild(title);
+
+    const tab1 = document.createElement("table");
+    tab1.appendChild(add_ruler());
+    compare_sequences_data.groups.forEach(function(group, index) {
+        if (index > 0) {
+            const tr_space = document.createElement("tr");
+            tr_space.classList.add("group-space");
+            tr_space.innerHTML = `<td colspan="${compare_sequences_data.pos1.length + 1}"></td>`;
+            tab1.appendChild(tr_space);
+        }
+        const n_aas = max_aas_per_group(group.pos1);
+        for (let row = 0; row < n_aas; ++row) {
+            const tr = document.createElement("tr");
+            if (row == 0)
+                tr.innerHTML = `<td class="group-name" rowspan="${n_aas}">${group.name}</td>`;
+            add_aas(tr, group.pos1, row);
+            tab1.appendChild(tr);
+        }
+    });
+    div.appendChild(tab1);
+}
+
+// --------------------------------------------------------------------------------
+
+// https://stackoverflow.com/questions/51319147/map-default-value/51321724
+class MapWithDefault extends Map
+{
+    get(key) {
+        if (!this.has(key)) this.set(key, this.default());
+        return super.get(key);
+    }
+
+    constructor(defaultFunction, entries) {
+        super(entries);
+        this.default = defaultFunction;
+    }
+
+    increment(key) {
+        this.set(key, this.get(key) + 1);
+    }
+}
+
+function show_clear_differences(compare_sequences_data, div)
+{
+    // const add_aas = function(tr, positions, master_positions) {
+    //     compare_sequences_data.pos1.forEach(function(pos1, index) {
+    //         const aa = normalize_aa(positions[pos1][0].a);
+    //         const aa_td = document.createElement("td");
+    //         aa_td.classList.add(`aa${aa}`);
+    //         aa_td.classList.add("aa");
+    //         if (index > 0 && (index % 10 == 0 || index % 10 == 5))
+    //             aa_td.classList.add("sep-left-six");
+    //         if (master_positions && aa == master_positions[pos1][0].a)
+    //             aa_td.innerHTML = '&#xB7;';
+    //         else
+    //             aa_td.innerHTML = aa;
+    //         tr.appendChild(aa_td);
+    //     });
+    // };
+
+    // ----------------------------------------------------------------------
+
+    const pos1_mixed = new MapWithDefault(() => new MapWithDefault(() => 0));
+    compare_sequences_data.groups.forEach((group, index) => {
+        for (const pos1 in group.pos1) {
+            const mixed = pos1_mixed.get(pos1);
+            for (const aa_count of group.pos1[pos1]) {
+                mixed.increment(aa_count.a);
+            }
+        }
+    });
+    const pos1_difference = new MapWithDefault(() => true);
+    for (const [pos1, aa_count] of pos1_mixed.entries()) {
+        for (const [aa, count] of aa_count.entries()) {
+            if (count > 1)
+                pos1_difference.set(pos1, false);
+        }
+    }
+    const pos1_clear_difference = compare_sequences_data.pos1.filter((pos1) => pos1_difference.get("" + pos1));
+
+    if (pos1_clear_difference.length) {
+        const title = document.createElement("p");
+        title.classList.add("title");
+        title.innerHTML = "Clear differences";
+        div.appendChild(title);
+
+        show_positions(compare_sequences_data, div, pos1_clear_difference);
+    }
+}
+
+// --------------------------------------------------------------------------------
+"""
+
+def make_html(data_json: str, var_name: str):
+    return sHTML % {"amino_acid_nucleotide_color_css": sAmino_acid_nucleotide_color_css,
+                    "compare_sequences_css": sCompare_sequences_css,
+                    "data": f"{var_name} = {data_json};",
+                    "compare_sequences_js": sCompare_sequences_js,
+                    "var_name": var_name,
+                    }
+
 
 # ----------------------------------------------------------------------
 
