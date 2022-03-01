@@ -143,6 +143,10 @@ sources_ad = [
 # chart
 # ----------------------------------------------------------------------
 
+sources_chart_v3 = [
+  'cc/chart/v3/info.cc',
+]
+
 sources_chart_v2 = [
   'cc/chart/v2/acd1-import.cc',
   'cc/chart/v2/ace-export.cc',

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "chart/v3/info.hh"
 #include "chart/v3/antigens.hh"
 #include "chart/v3/titers.hh"
 #include "chart/v3/projections.hh"
@@ -9,18 +10,6 @@
 
 namespace ae::chart::v3
 {
-    class Info
-    {
-      public:
-        Info() = default;
-        Info(const Info&) = delete;
-        Info(Info&&) = default;
-        Info& operator=(const Info&) = delete;
-        Info& operator=(Info&&) = default;
-    };
-
-    // ----------------------------------------------------------------------
-
     class Chart
     {
       public:
@@ -52,6 +41,7 @@ namespace ae::chart::v3
         Projections projections_;
         Styles styles_;
     };
-}
+
+} // namespace ae::chart::v3
 
 // ----------------------------------------------------------------------
