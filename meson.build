@@ -145,6 +145,7 @@ sources_ad = [
 
 sources_chart_v3 = [
   'cc/chart/v3/info.cc',
+  'cc/chart/v3/chart-import.cc',
 ]
 
 sources_chart_v2 = [

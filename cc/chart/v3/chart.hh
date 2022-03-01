@@ -16,6 +16,8 @@ namespace ae::chart::v3
     {
       public:
         Chart() = default;
+        Chart(const std::filesystem::path& filename) { read(filename); }
+
         Chart(const Chart&) = default;
         Chart(Chart&&) = default;
         Chart& operator=(const Chart&) = default;
@@ -35,6 +37,8 @@ namespace ae::chart::v3
         Styles& styles() { return styles_; }
         const Styles& styles() const { return styles_; }
 
+        void write(const std::filesystem::path& filename) const;
+
       private:
         Info info_;
         Antigens antigens_;
@@ -42,6 +46,8 @@ namespace ae::chart::v3
         Titers titers_;
         Projections projections_;
         Styles styles_;
+
+        void read(const std::filesystem::path& filename);
     };
 
 } // namespace ae::chart::v3
