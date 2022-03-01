@@ -241,6 +241,14 @@ test_pos = executable(
   dependencies : [fmt],
   install : true)
 
+chart_v3_test = executable(
+  'chart-v3-test',
+  sources : ['cc/test/chart-v3-test.cc'],
+  include_directories : include_cc,
+  dependencies : [fmt, range_v3, simdjson],
+  # link_with : [libae],
+  install : true)
+
 test('ae test virus name parsing', test_virus_name)
 test('ae test date parsing', test_date)
 test('ae test passage parsing', test_passage)
