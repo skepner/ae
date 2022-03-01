@@ -5,7 +5,7 @@ project('ae', ['cpp'],
         version         : '1',
         default_options : [
           'warning_level=3',
-          'cpp_std=c++2a', # g++-11 does not support c++20
+          'cpp_std=c++20', # g++-11 does not support c++20
           'buildtype=debugoptimized',
           'werror=false'
         ],
@@ -184,7 +184,7 @@ sources_chart_v2 = [
 libae = library(
   'ae',
   sources : sources_tree + sources_locdb_v3 +
-            sources_sequences + sources_virus + sources_whocc +
+            sources_sequences + sources_virus + sources_whocc + sources_chart_v3 +
             sources_utils +
             sources_chart_v2 + sources_ad,
   include_directories : include_cc,
@@ -251,7 +251,7 @@ chart_v3_test = executable(
   sources : ['cc/test/chart-v3-test.cc'],
   include_directories : include_cc,
   dependencies : [fmt, range_v3, simdjson],
-  # link_with : [libae],
+  link_with : [libae],
   install : true)
 
 test('ae test virus name parsing', test_virus_name)

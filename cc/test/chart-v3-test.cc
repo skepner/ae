@@ -2,14 +2,16 @@
 
 // ----------------------------------------------------------------------
 
-int main(int /*argc*/, const char* const* /*argv*/)
+int main(int argc, const char* const* argv)
 {
     try {
         ae::antigen_index num{10};
         for (const auto ind : num)
-            fmt::print(">>>> {}\n", ind);
+            ; // fmt::print(">>>> {}\n", ind);
 
-        ae::chart::v3::Chart chart;
+        if (argc > 1) {
+            ae::chart::v3::Chart chart{argv[1]};
+        }
     }
     catch (std::exception& err) {
         fmt::print("> {}\n", err.what());

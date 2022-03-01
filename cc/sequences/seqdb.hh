@@ -30,7 +30,7 @@ namespace ae::sequences
     class Error : public std::runtime_error
     {
       public:
-        template <typename... Args> Error(fmt::format_string<Args...> format, Args&&... args) : std::runtime_error{fmt::format("[seqdb] {}", fmt::format(format, args...))} {}
+        template <typename... Args> Error(fmt::format_string<Args...> format, Args&&... args) : std::runtime_error{fmt::format("[seqdb] {}", fmt::format(format, std::forward<Args>(args)...))} {}
     };
 
     Seqdb& seqdb_for_subtype(const virus::type_subtype_t& subtype, verbose verb = verbose::no);

@@ -1,7 +1,6 @@
 #pragma once
 
-#include <filesystem>
-
+#include "ext/filesystem.hh"
 #include "chart/v3/info.hh"
 #include "chart/v3/antigens.hh"
 #include "chart/v3/titers.hh"
@@ -12,6 +11,14 @@
 
 namespace ae::chart::v3
 {
+    class Error : public std::runtime_error
+    {
+      public:
+        template <typename... Args> Error(fmt::format_string<Args...> format, Args&&... args) : std::runtime_error{fmt::format("[chart] {}", fmt::format(format, std::forward<Args>(args)...))} {}
+    };
+
+    // ----------------------------------------------------------------------
+
     class Chart
     {
       public:
