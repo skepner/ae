@@ -96,6 +96,12 @@ namespace ae
         using index_tt<struct point_index_tag>::index_tt;
     };
 
+    class projection_index : public index_tt<struct projection_index_tag>
+    {
+      public:
+        using index_tt<struct projection_index_tag>::index_tt;
+    };
+
 } // namespace ae
 
 // ----------------------------------------------------------------------
