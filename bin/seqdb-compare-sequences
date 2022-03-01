@@ -218,7 +218,7 @@ sAmino_acid_nucleotide_color_css = """
     .aaT {color: #000080}
 
     .aaC {color: #00F000} /* special */
-    .aaG {color: #4CBB1 }
+    .aaG {color: #04CBB1}
     .aaP {color: #1A4F30}
 
     .aaA {color: #EB1919} /* hydrophobic */
