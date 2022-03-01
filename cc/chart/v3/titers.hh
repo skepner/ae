@@ -14,9 +14,9 @@ namespace ae::chart::v3
     {
       public:
         Titer() = default;
-        Titer(const Titer&) = delete;
+        Titer(const Titer&) = default;
         Titer(Titer&&) = default;
-        Titer& operator=(const Titer&) = delete;
+        Titer& operator=(const Titer&) = default;
         Titer& operator=(Titer&&) = default;
     };
 
@@ -26,9 +26,9 @@ namespace ae::chart::v3
     {
       public:
         Titers() = default;
-        Titers(const Titers&) = delete;
+        Titers(const Titers&) = default;
         Titers(Titers&&) = default;
-        Titers& operator=(const Titers&) = delete;
+        Titers& operator=(const Titers&) = default;
         Titers& operator=(Titers&&) = default;
     };
 }

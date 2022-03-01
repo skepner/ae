@@ -14,9 +14,9 @@ namespace ae::chart::v3
     {
       public:
         Antigen() = default;
-        Antigen(const Antigen&) = delete;
+        Antigen(const Antigen&) = default;
         Antigen(Antigen&&) = default;
-        Antigen& operator=(const Antigen&) = delete;
+        Antigen& operator=(const Antigen&) = default;
         Antigen& operator=(Antigen&&) = default;
     };
 
@@ -24,9 +24,9 @@ namespace ae::chart::v3
     {
       public:
         Serum() = default;
-        Serum(const Serum&) = delete;
+        Serum(const Serum&) = default;
         Serum(Serum&&) = default;
-        Serum& operator=(const Serum&) = delete;
+        Serum& operator=(const Serum&) = default;
         Serum& operator=(Serum&&) = default;
     };
 
@@ -36,9 +36,9 @@ namespace ae::chart::v3
     {
       public:
         AntigensSera() = default;
-        AntigensSera(const AntigensSera&) = delete;
+        AntigensSera(const AntigensSera&) = default;
         AntigensSera(AntigensSera&&) = default;
-        AntigensSera& operator=(const AntigensSera&) = delete;
+        AntigensSera& operator=(const AntigensSera&) = default;
         AntigensSera& operator=(AntigensSera&&) = default;
 
         Index size() const { return Index{data_.size()}; }

@@ -10,9 +10,9 @@ namespace ae::chart::v3
     {
       public:
         Styles() = default;
-        Styles(const Styles&) = delete;
+        Styles(const Styles&) = default;
         Styles(Styles&&) = default;
-        Styles& operator=(const Styles&) = delete;
+        Styles& operator=(const Styles&) = default;
         Styles& operator=(Styles&&) = default;
     };
 }

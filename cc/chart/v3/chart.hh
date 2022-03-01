@@ -1,5 +1,7 @@
 #pragma once
 
+#include <filesystem>
+
 #include "chart/v3/info.hh"
 #include "chart/v3/antigens.hh"
 #include "chart/v3/titers.hh"
@@ -14,9 +16,9 @@ namespace ae::chart::v3
     {
       public:
         Chart() = default;
-        Chart(const Chart&) = delete;
+        Chart(const Chart&) = default;
         Chart(Chart&&) = default;
-        Chart& operator=(const Chart&) = delete;
+        Chart& operator=(const Chart&) = default;
         Chart& operator=(Chart&&) = default;
 
         const Info& info() const { return info_; }

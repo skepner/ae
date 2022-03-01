@@ -50,9 +50,9 @@ namespace ae::chart::v3
     {
       public:
         TableSource() = default;
-        TableSource(const TableSource&) = delete;
+        TableSource(const TableSource&) = default;
         TableSource(TableSource&&) = default;
-        TableSource& operator=(const TableSource&) = delete;
+        TableSource& operator=(const TableSource&) = default;
         TableSource& operator=(TableSource&&) = default;
 
         std::string assay_rbc_short()

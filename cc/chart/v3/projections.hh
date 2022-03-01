@@ -14,9 +14,9 @@ namespace ae::chart::v3
     {
       public:
         Projection() = default;
-        Projection(const Projection&) = delete;
+        Projection(const Projection&) = default;
         Projection(Projection&&) = default;
-        Projection& operator=(const Projection&) = delete;
+        Projection& operator=(const Projection&) = default;
         Projection& operator=(Projection&&) = default;
     };
 
@@ -26,9 +26,9 @@ namespace ae::chart::v3
     {
       public:
         Projections() = default;
-        Projections(const Projections&) = delete;
+        Projections(const Projections&) = default;
         Projections(Projections&&) = default;
-        Projections& operator=(const Projections&) = delete;
+        Projections& operator=(const Projections&) = default;
         Projections& operator=(Projections&&) = default;
     };
 }
