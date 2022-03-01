@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include "virus/virus.hh"
 #include "virus/type-subtype.hh"
 
@@ -20,27 +22,68 @@ namespace ae::chart::v3
 
     // ----------------------------------------------------------------------
 
-    class Info
+    class RbcSpecies : public ae::named_string_t<std::string, struct rbc_species_tag>
     {
       public:
-        Info() = default;
-        Info(const Info&) = delete;
-        Info(Info&&) = default;
-        Info& operator=(const Info&) = delete;
-        Info& operator=(Info&&) = default;
+        using ae::named_string_t<std::string, struct rbc_species_tag>::named_string_t;
+    };
+
+    // ----------------------------------------------------------------------
+
+    class TableDate : public ae::named_string_t<std::string, struct table_date_tag>
+    {
+      public:
+        using ae::named_string_t<std::string, struct table_date_tag>::named_string_t;
+    };
+
+    // ----------------------------------------------------------------------
+
+    class Lab : public ae::named_string_t<std::string, struct lab_tag>
+    {
+      public:
+        using ae::named_string_t<std::string, struct lab_tag>::named_string_t;
+    };
+
+    // ----------------------------------------------------------------------
+
+    class TableSource
+    {
+      public:
+        TableSource() = default;
+        TableSource(const TableSource&) = delete;
+        TableSource(TableSource&&) = default;
+        TableSource& operator=(const TableSource&) = delete;
+        TableSource& operator=(TableSource&&) = default;
+
+        std::string assay_rbc_short()
+            {
+                if (assay_.empty() || assay_ == Assay{"HI"} || !rbc_species_.empty())
+                    return fmt::format("{} {}", assay_.short_name(), rbc_species_);
+                else
+                    return assay_.short_name();
+            }
 
       private:
         ae::virus::virus_t virus_{};
         ae::virus::type_subtype_t type_subtype_{};
         Assay assay_{};
+        RbcSpecies rbc_species_{};
+        Lab lab_{};
+        TableDate date_{};
+        std::string name_{}; // user supplied name
+        // subset/lineage, e.g. "2009PDM"                                                                                                                                 |
+    };
 
-// |             |     | "D" |     |     | str, date YYYYMMDD.NNN           | table/assay date and number (if multiple on that day), e.g. 20160602.002                                                                                       |
-// |             |     | "N" |     |     | str                              | user supplied name                                                                                                                                             |
-// |             |     | "l" |     |     | str                              | lab                                                                                                                                                            |
-// |             |     | "r" |     |     | str                              | RBCs species of HI assay, e.g. "turkey"                                                                                                                        |
-// |             |     | "s" |     |     | str                              | subset/lineage, e.g. "2009PDM"                                                                                                                                 |
-// |             |     | "T" |     |     | str                              | table type "A[NTIGENIC]" - default, "G[ENETIC]"                                                                                                                |
-// |             |     | "S" |     |     | array of key-value pairs         | source table info list, each entry is like "i"                                                                                                                 |
+    // ----------------------------------------------------------------------
+
+    class Info : public TableSource
+    {
+      public:
+        using TableSource::TableSource;
+
+      private:
+        std::vector<TableSource> sources_{};
+        // table type "A[NTIGENIC]" - default, "G[ENETIC]"                                                                                                                |
     };
 
 } // namespace ae::chart::v3
