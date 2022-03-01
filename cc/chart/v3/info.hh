@@ -63,6 +63,14 @@ namespace ae::chart::v3
                     return assay_.short_name();
             }
 
+        void virus(const ae::virus::virus_t& virus) { virus_ = virus; }
+        void type_subtype(const ae::virus::type_subtype_t& type_subtype) { type_subtype_ = type_subtype; }
+        void assay(const Assay& assay) { assay_ = assay; }
+        void rbc_species(const RbcSpecies& rbc_species) { rbc_species_ = rbc_species; }
+        void lab(const Lab& lab) { lab_ = lab; }
+        void date(const TableDate& date) { date_ = date; }
+        void name(const std::string& name) { name_ = name; }
+
       private:
         ae::virus::virus_t virus_{};
         ae::virus::type_subtype_t type_subtype_{};

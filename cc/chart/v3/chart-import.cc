@@ -24,6 +24,55 @@ inline void unhandled_key(std::initializer_list<std::string_view> keys)
     fmt::print(stderr, ">> [chart] unhandled \"{}\"\n", fmt::join(keys, "\":\""));
 }
 
+// ----------------------------------------------------------------------
+
+inline void read_info(ae::chart::v3::Info& info, ::simdjson::ondemand::object source)
+{
+    for (auto field : source) {
+        if (const std::string_view key = field.unescaped_key(); key.size() == 1) {
+            switch (key[0]) {
+                case 'v':
+                    info.virus(ae::virus::virus_t{static_cast<std::string_view>(field.value())});
+                    break;
+                case 'V':
+                    info.type_subtype(ae::virus::type_subtype_t{static_cast<std::string_view>(field.value())});
+                    break;
+                case 'A':
+                    info.assay(ae::chart::v3::Assay{static_cast<std::string_view>(field.value())});
+                    break;
+                case 'D':
+                    info.date(ae::chart::v3::TableDate{static_cast<std::string_view>(field.value())});
+                    break;
+                case 'N':
+                    info.name(std::string{static_cast<std::string_view>(field.value())});
+                    break;
+                case 'l':
+                    info.lab(ae::chart::v3::Lab{static_cast<std::string_view>(field.value())});
+                    break;
+                case 'r':
+                    info.rbc_species(ae::chart::v3::RbcSpecies{static_cast<std::string_view>(field.value())});
+                    break;
+                case 's':
+                    unhandled_key({"c", "i", key});
+                    break;
+                case 'T':
+                    unhandled_key({"c", "i", key});
+                    break;
+                case 'S':
+                    unhandled_key({"c", "i", key});
+                    break;
+                default:
+                    unhandled_key({"c", "i", key});
+                    break;
+            }
+        }
+        else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
+            unhandled_key({"c", "i", key});
+    }
+}
+
+// ----------------------------------------------------------------------
+
 void ae::chart::v3::Chart::read(const std::filesystem::path& filename)
 {
     Timeit ti{"importing chart", std::chrono::milliseconds{5000}};
@@ -43,6 +92,7 @@ void ae::chart::v3::Chart::read(const std::filesystem::path& filename)
                         if (const std::string_view key_c = field_c.unescaped_key(); key_c.size() == 1) {
                             switch (key_c[0]) {
                                 case 'i':
+                                    read_info(info(), field_c.value().get_object());
                                     break;
                                 default:
                                     unhandled_key({"c", key_c});
