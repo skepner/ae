@@ -1,4 +1,5 @@
 #include "ext/simdjson.hh"
+#include "utils/log.hh"
 #include "utils/timeit.hh"
 // #include "utils/file.hh"
 #include "chart/v3/chart.hh"
@@ -26,48 +27,57 @@ inline void unhandled_key(std::initializer_list<std::string_view> keys)
 
 // ----------------------------------------------------------------------
 
+// returns if key was handled
+inline bool read_table_source(ae::chart::v3::TableSource& target, std::string_view key, ::simdjson::ondemand::value value)
+{
+    bool handled{true};
+    if (key.size() == 1) {
+        switch (key[0]) {
+            case 'v':
+                target.virus(ae::virus::virus_t{static_cast<std::string_view>(value)});
+                break;
+            case 'V':
+                target.type_subtype(ae::virus::type_subtype_t{static_cast<std::string_view>(value)});
+                break;
+            case 'A':
+                target.assay(ae::chart::v3::Assay{static_cast<std::string_view>(value)});
+                break;
+            case 'D':
+                target.date(ae::chart::v3::TableDate{static_cast<std::string_view>(value)});
+                break;
+            case 'N':
+                target.name(std::string{static_cast<std::string_view>(value)});
+                break;
+            case 'l':
+                target.lab(ae::chart::v3::Lab{static_cast<std::string_view>(value)});
+                break;
+            case 'r':
+                target.rbc_species(ae::chart::v3::RbcSpecies{static_cast<std::string_view>(value)});
+                break;
+            default:
+                handled = false;
+                break;
+        }
+    }
+    else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
+        handled = false;
+    return handled;
+}
+
 inline void read_info(ae::chart::v3::Info& info, ::simdjson::ondemand::object source)
 {
     for (auto field : source) {
-        if (const std::string_view key = field.unescaped_key(); key.size() == 1) {
-            switch (key[0]) {
-                case 'v':
-                    info.virus(ae::virus::virus_t{static_cast<std::string_view>(field.value())});
-                    break;
-                case 'V':
-                    info.type_subtype(ae::virus::type_subtype_t{static_cast<std::string_view>(field.value())});
-                    break;
-                case 'A':
-                    info.assay(ae::chart::v3::Assay{static_cast<std::string_view>(field.value())});
-                    break;
-                case 'D':
-                    info.date(ae::chart::v3::TableDate{static_cast<std::string_view>(field.value())});
-                    break;
-                case 'N':
-                    info.name(std::string{static_cast<std::string_view>(field.value())});
-                    break;
-                case 'l':
-                    info.lab(ae::chart::v3::Lab{static_cast<std::string_view>(field.value())});
-                    break;
-                case 'r':
-                    info.rbc_species(ae::chart::v3::RbcSpecies{static_cast<std::string_view>(field.value())});
-                    break;
-                case 's':
-                    unhandled_key({"c", "i", key});
-                    break;
-                case 'T':
-                    unhandled_key({"c", "i", key});
-                    break;
-                case 'S':
-                    unhandled_key({"c", "i", key});
-                    break;
-                default:
-                    unhandled_key({"c", "i", key});
-                    break;
+        if (const std::string_view key = field.unescaped_key(); !read_table_source(info, key, field.value())) {
+            if (key == "S") {
+                for (auto en : field.value().get_array()) {
+                    auto& target = info.sources().emplace_back();
+                    for (auto s_field : en.get_object())
+                        read_table_source(target, s_field.unescaped_key(), s_field.value());
+                }
             }
+            else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
+                unhandled_key({"c", "i", key});
         }
-        else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
-            unhandled_key({"c", "i", key});
     }
 }
 

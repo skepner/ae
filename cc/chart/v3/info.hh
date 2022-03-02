@@ -89,6 +89,9 @@ namespace ae::chart::v3
       public:
         using TableSource::TableSource;
 
+        auto& sources() { return sources_; }
+        const auto& sources() const { return sources_; }
+
       private:
         std::vector<TableSource> sources_{};
         // table type "A[NTIGENIC]" - default, "G[ENETIC]"                                                                                                                |
