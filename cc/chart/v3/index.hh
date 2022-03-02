@@ -3,6 +3,7 @@
 #include <concepts>
 
 #include "ext/fmt.hh"
+#include "utils/named-vector.hh"
 
 // ----------------------------------------------------------------------
 
@@ -100,6 +101,20 @@ namespace ae
     {
       public:
         using index_tt<struct projection_index_tag>::index_tt;
+    };
+
+    // ----------------------------------------------------------------------
+
+    class antigen_indexes : public ae::named_vector_t<antigen_index, struct antigen_indexes_tag>
+    {
+      public:
+        using ae::named_vector_t<antigen_index, struct antigen_indexes_tag>::named_vector_t;
+    };
+
+    class serum_indexes : public ae::named_vector_t<serum_index, struct serum_indexes_tag>
+    {
+      public:
+        using ae::named_vector_t<serum_index, struct serum_indexes_tag>::named_vector_t;
     };
 
 } // namespace ae

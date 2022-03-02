@@ -12,7 +12,7 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
 
 } // ae::chart::v3::Chart::write
 
-// ----------------------------------------------------------------------
+// ======================================================================
 
 // class unhandled_key : public std::runtime_error
 // {

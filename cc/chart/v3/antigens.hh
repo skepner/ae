@@ -2,7 +2,15 @@
 
 #include <vector>
 
+#include "virus/name.hh"
+#include "virus/name.hh"
+#include "virus/passage.hh"
+#include "virus/reassortant.hh"
+#include "sequences/lineage.hh"
+#include "sequences/sequence.hh"
 #include "chart/v3/index.hh"
+#include "chart/v3/annotations.hh"
+#include "chart/v3/semantic.hh"
 
 // ----------------------------------------------------------------------
 
@@ -10,24 +18,94 @@ namespace ae::chart::v3
 {
     class Chart;
 
-    class Antigen
+    class Date : public named_string_t<std::string, struct date_tag>
     {
       public:
-        Antigen() = default;
-        Antigen(const Antigen&) = default;
-        Antigen(Antigen&&) = default;
-        Antigen& operator=(const Antigen&) = default;
-        Antigen& operator=(Antigen&&) = default;
+        using named_string_t<std::string, struct date_tag>::named_string_t;
+
+        bool within_range(std::string_view first_date, std::string_view after_last_date) const
+        {
+            return !empty() && (first_date.empty() || *this >= first_date) && (after_last_date.empty() || *this < after_last_date);
+        }
+
+        // void check() const;
+
+    }; // class Date
+
+    // ----------------------------------------------------------------------
+
+    class LabIds : public named_vector_t<std::string, struct LabIds_tag>
+    {
+      public:
+        using named_vector_t<std::string, struct LabIds_tag>::named_vector_t;
+
+        std::string join() const { return fmt::format("{}", fmt::join(*this, " ")); }
+
+    }; // class LabIds
+
+    // ----------------------------------------------------------------------
+
+    class SerumId : public named_string_t<std::string, struct SerumId_tag>
+    {
+      public:
+        using named_string_t<std::string, struct SerumId_tag>::named_string_t;
+
+    }; // class SerumId
+
+    // ----------------------------------------------------------------------
+
+    class SerumSpecies : public named_string_t<std::string, struct SerumSpecies_tag>
+    {
+      public:
+        using named_string_t<std::string, struct SerumSpecies_tag>::named_string_t;
+
+    }; // class SerumSpecies
+
+    // ----------------------------------------------------------------------
+
+    class AntigenSerum
+    {
+      public:
+        AntigenSerum() = default;
+        AntigenSerum(const AntigenSerum&) = default;
+        AntigenSerum(AntigenSerum&&) = default;
+        AntigenSerum& operator=(const AntigenSerum&) = default;
+        AntigenSerum& operator=(AntigenSerum&&) = default;
+
+      private:
+        virus::Name name_{};
+        Annotations annotations_{};
+        sequences::lineage_t lineage_{};
+        virus::Passage passage_{};
+        virus::Reassortant reassortant_{};
+        sequences::sequence_aa_t aa_{};
+        sequences::sequence_nuc_t nuc_{};
+        SemanticAttributes semantic_{};
     };
 
-    class Serum
+    // ----------------------------------------------------------------------
+
+    class Antigen : public AntigenSerum
     {
       public:
-        Serum() = default;
-        Serum(const Serum&) = default;
-        Serum(Serum&&) = default;
-        Serum& operator=(const Serum&) = default;
-        Serum& operator=(Serum&&) = default;
+        using AntigenSerum::AntigenSerum;
+
+      private:
+        Date date_{};
+        LabIds lab_ids{};
+    };
+
+    // ----------------------------------------------------------------------
+
+    class Serum : public AntigenSerum
+    {
+      public:
+        using AntigenSerum::AntigenSerum;
+
+      private:
+        SerumSpecies serum_species_;
+        SerumId serum_id_;
+        antigen_indexes homologous_antigens_;
     };
 
     // ----------------------------------------------------------------------
