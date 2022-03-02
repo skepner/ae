@@ -50,9 +50,9 @@ inline void load_seq(ae::sequences::SeqdbSeq& seq, simdjson::ondemand::object& j
     for (auto field : json_seq) {
         const std::string_view key = field.unescaped_key();
         if (key == "a"sv)
-            seq.aa = std::string_view{field.value()};
+            seq.aa = ae::sequences::sequence_aa_t{static_cast<std::string_view>(field.value())};
         else if (key == "n"sv)
-            seq.nuc = std::string_view{field.value()};
+            seq.nuc = ae::sequences::sequence_nuc_t{static_cast<std::string_view>(field.value())};
         else if (key == "I"sv) {
             for (auto insertions_en : field.value().get_array()) {
                 ae::sequences::insertion_t ins;
@@ -70,7 +70,7 @@ inline void load_seq(ae::sequences::SeqdbSeq& seq, simdjson::ondemand::object& j
             }
         }
         else if (key == "H"sv)
-            seq.hash = std::string_view{field.value()};
+            seq.hash = ae::hash_t{static_cast<std::string_view>(field.value())};
         else if (key == "r"sv)
             load_array_of_string(seq.reassortants, field);
         else if (key == "A"sv)

@@ -1,9 +1,8 @@
 #pragma once
 
-#include <concepts>
-
 #include "ext/fmt.hh"
 #include "utils/float.hh"
+#include "utils/concepts.hh"
 
 // ----------------------------------------------------------------------
 
@@ -17,12 +16,10 @@ namespace ae
         explicit constexpr named_t() = default;
         constexpr named_t(const named_t&) = default;
         constexpr named_t(named_t&&) = default;
-        template <typename T2> requires std::constructible_from<T, T2> explicit constexpr named_t(T2&& value) : value_(std::forward<T2>(value)) {}
+        template <constructible_from<T> T2> explicit constexpr named_t(T2&& value) : value_(std::forward<T2>(value)) {}
 
         named_t& operator=(const named_t&) = default;
         named_t& operator=(named_t&&) = default;
-        template <typename T2> requires std::assignable_from<T&, T2> constexpr named_t& operator=(const T2& value) { value_ = value; return *this; }
-        template <typename T2> requires std::assignable_from<T&, T2> constexpr named_t& operator=(T2&& value) { value_ = std::move(value); return *this; }
 
 #pragma GCC diagnostic push
 #ifdef __clang__

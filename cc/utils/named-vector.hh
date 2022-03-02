@@ -36,21 +36,19 @@ namespace ae
         }
 
         // set like
-        bool exists(const T& val) const { return std::find(begin(), end(), val) != end(); }
+        template <constructible_from<T> T2> bool exists(T2&& val) const { return std::find(begin(), end(), T{std::forward<T2>(val)}) != end(); }
+
         bool exists_any_of(const std::vector<T>& vals) const
         {
             return std::any_of(std::begin(vals), std::end(vals), [this](const T& val) { return exists(val); });
         }
-        void insert_if_not_present(const T& val)
+
+        template <constructible_from<T> T2> void insert_if_not_present(T2&& val)
         {
-            if (!exists(val))
-                push_back(val);
+            if (!exists(std::forward<T2>(val)))
+                this->get().emplace_back(std::forward<T2>(val));
         }
-        void insert_if_not_present(T&& val)
-        {
-            if (!exists(std::forward<T>(val)))
-                push_back(std::forward<T>(val));
-        }
+
         void merge_in(const named_vector_t<T, Tag>& another)
         {
             for (const auto& val : another)

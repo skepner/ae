@@ -5,8 +5,8 @@
 #include <vector>
 #include <algorithm>
 
-#include "utils/named-type.hh"
 #include "ext/string.hh"
+#include "utils/named-type.hh"
 #include "sequences/pos.hh"
 
 // ======================================================================
@@ -55,8 +55,8 @@ namespace ae::sequences
                 a_nuc.remove_suffix(a_nuc.size() - expected_nuc);
             else if (expected_nuc != a_nuc.size())
                 throw std::runtime_error{fmt::format("cannot set sequence_pair_t, length mismatch: aa:{} nuc:{} (expected:{})", a_aa.size(), a_nuc.size(), expected_nuc)};
-            aa = a_aa;
-            nuc = a_nuc;
+            aa = sequence_aa_t{a_aa};
+            nuc = sequence_nuc_t{a_nuc};
         }
 
         bool is_translated() const { return !aa.empty(); }
@@ -90,10 +90,6 @@ namespace ae::sequences
     };
 
     using insertions_t = std::vector<insertion_t>;
-
-    // ----------------------------------------------------------------------
-
-    using hash_t = ae::named_string_t<std::string, struct sequences_hash_tag>;
 
 } // namespace ae::sequences
 

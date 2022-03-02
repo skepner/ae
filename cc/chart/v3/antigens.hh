@@ -72,6 +72,15 @@ namespace ae::chart::v3
         AntigenSerum& operator=(const AntigenSerum&) = default;
         AntigenSerum& operator=(AntigenSerum&&) = default;
 
+        void name(const virus::Name& name) { name_ = name; }
+        Annotations& annotations() { return annotations_; }
+        void lineage(const sequences::lineage_t& lineage) { lineage_ = lineage; }
+        void passage(const virus::Passage& passage) { passage_ = passage; }
+        void reassortant(const virus::Reassortant& reassortant) { reassortant_ = reassortant; }
+        void aa(const sequences::sequence_aa_t& aa) { aa_ = aa; }
+        void nuc(const sequences::sequence_nuc_t& nuc) { nuc_ = nuc; }
+        SemanticAttributes& semantic() { return semantic_; }
+
       private:
         virus::Name name_{};
         Annotations annotations_{};
@@ -90,9 +99,12 @@ namespace ae::chart::v3
       public:
         using AntigenSerum::AntigenSerum;
 
+        void date(const Date& date) { date_ = date; }
+        LabIds& lab_ids() { return lab_ids_; }
+
       private:
         Date date_{};
-        LabIds lab_ids{};
+        LabIds lab_ids_{};
     };
 
     // ----------------------------------------------------------------------
@@ -101,6 +113,10 @@ namespace ae::chart::v3
     {
       public:
         using AntigenSerum::AntigenSerum;
+
+        void serum_species(const SerumSpecies& serum_species) { serum_species_ = serum_species; }
+        void serum_id(const SerumId& serum_id) { serum_id_ = serum_id; }
+        antigen_indexes& homologous_antigens() { return homologous_antigens_; }
 
       private:
         SerumSpecies serum_species_{};
@@ -156,7 +172,7 @@ namespace ae::chart::v3
 
 template <> struct fmt::formatter<ae::chart::v3::Antigen> : fmt::formatter<ae::fmt_helper::default_formatter>
 {
-    template <typename FormatCtx> auto format(const ae::chart::v3::Antigen& antigen, FormatCtx& ctx) const
+    template <typename FormatCtx> auto format(const ae::chart::v3::Antigen& /*antigen*/, FormatCtx& ctx) const
         {
             format_to(ctx.out(), "AG");
             return ctx.out();
@@ -165,7 +181,7 @@ template <> struct fmt::formatter<ae::chart::v3::Antigen> : fmt::formatter<ae::f
 
 template <> struct fmt::formatter<ae::chart::v3::Serum> : fmt::formatter<ae::fmt_helper::default_formatter>
 {
-    template <typename FormatCtx> auto format(const ae::chart::v3::Serum& serum, FormatCtx& ctx) const
+    template <typename FormatCtx> auto format(const ae::chart::v3::Serum& /*serum*/, FormatCtx& ctx) const
         {
             format_to(ctx.out(), "SR");
             return ctx.out();

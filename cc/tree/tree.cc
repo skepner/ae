@@ -64,7 +64,7 @@ ae::tree::EdgeLength ae::tree::Tree::calculate_cumulative(bool force)
 {
     if (force || max_cumulative < EdgeLength{0}) {
         EdgeLength cumulative{0.0};
-        max_cumulative = 0.0;
+        max_cumulative = EdgeLength{0.0};
         for (auto ref : visit(tree_visiting::all_pre_post)) {
             if (ref.pre())
                 ref.visit([&cumulative, this]<typename Node>(Node* node) {

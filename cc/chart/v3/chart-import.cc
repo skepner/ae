@@ -88,27 +88,39 @@ inline bool read_antigen_serum(ae::chart::v3::AntigenSerum& target, std::string_
     bool handled{true};
     if (key.size() == 1) {
         switch (key[0]) {
-            case 'N': // str, mandatory                   | name: TYPE(SUBTYPE)/[HOST/]LOCATION/ISOLATION/YEAR or CDC_ABBR NAME or UNRECOGNIZED NAME                                                                       |
+            case 'N': // str, mandatory                   | name: TYPE(SUBTYPE)/[HOST/]LOCATION/ISOLATION/YEAR or CDC_ABBR NAME or UNRECOGNIZED NAME
+                target.name(ae::virus::Name{static_cast<std::string_view>(value)});
                 break;
-            case 'a': // array of str                     | annotations that distinguish antigens (prevent from merging): ["DISTINCT"], mutation information, unrecognized extra data                                      |
+            case 'a': // array of str                     | annotations that distinguish antigens (prevent from merging): ["DISTINCT"], mutation information, unrecognized extra data
+                for (auto ann : value.get_array())
+                    target.annotations().insert_if_not_present(static_cast<std::string_view>(ann));
                 break;
-            case 'L': // str                              | lineage: "Y[AMAGATA]" or "V[ICTORIA]"                                                                                                                          |
+            case 'L': // str                              | lineage: "Y[AMAGATA]" or "V[ICTORIA]"
+                target.lineage(ae::sequences::lineage_t{static_cast<std::string_view>(value)});
                 break;
-            case 'P': // str                              | passage, e.g. "MDCK2/SIAT1 (2016-05-12)"                                                                                                                       |
+            case 'P': // str                              | passage, e.g. "MDCK2/SIAT1 (2016-05-12)"
+                target.passage(ae::virus::Passage{static_cast<std::string_view>(value)});
                 break;
-            case 'R': // str                              | reassortant, e.g. "NYMC-51C"                                                                                                                                   |
+            case 'R': // str                              | reassortant, e.g. "NYMC-51C"
+                target.reassortant(ae::virus::Reassortant{static_cast<std::string_view>(value)});
                 break;
-            case 'A': // str                              | aligned amino-acid sequence                                                                                                                                    |
+            case 'A': // str                              | aligned amino-acid sequence
+                target.aa(ae::sequences::sequence_aa_t{static_cast<std::string_view>(value)});
                 break;
-            case 'B': // str                              | aligned nucleotide sequence                                                                                                                                    |
+            case 'B': // str                              | aligned nucleotide sequence
+                target.nuc(ae::sequences::sequence_nuc_t{static_cast<std::string_view>(value)});
                 break;
-            case 's': // key-value  pairs                 | semantic attributes by group (see below the table)                                                                                                             |
+            case 's': // key-value  pairs                 | semantic attributes by group (see below the table)
+                handled = false;
                 break;
-            case 'C': // str                              | (DEPRECATED, use "s") continent: "ASIA", "AUSTRALIA-OCEANIA", "NORTH-AMERICA", "EUROPE", "RUSSIA", "AFRICA", "MIDDLE-EAST", "SOUTH-AMERICA", "CENTRAL-AMERICA" |
+            case 'C': // str                              | (DEPRECATED, use "s") continent: "ASIA", "AUSTRALIA-OCEANIA", "NORTH-AMERICA", "EUROPE", "RUSSIA", "AFRICA", "MIDDLE-EAST", "SOUTH-AMERICA", "CENTRAL-AMERICA"
+                handled = false;
                 break;
-            case 'c': // array of str                     | (DEPRECATED, use "s") clades, e.g. ["5.2.1"]                                                                                                                   |
+            case 'c': // array of str                     | (DEPRECATED, use "s") clades, e.g. ["5.2.1"]
+                handled = false;
                 break;
-            case 'S': // str                              | (DEPRECATED, use "s") single letter semantic boolean attributes: R - reference, E - egg, V - current vaccine, v - previous vaccine, S - vaccine surrogate      |
+            case 'S': // str                              | (DEPRECATED, use "s") single letter semantic boolean attributes: R - reference, E - egg, V - current vaccine, v - previous vaccine, S - vaccine surrogate
+                handled = false;
                 break;
             default:
                 handled = false;
@@ -129,8 +141,11 @@ inline void read_antigens(ae::chart::v3::Antigens& target, ::simdjson::ondemand:
         for (auto field : en.get_object()) {
             if (const std::string_view key = field.unescaped_key(); !read_antigen_serum(antigen, key, field.value())) {
                 if (key == "D") { // str, date YYYYMMDD or YYYY-MM-DD | isolation date
+                    antigen.date(ae::chart::v3::Date{static_cast<std::string_view>(field.value())});
                 }
                 else if (key == "l") { // array of str | lab ids ([lab#id]), e.g. ["CDC#2013706008"]
+                    for (auto lab_id : field.value().get_array())
+                        antigen.lab_ids().insert_if_not_present(static_cast<std::string_view>(lab_id));
                 }
                 else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
                     unhandled_key({"c", "a", key});
@@ -148,13 +163,16 @@ inline void read_sera(ae::chart::v3::Sera& target, ::simdjson::ondemand::array s
         for (auto field : en.get_object()) {
             if (const std::string_view key = field.unescaped_key(); !read_antigen_serum(serum, key, field.value())) {
                 if (key == "s") { // str | serum species, e.g "FERRET"
+                    serum.serum_species(ae::chart::v3::SerumSpecies{static_cast<std::string_view>(field.value())});
                 }
                 else if (key == "I") { // str | serum id, e.g "CDC 2016-045"
+                    serum.serum_id(ae::chart::v3::SerumId{static_cast<std::string_view>(field.value())});
                 }
                 else if (key == "h") { // array of numbers | homologous antigen indices, e.g. [0]
+                    serum.homologous_antigens().push_back(ae::antigen_index{static_cast<uint64_t>(field.value())});
                 }
                 else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
-                    unhandled_key({"c", "a", key});
+                    unhandled_key({"c", "s", key});
             }
         }
     }

@@ -7,6 +7,7 @@
 
 #include "ext/string.hh"
 #include "utils/log.hh"
+#include "utils/hash.hh"
 #include "utils/string-hash.hh"
 #include "virus/type-subtype.hh"
 #include "sequences/sequence.hh"

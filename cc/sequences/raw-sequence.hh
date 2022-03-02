@@ -2,6 +2,7 @@
 
 #include <string_view>
 
+#include "utils/hash.hh"
 #include "virus/type-subtype.hh"
 #include "sequences/sequence.hh"
 #include "sequences/issues.hh"
