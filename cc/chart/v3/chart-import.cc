@@ -114,13 +114,13 @@ inline bool read_antigen_serum(ae::chart::v3::AntigenSerum& target, std::string_
                 handled = false;
                 break;
             case 'C': // str                              | (DEPRECATED, use "s") continent: "ASIA", "AUSTRALIA-OCEANIA", "NORTH-AMERICA", "EUROPE", "RUSSIA", "AFRICA", "MIDDLE-EAST", "SOUTH-AMERICA", "CENTRAL-AMERICA"
-                handled = false;
+                // handled = false;
                 break;
             case 'c': // array of str                     | (DEPRECATED, use "s") clades, e.g. ["5.2.1"]
-                handled = false;
+                // handled = false;
                 break;
             case 'S': // str                              | (DEPRECATED, use "s") single letter semantic boolean attributes: R - reference, E - egg, V - current vaccine, v - previous vaccine, S - vaccine surrogate
-                handled = false;
+                // handled = false;
                 break;
             default:
                 handled = false;
@@ -180,6 +180,13 @@ inline void read_sera(ae::chart::v3::Sera& target, ::simdjson::ondemand::array s
 
 // ----------------------------------------------------------------------
 
+inline void read_titers(ae::chart::v3::Titers& target, ::simdjson::ondemand::object source)
+{
+    unhandled_key({"c", "t"});
+}
+
+// ----------------------------------------------------------------------
+
 void ae::chart::v3::Chart::read(const std::filesystem::path& filename)
 {
     Timeit ti{"importing chart", std::chrono::milliseconds{5000}};
@@ -206,6 +213,9 @@ void ae::chart::v3::Chart::read(const std::filesystem::path& filename)
                                     break;
                                 case 's':
                                     read_sera(sera(), field_c.value().get_array());
+                                    break;
+                                case 't':
+                                    read_titers(titers(), field_c.value().get_object());
                                     break;
                                 default:
                                     unhandled_key({"c", key_c});
