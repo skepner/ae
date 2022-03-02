@@ -83,6 +83,85 @@ inline void read_info(ae::chart::v3::Info& info, ::simdjson::ondemand::object so
 
 // ----------------------------------------------------------------------
 
+inline bool read_antigen_serum(ae::chart::v3::AntigenSerum& target, std::string_view key, ::simdjson::ondemand::value value)
+{
+    bool handled{true};
+    if (key.size() == 1) {
+        switch (key[0]) {
+            case 'N': // str, mandatory                   | name: TYPE(SUBTYPE)/[HOST/]LOCATION/ISOLATION/YEAR or CDC_ABBR NAME or UNRECOGNIZED NAME                                                                       |
+                break;
+            case 'a': // array of str                     | annotations that distinguish antigens (prevent from merging): ["DISTINCT"], mutation information, unrecognized extra data                                      |
+                break;
+            case 'L': // str                              | lineage: "Y[AMAGATA]" or "V[ICTORIA]"                                                                                                                          |
+                break;
+            case 'P': // str                              | passage, e.g. "MDCK2/SIAT1 (2016-05-12)"                                                                                                                       |
+                break;
+            case 'R': // str                              | reassortant, e.g. "NYMC-51C"                                                                                                                                   |
+                break;
+            case 'A': // str                              | aligned amino-acid sequence                                                                                                                                    |
+                break;
+            case 'B': // str                              | aligned nucleotide sequence                                                                                                                                    |
+                break;
+            case 's': // key-value  pairs                 | semantic attributes by group (see below the table)                                                                                                             |
+                break;
+            case 'C': // str                              | (DEPRECATED, use "s") continent: "ASIA", "AUSTRALIA-OCEANIA", "NORTH-AMERICA", "EUROPE", "RUSSIA", "AFRICA", "MIDDLE-EAST", "SOUTH-AMERICA", "CENTRAL-AMERICA" |
+                break;
+            case 'c': // array of str                     | (DEPRECATED, use "s") clades, e.g. ["5.2.1"]                                                                                                                   |
+                break;
+            case 'S': // str                              | (DEPRECATED, use "s") single letter semantic boolean attributes: R - reference, E - egg, V - current vaccine, v - previous vaccine, S - vaccine surrogate      |
+                break;
+            default:
+                handled = false;
+                break;
+            }
+    }
+    else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
+        handled = false;
+    return handled;
+}
+
+// ----------------------------------------------------------------------
+
+inline void read_antigens(ae::chart::v3::Antigens& target, ::simdjson::ondemand::array source)
+{
+    for (auto en : source) {
+        auto& antigen = target.add();
+        for (auto field : en.get_object()) {
+            if (const std::string_view key = field.unescaped_key(); !read_antigen_serum(antigen, key, field.value())) {
+                if (key == "D") { // str, date YYYYMMDD or YYYY-MM-DD | isolation date
+                }
+                else if (key == "l") { // array of str | lab ids ([lab#id]), e.g. ["CDC#2013706008"]
+                }
+                else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
+                    unhandled_key({"c", "a", key});
+            }
+        }
+    }
+}
+
+// ----------------------------------------------------------------------
+
+inline void read_sera(ae::chart::v3::Sera& target, ::simdjson::ondemand::array source)
+{
+    for (auto en : source) {
+        auto& serum = target.add();
+        for (auto field : en.get_object()) {
+            if (const std::string_view key = field.unescaped_key(); !read_antigen_serum(serum, key, field.value())) {
+                if (key == "s") { // str | serum species, e.g "FERRET"
+                }
+                else if (key == "I") { // str | serum id, e.g "CDC 2016-045"
+                }
+                else if (key == "h") { // array of numbers | homologous antigen indices, e.g. [0]
+                }
+                else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
+                    unhandled_key({"c", "a", key});
+            }
+        }
+    }
+}
+
+// ----------------------------------------------------------------------
+
 void ae::chart::v3::Chart::read(const std::filesystem::path& filename)
 {
     Timeit ti{"importing chart", std::chrono::milliseconds{5000}};
@@ -103,6 +182,12 @@ void ae::chart::v3::Chart::read(const std::filesystem::path& filename)
                             switch (key_c[0]) {
                                 case 'i':
                                     read_info(info(), field_c.value().get_object());
+                                    break;
+                                case 'a':
+                                    read_antigens(antigens(), field_c.value().get_array());
+                                    break;
+                                case 's':
+                                    read_sera(sera(), field_c.value().get_array());
                                     break;
                                 default:
                                     unhandled_key({"c", key_c});

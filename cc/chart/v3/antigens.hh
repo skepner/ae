@@ -103,9 +103,9 @@ namespace ae::chart::v3
         using AntigenSerum::AntigenSerum;
 
       private:
-        SerumSpecies serum_species_;
-        SerumId serum_id_;
-        antigen_indexes homologous_antigens_;
+        SerumSpecies serum_species_{};
+        SerumId serum_id_{};
+        antigen_indexes homologous_antigens_{};
     };
 
     // ----------------------------------------------------------------------
@@ -128,15 +128,21 @@ namespace ae::chart::v3
         auto end() const { return data_.end(); }
         auto end() { return data_.end(); }
 
+        Element& add() { return data_.emplace_back(); }
+
       private:
         std::vector<Element> data_;
     };
+
+    // ----------------------------------------------------------------------
 
     class Antigens : public AntigensSera<antigen_index, Antigen>
     {
       public:
         using AntigensSera<antigen_index, Antigen>::AntigensSera;
     };
+
+    // ----------------------------------------------------------------------
 
     class Sera : public AntigensSera<serum_index, Serum>
     {
