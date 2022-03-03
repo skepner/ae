@@ -216,6 +216,8 @@ namespace ae::chart::v3
         Titers() = default;
         Titers(const Titers&) = default;
         Titers(Titers&&) = default;
+        explicit Titers(antigen_index number_of_antigens, serum_index number_of_sera) : number_of_sera_{number_of_sera}, titers_{dense_t(number_of_antigens.get() * number_of_sera.get())} {}
+
         Titers& operator=(const Titers&) = default;
         Titers& operator=(Titers&&) = default;
 
@@ -300,6 +302,21 @@ namespace ae::chart::v3
         point_indexes having_too_few_numeric_titers(size_t threshold = 3) const;
 
         // std::string print() const;
+
+      private:
+        serum_index number_of_sera_{0};
+        titers_t titers_{};
+        layers_t layers_{};
+        bool layer_titer_modified_{false}; // force titer recalculation
+
+        static Titer find_titer_for_serum(const sparse_row_t& aRow, serum_index aSerumNo);
+        static Titer titer_in_sparse_t(const sparse_t& aSparse, antigen_index aAntigenNo, serum_index aSerumNo);
+
+        void set_titer(dense_t& titers, antigen_index aAntigenNo, serum_index aSerumNo, const Titer& aTiter) { titers[aAntigenNo.get() * number_of_sera_.get() + aSerumNo.get()] = aTiter; }
+        void set_titer(sparse_t& titers, antigen_index aAntigenNo, serum_index aSerumNo, const Titer& aTiter);
+
+        std::unique_ptr<titer_merge_report> set_titers_from_layers(more_than_thresholded mtt);
+        std::pair<Titer, titer_merge> titer_from_layers(antigen_index aAntigenNo, serum_index aSerumNo, more_than_thresholded mtt, double standard_deviation_threshold) const;
 
     }; // class Titers
 
