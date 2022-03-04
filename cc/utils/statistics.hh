@@ -3,16 +3,18 @@
 #include <stdexcept>
 #include <numeric>
 
-#include "draw/v1/line.hh"
+// #include "draw/v1/line.hh"
 #include "utils/string.hh"
 
 // ----------------------------------------------------------------------
 
-namespace acmacs::statistics
+namespace ae::statistics
 {
     class Error : public std::runtime_error { public: using std::runtime_error::runtime_error; };
 
 // ----------------------------------------------------------------------
+
+    inline double sqr(double value) { return value * value; }
 
     template <typename T> inline T identity(T val) { return val; }
 
@@ -38,7 +40,7 @@ namespace acmacs::statistics
 
     template <typename ForwardIterator, typename Extractor> inline double varianceN(ForwardIterator first, ForwardIterator last, double mean, Extractor extractor)
     {
-        return std::accumulate(first, last, 0.0, [mean,extractor](double sum, const auto& value) { return sum + ae::draw::v1::sqr(extractor(value) - mean); });
+        return std::accumulate(first, last, 0.0, [mean,extractor](double sum, const auto& value) { return sum + sqr(extractor(value) - mean); });
     }
 
     template <typename ForwardIterator, typename Extractor> inline double varianceN(ForwardIterator first, ForwardIterator last, Extractor extractor)
@@ -97,44 +99,44 @@ namespace acmacs::statistics
 
 // ----------------------------------------------------------------------
 
-    class SimpleLinearRegression : public ae::draw::v1::LineDefinedByEquation
-    {
-     public:
-        SimpleLinearRegression(double a_slope, double a_intercept, double a_r2, double a_rbar2) : LineDefinedByEquation(a_slope, a_intercept), r2_{a_r2}, rbar2_{a_rbar2} {}
+    // class SimpleLinearRegression : public ae::draw::v1::LineDefinedByEquation
+    // {
+    //  public:
+    //     SimpleLinearRegression(double a_slope, double a_intercept, double a_r2, double a_rbar2) : LineDefinedByEquation(a_slope, a_intercept), r2_{a_r2}, rbar2_{a_rbar2} {}
 
-        double c0() const { return intercept(); }
-        double c1() const { return slope(); }
-        double r2() const { return r2_; } // Coefficient of determination http://en.wikipedia.org/wiki/Coefficient_of_determination
-        double rbar2() const { return rbar2_; }
+    //     double c0() const { return intercept(); }
+    //     double c1() const { return slope(); }
+    //     double r2() const { return r2_; } // Coefficient of determination http://en.wikipedia.org/wiki/Coefficient_of_determination
+    //     double rbar2() const { return rbar2_; }
 
-      private:
-        const double r2_, rbar2_;
-    };
+    //   private:
+    //     const double r2_, rbar2_;
+    // };
 
-    // inline std::ostream& operator<<(std::ostream& out, const SimpleLinearRegression& lrg) { return out << "LinearRegression(c0:" << lrg.c0() << ", c1:" << lrg.c1() << ", r2:" << lrg.r2() << ", rbar2:" << lrg.rbar2() << ')'; }
+    // // inline std::ostream& operator<<(std::ostream& out, const SimpleLinearRegression& lrg) { return out << "LinearRegression(c0:" << lrg.c0() << ", c1:" << lrg.c1() << ", r2:" << lrg.r2() << ", rbar2:" << lrg.rbar2() << ')'; }
 
-    // Adopted from GNU Scientific library (gsl_fit_linear)
-    template <typename XForwardIterator, typename YForwardIterator> inline SimpleLinearRegression simple_linear_regression(XForwardIterator x_first, XForwardIterator x_last, YForwardIterator y_first)
-    {
-        const auto [x_mean, x_size] = mean_size(x_first, x_last, identity<double>);
-        const auto y_mean = mean(y_first, y_first + static_cast<ssize_t>(x_size));
-        const auto slope = covarianceN(x_first, x_last, x_mean, y_first, y_mean) / varianceN(x_first, x_last, x_mean, identity<double>);
-        const auto intercept = y_mean - slope * x_mean;
+    // // Adopted from GNU Scientific library (gsl_fit_linear)
+    // template <typename XForwardIterator, typename YForwardIterator> inline SimpleLinearRegression simple_linear_regression(XForwardIterator x_first, XForwardIterator x_last, YForwardIterator y_first)
+    // {
+    //     const auto [x_mean, x_size] = mean_size(x_first, x_last, identity<double>);
+    //     const auto y_mean = mean(y_first, y_first + static_cast<ssize_t>(x_size));
+    //     const auto slope = covarianceN(x_first, x_last, x_mean, y_first, y_mean) / varianceN(x_first, x_last, x_mean, identity<double>);
+    //     const auto intercept = y_mean - slope * x_mean;
 
-        // SSE: sum of squared residuals
-        double sse = 0.0;
-        for (auto [xi, yi] = std::pair(x_first, y_first); xi != x_last; ++xi, ++yi)
-            sse += sqr(*yi - (intercept + slope * (*xi)));
+    //     // SSE: sum of squared residuals
+    //     double sse = 0.0;
+    //     for (auto [xi, yi] = std::pair(x_first, y_first); xi != x_last; ++xi, ++yi)
+    //         sse += sqr(*yi - (intercept + slope * (*xi)));
 
-        // SST:  total sum of squares http://en.wikipedia.org/wiki/Total_sum_of_squares
-        const auto sst = varianceN(y_first, y_first + static_cast<typename XForwardIterator::difference_type>(x_size), y_mean, identity<double>);
-        if (sst <= 0)
-            throw std::runtime_error(fmt::format("simple_linear_regression: cannot calculate R2: SST is wrong: {}", sst));
-        const auto r2 = 1.0 - sse / sst;
-        const auto rbar2 = 1.0 - (1.0 - r2) * double(x_size - 1) / double(x_size - 2);
+    //     // SST:  total sum of squares http://en.wikipedia.org/wiki/Total_sum_of_squares
+    //     const auto sst = varianceN(y_first, y_first + static_cast<typename XForwardIterator::difference_type>(x_size), y_mean, identity<double>);
+    //     if (sst <= 0)
+    //         throw std::runtime_error(fmt::format("simple_linear_regression: cannot calculate R2: SST is wrong: {}", sst));
+    //     const auto r2 = 1.0 - sse / sst;
+    //     const auto rbar2 = 1.0 - (1.0 - r2) * double(x_size - 1) / double(x_size - 2);
 
-        return {slope, intercept, r2, rbar2};
-    }
+    //     return {slope, intercept, r2, rbar2};
+    // }
 
 // ----------------------------------------------------------------------
 

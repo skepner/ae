@@ -15,11 +15,16 @@ namespace ae::chart::v3
 
     // ----------------------------------------------------------------------
 
+    class data_not_available : public std::runtime_error
+    {
+      public:
+        data_not_available(std::string_view msg) : std::runtime_error{fmt::format("data not available: {}", msg)} {}
+    };
+
     class invalid_titer : public std::runtime_error
     {
       public:
-        invalid_titer(std::string msg) : std::runtime_error("invalid titer: " + msg) {}
-        invalid_titer(std::string_view msg) : invalid_titer(std::string(msg)) {}
+        invalid_titer(std::string_view msg) : std::runtime_error{fmt::format("invalid titer: {}", msg)} {}
     };
 
     // ----------------------------------------------------------------------
@@ -124,7 +129,7 @@ namespace ae::chart::v3
         {
             Data() = default;
             Data(const Data&) = default;
-            operator const Titer& () const { return titer; }
+            operator const Titer&() const { return titer; }
             auto operator<=>(const Data& rhs) const = default;
             Titer titer{};
             antigen_index antigen{};
@@ -142,9 +147,14 @@ namespace ae::chart::v3
         };
 
         auto operator<=>(const TiterIterator& rhs) const { return data_ <=> rhs.data_; }
+        auto operator!=(const TiterIterator& rhs) const { return data_ != rhs.data_; }
         const Data& operator*() const { return data_; }
         const Data* operator->() const { return &data_; }
-        const TiterIterator& operator++() { getter_->next(data_); return *this; }
+        const TiterIterator& operator++()
+        {
+            getter_->next(data_);
+            return *this;
+        }
 
       private:
         Data data_{};
@@ -174,7 +184,7 @@ namespace ae::chart::v3
 
     class Titers
     {
-     public:
+      public:
         enum class include_dotcare { no, yes };
 
         static constexpr double dense_sparse_boundary = 0.7;
@@ -223,19 +233,25 @@ namespace ae::chart::v3
         Titers& operator=(const Titers&) = default;
         Titers& operator=(Titers&&) = default;
 
-        Titer titer(antigen_index aAntigenNo, serum_index aSerumNo) const;
-        Titer titer_of_layer(layer_index aLayerNo, antigen_index aAntigenNo, serum_index aSerumNo) const;
-        std::vector<Titer> titers_for_layers(antigen_index aAntigenNo, serum_index aSerumNo, include_dotcare inc = include_dotcare::no) const; // returns list of non-dont-care titers in layers, may throw data_not_available
-        std::vector<size_t> layers_with_antigen(antigen_index aAntigenNo) const; // returns list of layer indexes that have non-dont-care titers for the antigen, may throw data_not_available
-        std::vector<size_t> layers_with_serum(serum_index aSerumNo) const; // returns list of layer indexes that have non-dont-care titers for the serum, may throw data_not_available
-        layer_index number_of_layers() const;
         antigen_index number_of_antigens() const;
-        serum_index number_of_sera() const;
+        serum_index number_of_sera() const { return number_of_sera_; }
+
+        Titer titer(antigen_index aAntigenNo, serum_index aSerumNo) const;
+
+        layer_index number_of_layers() const { return layer_index{layers_.size()}; }
+        auto& layer(layer_index layer_no) { return layers_[layer_no.get()]; }
+        const auto& layer(layer_index layer_no) const { return layers_[layer_no.get()]; }
+        void check_layers(layer_index layer_no = layer_index{0}) const { if (number_of_layers() <= layer_no) throw data_not_available{"invalid layer number or no layers present"}; }
+        Titer titer_of_layer(layer_index aLayerNo, antigen_index aAntigenNo, serum_index aSerumNo) const { return titer_in_sparse_t(layers_[aLayerNo.get()], aAntigenNo, aSerumNo); }
+        std::vector<Titer> titers_for_layers(antigen_index aAntigenNo, serum_index aSerumNo,
+                                             include_dotcare inc = include_dotcare::no) const; // returns list of non-dont-care titers in layers, may throw data_not_available
+        std::vector<layer_index> layers_with_antigen(antigen_index aAntigenNo) const; // returns list of layer indexes that have non-dont-care titers for the antigen, may throw data_not_available
+        std::vector<layer_index> layers_with_serum(serum_index aSerumNo) const;       // returns list of layer indexes that have non-dont-care titers for the serum, may throw data_not_available
         size_t number_of_non_dont_cares() const;
         size_t titrations_for_antigen(antigen_index antigen_no) const;
         size_t titrations_for_serum(serum_index serum_no) const;
         double percent_of_non_dont_cares() const { return static_cast<double>(number_of_non_dont_cares()) / static_cast<double>(number_of_antigens().get() * number_of_sera().get()); }
-        bool is_dense() const noexcept;
+        bool use_dense() const noexcept { return percent_of_non_dont_cares() > dense_sparse_boundary; }
 
         // std::shared_ptr<ColumnBasesData> computed_column_bases(MinimumColumnBasis aMinimumColumnBasis) const;
 
@@ -246,11 +262,23 @@ namespace ae::chart::v3
         class TiterGetterExisting : public TiterIterator::TiterGetter
         {
           public:
-            using titer_getter_t = std::function<Titer (antigen_index, serum_index)>;
+            using titer_getter_t = std::function<Titer(antigen_index, serum_index)>;
 
-            TiterGetterExisting(titer_getter_t a_getter, antigen_index number_of_antigens, serum_index number_of_sera) : getter_{a_getter}, number_of_antigens_{number_of_antigens}, number_of_sera_{number_of_sera} {}
-            void first(TiterIterator::Data& data) const override { set(data, antigen_index{0}, serum_index{0}); if (!valid(data.titer)) next(data); }
-            void last(TiterIterator::Data& data) const override { data.antigen = number_of_antigens_; data.serum = serum_index{0}; }
+            TiterGetterExisting(titer_getter_t a_getter, antigen_index number_of_antigens, serum_index number_of_sera)
+                : getter_{a_getter}, number_of_antigens_{number_of_antigens}, number_of_sera_{number_of_sera}
+            {
+            }
+            void first(TiterIterator::Data& data) const override
+            {
+                set(data, antigen_index{0}, serum_index{0});
+                if (!valid(data.titer))
+                    next(data);
+            }
+            void last(TiterIterator::Data& data) const override
+            {
+                data.antigen = number_of_antigens_;
+                data.serum = serum_index{0};
+            }
             void next(TiterIterator::Data& data) const override
             {
                 while (data.antigen < number_of_antigens_) {
@@ -288,19 +316,28 @@ namespace ae::chart::v3
 
           protected:
             bool valid(const Titer& titer) const override { return titer.is_regular(); }
-
         };
 
-        TiterIteratorMaker titers_existing() const { return TiterIteratorMaker(std::make_shared<TiterGetterExisting>([this](antigen_index ag, serum_index sr) { return this->titer(ag, sr); }, number_of_antigens(), number_of_sera())); }
-        TiterIteratorMaker titers_regular() const { return TiterIteratorMaker(std::make_shared<TiterGetterRegular>([this](antigen_index ag, serum_index sr) { return this->titer(ag, sr); }, number_of_antigens(), number_of_sera())); }
-        TiterIteratorMaker titers_existing_from_layer(layer_index layer_no) const { return TiterIteratorMaker(std::make_shared<TiterGetterExisting>([this,layer_no](antigen_index ag, serum_index sr) { return this->titer_of_layer(layer_no, ag, sr); }, number_of_antigens(), number_of_sera())); }
+        TiterIteratorMaker titers_existing() const
+        {
+            return TiterIteratorMaker(std::make_shared<TiterGetterExisting>([this](antigen_index ag, serum_index sr) { return this->titer(ag, sr); }, number_of_antigens(), number_of_sera()));
+        }
+        TiterIteratorMaker titers_regular() const
+        {
+            return TiterIteratorMaker(std::make_shared<TiterGetterRegular>([this](antigen_index ag, serum_index sr) { return this->titer(ag, sr); }, number_of_antigens(), number_of_sera()));
+        }
+        TiterIteratorMaker titers_existing_from_layer(layer_index layer_no) const
+        {
+            return TiterIteratorMaker(
+                std::make_shared<TiterGetterExisting>([this, layer_no](antigen_index ag, serum_index sr) { return this->titer_of_layer(layer_no, ag, sr); }, number_of_antigens(), number_of_sera()));
+        }
 
         std::pair<antigen_indexes, serum_indexes> antigens_sera_of_layer(layer_index aLayerNo) const;
         std::pair<antigen_indexes, serum_indexes> antigens_sera_in_multiple_layers() const;
         bool has_morethan_in_layers() const;
 
         point_indexes having_titers_with(point_index point_no, bool return_point_no = true) const;
-          // returns list of points having less than threshold numeric titers
+        // returns list of points having less than threshold numeric titers
         point_indexes having_too_few_numeric_titers(size_t threshold = 3) const;
 
         // std::string print() const;
@@ -312,21 +349,23 @@ namespace ae::chart::v3
         bool layer_titer_modified_{false}; // force titer recalculation
 
         static Titer find_titer_for_serum(const sparse_row_t& aRow, serum_index aSerumNo);
-        static Titer titer_in_sparse_t(const sparse_t& aSparse, antigen_index aAntigenNo, serum_index aSerumNo);
+        static inline Titer titer_in_sparse_t(const sparse_t& aSparse, antigen_index aAntigenNo, serum_index aSerumNo) { return find_titer_for_serum(aSparse[aAntigenNo.get()], aSerumNo); }
 
         void set_titer(dense_t& titers, antigen_index aAntigenNo, serum_index aSerumNo, const Titer& aTiter) { titers[aAntigenNo.get() * number_of_sera_.get() + aSerumNo.get()] = aTiter; }
         void set_titer(sparse_t& titers, antigen_index aAntigenNo, serum_index aSerumNo, const Titer& aTiter);
 
+        std::pair<Titer, titer_merge> merge_titers(const std::vector<Titer>& titers, more_than_thresholded mtt, double standard_deviation_threshold);
         std::unique_ptr<titer_merge_report> set_titers_from_layers(more_than_thresholded mtt);
-        std::pair<Titer, titer_merge> titer_from_layers(antigen_index aAntigenNo, serum_index aSerumNo, more_than_thresholded mtt, double standard_deviation_threshold) const;
+        std::pair<Titer, titer_merge> titer_from_layers(antigen_index aAntigenNo, serum_index aSerumNo, more_than_thresholded mtt, double standard_deviation_threshold);
 
     }; // class Titers
 
 } // namespace ae::chart::v3
 
-// ----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
 
-template <> struct fmt::formatter<ae::chart::v3::Titer> : fmt::formatter<ae::fmt_helper::default_formatter>
+    template <>
+    struct fmt::formatter<ae::chart::v3::Titer> : fmt::formatter<ae::fmt_helper::default_formatter>
 {
     template <typename FormatCtx> constexpr auto format(const ae::chart::v3::Titer& titer, FormatCtx& ctx) const { return fmt::format_to(ctx.out(), "{}", titer.get()); }
 };

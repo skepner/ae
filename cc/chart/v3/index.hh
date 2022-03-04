@@ -35,6 +35,8 @@ namespace ae
         const value_type* operator->() const noexcept { return &value_; }
         explicit operator value_type&() noexcept { return value_; }
         explicit operator const value_type&() const noexcept { return value_; }
+        operator Derived&() noexcept { return *static_cast<Derived*>(this); }
+        operator const Derived&() const noexcept { return *static_cast<const Derived*>(this); }
 
         index_tt<Derived, Tag>& operator++() { ++this->get(); return *this; }
         index_tt<Derived, Tag> operator++(int) { const auto saved{*this}; ++this->get(); return saved; }
@@ -51,6 +53,12 @@ namespace ae
         value_type value_{};
     };
 
+    struct index_hash_for_unordered_map
+    {
+        using is_transparent = void;
+        template <typename Derived, typename Tag> size_t operator()(const index_tt<Derived, Tag>& ind) const { return std::hash<typename index_tt<Derived, Tag>::value_type>{}(ind.get()); }
+    };
+
     // template <typename Tag> inline index_tt<Tag> operator+(index_tt<Tag> lhs, index_tt<Tag> rhs) { return index_tt<Tag>{lhs.get() + rhs.get()}; }
 
     // ----------------------------------------------------------------------
@@ -58,14 +66,14 @@ namespace ae
     template <typename Derived, typename Tag> class index_iterator_tt
     {
       public:
-        explicit index_iterator_tt(index_tt<Derived, Tag> ind) : value_{ind} {}
+        explicit index_iterator_tt(Derived ind) : value_{ind} {}
         index_iterator_tt(const index_iterator_tt&) = default;
         index_iterator_tt(index_iterator_tt&&) = default;
         index_iterator_tt& operator=(const index_iterator_tt&) = default;
         index_iterator_tt& operator=(index_iterator_tt&&) = default;
 
-        index_tt<Derived, Tag>& operator*() noexcept { return value_; }
-        const index_tt<Derived, Tag>& operator*() const noexcept { return value_; }
+        Derived& operator*() noexcept { return value_; }
+        const Derived& operator*() const noexcept { return value_; }
 
         index_iterator_tt<Derived, Tag>& operator++() { ++value_; return *this; }
         index_iterator_tt<Derived, Tag> operator++(int) { const auto saved{*this}; ++value_; return saved; }
@@ -75,10 +83,10 @@ namespace ae
         auto operator<=>(const index_iterator_tt&) const = default;
 
       private:
-        index_tt<Derived, Tag> value_;
+        Derived value_;
     };
 
-    template <typename Derived, typename Tag> inline index_iterator_tt<Derived, Tag> index_tt<Derived, Tag>::begin() const { return index_iterator_tt<Derived, Tag>{index_tt<Derived, Tag>{0}}; }
+    template <typename Derived, typename Tag> inline index_iterator_tt<Derived, Tag> index_tt<Derived, Tag>::begin() const { return index_iterator_tt<Derived, Tag>{Derived{0}}; }
     template <typename Derived, typename Tag> inline index_iterator_tt<Derived, Tag> index_tt<Derived, Tag>::end() const { return index_iterator_tt<Derived, Tag>{*this}; }
 
     // ----------------------------------------------------------------------

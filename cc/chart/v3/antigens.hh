@@ -147,7 +147,7 @@ namespace ae::chart::v3
         Element& add() { return data_.emplace_back(); }
 
       private:
-        std::vector<Element> data_;
+        std::vector<Element> data_{};
     };
 
     // ----------------------------------------------------------------------

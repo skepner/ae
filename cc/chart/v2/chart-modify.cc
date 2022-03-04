@@ -10,7 +10,7 @@
 #include "ad/enumerate.hh"
 #include "utils/string.hh"
 #include "virus/name-parse.hh"
-#include "ad/statistics.hh"
+#include "utils/statistics.hh"
 #include "locdb/v3/locdb.hh"
 #include "chart/v2/chart-modify.hh"
 
@@ -1227,7 +1227,7 @@ std::pair<Titer, TitersModify::titer_merge> TitersModify::merge_titers(const std
     // compute SD
     std::vector<double> adjusted_log(titers.size());
     std::transform(titers.begin(), titers.end(), adjusted_log.begin(), [](const auto& titer) -> double { return titer.logged_with_thresholded(); }); // 4.
-    const auto sd_mean = acmacs::statistics::standard_deviation(adjusted_log.begin(), adjusted_log.end());
+    const auto sd_mean = ae::statistics::standard_deviation(adjusted_log.begin(), adjusted_log.end());
     if (sd_mean.population_sd() > standard_deviation_threshold)
         return {Titer{}, titer_merge::sd_too_big};        // 5. if SD > 1, result is *
     if (max_less_than == 0 && min_more_than == max_limit) // 6. just regular
