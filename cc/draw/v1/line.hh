@@ -8,7 +8,7 @@
 
 namespace ae::draw::v1
 {
-    constexpr double sqr(double value) { return value * value; }
+    inline double sqr(double value) { return value * value; }
 
     class LineDefinedByEquation
     {

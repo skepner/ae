@@ -95,7 +95,7 @@ namespace ae::chart::v3
                 case Invalid:
                     throw invalid_titer{*this};
             }
-            // throw invalid_titer{*this}; // for gcc 7.2
+            throw invalid_titer{*this}; // for g++ 11
         }
 
         double logged_with_thresholded() const;

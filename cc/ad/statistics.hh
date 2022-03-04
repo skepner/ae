@@ -14,7 +14,7 @@ namespace acmacs::statistics
 
 // ----------------------------------------------------------------------
 
-    template <typename T> constexpr inline T identity(T val) { return val; }
+    template <typename T> inline T identity(T val) { return val; }
 
     template <typename ForwardIterator, typename Extractor> inline std::pair<double, size_t> mean_size(ForwardIterator first, ForwardIterator last, Extractor extractor)
     {
@@ -60,9 +60,9 @@ namespace acmacs::statistics
     class StandardDeviation
     {
      public:
-        constexpr double mean() const { return mean_; }
-        constexpr double sample_sd() const { return sample_sd_; } // R sd() function returns sample sd
-        constexpr double population_sd() const { return population_sd_; }
+        double mean() const { return mean_; }
+        double sample_sd() const { return sample_sd_; } // R sd() function returns sample sd
+        double population_sd() const { return population_sd_; }
 
      private:
         StandardDeviation(double mean, double population_sd, double sample_sd) : mean_{mean}, population_sd_{population_sd}, sample_sd_{sample_sd} {}
@@ -102,10 +102,10 @@ namespace acmacs::statistics
      public:
         SimpleLinearRegression(double a_slope, double a_intercept, double a_r2, double a_rbar2) : LineDefinedByEquation(a_slope, a_intercept), r2_{a_r2}, rbar2_{a_rbar2} {}
 
-        constexpr double c0() const { return intercept(); }
-        constexpr double c1() const { return slope(); }
-        constexpr double r2() const { return r2_; } // Coefficient of determination http://en.wikipedia.org/wiki/Coefficient_of_determination
-        constexpr double rbar2() const { return rbar2_; }
+        double c0() const { return intercept(); }
+        double c1() const { return slope(); }
+        double r2() const { return r2_; } // Coefficient of determination http://en.wikipedia.org/wiki/Coefficient_of_determination
+        double rbar2() const { return rbar2_; }
 
       private:
         const double r2_, rbar2_;

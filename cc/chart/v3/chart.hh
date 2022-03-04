@@ -47,12 +47,12 @@ namespace ae::chart::v3
         void write(const std::filesystem::path& filename) const;
 
       private:
-        Info info_;
-        Antigens antigens_;
-        Sera sera_;
-        Titers titers_;
-        Projections projections_;
-        Styles styles_;
+        Info info_{};
+        Antigens antigens_{};
+        Sera sera_{};
+        Titers titers_{};
+        Projections projections_{};
+        Styles styles_{};
 
         void read(const std::filesystem::path& filename);
     };
