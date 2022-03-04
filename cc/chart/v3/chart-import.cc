@@ -228,6 +228,13 @@ inline void read_titers(ae::chart::v3::Titers& target, ::simdjson::ondemand::obj
 
 // ----------------------------------------------------------------------
 
+inline void read_projections(ae::chart::v3::Projections& target, ::simdjson::ondemand::array source)
+{
+    unhandled_key({"projections"});
+}
+
+// ----------------------------------------------------------------------
+
 void ae::chart::v3::Chart::read(const std::filesystem::path& filename)
 {
     Timeit ti{"importing chart", std::chrono::milliseconds{5000}};
@@ -257,6 +264,9 @@ void ae::chart::v3::Chart::read(const std::filesystem::path& filename)
                                     break;
                                 case 't':
                                     read_titers(titers(), field_c.value().get_object());
+                                    break;
+                                case 'P':
+                                    read_projections(projections(), field_c.value().get_array());
                                     break;
                                 default:
                                     unhandled_key({"c", key_c});
