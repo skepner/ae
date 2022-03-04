@@ -218,7 +218,8 @@ inline void read_titers(ae::chart::v3::Titers& target, ::simdjson::ondemand::obj
             read_sparse(target.create_sparse_titers(), field.value().get_array());
         }
         else if (key == "L") {  // layers (sparse matrices)
-            unhandled_key({"c", "t", key});
+            for (auto source_layer : field.value().get_array())
+                read_sparse(target.layers().emplace_back(), source_layer.get_array());
         }
         else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
             unhandled_key({"c", "t", key});
