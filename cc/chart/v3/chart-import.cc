@@ -1,4 +1,5 @@
 #include "ext/simdjson.hh"
+#include "ext/from_chars.hh"
 #include "utils/log.hh"
 #include "utils/timeit.hh"
 // #include "utils/file.hh"
@@ -201,8 +202,17 @@ inline void read_titers(ae::chart::v3::Titers& target, ::simdjson::ondemand::obj
         }
         else if (key == "d") {  // sparse matrix
             auto& titers = target.create_sparse_titers();
+            ae::antigen_index ag_no{0};
+            for (auto row : field.value().get_array()) {
+                auto& target_row = titers.emplace_back();
+                for (auto source_entry : row.get_object()) {
+                    target_row.emplace_back(ae::serum_index{ae::from_chars<ae::serum_index::value_type>(static_cast<std::string_view>(source_entry.unescaped_key()))},
+                                            ae::chart::v3::Titer{static_cast<std::string_view>(source_entry.value())});
+                }
+            }
         }
         else if (key == "L") {  // layers (sparse matrices)
+            unhandled_key({"c", "t", key});
         }
         else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
             unhandled_key({"c", "t", key});
