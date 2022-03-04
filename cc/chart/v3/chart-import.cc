@@ -181,6 +181,20 @@ inline void read_sera(ae::chart::v3::Sera& target, ::simdjson::ondemand::array s
 
 // ----------------------------------------------------------------------
 
+inline void read_sparse(ae::chart::v3::Titers::sparse_t& target, ::simdjson::ondemand::array source)
+{
+    ae::antigen_index ag_no{0};
+    for (auto row : source) {
+        auto& target_row = target.emplace_back();
+        for (auto source_entry : row.get_object()) {
+            target_row.emplace_back(ae::serum_index{ae::from_chars<ae::serum_index::value_type>(static_cast<std::string_view>(source_entry.unescaped_key()))},
+                                    ae::chart::v3::Titer{static_cast<std::string_view>(source_entry.value())});
+        }
+    }
+}
+
+// ----------------------------------------------------------------------
+
 inline void read_titers(ae::chart::v3::Titers& target, ::simdjson::ondemand::object source)
 {
     for (auto field : source) {
@@ -201,15 +215,7 @@ inline void read_titers(ae::chart::v3::Titers& target, ::simdjson::ondemand::obj
             }
         }
         else if (key == "d") {  // sparse matrix
-            auto& titers = target.create_sparse_titers();
-            ae::antigen_index ag_no{0};
-            for (auto row : field.value().get_array()) {
-                auto& target_row = titers.emplace_back();
-                for (auto source_entry : row.get_object()) {
-                    target_row.emplace_back(ae::serum_index{ae::from_chars<ae::serum_index::value_type>(static_cast<std::string_view>(source_entry.unescaped_key()))},
-                                            ae::chart::v3::Titer{static_cast<std::string_view>(source_entry.value())});
-                }
-            }
+            read_sparse(target.create_sparse_titers(), field.value().get_array());
         }
         else if (key == "L") {  // layers (sparse matrices)
             unhandled_key({"c", "t", key});
