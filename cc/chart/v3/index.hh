@@ -16,30 +16,30 @@ namespace ae
       public:
         using value_type = size_t;
 
-        explicit constexpr index_tt() : value_{0} {}
-        constexpr index_tt(const index_tt&) = default;
-        constexpr index_tt(index_tt&&) = default;
-        template <typename T2> requires std::constructible_from<value_type, T2> explicit constexpr index_tt(T2&& value) : value_(std::forward<T2>(value)) {}
+        explicit index_tt() : value_{0} {}
+        index_tt(const index_tt&) = default;
+        index_tt(index_tt&&) = default;
+        template <typename T2> requires std::constructible_from<value_type, T2> explicit index_tt(T2&& value) : value_(std::forward<T2>(value)) {}
 
         index_tt& operator=(const index_tt&) = default;
         index_tt& operator=(index_tt&&) = default;
-        template <typename T2> requires std::assignable_from<value_type&, T2> constexpr index_tt& operator=(const T2& value) { value_ = value; return *this; }
-        template <typename T2> requires std::assignable_from<value_type&, T2> constexpr index_tt& operator=(T2&& value) { value_ = std::move(value); return *this; }
+        template <typename T2> requires std::assignable_from<value_type&, T2> index_tt& operator=(const T2& value) { value_ = value; return *this; }
+        template <typename T2> requires std::assignable_from<value_type&, T2> index_tt& operator=(T2&& value) { value_ = std::move(value); return *this; }
 
         auto operator<=>(const index_tt&) const = default;
 
-        constexpr value_type& get() noexcept { return value_; }
-        constexpr const value_type& get() const noexcept { return value_; }
-        constexpr value_type& operator*() noexcept { return value_; }
-        constexpr const value_type& operator*() const noexcept { return value_; }
-        constexpr const value_type* operator->() const noexcept { return &value_; }
-        explicit constexpr operator value_type&() noexcept { return value_; }
-        explicit constexpr operator const value_type&() const noexcept { return value_; }
+        value_type& get() noexcept { return value_; }
+        const value_type& get() const noexcept { return value_; }
+        value_type& operator*() noexcept { return value_; }
+        const value_type& operator*() const noexcept { return value_; }
+        const value_type* operator->() const noexcept { return &value_; }
+        explicit operator value_type&() noexcept { return value_; }
+        explicit operator const value_type&() const noexcept { return value_; }
 
-        constexpr index_tt<Derived, Tag>& operator++() { ++this->get(); return *this; }
-        constexpr index_tt<Derived, Tag> operator++(int) { const auto saved{*this}; ++this->get(); return saved; }
-        constexpr index_tt<Derived, Tag>& operator--() { --this->get(); return *this; }
-        constexpr index_tt<Derived, Tag> operator--(int) { const auto saved{*this}; --this->get(); return saved; }
+        index_tt<Derived, Tag>& operator++() { ++this->get(); return *this; }
+        index_tt<Derived, Tag> operator++(int) { const auto saved{*this}; ++this->get(); return saved; }
+        index_tt<Derived, Tag>& operator--() { --this->get(); return *this; }
+        index_tt<Derived, Tag> operator--(int) { const auto saved{*this}; --this->get(); return saved; }
 
         Derived operator+(Derived rhs) { return Derived{get() + rhs.get()}; }
 
@@ -59,18 +59,18 @@ namespace ae
     {
       public:
         explicit index_iterator_tt(index_tt<Derived, Tag> ind) : value_{ind} {}
-        constexpr index_iterator_tt(const index_iterator_tt&) = default;
-        constexpr index_iterator_tt(index_iterator_tt&&) = default;
+        index_iterator_tt(const index_iterator_tt&) = default;
+        index_iterator_tt(index_iterator_tt&&) = default;
         index_iterator_tt& operator=(const index_iterator_tt&) = default;
         index_iterator_tt& operator=(index_iterator_tt&&) = default;
 
-        constexpr index_tt<Derived, Tag>& operator*() noexcept { return value_; }
-        constexpr const index_tt<Derived, Tag>& operator*() const noexcept { return value_; }
+        index_tt<Derived, Tag>& operator*() noexcept { return value_; }
+        const index_tt<Derived, Tag>& operator*() const noexcept { return value_; }
 
-        constexpr index_iterator_tt<Derived, Tag>& operator++() { ++value_; return *this; }
-        constexpr index_iterator_tt<Derived, Tag> operator++(int) { const auto saved{*this}; ++value_; return saved; }
-        constexpr index_iterator_tt<Derived, Tag>& operator--() { --value_; return *this; }
-        constexpr index_iterator_tt<Derived, Tag> operator--(int) { const auto saved{*this}; --value_; return saved; }
+        index_iterator_tt<Derived, Tag>& operator++() { ++value_; return *this; }
+        index_iterator_tt<Derived, Tag> operator++(int) { const auto saved{*this}; ++value_; return saved; }
+        index_iterator_tt<Derived, Tag>& operator--() { --value_; return *this; }
+        index_iterator_tt<Derived, Tag> operator--(int) { const auto saved{*this}; --value_; return saved; }
 
         auto operator<=>(const index_iterator_tt&) const = default;
 

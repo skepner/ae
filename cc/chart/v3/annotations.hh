@@ -52,7 +52,7 @@ template <> struct fmt::formatter<ae::chart::v3::Annotations>
         return end;
     }
 
-    template <typename FormatContext> auto format(const ae::chart::v3::Annotations& annotations, FormatContext& ctx)
+    template <typename FormatContext> constexpr auto format(const ae::chart::v3::Annotations& annotations, FormatContext& ctx)
     {
         if (join_) {
             bool put_join{ false };

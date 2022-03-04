@@ -38,8 +38,8 @@ namespace ae::draw::v1
             height = aHeight;
             log::ad_assert(width >= 0 && height >= 0, sl, "Size{{{}, {}}} with negative width or/and height", width, height);
         }
-        constexpr double aspect() const noexcept { return width / height; }
-        constexpr bool empty() const noexcept { return float_zero(width) && float_zero(height); }
+        double aspect() const noexcept { return width / height; }
+        bool empty() const noexcept { return float_zero(width) && float_zero(height); }
 
         [[nodiscard]] bool operator==(const Size& size) const { return float_equal(width, size.width) && float_equal(height, size.height); }
         [[nodiscard]] bool operator!=(const Size& size) const { return !operator==(size); }
@@ -88,7 +88,7 @@ namespace ae::draw::v1
         }
 
         // returns if passed point is within the rectangle
-        // constexpr bool within(double x, double y) const { return x >= top_left.x() && x <= bottom_right.x() && y >= top_left.y() && y <= bottom_right.y(); }
+        // bool within(double x, double y) const { return x >= top_left.x() && x <= bottom_right.x() && y >= top_left.y() && y <= bottom_right.y(); }
         bool within(const PointCoordinates& loc) const { return loc.x() >= top_left.x() && loc.x() <= bottom_right.x() && loc.y() >= top_left.y() && loc.y() <= bottom_right.y(); }
         PointCoordinates top_middle() const { return {(top_left.x() + bottom_right.x()) / 2.0, top_left.y()}; }
         PointCoordinates bottom_middle() const { return {(top_left.x() + bottom_right.x()) / 2.0, bottom_right.y()}; }

@@ -44,13 +44,13 @@ namespace ae::draw::v1
                   break;
             }
         }
-        constexpr PointCoordinates(double x, double y) : data_(Store2D{x, y}) {}
-        constexpr PointCoordinates(const std::pair<double, double>& xy) : data_(Store2D{xy.first, xy.second}) {}
-        constexpr PointCoordinates(double x, double y, double z) : data_(Store3D{x, y, z}) {}
-        constexpr PointCoordinates(enum zero2D) : PointCoordinates(0.0, 0.0) {}
-        constexpr PointCoordinates(enum zero3D) : PointCoordinates(0.0, 0.0, 0.0) {}
-        constexpr PointCoordinates(enum nan2D) : PointCoordinates(nan, nan) {}
-        constexpr PointCoordinates(enum nan3D) : PointCoordinates(nan, nan, nan) {}
+        PointCoordinates(double x, double y) : data_(Store2D{x, y}) {}
+        PointCoordinates(const std::pair<double, double>& xy) : data_(Store2D{xy.first, xy.second}) {}
+        PointCoordinates(double x, double y, double z) : data_(Store3D{x, y, z}) {}
+        PointCoordinates(enum zero2D) : PointCoordinates(0.0, 0.0) {}
+        PointCoordinates(enum zero3D) : PointCoordinates(0.0, 0.0, 0.0) {}
+        PointCoordinates(enum nan2D) : PointCoordinates(nan, nan) {}
+        PointCoordinates(enum nan3D) : PointCoordinates(nan, nan, nan) {}
         PointCoordinates(const double* first, const double* last) : data_(ConstRef{first, static_cast<size_t>(last - first)}) {}
         PointCoordinates(double* first, double* last) : data_(Ref{first, static_cast<size_t>(last - first)}) {}
         PointCoordinates(std::vector<double>::const_iterator first, std::vector<double>::const_iterator last) : PointCoordinates(&*first, &*last) {}
@@ -83,7 +83,7 @@ namespace ae::draw::v1
         bool operator==(const PointCoordinates& rhs) const { return std::equal(begin(), end(), rhs.begin(), rhs.end(), [](double x, double y) { return float_equal_or_both_nan(x, y); }); }
         bool operator!=(const PointCoordinates& rhs) const { return !operator==(rhs); }
 
-        constexpr number_of_dimensions_t number_of_dimensions() const
+        number_of_dimensions_t number_of_dimensions() const
         {
             return std::visit(
                 [](auto&& data) -> number_of_dimensions_t {
@@ -100,7 +100,7 @@ namespace ae::draw::v1
                 data_);
         }
 
-        constexpr double operator[](number_of_dimensions_t dim) const
+        double operator[](number_of_dimensions_t dim) const
         { /* assert(dim < number_of_dimensions()); */
             return std::visit(
                 [dim](auto&& data) -> double {
@@ -113,7 +113,7 @@ namespace ae::draw::v1
                 data_);
         }
 
-        constexpr double& operator[](number_of_dimensions_t dim)
+        double& operator[](number_of_dimensions_t dim)
         { /* assert(dim < number_of_dimensions()); */
             return std::visit(
                 [dim](auto&& data) -> double& {
@@ -130,7 +130,7 @@ namespace ae::draw::v1
                 data_);
         }
 
-        constexpr const double* begin() const
+        const double* begin() const
         {
             return std::visit(
                 [](auto&& data) -> const double* {
@@ -142,7 +142,7 @@ namespace ae::draw::v1
                 },
                 data_);
         }
-        constexpr const double* end() const
+        const double* end() const
         {
             return std::visit(
                 [](auto&& data) -> const double* {
@@ -155,7 +155,7 @@ namespace ae::draw::v1
                 data_);
         }
 
-        constexpr double* begin()
+        double* begin()
         {
             return std::visit(
                 [](auto&& data) -> double* {
@@ -171,7 +171,7 @@ namespace ae::draw::v1
                 },
                 data_);
         }
-        constexpr double* end()
+        double* end()
         {
             return std::visit(
                 [](auto&& data) -> double* {
@@ -188,13 +188,13 @@ namespace ae::draw::v1
                 data_);
         }
 
-        constexpr double x() const { return operator[](number_of_dimensions_t{0}); }
-        constexpr double y() const { return operator[](number_of_dimensions_t{1}); }
-        constexpr double z() const { return operator[](number_of_dimensions_t{2}); }
+        double x() const { return operator[](number_of_dimensions_t{0}); }
+        double y() const { return operator[](number_of_dimensions_t{1}); }
+        double z() const { return operator[](number_of_dimensions_t{2}); }
 
-        constexpr void x(double val) { operator[](number_of_dimensions_t{0}) = val; }
-        constexpr void y(double val) { operator[](number_of_dimensions_t{1}) = val; }
-        constexpr void z(double val) { operator[](number_of_dimensions_t{2}) = val; }
+        void x(double val) { operator[](number_of_dimensions_t{0}) = val; }
+        void y(double val) { operator[](number_of_dimensions_t{1}) = val; }
+        void z(double val) { operator[](number_of_dimensions_t{2}) = val; }
 
         PointCoordinates& operator+=(const PointCoordinates& rhs) { std::transform(begin(), end(), rhs.begin(), begin(), [](double v1, double v2) { return v1 + v2; }); return *this; }
         PointCoordinates& operator+=(double val) { std::transform(begin(), end(), begin(), [val](double v1) { return v1 + val; }); return *this; }

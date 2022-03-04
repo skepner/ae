@@ -80,7 +80,7 @@ template <> struct fmt::formatter<ae::fmt_helper::float_formatter>
 // ----------------------------------------------------------------------
 
 // template <> struct fmt::formatter<###> : fmt::formatter<ae::fmt_helper::default_formatter> {
-//     template <typename FormatCtx> auto format(const ###& value, FormatCtx& ctx)
+//     template <typename FormatCtx> constexpr auto format(const ###& value, FormatCtx& ctx)
 //     {
 //         format_to(ctx.out(), "{} {}", );
 //         return format_to(ctx.out(), "{} {}", );

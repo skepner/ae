@@ -19,8 +19,8 @@ namespace ae::draw::v1
         LineDefinedByEquation(const PointCoordinates& p1, const PointCoordinates& p2) : slope_{(p1.y() - p2.y()) / (p1.x() - p2.x())}, intercept_{p1.y() - slope_ * p1.x()} {}
         LineDefinedByEquation& operator=(const LineDefinedByEquation&) = default;
 
-        constexpr double slope() const { return slope_; }
-        constexpr double intercept() const { return intercept_; }
+        double slope() const { return slope_; }
+        double intercept() const { return intercept_; }
 
         // https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
         double distance_with_direction(const PointCoordinates& point) const { return (slope() * point.x() - point.y() + intercept()) / std::sqrt(a2b2()); }
@@ -38,7 +38,7 @@ namespace ae::draw::v1
         double slope_{1.0};
         double intercept_{0.0};
 
-        constexpr double a2b2() const { return sqr(slope()) + 1; }
+        double a2b2() const { return sqr(slope()) + 1; }
 
     }; // class LineDefinedByEquation
 
@@ -66,7 +66,7 @@ namespace ae::draw::v1
       private:
         side side_ = side::positive;
 
-        constexpr double side_sign() const { return side_ == side::negative ? -1.0 : 1.0; }
+        double side_sign() const { return side_ == side::negative ? -1.0 : 1.0; }
 
     }; // class LineSide
 

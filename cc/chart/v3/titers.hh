@@ -1,6 +1,8 @@
 #pragma once
 
 #include <vector>
+#include <variant>
+#include <memory>
 
 #include "utils/named-type.hh"
 #include "chart/v3/index.hh"
@@ -122,7 +124,7 @@ namespace ae::chart::v3
         {
             Data() = default;
             Data(const Data&) = default;
-            constexpr operator const Titer& () const { return titer; }
+            operator const Titer& () const { return titer; }
             auto operator<=>(const Data& rhs) const = default;
             Titer titer{};
             antigen_index antigen{};
@@ -330,7 +332,7 @@ template <> struct fmt::formatter<ae::chart::v3::Titer> : fmt::formatter<ae::fmt
 };
 
 template <> struct fmt::formatter<ae::chart::v3::TiterIterator::Data> : fmt::formatter<ae::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(const ae::chart::v3::TiterIterator::Data& value, FormatCtx& ctx) const
+    template <typename FormatCtx> constexpr auto format(const ae::chart::v3::TiterIterator::Data& value, FormatCtx& ctx) const
     {
         return format_to(ctx.out(), "ag:{} sr:{} t:{}", value.antigen, value.serum, value.titer);
     }
