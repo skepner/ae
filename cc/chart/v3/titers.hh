@@ -251,7 +251,7 @@ namespace ae::chart::v3
         size_t titrations_for_antigen(antigen_index antigen_no) const;
         size_t titrations_for_serum(serum_index serum_no) const;
         double percent_of_non_dont_cares() const { return static_cast<double>(number_of_non_dont_cares()) / static_cast<double>(number_of_antigens().get() * number_of_sera().get()); }
-        bool use_dense() const noexcept { return percent_of_non_dont_cares() > dense_sparse_boundary; }
+        // bool use_dense() const noexcept { return percent_of_non_dont_cares() > dense_sparse_boundary; }
 
         // std::shared_ptr<ColumnBasesData> computed_column_bases(MinimumColumnBasis aMinimumColumnBasis) const;
 
@@ -341,6 +341,12 @@ namespace ae::chart::v3
         point_indexes having_too_few_numeric_titers(size_t threshold = 3) const;
 
         // std::string print() const;
+
+        // importing
+        void number_of_sera(serum_index num) { number_of_sera_ = num; }
+        dense_t& create_dense_titers() { titers_ = dense_t{}; return std::get<dense_t>(titers_); }
+        sparse_t& create_sparse_titers() { titers_ = sparse_t{}; return std::get<sparse_t>(titers_); }
+        layers_t& layers() { return layers_; }
 
       private:
         serum_index number_of_sera_{0};

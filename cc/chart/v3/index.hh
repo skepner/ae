@@ -15,6 +15,7 @@ namespace ae
     {
       public:
         using value_type = size_t;
+        using base_type = index_tt<Derived, Tag>;
 
         explicit index_tt() : value_{0} {}
         index_tt(const index_tt&) = default;
@@ -149,5 +150,17 @@ template <typename Derived, typename Tag> struct fmt::formatter<ae::index_tt<Der
 {
     template <typename FormatCtx> auto format(const ae::index_tt<Derived, Tag>& nt, FormatCtx& ctx) const { return fmt::formatter<typename ae::index_tt<Derived, Tag>::value_type>::format(*nt, ctx); }
 };
+
+template <> struct fmt::formatter<ae::antigen_index> : fmt::formatter<typename ae::antigen_index::value_type>
+{
+    template <typename FormatCtx> auto format(const ae::antigen_index& nt, FormatCtx& ctx) const { return fmt::formatter<typename ae::antigen_index::value_type>::format(*nt, ctx); }
+};
+
+template <> struct fmt::formatter<ae::serum_index> : fmt::formatter<typename ae::serum_index::value_type>
+{
+    template <typename FormatCtx> auto format(const ae::serum_index& nt, FormatCtx& ctx) const { return fmt::formatter<typename ae::serum_index::value_type>::format(*nt, ctx); }
+};
+
+// template <> struct fmt::formatter<ae::antigen_index> : fmt::formatter<ae::index_tt<ae::antigen_index, struct ae::antigen_index_tag>> {};
 
 // ----------------------------------------------------------------------

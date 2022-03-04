@@ -182,7 +182,31 @@ inline void read_sera(ae::chart::v3::Sera& target, ::simdjson::ondemand::array s
 
 inline void read_titers(ae::chart::v3::Titers& target, ::simdjson::ondemand::object source)
 {
-    unhandled_key({"c", "t"});
+    for (auto field : source) {
+        if (const std::string_view key = field.unescaped_key(); key == "l") { // dense matrix
+            auto& titers = target.create_dense_titers();
+            ae::antigen_index ag_no{0};
+            for (auto row : field.value().get_array()) {
+                ae::serum_index sr_no{0};
+                for (auto col : row.get_array()) {
+                    titers.emplace_back(static_cast<std::string_view>(col.value()));
+                    ++sr_no;
+                }
+                if (target.number_of_sera() == ae::serum_index{0})
+                    target.number_of_sera(sr_no);
+                else if (target.number_of_sera() != sr_no)
+                    throw ae::chart::v3::Error{"invalid number of sera in dense matrix for antigen {}: {} (expected: {})", ag_no, sr_no, target.number_of_sera()};
+                ++ag_no;
+            }
+        }
+        else if (key == "d") {  // sparse matrix
+            auto& titers = target.create_sparse_titers();
+        }
+        else if (key == "L") {  // layers (sparse matrices)
+        }
+        else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
+            unhandled_key({"c", "t", key});
+    }
 }
 
 // ----------------------------------------------------------------------
@@ -231,11 +255,11 @@ void ae::chart::v3::Chart::read(const std::filesystem::path& filename)
             }
         }
         catch (simdjson_error& err) {
-            throw Error{"> {} parsing error: {} at {} \"{}\"\n", filename.native(), err.what(), parser.current_location_offset(), parser.current_location_snippet(50)};
+            throw Error{"{} parsing error: {} at {} \"{}\"\n", filename.native(), err.what(), parser.current_location_offset(), parser.current_location_snippet(50)};
         }
     }
     catch (simdjson_error& err) {
-        throw Error{"> {} json parser creation error: {} (UNESCAPED_CHARS means a char < 0x20)\n", filename.native(), err.what()};
+        throw Error{"{} json parser creation error: {} (UNESCAPED_CHARS means a char < 0x20)\n", filename.native(), err.what()};
     }
 
 } // ae::chart::v3::Chart::read
