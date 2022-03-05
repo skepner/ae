@@ -3,7 +3,7 @@
 #include <vector>
 #include <optional>
 
-#include "chart/v3/index.hh"
+#include "chart/v3/layout.hh"
 
 // ----------------------------------------------------------------------
 
@@ -61,7 +61,7 @@ namespace ae::chart::v3
         // double recalculate_stress() const { return calculate_stress(); }
 
       private:
-        // Layout layout_{};
+        Layout layout_{};
         // ae::draw::v1::Transformation transformation_{};
         // mutable std::optional<Layout> transformed_layout_{};
         // mutable std::optional<double> stress_{};
