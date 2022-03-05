@@ -128,7 +128,7 @@ namespace ae::chart::v3
         // }
 
       private:
-        std::vector<Projection> data_;
+        std::vector<Projection> data_{};
     };
 
 } // namespace ae::chart::v3

@@ -13,7 +13,7 @@ namespace ae::chart::v3
         Layout() = default;
 
       private:
-        std::vector<double> data_;
+        std::vector<double> data_{};
     };
 
 } // namespace ae::chart::v3
