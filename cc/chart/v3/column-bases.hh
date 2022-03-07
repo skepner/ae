@@ -25,7 +25,7 @@ namespace ae::chart::v3
             return *this;
         }
         minimum_column_basis& operator=(const minimum_column_basis&) = default;
-        minimum_column_basis& operator=(std::string value)
+        minimum_column_basis& operator=(std::string_view value)
         {
             from(value);
             return *this;
@@ -91,6 +91,9 @@ namespace ae::chart::v3
         void set(serum_index aSerumNo, double column_basis) { data_[aSerumNo.get()] = column_basis; }
         // void remove(const ReverseSortedIndexes& indexes, ReverseSortedIndexes::difference_type base_index = 0) { ae::chart::v2::remove(indexes, data_, base_index); }
         void insert(serum_index before, double value) { data_.insert(data_.begin() + static_cast<decltype(data_)::difference_type>(before.get()), value); }
+
+        // import from ace
+        void add(double value) { data_.push_back(value); }
 
       private:
         std::vector<double> data_{};

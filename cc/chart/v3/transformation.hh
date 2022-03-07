@@ -38,19 +38,18 @@ namespace ae::chart::v3
     class Transformation : public detail::TransformationBase
     {
       public:
+        Transformation(const Transformation&) = default;
         Transformation(number_of_dimensions_t num_dim = number_of_dimensions_t{2})
             : detail::TransformationBase{1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0}, number_of_dimensions{num_dim}
         {
         }
-        Transformation(const Transformation&) = default;
         Transformation(double a11, double a12, double a21, double a22)
             : detail::TransformationBase{a11, a12, 0.0, 0.0, a21, a22, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0}, number_of_dimensions{2}
         {
         }
         Transformation& operator=(const Transformation&) = default;
         Transformation& operator=(Transformation&&) = default;
-        bool operator==(const Transformation& rhs) const { return std::equal(begin(), end(), rhs.begin()); }
-        bool operator!=(const Transformation& rhs) const { return !operator==(rhs); }
+        bool operator ==(const Transformation& rhs) const = default;
 
         void reset(number_of_dimensions_t num_dim) { operator=(Transformation(num_dim)); }
 

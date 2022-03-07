@@ -228,6 +228,33 @@ inline void read_titers(ae::chart::v3::Titers& target, ::simdjson::ondemand::obj
 
 // ----------------------------------------------------------------------
 
+inline void read_layout(ae::chart::v3::Layout& layout, ::simdjson::ondemand::array source)
+{
+    size_t point_no{0};
+    for (auto point : source) {
+        size_t dim{0};
+        for (const double coord : point.get_array()) {
+            layout.add_value(coord);
+            ++dim;
+        }
+        if (dim == 0) { // empty array, set coords to nan
+            if (layout.number_of_dimensions() != ae::number_of_dimensions_t{0}) {
+                for ([[maybe_unused]] const auto _ : layout.number_of_dimensions())
+                    layout.add_value(ae::chart::v3::point_coordinates::nan);
+            }
+            else
+                throw std::runtime_error{AD_FORMAT("first array in the layout empty, cannot handle it")};
+        }
+        else if (point_no == 0)
+            layout.number_of_dimensions(ae::number_of_dimensions_t{dim});
+        else if (layout.number_of_dimensions() != ae::number_of_dimensions_t{dim})
+            throw std::runtime_error{AD_FORMAT("invalid number of dimensions for point {}: {}, expected: {}", point_no, dim, layout.number_of_dimensions())};
+        ++point_no;
+    }
+}
+
+// ----------------------------------------------------------------------
+
 inline void read_projections(ae::chart::v3::Projections& target, ::simdjson::ondemand::array source)
 {
     for (auto source_proj : source) {
@@ -237,20 +264,44 @@ inline void read_projections(ae::chart::v3::Projections& target, ::simdjson::ond
                 projection.comment(field.value());
             }
             else if (key == "l") { // layout, if point is disconnected: emtpy list or ?[NaN, NaN]
-                for (auto point : field.value().get_array()) {
-                }
+                read_layout(projection.layout(), field.value().get_array());
                 unhandled_key({"c", "p", key});
+            }
+            else if (key == "i") { // UNUSED number of iterations
+            }
+            else if (key == "s") { //
+                projection.stress(static_cast<double>(field.value()));
+            }
+            else if (key == "m") { // minimum column basis, "none" (default), "1280"
+                projection.minimum_column_basis(field.value());
+            }
+            else if (key == "C") { // forced column bases
+                for (double cb : field.value().get_array())
+                    projection.forced_column_bases().add(cb);
+            }
+            else if (key == "t") { // transformation matrix
+                std::vector<double> vals;
+                auto arr = field.value().get_array();
+                std::copy(std::begin(arr), std::end(arr), std::back_inserter(vals));
+                projection.transformation().set(vals.begin(), vals.size());
+            }
+            else if (key == "") { //
+            }
+            else if (key == "") { //
+            }
+            else if (key == "") { //
+            }
+            else if (key == "") { //
+            }
+            else if (key == "") { //
+            }
+            else if (key == "") { //
             }
             else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
                 unhandled_key({"c", "p", key});
         }
     }
 
-// |             |     | "i" |     |     | integer                          | UNUSED number of iterations?                                                                                                                                   |
-// |             |     | "s" |     |     | float                            | stress                                                                                                                                                         |
-// |             |     | "m" |     |     | str                              | minimum column basis, "none" (default), "1280"                                                                                                                 |
-// |             |     | "C" |     |     | array of floats                  | forced column bases                                                                                                                                            |
-// |             |     | "t" |     |     | array of floats                  | transformation matrix                                                                                                                                          |
 // |             |     | "g" |     |     | array of floats                  | antigens_sera_gradient_multipliers, float for each point                                                                                                       |
 // |             |     | "f" |     |     | array of floats                  | avidity adjusts (antigens_sera_titers_multipliers), float for each point                                                                                       |
 // |             |     | "d" |     |     | boolean                          | dodgy_titer_is_regular, false is default                                                                                                                       |
@@ -264,7 +315,7 @@ inline void read_projections(ae::chart::v3::Projections& target, ::simdjson::ond
 
 void ae::chart::v3::Chart::read(const std::filesystem::path& filename)
 {
-    Timeit ti{"importing chart", std::chrono::milliseconds{5000}};
+    Timeit ti{"importing chart"}; // , std::chrono::milliseconds{500}};
     using namespace ae::simdjson;
     try {
         Parser parser{filename};

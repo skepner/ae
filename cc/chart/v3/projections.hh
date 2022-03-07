@@ -30,18 +30,27 @@ namespace ae::chart::v3
 
         // std::string make_info() const;
 
-        // std::optional<double> stored_stress() const = 0;
+        point_index number_of_points() const noexcept { return layout_.number_of_points(); }
+        number_of_dimensions_t number_of_dimensions() const noexcept { return layout_.number_of_dimensions(); }
+
+        const Layout& layout() const { return layout_; }
+        Layout& layout() { return layout_; }
+
+        std::optional<double> stored_stress() const { return stress_; }
+        void stress(double str) const { stress_ = str; }
         double stress(RecalculateStress recalculate = RecalculateStress::if_necessary) const;
         // double stress_with_moved_point(size_t point_no, const PointCoordinates& move_to) const;
+        Transformation& transformation() { return transformation_; }
+        const Transformation& transformation() const { return transformation_; }
         const std::string& comment() const { return comment_; }
         void comment(std::string_view comm) { comment_ = comm; }
-        // std::string comment() const = 0;
-        // number_of_dimensions_t number_of_dimensions() const = 0;
-        // size_t number_of_points() const = 0;
-        // std::shared_ptr<Layout> layout() const = 0;
+
+        class minimum_column_basis minimum_column_basis() const { return minimum_column_basis_; }
+        void minimum_column_basis(std::string_view mcb) { minimum_column_basis_ = mcb; }
+        column_bases& forced_column_bases() { return forced_column_bases_; }
+        const column_bases& forced_column_bases() const { return forced_column_bases_; }
+
         // std::shared_ptr<Layout> transformed_layout() const { return layout()->transform(transformation()); }
-        // MinimumColumnBasis minimum_column_basis() const = 0;
-        // std::shared_ptr<ColumnBases> forced_column_bases() const = 0; // returns nullptr if not forced
         // draw::v1::Transformation transformation() const = 0;
         // enum dodgy_titer_is_regular dodgy_titer_is_regular() const = 0;
         // double stress_diff_to_stop() const = 0;
@@ -73,7 +82,7 @@ namespace ae::chart::v3
         // mutable std::optional<Layout> transformed_layout_{};
         mutable std::optional<double> stress_{};
         column_bases forced_column_bases_{};
-        minimum_column_basis minimum_column_basis_{};
+        class minimum_column_basis minimum_column_basis_{};
         std::string comment_{};
         disconnected_points disconnected_{};
         unmovable_points unmovable_{};

@@ -107,6 +107,10 @@ namespace ae::chart::v3
         // LayoutDimensionConstIterator begin_sera_dimension(size_t number_of_antigens, number_of_dimensions_t dimension_no) const { return {*this, number_of_antigens, dimension_no}; }
         // LayoutDimensionConstIterator end_sera_dimension(size_t /*number_of_antigens*/, number_of_dimensions_t dimension_no) const { return {*this, number_of_points(), dimension_no}; }
 
+        // import from ace
+        void number_of_dimensions(number_of_dimensions_t num_dim) { number_of_dimensions_ = num_dim; }
+        void add_value(double value) { data_.push_back(value); }
+
       private:
         number_of_dimensions_t number_of_dimensions_{2};
         data_t data_{};
