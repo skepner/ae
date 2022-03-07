@@ -13,6 +13,7 @@ namespace ae
       public:
         using value_type = T;
         using named_t<std::vector<T>, Tag>::named_t;
+        explicit named_vector_t(size_t size, T val) : named_t<std::vector<T>, Tag>{std::vector<T>(size, val)} {}
 
         constexpr auto begin() const { return this->get().begin(); }
         constexpr auto end() const { return this->get().end(); }

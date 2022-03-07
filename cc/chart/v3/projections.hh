@@ -6,6 +6,7 @@
 #include "chart/v3/layout.hh"
 #include "chart/v3/transformation.hh"
 #include "chart/v3/column-bases.hh"
+#include "chart/v3/avidity-adjusts.hh"
 
 // ----------------------------------------------------------------------
 
@@ -66,12 +67,15 @@ namespace ae::chart::v3
         Layout layout_{};
         Transformation transformation_{};
         // mutable std::optional<Layout> transformed_layout_{};
-        // mutable std::optional<double> stress_{};
+        mutable std::optional<double> stress_{};
         column_bases forced_column_bases_{};
-        // std::string comment_{};
-        // DisconnectedPoints disconnected_{};
-        // UnmovablePoints unmovable_{};
-        // UnmovableInTheLastDimensionPoints unmovable_in_the_last_dimension_{};
+        minimum_column_basis minimum_column_basis_{};
+        std::string comment_{};
+        disconnected_points disconnected_{};
+        unmovable_points unmovable_{};
+        unmovable_in_the_last_dimension_points unmovable_in_the_last_dimension_{};
+        avidity_adjusts avidity_adjusts_{};
+        // enum dodgy_titer_is_regular dodgy_titer_is_regular_{dodgy_titer_is_regular::no};
     };
 
     // ----------------------------------------------------------------------

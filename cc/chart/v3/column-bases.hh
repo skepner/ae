@@ -3,7 +3,6 @@
 #include <memory>
 
 #include "ext/from_chars.hh"
-//#include "utils/float.hh"
 #include "utils/log.hh"
 #include "utils/string.hh"
 #include "chart/v3/index.hh"

@@ -1,4 +1,4 @@
-# Time-stamp: <2022-02-18 10:04:16 eu>
+# Time-stamp: <2022-03-07 11:18:25 eu>
 * acmacs-ace-v1 format to store chart data
 
 fields with names starting with ? are ignored
@@ -62,7 +62,7 @@ fields with names starting with ? are ignored
 |             | "P" |     |     |     | array of key-value pairs         | Projections                                                                                                                                                    |
 |             |     | "c" |     |     | str (or any)                     | comment                                                                                                                                                        |
 |             |     | "l" |     |     | array of arrays of floats        | layout, if point is disconnected: emtpy list or ?[NaN, NaN]                                                                                                    |
-|             |     | "i" |     |     | integer                          | number of iterations?                                                                                                                                          |
+|             |     | "i" |     |     | integer                          | UNUSED number of iterations?                                                                                                                                   |
 |             |     | "s" |     |     | float                            | stress                                                                                                                                                         |
 |             |     | "m" |     |     | str                              | minimum column basis, "none" (default), "1280"                                                                                                                 |
 |             |     | "C" |     |     | array of floats                  | forced column bases                                                                                                                                            |

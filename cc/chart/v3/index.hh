@@ -102,6 +102,10 @@ namespace ae
     using serum_indexes = ae::named_vector_t<serum_index, struct serum_indexes_tag>;
     using point_indexes = ae::named_vector_t<point_index, struct point_indexes_tag>;
 
+    using disconnected_points = ae::named_vector_t<point_index, struct disconnected_points_tag>;
+    using unmovable_points = ae::named_vector_t<point_index, struct unmovable_points_tag>;
+    using unmovable_in_the_last_dimension_points = ae::named_vector_t<point_index, struct unmovable_in_the_last_dimension_points_tag>;
+
 } // namespace ae
 
 // ----------------------------------------------------------------------
