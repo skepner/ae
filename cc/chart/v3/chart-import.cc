@@ -230,7 +230,34 @@ inline void read_titers(ae::chart::v3::Titers& target, ::simdjson::ondemand::obj
 
 inline void read_projections(ae::chart::v3::Projections& target, ::simdjson::ondemand::array source)
 {
-    unhandled_key({"projections"});
+    for (auto source_proj : source) {
+        auto& projection = target.add();
+        for (auto field : source_proj.get_object()) {
+            if (const std::string_view key = field.unescaped_key(); key == "c") {
+                projection.comment(field.value());
+            }
+            else if (key == "l") { // layout, if point is disconnected: emtpy list or ?[NaN, NaN]
+                for (auto point : field.value().get_array()) {
+                }
+                unhandled_key({"c", "p", key});
+            }
+            else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
+                unhandled_key({"c", "p", key});
+        }
+    }
+
+// |             |     | "i" |     |     | integer                          | UNUSED number of iterations?                                                                                                                                   |
+// |             |     | "s" |     |     | float                            | stress                                                                                                                                                         |
+// |             |     | "m" |     |     | str                              | minimum column basis, "none" (default), "1280"                                                                                                                 |
+// |             |     | "C" |     |     | array of floats                  | forced column bases                                                                                                                                            |
+// |             |     | "t" |     |     | array of floats                  | transformation matrix                                                                                                                                          |
+// |             |     | "g" |     |     | array of floats                  | antigens_sera_gradient_multipliers, float for each point                                                                                                       |
+// |             |     | "f" |     |     | array of floats                  | avidity adjusts (antigens_sera_titers_multipliers), float for each point                                                                                       |
+// |             |     | "d" |     |     | boolean                          | dodgy_titer_is_regular, false is default                                                                                                                       |
+// |             |     | "e" |     |     | float                            | stress_diff_to_stop                                                                                                                                            |
+// |             |     | "U" |     |     | array of integers                | list of indices of unmovable points (antigen/serum attribute for stress evaluation)                                                                            |
+// |             |     | "D" |     |     | array of integers                | list of indices of disconnected points (antigen/serum attribute for stress evaluation)                                                                         |
+// |             |     | "u" |     |     | array of integers                | list of indices of points unmovable in the last dimension (antigen/serum attribute for stress evaluation)                                                      |
 }
 
 // ----------------------------------------------------------------------
