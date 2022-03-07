@@ -93,6 +93,9 @@ namespace ae
     using projection_index = index_tt<struct projection_index_tag>;
     using layer_index = index_tt<struct layer_index_tag>;
 
+    using number_of_dimensions_t = index_tt<struct number_of_dimensions_tag>;
+    inline bool valid(number_of_dimensions_t nd) { return nd.get() > 0; }
+
     // ----------------------------------------------------------------------
 
     using antigen_indexes = ae::named_vector_t<antigen_index, struct antigen_indexes_tag>;
