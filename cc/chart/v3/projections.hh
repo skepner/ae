@@ -4,6 +4,8 @@
 #include <optional>
 
 #include "chart/v3/layout.hh"
+#include "chart/v3/transformation.hh"
+#include "chart/v3/column-bases.hh"
 
 // ----------------------------------------------------------------------
 
@@ -62,10 +64,10 @@ namespace ae::chart::v3
 
       private:
         Layout layout_{};
-        // ae::draw::v1::Transformation transformation_{};
+        Transformation transformation_{};
         // mutable std::optional<Layout> transformed_layout_{};
         // mutable std::optional<double> stress_{};
-        // ColumnBases forced_column_bases_{};
+        column_bases forced_column_bases_{};
         // std::string comment_{};
         // DisconnectedPoints disconnected_{};
         // UnmovablePoints unmovable_{};
