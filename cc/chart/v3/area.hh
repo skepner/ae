@@ -85,6 +85,11 @@ namespace ae::chart::v3
     // in case of no intersection returned Area has min and max points at {0, 0} and therefore its area is 0
     // Area intersection(const Area& a1, const Area& a2);
 
+    class Layout;
+
+    Area area(const Layout& layout);                                  // for all points
+    Area area(const Layout& layout, const std::vector<size_t>& points); // just for the specified point indexes
+
 } // namespace ae::chart::v3
 
 // ----------------------------------------------------------------------

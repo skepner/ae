@@ -25,8 +25,10 @@ namespace ae::chart::v3
         point_coordinates(const point_coordinates&) = default;
         point_coordinates(point_coordinates&&) = default;
         explicit point_coordinates(number_of_dimensions_t number_of_dimensions, double init = nan) : data_{store_t(*number_of_dimensions, init)} {}
-        explicit point_coordinates(const ref_t& ref) : data_{ref} {}
-        explicit point_coordinates(const store_t& data) : data_{data} {}
+        point_coordinates(double x, double y) : data_{store_t{x, y}} {}
+        point_coordinates(double x, double y, double z) : data_{store_t{x, y, z}} {}
+        point_coordinates(const ref_t& ref) : data_{ref} {}
+        point_coordinates(const store_t& data) : data_{data} {}
 
         // stored <- stored, ref <- ref
         point_coordinates& operator=(const point_coordinates&) = default;

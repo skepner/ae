@@ -147,6 +147,7 @@ sources_chart_v3 = [
   'cc/chart/v3/info.cc',
   'cc/chart/v3/antigens.cc',
   'cc/chart/v3/titers.cc',
+  'cc/chart/v3/layout.cc',
   'cc/chart/v3/chart-import.cc',
 ]
 
