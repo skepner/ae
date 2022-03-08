@@ -328,6 +328,35 @@ inline void read_legacy_plot_specification(ae::chart::v3::LegacyPlotSpec& target
             unhandled_key({"c", "p", key});
     }
 
+// |             |     | "d" |     |     | array of integers                | drawing order, point indices
+// |             |     | "E" |     |     | key-value pairs                  | error line positive, default: {"c": "red"}
+// |             |     | "e" |     |     | key-value pairs                  | error line negative, default: {"c": "blue"}
+// |             |     | "g" |     |     | ?                                | ? grid data
+// |             |     | "p" |     |     | array of key-value pairs         | for each point (antigens followed by sera)
+// |             |     |     | "+" |     | boolean                          | if point is shown, default is true, disconnected points are usually not shown and having NaN coordinates in layout
+// |             |     |     | "F" |     | color, str                       | fill color: #FF0000 or T[RANSPARENT] or color name (red, green, blue, etc.), default is transparent
+// |             |     |     | "O" |     | color, str                       | outline color: #000000 or T[RANSPARENT] or color name (red, green, blue, etc.), default is black
+// |             |     |     | "o" |     | float                            | outline width, default 1.0
+// |             |     |     | "S" |     | str                              | shape: "C[IRCLE]" (default), "B[OX]", "T[RIANGLE]", "E[GG]", "U[GLYEGG]"
+// |             |     |     | "s" |     | float                            | size, default 1.0
+// |             |     |     | "r" |     | float                            | rotation in radians, default 0.0
+// |             |     |     | "a" |     | float                            | aspect ratio, default 1.0
+// |             |     |     | "l" |     | key-value pairs                  | label style
+// |             |     |     |     | "+" | boolean                          | if label is shown
+// |             |     |     |     | "p" | list of two floats               | label position (2D only), list of two doubles, default is [0, 1] means under point
+// |             |     |     |     | "t" | str                              | label text if forced by user
+// |             |     |     |     | "f" | str                              | font face
+// |             |     |     |     | "S" | str                              | font slant: "normal" (default), "italic"
+// |             |     |     |     | "W" | str                              | font weight: "normal" (default), "bold"
+// |             |     |     |     | "s" | float                            | label size, default 1.0
+// |             |     |     |     | "c" | color, str                       | label color, default: "black"
+// |             |     |     |     | "r" | float                            | label rotation, default 0.0
+// |             |     |     |     | "i" | float                            | addtional interval between lines as a fraction of line height, default 0.2
+// |             |     | "l" |     |     | array of integers                | ? for each procrustes line, index in the "L" list
+// |             |     | "L" |     |     | array                            | ? list of procrustes lines styles
+// |             |     | "s" |     |     | array of integers                | list of point indices for point shown on all maps in the time series
+// |             |     | "t" |     |     | key-value pairs                  | ? title style
+
 } // read_legacy_plot_specification
 
 // ----------------------------------------------------------------------
@@ -368,6 +397,9 @@ void ae::chart::v3::Chart::read(const std::filesystem::path& filename)
                                 case 'p':
                                     read_legacy_plot_specification(legacy_plot_spec(), field_c.value().get_object());
                                     break;
+                                // case 'x':
+                                //     read_extension(extension_data(), field_c.value().get_object());
+                                //     break;
                                 default:
                                     unhandled_key({"c", key_c});
                                     break;

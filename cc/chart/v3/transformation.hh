@@ -5,23 +5,13 @@
 #include "utils/named-type.hh"
 #include "utils/log.hh"
 #include "chart/v3/point-coordinates.hh"
+#include "chart/v3/rotation.hh"
 
 // ----------------------------------------------------------------------
 
 namespace ae::chart::v3
 {
     inline double sqr(double value) { return value * value; }
-
-    using Rotation = named_double_t<struct Rotation_tag>;
-
-    inline const Rotation NoRotation{0.0};
-
-    inline Rotation rotation(double aAngle) {
-        if (std::abs(aAngle) < 3.15)
-            return Rotation{aAngle};
-        else
-            return Rotation{aAngle * M_PI / 180.0};
-    }
 
     // ----------------------------------------------------------------------
 
