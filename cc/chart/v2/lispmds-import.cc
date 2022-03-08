@@ -672,7 +672,7 @@ UnmovablePoints LispmdsProjection::unmovable() const
         return {val.begin(), val.end(), [](const auto& v) -> size_t { return std::get<acmacs::lispmds::number>(v); }};
     }
     catch (std::exception&) {
-        return {};
+        return UnmovablePoints{};
     }
 
 } // LispmdsProjection::unmovable
@@ -682,7 +682,7 @@ UnmovablePoints LispmdsProjection::unmovable() const
 DisconnectedPoints LispmdsProjection::disconnected() const
 {
       // std::cerr << "WARNING: LispmdsProjection::disconnected not implemented\n";
-    return {};
+    return DisconnectedPoints{};
 
 } // LispmdsProjection::disconnected
 
@@ -700,7 +700,7 @@ AvidityAdjusts LispmdsProjection::avidity_adjusts() const
     }
     catch (acmacs::lispmds::error& err) {
         AD_ERROR("[lispmds avidity_adjusts] broken save: {}", err.what());
-        return {};
+        return AvidityAdjusts{};
     }
     catch (std::exception& err) {
         AD_ERROR("[lispmds avidity_adjusts]: {}\n", err.what());
@@ -763,7 +763,7 @@ DrawingOrder LispmdsPlotSpec::drawing_order() const
       // :RAISE-POINTS 'NIL
       // :LOWER-POINTS 'NIL
       // don't know how drawing order is stored
-    return {};
+    return DrawingOrder{};
 
 } // LispmdsPlotSpec::drawing_order
 

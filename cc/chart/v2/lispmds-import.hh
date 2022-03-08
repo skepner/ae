@@ -85,8 +85,8 @@ namespace ae::chart::v2
         ae::virus::Passage passage() const override;
         BLineage lineage() const override { return {}; }
         ae::virus::Reassortant reassortant() const override;
-        LabIds lab_ids() const override { return {}; }
-        Clades clades() const override { return {}; }
+        LabIds lab_ids() const override { return LabIds{}; }
+        Clades clades() const override { return Clades{}; }
         Annotations annotations() const override;
         bool reference() const override;
 
@@ -108,10 +108,10 @@ namespace ae::chart::v2
         BLineage lineage() const override { return {}; }
         ae::virus::Reassortant reassortant() const override;
         Annotations annotations() const override;
-        Clades clades() const override { return {}; }
+        Clades clades() const override { return Clades{}; }
         SerumId serum_id() const override;
         SerumSpecies serum_species() const override { return {}; }
-        PointIndexList homologous_antigens() const override { return {}; }
+        PointIndexList homologous_antigens() const override { return PointIndexList{}; }
 
      private:
         const acmacs::lispmds::value& mData;
@@ -209,7 +209,7 @@ namespace ae::chart::v2
         double stress_diff_to_stop() const override { return 0.0; }
         UnmovablePoints unmovable() const override;
         DisconnectedPoints disconnected() const override;
-        UnmovableInTheLastDimensionPoints unmovable_in_the_last_dimension() const override { return {}; }
+        UnmovableInTheLastDimensionPoints unmovable_in_the_last_dimension() const override { return UnmovableInTheLastDimensionPoints{}; }
         AvidityAdjusts avidity_adjusts() const override;
 
      private:

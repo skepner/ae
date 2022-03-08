@@ -90,7 +90,7 @@ namespace ae::chart::v2
         BLineage lineage() const override;
         ae::virus::Reassortant reassortant() const override;
         LabIds lab_ids() const override;
-        Clades clades() const override { return {}; /* not implemented */ }
+        Clades clades() const override { return Clades{}; /* not implemented */ }
         Annotations annotations() const override;
         bool reference() const override { return data_["reference"].get_or_default(false); }
 
@@ -111,7 +111,7 @@ namespace ae::chart::v2
         BLineage lineage() const override;
         ae::virus::Reassortant reassortant() const override;
         Annotations annotations() const override;
-        Clades clades() const override { return {}; /* not implemented */ }
+        Clades clades() const override { return Clades{}; /* not implemented */ }
         SerumId serum_id() const override;
         SerumSpecies serum_species() const override { return SerumSpecies{data_["serum_species"].get_or_default("")}; }
         PointIndexList homologous_antigens() const override { return data_["*homologous"]; }

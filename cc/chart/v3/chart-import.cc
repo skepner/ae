@@ -281,8 +281,8 @@ inline void read_projections(ae::chart::v3::Projections& target, ::simdjson::ond
             }
             else if (key == "t") { // transformation matrix
                 std::vector<double> vals;
-                auto arr = field.value().get_array();
-                std::copy(std::begin(arr), std::end(arr), std::back_inserter(vals));
+                for (double val : field.value().get_array())
+                    vals.push_back(val);
                 projection.transformation().set(vals.begin(), vals.size());
             }
             else if (key == "") { //

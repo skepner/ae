@@ -683,7 +683,7 @@ AvidityAdjusts Acd1Projection::avidity_adjusts() const
         return aa;
     }
     else
-        return {};
+        return AvidityAdjusts{};
 
 } // Acd1Projection::avidity_adjusts
 
