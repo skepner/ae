@@ -5,7 +5,7 @@
 #include "utils/named-type.hh"
 #include "utils/log.hh"
 #include "chart/v3/point-coordinates.hh"
-#include "chart/v3/rotation.hh"
+#include "draw/v2/rotation.hh"
 
 // ----------------------------------------------------------------------
 
@@ -107,7 +107,7 @@ namespace ae::chart::v3
             return *this;
         }
 
-        void rotate(Rotation aAngle) {
+        void rotate(ae::draw::v2::Rotation aAngle) {
             const double cos = std::cos(*aAngle);
             const double sin = std::sin(*aAngle);
             const double r0 = cos * a() + -sin * c();

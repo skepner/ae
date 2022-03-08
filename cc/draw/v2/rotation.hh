@@ -4,7 +4,7 @@
 
 // ----------------------------------------------------------------------
 
-namespace ae::chart::v3
+namespace ae::draw::v2
 {
     using Rotation = named_double_t<struct Rotation_tag>;
     using Aspect = named_double_t<struct Aspect_tag>;
@@ -25,6 +25,6 @@ namespace ae::chart::v3
     inline const Aspect AspectNormal{1.0};
     inline const Aspect AspectEgg{0.75};
 
-} // namespace ae::chart::v3
+} // namespace ae::draw::v2
 
 // ----------------------------------------------------------------------

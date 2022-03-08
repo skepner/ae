@@ -1,6 +1,5 @@
 #pragma once
 
-#include <vector>
 
 #include "chart/v3/point-style.hh"
 

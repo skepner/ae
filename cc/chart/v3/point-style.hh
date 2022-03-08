@@ -1,13 +1,17 @@
 #pragma once
 
+#include "draw/v2/label-style.hh"
+#include "draw/v2/rotation.hh"
 #include "chart/v3/point-shape.hh"
-#include "chart/v3/label-style.hh"
-#include "chart/v3/rotation.hh"
 
 // ----------------------------------------------------------------------
 
 namespace ae::chart::v3
 {
+    using Color = ae::draw::v2::Color;
+    using Rotation = ae::draw::v2::Rotation;
+    using Aspect = ae::draw::v2::Aspect;
+
     class PointStyle
     {
       public:
@@ -17,7 +21,7 @@ namespace ae::chart::v3
         PointStyle& operator=(const PointStyle&) = default;
         PointStyle& operator=(PointStyle&&) = default;
 
-        bool operator==(const PointStyle& rhs) const noexcept = default;
+        bool operator==(const PointStyle&) const noexcept = default;
 
         // PointStyle& scale(double aScale) noexcept { size(size() * aScale); return *this; }
         // PointStyle& scale_outline(double aScale) noexcept { outline_width(outline_width() * aScale); return *this; }
@@ -69,14 +73,14 @@ namespace ae::chart::v3
 
       private:
         bool shown_{true};
-        // Color fill_{TRANSPARENT};
-        // Color outline_{BLACK};
+        Color fill_{"transparent"};
+        Color outline_{"black"};
         double outline_width_{1.0}; // pixels
         double size_{5.0};          // pixels
-        Rotation rotation_{NoRotation};
-        Aspect aspect_{AspectNormal};
+        Rotation rotation_{ae::draw::v2::NoRotation};
+        Aspect aspect_{ae::draw::v2::AspectNormal};
         point_shape shape_{};
-        label_style label_{};
+        ae::draw::v2::label_style label_{};
         std::string label_text_{};
 
     }; // class PointStyle
