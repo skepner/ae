@@ -422,7 +422,7 @@ inline void read_legacy_plot_specification(ae::chart::v3::legacy::PlotSpec& targ
 
 void ae::chart::v3::Chart::read(const std::filesystem::path& filename)
 {
-    Timeit ti{"importing chart"}; // , std::chrono::milliseconds{500}};
+    Timeit ti{fmt::format("importing chart from {}", filename), std::chrono::milliseconds{100}};
     using namespace ae::simdjson;
     try {
         Parser parser{filename};
@@ -455,6 +455,9 @@ void ae::chart::v3::Chart::read(const std::filesystem::path& filename)
                                     break;
                                 case 'p':
                                     read_legacy_plot_specification(legacy_plot_spec(), field_c.value().get_object());
+                                    break;
+                                case 'C': // forced column bases for a new projections
+                                    unhandled_key({"c", key_c, "forced column bases for a new projections"});
                                     break;
                                 // case 'x':
                                 //     read_extension(extension_data(), field_c.value().get_object());
