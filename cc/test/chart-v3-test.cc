@@ -11,6 +11,7 @@ int main(int argc, const char* const* argv)
 
         if (argc > 1) {
             ae::chart::v3::Chart chart{argv[1]};
+            chart.write("/r/a.ace");
         }
     }
     catch (std::exception& err) {

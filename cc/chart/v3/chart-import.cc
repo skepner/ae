@@ -2,18 +2,9 @@
 #include "ext/from_chars.hh"
 #include "utils/log.hh"
 #include "utils/timeit.hh"
-// #include "utils/file.hh"
 #include "chart/v3/chart.hh"
 
 // ----------------------------------------------------------------------
-
-void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
-{
-    Timeit ti{"exporting chart", std::chrono::milliseconds{5000}};
-
-} // ae::chart::v3::Chart::write
-
-// ======================================================================
 
 // class unhandled_key : public std::runtime_error
 // {

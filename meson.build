@@ -149,6 +149,7 @@ sources_chart_v3 = [
   'cc/chart/v3/titers.cc',
   'cc/chart/v3/layout.cc',
   'cc/chart/v3/chart-import.cc',
+  'cc/chart/v3/chart-export.cc',
 ]
 
 sources_chart_v2 = [
