@@ -1,6 +1,6 @@
 #pragma once
 
-#include <vector>
+#include <optional>
 
 #include "virus/name.hh"
 #include "virus/name.hh"
@@ -118,10 +118,15 @@ namespace ae::chart::v3
         void serum_id(const SerumId& serum_id) { serum_id_ = serum_id; }
         antigen_indexes& homologous_antigens() { return homologous_antigens_; }
 
+        std::optional<double> forced_column_basis() { return forced_column_basis_; }
+        void forced_column_basis(double forced) { forced_column_basis_ = forced; }
+        void not_forced_column_basis() { forced_column_basis_ = std::nullopt; }
+
       private:
         SerumSpecies serum_species_{};
         SerumId serum_id_{};
         antigen_indexes homologous_antigens_{};
+        std::optional<double> forced_column_basis_{};
     };
 
     // ----------------------------------------------------------------------

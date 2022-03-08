@@ -1,6 +1,5 @@
 #pragma once
 
-#include <vector>
 #include <optional>
 
 #include "chart/v3/layout.hh"
@@ -14,7 +13,7 @@ namespace ae::chart::v3
 {
     class Chart;
 
-    enum class RecalculateStress { no, if_necessary, yes };
+    enum class recalculate_stress { /* no, */ if_necessary, yes };
     enum class dodgy_titer_is_regular { no, yes };
 
     constexpr const double InvalidStress{-1.0};
@@ -36,9 +35,10 @@ namespace ae::chart::v3
         const Layout& layout() const { return layout_; }
         Layout& layout() { return layout_; }
 
-        std::optional<double> stored_stress() const { return stress_; }
-        void stress(double str) const { stress_ = str; }
-        double stress(RecalculateStress recalculate = RecalculateStress::if_necessary) const;
+        // std::optional<double> stored_stress() const { return stress_; }
+        void stress(double str) { stress_ = str; }
+        // void no_stress() { stress_ = std::nullopt; }
+        double stress(recalculate_stress recalculate = recalculate_stress::if_necessary) const;
         // double stress_with_moved_point(size_t point_no, const PointCoordinates& move_to) const;
         Transformation& transformation() { return transformation_; }
         const Transformation& transformation() const { return transformation_; }
@@ -62,8 +62,6 @@ namespace ae::chart::v3
         void dodgy_titer_is_regular(enum dodgy_titer_is_regular dtir) { dodgy_titer_is_regular_ = dtir; }
 
         // std::shared_ptr<Layout> transformed_layout() const { return layout()->transform(transformation()); }
-        // draw::v1::Transformation transformation() const = 0;
-        // enum dodgy_titer_is_regular dodgy_titer_is_regular() const = 0;
         // double stress_diff_to_stop() const = 0;
 
         // double calculate_stress(const Stress& stress) const { return stress.value(*layout()); }
@@ -78,9 +76,6 @@ namespace ae::chart::v3
         // void set_projection_no(size_t projection_no) { projection_no_ = projection_no; }
 
         // ErrorLines error_lines() const { return ae::chart::v2::error_lines(*this); }
-
-      protected:
-        // double recalculate_stress() const { return calculate_stress(); }
 
       private:
         Layout layout_{};

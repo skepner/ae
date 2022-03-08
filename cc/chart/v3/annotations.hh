@@ -15,7 +15,6 @@ namespace ae::chart::v3
 
         using ae::named_vector_t<std::string, struct chart_Annotations_tag_t>::named_vector_t;
         explicit Annotations(size_t num_annotations) : ae::named_vector_t<std::string, struct chart_Annotations_tag_t>::named_vector_t(num_annotations) {}
-        // Annotations(const rjson::value& src) : acmacs::named_vector_t<std::string, struct chart_Annotations_tag_t>::named_vector_t(src.size()) { rjson::copy(src, begin()); }
 
         void add(std::string_view value) { insert_if_not_present(value); }
         bool distinct() const { return exists(std::string{distinct_label}); }

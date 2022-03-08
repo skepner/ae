@@ -435,6 +435,7 @@ void ae::chart::v3::Chart::read(const std::filesystem::path& filename)
                         throw Error{"unsupported version: \"{}\"", ver};
                 }
                 else if (key == "c") {
+                    std::vector<double> forced_column_bases_for_a_new_projections;
                     for (auto field_c : field.value().get_object()) {
                         if (const std::string_view key_c = field_c.unescaped_key(); key_c.size() == 1) {
                             switch (key_c[0]) {
@@ -457,7 +458,8 @@ void ae::chart::v3::Chart::read(const std::filesystem::path& filename)
                                     read_legacy_plot_specification(legacy_plot_spec(), field_c.value().get_object());
                                     break;
                                 case 'C': // forced column bases for a new projections
-                                    unhandled_key({"c", key_c, "forced column bases for a new projections"});
+                                    for (const double cb : field_c.value().get_array())
+                                        forced_column_bases_for_a_new_projections.push_back(cb);
                                     break;
                                 // case 'x':
                                 //     read_extension(extension_data(), field_c.value().get_object());
@@ -469,6 +471,16 @@ void ae::chart::v3::Chart::read(const std::filesystem::path& filename)
                         }
                         else if (key_c[0] != '?' && key_c[0] != ' ' && key_c[0] != '_')
                             unhandled_key({"c", key_c});
+                    }
+                    if (!forced_column_bases_for_a_new_projections.empty()) {
+                        if (serum_index{forced_column_bases_for_a_new_projections.size()} != sera().size())
+                            throw Error{"{}: invalid number of entries in the forced_column_bases_for_a_new_projections (\"c\":\"C\"): {}, number of sera: {}", filename.native(), forced_column_bases_for_a_new_projections.size(), sera().size()};
+                        for (const auto sr_no : sera().size()) {
+                            if (const auto cb = forced_column_bases_for_a_new_projections[sr_no.get()]; cb > 0.0)
+                                sera()[sr_no].forced_column_basis(cb);
+                            else
+                                sera()[sr_no].not_forced_column_basis();
+                        }
                     }
                 }
                 else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
