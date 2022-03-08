@@ -1,4 +1,4 @@
-# Time-stamp: <2022-03-08 12:09:38 eu>
+# Time-stamp: <2022-03-08 12:18:36 eu>
 * acmacs-ace-v1 format to store chart data
 
 fields with names starting with ? are ignored
@@ -92,7 +92,7 @@ fields with names starting with ? are ignored
 |             |     | "E" |     |     | key-value pairs                  | error line positive, default: {"c": "blue"}                                                                                                                    |
 |             |     | "e" |     |     | key-value pairs                  | error line negative, default: {"c": "red"}                                                                                                                     |
 |             |     | "g" |     |     | ?                                | ? grid data                                                                                                                                                    |
-|             |     | "p" |     |     | array of key-value pairs         | for each point (antigens followed by sera)                                                                                                                     |
+|             |     | "P" |     |     | array of key-value pairs         | list of plot styles                                                                                                                                            |
 |             |     |     | "+" |     | boolean                          | if point is shown, default is true, disconnected points are usually not shown and having NaN coordinates in layout                                             |
 |             |     |     | "F" |     | color, str                       | fill color: #FF0000 or T[RANSPARENT] or color name (red, green, blue, etc.), default is transparent                                                            |
 |             |     |     | "O" |     | color, str                       | outline color: #000000 or T[RANSPARENT] or color name (red, green, blue, etc.), default is black                                                               |
@@ -112,6 +112,7 @@ fields with names starting with ? are ignored
 |             |     |     |     | "c" | color, str                       | label color, default: "black"                                                                                                                                  |
 |             |     |     |     | "r" | float                            | label rotation, default 0.0                                                                                                                                    |
 |             |     |     |     | "i" | float                            | addtional interval between lines as a fraction of line height, default 0.2                                                                                     |
+|             |     | "p" |     |     | arrsy of integers                | index in "P" for each point, antigens followed by sera                                                                                                                                                               |
 |             |     | "l" |     |     | array of integers                | ? for each procrustes line, index in the "L" list                                                                                                              |
 |             |     | "L" |     |     | array                            | ? list of procrustes lines styles                                                                                                                              |
 |             |     | "s" |     |     | array of integers                | list of point indices for point shown on all maps in the time series                                                                                           |

@@ -317,6 +317,55 @@ inline void read_projections(ae::chart::v3::Projections& target, ::simdjson::ond
 
 // ----------------------------------------------------------------------
 
+inline void read_legacy_point_style(ae::chart::v3::PointStyle& target, ::simdjson::ondemand::object source)
+{
+    for (auto field : source) {
+        if (const std::string_view key = field.unescaped_key(); key == "+") {  // if point is shown, default is true, disconnected points are usually not shown and having NaN coordinates in layout
+            target.shown(field.value());
+        }
+        else if (key == "F") {  // fill color: #FF0000 or T[RANSPARENT] or color name (red, green, blue, etc.), default is transparent
+            target.fill(ae::draw::v2::Color{field.value()});
+        }
+        else if (key == "O") {  // outline color: #000000 or T[RANSPARENT] or color name (red, green, blue, etc.), default is black
+            target.outline(ae::draw::v2::Color{field.value()});
+        }
+        else if (key == "o") {  // outline width, default 1.0
+            target.outline_width(field.value());
+        }
+        else if (key == "S") {  // shape: "C[IRCLE]" (default), "B[OX]", "T[RIANGLE]", "E[GG]", "U[GLYEGG]"
+            target.shape(ae::chart::v3::point_shape{field.value()});
+        }
+        else if (key == "s") {  //  size, default 1.0
+            target.size(field.value());
+        }
+        else if (key == "r") {  // rotation in radians, default 0.0
+            target.rotation(ae::draw::v2::Rotation{field.value()});
+        }
+        else if (key == "a") {  //  aspect ratio, default 1.0
+            target.aspect(ae::draw::v2::Aspect{field.value()});
+        }
+        else if (key == "l") {  // label style
+            unhandled_key({"c", "p", "P", key});
+        }
+        else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
+            unhandled_key({"c", "p", "P", key});
+    }
+}
+
+//  "l" |     | key-value pairs                  | label style
+//      | "+" | boolean                          | if label is shown
+//      | "p" | list of two floats               | label position (2D only), list of two doubles, default is [0, 1] means under point
+//      | "t" | str                              | label text if forced by user
+//      | "f" | str                              | font face
+//      | "S" | str                              | font slant: "normal" (default), "italic"
+//      | "W" | str                              | font weight: "normal" (default), "bold"
+//      | "s" | float                            | label size, default 1.0
+//      | "c" | color, str                       | label color, default: "black"
+//      | "r" | float                            | label rotation, default 0.0
+//      | "i" | float                            | addtional interval between lines as a fraction of line height, default 0.2
+
+// ----------------------------------------------------------------------
+
 inline void read_legacy_plot_specification(ae::chart::v3::legacy::PlotSpec& target, ::simdjson::ondemand::object source)
 {
     for (auto field : source) {
@@ -340,23 +389,25 @@ inline void read_legacy_plot_specification(ae::chart::v3::legacy::PlotSpec& targ
                     unhandled_key({"c", "p", key, k2});
             }
         }
-        else if (key == "") {  //
+        else if (key == "P") {  // list of plot styles
+            for (auto entry : field.value().get_array())
+                read_legacy_point_style(target.styles().emplace_back(), entry.get_object());
         }
-        else if (key == "") {  //
+        else if (key == "p") {  // index in "P" for each point, antigens followed by sera
+            for (const uint64_t val : field.value().get_array())
+                target.style_for_point().push_back(val);
         }
-        else if (key == "") {  //
+        else if (key == "L") {  // list of procrustes lines styles
+            unhandled_key({"c", "p", key});
         }
-        else if (key == "") {  //
+        else if (key == "l") {  // for each procrustes line, index in the "L" list
+            unhandled_key({"c", "p", key});
         }
-        else if (key == "") {  //
+        else if (key == "s") {  // list of point indices for point shown on all maps in the time series
+            unhandled_key({"c", "p", key});
         }
-        else if (key == "") {  //
-        }
-        else if (key == "") {  //
-        }
-        else if (key == "") {  //
-        }
-        else if (key == "") {  //
+        else if (key == "t") {  // title style
+            unhandled_key({"c", "p", key});
         }
         else if (key == "g") {  // grid data
             unhandled_key({"c", "p", key});
@@ -364,31 +415,6 @@ inline void read_legacy_plot_specification(ae::chart::v3::legacy::PlotSpec& targ
         else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
             unhandled_key({"c", "p", key});
     }
-
-// |             |     | "p" |     |     | array of key-value pairs         | for each point (antigens followed by sera)
-// |             |     |     | "+" |     | boolean                          | if point is shown, default is true, disconnected points are usually not shown and having NaN coordinates in layout
-// |             |     |     | "F" |     | color, str                       | fill color: #FF0000 or T[RANSPARENT] or color name (red, green, blue, etc.), default is transparent
-// |             |     |     | "O" |     | color, str                       | outline color: #000000 or T[RANSPARENT] or color name (red, green, blue, etc.), default is black
-// |             |     |     | "o" |     | float                            | outline width, default 1.0
-// |             |     |     | "S" |     | str                              | shape: "C[IRCLE]" (default), "B[OX]", "T[RIANGLE]", "E[GG]", "U[GLYEGG]"
-// |             |     |     | "s" |     | float                            | size, default 1.0
-// |             |     |     | "r" |     | float                            | rotation in radians, default 0.0
-// |             |     |     | "a" |     | float                            | aspect ratio, default 1.0
-// |             |     |     | "l" |     | key-value pairs                  | label style
-// |             |     |     |     | "+" | boolean                          | if label is shown
-// |             |     |     |     | "p" | list of two floats               | label position (2D only), list of two doubles, default is [0, 1] means under point
-// |             |     |     |     | "t" | str                              | label text if forced by user
-// |             |     |     |     | "f" | str                              | font face
-// |             |     |     |     | "S" | str                              | font slant: "normal" (default), "italic"
-// |             |     |     |     | "W" | str                              | font weight: "normal" (default), "bold"
-// |             |     |     |     | "s" | float                            | label size, default 1.0
-// |             |     |     |     | "c" | color, str                       | label color, default: "black"
-// |             |     |     |     | "r" | float                            | label rotation, default 0.0
-// |             |     |     |     | "i" | float                            | addtional interval between lines as a fraction of line height, default 0.2
-// |             |     | "l" |     |     | array of integers                | ? for each procrustes line, index in the "L" list
-// |             |     | "L" |     |     | array                            | ? list of procrustes lines styles
-// |             |     | "s" |     |     | array of integers                | list of point indices for point shown on all maps in the time series
-// |             |     | "t" |     |     | key-value pairs                  | ? title style
 
 } // read_legacy_plot_specification
 
