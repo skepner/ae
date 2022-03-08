@@ -8,7 +8,7 @@
 
 namespace ae::chart::v3::legacy
 {
-    using DrawingOrder = ae::named_vector_t<size_t, struct chart_DrawingOrder_tag_t>;
+    using DrawingOrder = ae::named_vector_t<point_index, struct chart_DrawingOrder_tag_t>;
 
         // size_t index_of(size_t aValue) const { return static_cast<size_t>(std::find(begin(), end(), aValue) - begin()); }
 
@@ -82,31 +82,19 @@ namespace ae::chart::v3::legacy
         // virtual PointStyle& style_ref(size_t /*aPointNo*/) { throw std::runtime_error{"PointStyles::style_ref not supported for this style collection"}; }
         // virtual PointStylesCompacted compacted() const = 0;
 
-        // virtual DrawingOrder drawing_order() const = 0;
-        // virtual Color error_line_positive_color() const = 0;
-        // virtual Color error_line_negative_color() const = 0;
+        const DrawingOrder& drawing_order() const { return drawing_order_; }
+        DrawingOrder& drawing_order() { return drawing_order_; }
+        Color error_line_positive_color() const { return error_line_positive_color_; }
+        void error_line_positive_color(Color color) { error_line_positive_color_ = color; }
+        Color error_line_negative_color() const { return error_line_negative_color_; }
+        void error_line_negative_color(Color color) { error_line_negative_color_ = color; }
+
         // virtual std::vector<acmacs::PointStyle> all_styles() const = 0;
 
-      //   Color error_line_positive_color() const { return main_ ? main_->error_line_positive_color() : BLUE; }
-      //   Color error_line_negative_color() const { return main_ ? main_->error_line_negative_color() : RED; }
       //   acmacs::PointStyle style(size_t aPointNo) const { return modified() ? style_modified(aPointNo) : main_->style(aPointNo); }
       //   std::vector<acmacs::PointStyle> all_styles() const { return modified() ? styles_ : main_->all_styles(); }
       //   size_t number_of_points() const { return modified() ? styles_.size() : main_->number_of_points(); }
 
-      //   DrawingOrder drawing_order() const
-      //   {
-      //       if (modified())
-      //           return drawing_order_;
-      //       auto drawing_order = main_->drawing_order();
-      //       drawing_order.fill_if_empty(number_of_points());
-      //       return drawing_order;
-      //   }
-
-      //   DrawingOrder& drawing_order_modify()
-      //   {
-      //       modify();
-      //       return drawing_order_;
-      //   }
       //   void raise(size_t point_no)
       //   {
       //       modify();
@@ -323,9 +311,11 @@ namespace ae::chart::v3::legacy
       //   }
 
       private:
-        antigen_index number_of_antigens_{};
+        // antigen_index number_of_antigens_{};
         std::vector<PointStyle> styles_{};
         DrawingOrder drawing_order_{};
+        Color error_line_positive_color_{"blue"};
+        Color error_line_negative_color_{"red"};
     };
 
 } // namespace ae::chart::v3

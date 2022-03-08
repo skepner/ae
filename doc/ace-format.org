@@ -1,4 +1,4 @@
-# Time-stamp: <2022-03-07 11:18:25 eu>
+# Time-stamp: <2022-03-08 12:09:38 eu>
 * acmacs-ace-v1 format to store chart data
 
 fields with names starting with ? are ignored
@@ -89,8 +89,8 @@ fields with names starting with ? are ignored
 |-------------+-----+-----+-----+-----+----------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------|
 |             | "p" |     |     |     | key-value pairs                  | legacy lispmds stype plot specification                                                                                                                        |
 |             |     | "d" |     |     | array of integers                | drawing order, point indices                                                                                                                                   |
-|             |     | "E" |     |     | key-value pairs                  | error line positive, default: {"c": "red"}                                                                                                                     |
-|             |     | "e" |     |     | key-value pairs                  | error line negative, default: {"c": "blue"}                                                                                                                    |
+|             |     | "E" |     |     | key-value pairs                  | error line positive, default: {"c": "blue"}                                                                                                                    |
+|             |     | "e" |     |     | key-value pairs                  | error line negative, default: {"c": "red"}                                                                                                                     |
 |             |     | "g" |     |     | ?                                | ? grid data                                                                                                                                                    |
 |             |     | "p" |     |     | array of key-value pairs         | for each point (antigens followed by sera)                                                                                                                     |
 |             |     |     | "+" |     | boolean                          | if point is shown, default is true, disconnected points are usually not shown and having NaN coordinates in layout                                             |

@@ -320,18 +320,51 @@ inline void read_projections(ae::chart::v3::Projections& target, ::simdjson::ond
 inline void read_legacy_plot_specification(ae::chart::v3::legacy::PlotSpec& target, ::simdjson::ondemand::object source)
 {
     for (auto field : source) {
-        if (const std::string_view key = field.unescaped_key(); key == "") {
+        if (const std::string_view key = field.unescaped_key(); key == "d") {  // drawing order, point indices
+            for (const uint64_t val : field.value().get_array())
+                target.drawing_order().push_back(ae::point_index{val});
+        }
+        else if (key == "E") { // error line positive, default: {"c": "blue"}
+            for (auto fld2 : field.value().get_object()) {
+                if (const std::string_view k2 = fld2.unescaped_key(); k2 == "c")
+                    target.error_line_positive_color(ae::draw::v2::Color{fld2.value()});
+                else
+                    unhandled_key({"c", "p", key, k2});
+            }
+        }
+        else if (key == "e") {  // error line negative, default: {"c": "red"}
+            for (auto fld2 : field.value().get_object()) {
+                if (const std::string_view k2 = fld2.unescaped_key(); k2 == "c")
+                    target.error_line_negative_color(ae::draw::v2::Color{fld2.value()});
+                else
+                    unhandled_key({"c", "p", key, k2});
+            }
         }
         else if (key == "") {  //
+        }
+        else if (key == "") {  //
+        }
+        else if (key == "") {  //
+        }
+        else if (key == "") {  //
+        }
+        else if (key == "") {  //
+        }
+        else if (key == "") {  //
+        }
+        else if (key == "") {  //
+        }
+        else if (key == "") {  //
+        }
+        else if (key == "") {  //
+        }
+        else if (key == "g") {  // grid data
+            unhandled_key({"c", "p", key});
         }
         else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
             unhandled_key({"c", "p", key});
     }
 
-// |             |     | "d" |     |     | array of integers                | drawing order, point indices
-// |             |     | "E" |     |     | key-value pairs                  | error line positive, default: {"c": "red"}
-// |             |     | "e" |     |     | key-value pairs                  | error line negative, default: {"c": "blue"}
-// |             |     | "g" |     |     | ?                                | ? grid data
 // |             |     | "p" |     |     | array of key-value pairs         | for each point (antigens followed by sera)
 // |             |     |     | "+" |     | boolean                          | if point is shown, default is true, disconnected points are usually not shown and having NaN coordinates in layout
 // |             |     |     | "F" |     | color, str                       | fill color: #FF0000 or T[RANSPARENT] or color name (red, green, blue, etc.), default is transparent
