@@ -50,15 +50,21 @@ namespace ae::chart::v3
         column_bases& forced_column_bases() { return forced_column_bases_; }
         const column_bases& forced_column_bases() const { return forced_column_bases_; }
 
+        avidity_adjusts& avidity_adjusts_access() { return avidity_adjusts_; }
+        const avidity_adjusts& avidity_adjusts_access() const { return avidity_adjusts_; }
+        unmovable_points& unmovable() { return unmovable_; }
+        const unmovable_points& unmovable() const { return unmovable_; }
+        disconnected_points& disconnected() { return disconnected_; }
+        const disconnected_points& disconnected() const { return disconnected_; }
+        unmovable_in_the_last_dimension_points unmovable_in_the_last_dimension() { return unmovable_in_the_last_dimension_; }
+        const unmovable_in_the_last_dimension_points unmovable_in_the_last_dimension() const { return unmovable_in_the_last_dimension_; }
+        enum dodgy_titer_is_regular dodgy_titer_is_regular() const { return dodgy_titer_is_regular_; }
+        void dodgy_titer_is_regular(enum dodgy_titer_is_regular dtir) { dodgy_titer_is_regular_ = dtir; }
+
         // std::shared_ptr<Layout> transformed_layout() const { return layout()->transform(transformation()); }
         // draw::v1::Transformation transformation() const = 0;
         // enum dodgy_titer_is_regular dodgy_titer_is_regular() const = 0;
         // double stress_diff_to_stop() const = 0;
-        // UnmovablePoints unmovable() const = 0;
-        // DisconnectedPoints disconnected() const = 0;
-        // UnmovableInTheLastDimensionPoints unmovable_in_the_last_dimension() const = 0;
-        // AvidityAdjusts avidity_adjusts() const = 0; // antigens_sera_titers_multipliers, double for each point
-        //                                             // antigens_sera_gradient_multipliers, double for each point
 
         // double calculate_stress(const Stress& stress) const { return stress.value(*layout()); }
         // std::vector<double> calculate_gradient(const Stress& stress) const { return stress.gradient(*layout()); }
@@ -88,7 +94,7 @@ namespace ae::chart::v3
         unmovable_points unmovable_{};
         unmovable_in_the_last_dimension_points unmovable_in_the_last_dimension_{};
         avidity_adjusts avidity_adjusts_{};
-        dodgy_titer_is_regular dodgy_titer_is_regular_{dodgy_titer_is_regular::no};
+        enum dodgy_titer_is_regular dodgy_titer_is_regular_{dodgy_titer_is_regular::no};
     };
 
     // ----------------------------------------------------------------------
@@ -158,8 +164,7 @@ template <> struct fmt::formatter<ae::chart::v3::Projection> : fmt::formatter<ae
 {
     template <typename FormatCtx> auto format(const ae::chart::v3::Projection& projection, FormatCtx& ctx) const
         {
-            format_to(ctx.out(), "PROJECTION");
-            return ctx.out();
+            return format_to(ctx.out(), "{:.4f}", projection.stress());
         }
 };
 

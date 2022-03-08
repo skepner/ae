@@ -265,7 +265,6 @@ inline void read_projections(ae::chart::v3::Projections& target, ::simdjson::ond
             }
             else if (key == "l") { // layout, if point is disconnected: emtpy list or ?[NaN, NaN]
                 read_layout(projection.layout(), field.value().get_array());
-                unhandled_key({"c", "p", key});
             }
             else if (key == "i") { // UNUSED number of iterations
             }
@@ -281,35 +280,55 @@ inline void read_projections(ae::chart::v3::Projections& target, ::simdjson::ond
             }
             else if (key == "t") { // transformation matrix
                 std::vector<double> vals;
-                for (double val : field.value().get_array())
+                for (const double val : field.value().get_array())
                     vals.push_back(val);
                 projection.transformation().set(vals.begin(), vals.size());
             }
-            else if (key == "") { //
+            else if (key == "g") { // antigens_sera_gradient_multipliers, float for each point
+                unhandled_key({"c", "p", key});
             }
-            else if (key == "") { //
+            else if (key == "f") { // avidity adjusts (antigens_sera_titers_multipliers), float for each point
+                for (const double val : field.value().get_array())
+                    projection.avidity_adjusts_access().push_back(val);
             }
-            else if (key == "") { //
+            else if (key == "d") { // dodgy_titer_is_regular, false is default
+                projection.dodgy_titer_is_regular(static_cast<bool>(field.value()) ? ae::chart::v3::dodgy_titer_is_regular::yes : ae::chart::v3::dodgy_titer_is_regular::no);
             }
-            else if (key == "") { //
+            else if (key == "e") { // stress_diff_to_stop
+                unhandled_key({"c", "p", key});
             }
-            else if (key == "") { //
+            else if (key == "U") { // list of indices of unmovable points (antigen/serum attribute for stress evaluation)
+                for (const uint64_t val : field.value().get_array())
+                    projection.unmovable().push_back(ae::point_index{val});
             }
-            else if (key == "") { //
+            else if (key == "D") { // list of indices of disconnected points (antigen/serum attribute for stress evaluation)
+                for (const uint64_t val : field.value().get_array())
+                    projection.disconnected().push_back(ae::point_index{val});
+            }
+            else if (key == "u") { // list of indices of points unmovable in the last dimension (antigen/serum attribute for stress evaluation)
+                for (const uint64_t val : field.value().get_array())
+                    projection.unmovable_in_the_last_dimension().push_back(ae::point_index{val});
             }
             else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
                 unhandled_key({"c", "p", key});
         }
     }
-
-// |             |     | "g" |     |     | array of floats                  | antigens_sera_gradient_multipliers, float for each point                                                                                                       |
-// |             |     | "f" |     |     | array of floats                  | avidity adjusts (antigens_sera_titers_multipliers), float for each point                                                                                       |
-// |             |     | "d" |     |     | boolean                          | dodgy_titer_is_regular, false is default                                                                                                                       |
-// |             |     | "e" |     |     | float                            | stress_diff_to_stop                                                                                                                                            |
-// |             |     | "U" |     |     | array of integers                | list of indices of unmovable points (antigen/serum attribute for stress evaluation)                                                                            |
-// |             |     | "D" |     |     | array of integers                | list of indices of disconnected points (antigen/serum attribute for stress evaluation)                                                                         |
-// |             |     | "u" |     |     | array of integers                | list of indices of points unmovable in the last dimension (antigen/serum attribute for stress evaluation)                                                      |
 }
+
+// ----------------------------------------------------------------------
+
+inline void read_legacy_plot_specification(ae::chart::v3::LegacyPlotSpec& target, ::simdjson::ondemand::object source)
+{
+    for (auto field : source) {
+        if (const std::string_view key = field.unescaped_key(); key == "") {
+        }
+        else if (key == "") {  //
+        }
+        else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
+            unhandled_key({"c", "p", key});
+    }
+
+} // read_legacy_plot_specification
 
 // ----------------------------------------------------------------------
 
@@ -345,6 +364,9 @@ void ae::chart::v3::Chart::read(const std::filesystem::path& filename)
                                     break;
                                 case 'P':
                                     read_projections(projections(), field_c.value().get_array());
+                                    break;
+                                case 'p':
+                                    read_legacy_plot_specification(legacy_plot_spec(), field_c.value().get_object());
                                     break;
                                 default:
                                     unhandled_key({"c", key_c});

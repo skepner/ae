@@ -6,6 +6,7 @@
 #include "chart/v3/titers.hh"
 #include "chart/v3/projections.hh"
 #include "chart/v3/styles.hh"
+#include "chart/v3/legacy-plot-spec.hh"
 
 // ----------------------------------------------------------------------
 
@@ -43,6 +44,8 @@ namespace ae::chart::v3
         const Projections& projections() const { return projections_; }
         Styles& styles() { return styles_; }
         const Styles& styles() const { return styles_; }
+        LegacyPlotSpec& legacy_plot_spec() { return legacy_plot_spec_; }
+        const LegacyPlotSpec& legacy_plot_spec() const { return legacy_plot_spec_; }
 
         void write(const std::filesystem::path& filename) const;
 
@@ -53,6 +56,7 @@ namespace ae::chart::v3
         Titers titers_{};
         Projections projections_{};
         Styles styles_{};
+        LegacyPlotSpec legacy_plot_spec_;
 
         void read(const std::filesystem::path& filename);
     };
