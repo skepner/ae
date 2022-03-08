@@ -317,7 +317,7 @@ inline void read_projections(ae::chart::v3::Projections& target, ::simdjson::ond
 
 // ----------------------------------------------------------------------
 
-inline void read_legacy_plot_specification(ae::chart::v3::LegacyPlotSpec& target, ::simdjson::ondemand::object source)
+inline void read_legacy_plot_specification(ae::chart::v3::legacy::PlotSpec& target, ::simdjson::ondemand::object source)
 {
     for (auto field : source) {
         if (const std::string_view key = field.unescaped_key(); key == "") {
