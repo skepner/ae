@@ -5,9 +5,9 @@
 int main(int argc, const char* const* argv)
 {
     try {
-        ae::antigen_index num{10};
-        for (const auto ind : num)
-            ; // fmt::print(">>>> {}\n", ind);
+        // ae::antigen_index num{10};
+        // for (const auto ind : num)
+        //     ; // fmt::print(">>>> {}\n", ind);
 
         if (argc > 1) {
             ae::chart::v3::Chart chart{argv[1]};

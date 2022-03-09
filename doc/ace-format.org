@@ -1,4 +1,4 @@
-# Time-stamp: <2022-03-08 12:18:36 eu>
+# Time-stamp: <2022-03-09 09:41:56 eu>
 * acmacs-ace-v1 format to store chart data
 
 fields with names starting with ? are ignored
@@ -17,7 +17,7 @@ fields with names starting with ? are ignored
 |             |     | "N" |     |     | str                              | user supplied name                                                                                                                                             |
 |             |     | "l" |     |     | str                              | lab                                                                                                                                                            |
 |             |     | "r" |     |     | str                              | RBCs species of HI assay, e.g. "turkey"                                                                                                                        |
-|             |     | "s" |     |     | str                              | subset/lineage, e.g. "2009PDM"                                                                                                                                 |
+|             |     | "s" |     |     | str                              | UNUSED subset/lineage, e.g. "2009PDM"                                                                                                                          |
 |             |     | "T" |     |     | str                              | table type "A[NTIGENIC]" - default, "G[ENETIC]"                                                                                                                |
 |             |     | "S" |     |     | array of key-value pairs         | source table info list, each entry is like "i"                                                                                                                 |
 |-------------+-----+-----+-----+-----+----------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -120,7 +120,7 @@ fields with names starting with ? are ignored
 |-------------+-----+-----+-----+-----+----------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------|
 |             | "x" |     |     |     | key-value pairs                  | extensions not used by acmacs                                                                                                                                  |
 |-------------+-----+-----+-----+-----+----------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|             |     |     |     |     |                                  | additional drawing marks, e.g. serum circles                                                                                                                   |
+
 
 * semantic attributes by group
 
