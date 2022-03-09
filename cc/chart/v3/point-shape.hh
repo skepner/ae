@@ -28,8 +28,8 @@ namespace ae::chart::v3
         }
         [[nodiscard]] bool operator==(const point_shape& ps) const noexcept = default;
 
-        constexpr operator Shape() const noexcept { return mShape; }
-        constexpr Shape get() const noexcept { return mShape; }
+        operator Shape() const noexcept { return mShape; }
+        Shape get() const noexcept { return mShape; }
 
       private:
         Shape mShape{Circle};

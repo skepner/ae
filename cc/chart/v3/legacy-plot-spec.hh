@@ -21,6 +21,8 @@ namespace ae::chart::v3::legacy
         PlotSpec& operator=(const PlotSpec&) = default;
         PlotSpec& operator=(PlotSpec&&) = default;
 
+        bool empty() const { return drawing_order_.empty() && styles_.empty(); }
+
         // virtual size_t number_of_points() const = 0;
         // virtual bool empty() const = 0;
         // virtual PointStyle style(size_t aPointNo) const = 0;

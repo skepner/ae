@@ -22,6 +22,7 @@ namespace ae::draw::v2
 
         bool operator==(const Color&) const noexcept = default;
 
+        bool empty() const { return blocks_.empty() || blocks_[0].empty(); }
         const auto& blocks() const { return blocks_; }
 
       private:

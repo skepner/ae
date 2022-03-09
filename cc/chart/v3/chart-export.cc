@@ -29,12 +29,19 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
             return comma;
     };
 
-    const auto put_double = [&out, put_comma](const auto& value, auto&& condition, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
+    const auto double_to_str = [](auto value) -> std::string {
+        if constexpr (std::is_convertible_v<decltype(value), double>)
+            return format_double(value);
+        else
+            return format_double(*value);
+    };
+
+    const auto put_double = [&out, put_comma, double_to_str](const auto& value, auto&& condition, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
         if (condition(value)) {
             put_comma(comma);
             if (!after_comma.empty())
                 fmt::format_to(std::back_inserter(out), "{}", after_comma);
-            fmt::format_to(std::back_inserter(out), "\"{}\":{}", key, ae::format_double(value));
+            fmt::format_to(std::back_inserter(out), "\"{}\":{}", key, double_to_str(value));
             return true;
         }
         else
@@ -75,7 +82,7 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
             return comma;
     };
 
-    const auto put_array_double = [&out, put_comma](const auto& value, auto&& condition, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
+    const auto put_array_double = [&out, double_to_str, put_comma](const auto& value, auto&& condition, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
         if (condition(value)) {
             put_comma(comma);
             if (!after_comma.empty())
@@ -84,10 +91,7 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
             bool comma2 = false;
             for (const auto en : value) {
                 comma2 = put_comma(comma2);
-                // if constexpr (std::is_convertible_v<decltype(en), double>)
-                fmt::format_to(std::back_inserter(out), "{}", format_double(en));
-                // else
-                //     fmt::format_to(std::back_inserter(out), "{}", format_double(*en));
+                fmt::format_to(std::back_inserter(out), "{}", double_to_str(en));
             }
             fmt::format_to(std::back_inserter(out), "]");
             return true;
@@ -341,36 +345,65 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
 // -----+-----+-----+-----+----------------------------------+---------------------------------------------------------------------------------------------------------------------
 //  "R" |     |     |     | key-value(key-value) pairs       | sematic attributes based plot specifications, key: name of the style
 // -----+-----+-----+-----+----------------------------------+---------------------------------------------------------------------------------------------------------------------
-//  "p" |     |     |     | key-value pairs                  | legacy lispmds stype plot specification
-//      | "d" |     |     | array of integers                | drawing order, point indices
-//      | "E" |     |     | key-value pairs                  | error line positive, default: {"c": "blue"}
-//      | "e" |     |     | key-value pairs                  | error line negative, default: {"c": "red"}
-//      | "g" |     |     | ?                                | ? grid data
-//      | "P" |     |     | array of key-value pairs         | list of plot styles
-//      |     | "+" |     | boolean                          | if point is shown, default is true, disconnected points are usually not shown and having NaN coordinates in layout
-//      |     | "F" |     | color, str                       | fill color: #FF0000 or T[RANSPARENT] or color name (red, green, blue, etc.), default is transparent
-//      |     | "O" |     | color, str                       | outline color: #000000 or T[RANSPARENT] or color name (red, green, blue, etc.), default is black
-//      |     | "o" |     | float                            | outline width, default 1.0
-//      |     | "S" |     | str                              | shape: "C[IRCLE]" (default), "B[OX]", "T[RIANGLE]", "E[GG]", "U[GLYEGG]"
-//      |     | "s" |     | float                            | size, default 1.0
-//      |     | "r" |     | float                            | rotation in radians, default 0.0
-//      |     | "a" |     | float                            | aspect ratio, default 1.0
-//      |     | "l" |     | key-value pairs                  | label style
-//      |     |     | "+" | boolean                          | if label is shown
-//      |     |     | "p" | list of two floats               | label position (2D only), list of two doubles, default is [0, 1] means under point
-//      |     |     | "t" | str                              | label text if forced by user
-//      |     |     | "f" | str                              | font face
-//      |     |     | "S" | str                              | font slant: "normal" (default), "italic"
-//      |     |     | "W" | str                              | font weight: "normal" (default), "bold"
-//      |     |     | "s" | float                            | label size, default 1.0
-//      |     |     | "c" | color, str                       | label color, default: "black"
-//      |     |     | "r" | float                            | label rotation, default 0.0
-//      |     |     | "i" | float                            | addtional interval between lines as a fraction of line height, default 0.2
-//      | "p" |     |     | arrsy of integers                | index in "P" for each point, antigens followed by sera                                                                                                                   |
-//      | "l" |     |     | array of integers                | ? for each procrustes line, index in the "L" list
-//      | "L" |     |     | array                            | ? list of procrustes lines styles
-//      | "s" |     |     | array of integers                | list of point indices for point shown on all maps in the time series
-//      | "t" |     |     | key-value pairs                  | ? title style
+
+    // legacy lispmds stype plot specification
+    //  "d" |     |     | array of integers       | drawing order, point indices
+    //  "E" |     |     | key-value pairs         | error line positive, default: {"c": "blue"}
+    //  "e" |     |     | key-value pairs         | error line negative, default: {"c": "red"}
+    //  "g" |     |     | ?                       | ? grid data
+    //  "P" |     |     | array of key-value pairs| list of plot styles
+    //      | "+" |     | boolean                 | if point is shown, default is true, disconnected points are usually not shown and having NaN coordinates in layout
+    //      | "F" |     | color, str              | fill color: #FF0000 or T[RANSPARENT] or color name (red, green, blue, etc.), default is transparent
+    //      | "O" |     | color, str              | outline color: #000000 or T[RANSPARENT] or color name (red, green, blue, etc.), default is black
+    //      | "o" |     | float                   | outline width, default 1.0
+    //      | "S" |     | str                     | shape: "C[IRCLE]" (default), "B[OX]", "T[RIANGLE]", "E[GG]", "U[GLYEGG]"
+    //      | "s" |     | float                   | size, default 1.0
+    //      | "r" |     | float                   | rotation in radians, default 0.0
+    //      | "a" |     | float                   | aspect ratio, default 1.0
+    //      | "l" |     | key-value pairs         | label style
+    //      |     | "+" | boolean                 | if label is shown
+    //      |     | "p" | list of two floats      | label position (2D only), list of two doubles, default is [0, 1] means under point
+    //      |     | "t" | str                     | label text if forced by user
+    //      |     | "f" | str                     | font face
+    //      |     | "S" | str                     | font slant: "normal" (default), "italic"
+    //      |     | "W" | str                     | font weight: "normal" (default), "bold"
+    //      |     | "s" | float                   | label size, default 1.0
+    //      |     | "c" | color, str              | label color, default: "black"
+    //      |     | "r" | float                   | label rotation, default 0.0
+    //      |     | "i" | float                   | addtional interval between lines as a fraction of line height, default 0.2
+    //  "p" |     |     | array of integers       | index in "P" for each point, antigens followed by sera                                                                                                                   |
+    //  "l" |     |     | array of integers       | ? for each procrustes line, index in the "L" list
+    //  "L" |     |     | array                   | ? list of procrustes lines styles
+    //  "s" |     |     | array of integers       | list of point indices for point shown on all maps in the time series
+    //  "t" |     |     | key-value pairs         | ? title style
+
+    if (const auto& plot_spec = legacy_plot_spec(); !plot_spec.empty()) {
+        fmt::format_to(std::back_inserter(out), ",\n  \"p\": {{");
+        auto comma10 = put_array_int(plot_spec.drawing_order(), not_empty, "d", false, "\n   ");
+        comma10 = put_array_int(plot_spec.style_for_point(), not_empty, "p", comma10, "\n   ");
+        if (!plot_spec.styles().empty()) {
+            comma10 = put_comma(comma10);
+            fmt::format_to(std::back_inserter(out), "\n   \"P\": [");
+            bool comma11 = false;
+            for (const auto& style : plot_spec.styles()) {
+                comma11 = put_comma(comma11);
+                fmt::format_to(std::back_inserter(out), "\n    {{");
+                auto comma12 = put_bool(style.shown(), true, "+", false);
+                comma12 = put_str(style.fill(), not_empty, "F", comma12);
+                comma12 = put_str(style.outline(), not_empty, "O", comma12);
+                comma12 = put_double(style.outline_width(), [](double val) { return !float_equal(val, 1.0); }, "o", comma12);
+                comma12 = put_str(style.shape(), always, "S", comma12);
+                comma12 = put_double(style.size(), [](auto val) { return !float_equal(val, 1.0); }, "s", comma12);
+                comma12 = put_double(style.rotation(), [](auto val) { return !float_zero(*val); }, "r", comma12);
+                comma12 = put_double(style.aspect(), [](auto val) { return !float_equal(*val, 1.0); }, "a", comma12);
+                // style.label()
+                fmt::format_to(std::back_inserter(out), "}}");
+            }
+            fmt::format_to(std::back_inserter(out), "\n   ]");
+        }
+        fmt::format_to(std::back_inserter(out), "\n  }}");
+    }
+
 // -----+-----+-----+-----+----------------------------------+---------------------------------------------------------------------------------------------------------------------
 //  "x" |     |     |     | key-value pairs                  | extensions not used by acmacs
 // -----+-----+-----+-----+----------------------------------+---------------------------------------------------------------------------------------------------------------------

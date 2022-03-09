@@ -1,4 +1,4 @@
-# Time-stamp: <2022-03-09 12:03:34 eu>
+# Time-stamp: <2022-03-09 15:04:24 eu>
 * acmacs-ace-v1 format to store chart data
 
 fields with names starting with ? are ignored
@@ -112,7 +112,7 @@ fields with names starting with ? are ignored
 |             |     |     |     | "c" | color, str                       | label color, default: "black"                                                                                                                                  |
 |             |     |     |     | "r" | float                            | label rotation, default 0.0                                                                                                                                    |
 |             |     |     |     | "i" | float                            | addtional interval between lines as a fraction of line height, default 0.2                                                                                     |
-|             |     | "p" |     |     | arrsy of integers                | index in "P" for each point, antigens followed by sera                                                                                                                                                               |
+|             |     | "p" |     |     | array of integers               | index in "P" for each point, antigens followed by sera                                                                                                                                                               |
 |             |     | "l" |     |     | array of integers                | ? for each procrustes line, index in the "L" list                                                                                                              |
 |             |     | "L" |     |     | array                            | ? list of procrustes lines styles                                                                                                                              |
 |             |     | "s" |     |     | array of integers                | list of point indices for point shown on all maps in the time series                                                                                           |
