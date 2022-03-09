@@ -85,6 +85,7 @@ namespace ae::chart::v3
         column_bases& operator=(const column_bases&) = default;
         column_bases& operator=(column_bases&&) = default;
 
+        bool empty() const { return data_.empty(); }
         double column_basis(serum_index aSerumNo) const { return data_[aSerumNo.get()]; }
         serum_index size() const { return serum_index{data_.size()}; }
 
@@ -94,6 +95,9 @@ namespace ae::chart::v3
 
         // import from ace
         void add(double value) { data_.push_back(value); }
+
+        auto begin() const { return data_.begin(); }
+        auto end() const { return data_.end(); }
 
       private:
         std::vector<double> data_{};

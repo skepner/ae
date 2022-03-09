@@ -14,7 +14,7 @@ namespace ae::chart::v3
     class Chart;
 
     enum class recalculate_stress { /* no, */ if_necessary, yes };
-    enum class dodgy_titer_is_regular { no, yes };
+    enum class dodgy_titer_is_regular_e { no, yes };
 
     constexpr const double InvalidStress{-1.0};
 
@@ -58,8 +58,8 @@ namespace ae::chart::v3
         const disconnected_points& disconnected() const { return disconnected_; }
         unmovable_in_the_last_dimension_points unmovable_in_the_last_dimension() { return unmovable_in_the_last_dimension_; }
         const unmovable_in_the_last_dimension_points unmovable_in_the_last_dimension() const { return unmovable_in_the_last_dimension_; }
-        enum dodgy_titer_is_regular dodgy_titer_is_regular() const { return dodgy_titer_is_regular_; }
-        void dodgy_titer_is_regular(enum dodgy_titer_is_regular dtir) { dodgy_titer_is_regular_ = dtir; }
+        dodgy_titer_is_regular_e dodgy_titer_is_regular() const { return dodgy_titer_is_regular_; }
+        void dodgy_titer_is_regular(dodgy_titer_is_regular_e dtir) { dodgy_titer_is_regular_ = dtir; }
 
         // std::shared_ptr<Layout> transformed_layout() const { return layout()->transform(transformation()); }
         // double stress_diff_to_stop() const = 0;
@@ -89,7 +89,7 @@ namespace ae::chart::v3
         unmovable_points unmovable_{};
         unmovable_in_the_last_dimension_points unmovable_in_the_last_dimension_{};
         avidity_adjusts avidity_adjusts_{};
-        enum dodgy_titer_is_regular dodgy_titer_is_regular_{dodgy_titer_is_regular::no};
+        dodgy_titer_is_regular_e dodgy_titer_is_regular_{dodgy_titer_is_regular_e::no};
 
         double stress_recalculate() const;
     };

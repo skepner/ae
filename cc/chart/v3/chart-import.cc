@@ -283,7 +283,7 @@ inline void read_projections(ae::chart::v3::Projections& target, ::simdjson::ond
                     projection.avidity_adjusts_access().push_back(val);
             }
             else if (key == "d") { // dodgy_titer_is_regular, false is default
-                projection.dodgy_titer_is_regular(static_cast<bool>(field.value()) ? ae::chart::v3::dodgy_titer_is_regular::yes : ae::chart::v3::dodgy_titer_is_regular::no);
+                projection.dodgy_titer_is_regular(static_cast<bool>(field.value()) ? ae::chart::v3::dodgy_titer_is_regular_e::yes : ae::chart::v3::dodgy_titer_is_regular_e::no);
             }
             else if (key == "e") { // stress_diff_to_stop
                 unhandled_key({"c", "p", key});

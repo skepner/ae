@@ -53,16 +53,16 @@ namespace ae::chart::v3
         template <typename S> constexpr double& translation(S dimension) { return _x(detail::transformation_size - 1, static_cast<size_t>(dimension)); }
         template <typename S> constexpr double translation(S dimension) const { return _x(detail::transformation_size - 1, static_cast<size_t>(dimension)); }
 
-        // std::vector<double> as_vector() const
-        // {
-        //     switch (*number_of_dimensions) {
-        //         case 2:
-        //             return {_x(0, 0), _x(0, 1), _x(1, 0), _x(1, 1)};
-        //         case 3:
-        //             return {_x(0, 0), _x(0, 1), _x(0, 2), _x(1, 0), _x(1, 1), _x(1, 2), _x(2, 0), _x(2, 1), _x(2, 2)};
-        //     }
-        //     return {};
-        // }
+        std::vector<double> as_vector() const
+        {
+            switch (*number_of_dimensions) {
+                case 2:
+                    return {_x(0, 0), _x(0, 1), _x(1, 0), _x(1, 1)};
+                case 3:
+                    return {_x(0, 0), _x(0, 1), _x(0, 2), _x(1, 0), _x(1, 1), _x(1, 2), _x(2, 0), _x(2, 1), _x(2, 2)};
+            }
+            return {};
+        }
 
         template <typename Iterator> Transformation& set(Iterator first, size_t size)
         {

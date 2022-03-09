@@ -37,6 +37,19 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
             return comma;
     };
 
+    const auto put_bool = [&out](bool value, bool dflt, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
+        if (value != dflt) {
+            if (comma)
+                fmt::format_to(std::back_inserter(out), ",");
+            if (!after_comma.empty())
+                fmt::format_to(std::back_inserter(out), "{}", after_comma);
+            fmt::format_to(std::back_inserter(out), "\"{}\":{}", key, value);
+            return true;
+        }
+        else
+            return comma;
+    };
+
     const auto put_array_str = [&out](const auto& value, auto&& condition, std::string_view key, bool comma) -> bool {
         if (condition(value)) {
             if (comma)
@@ -59,7 +72,7 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
             return comma;
     };
 
-    const auto put_array_double = [&out](const auto& value, auto&& condition, std::string_view key, bool comma, std::string_view after_comma) -> bool {
+    const auto put_array_double = [&out](const auto& value, auto&& condition, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
         if (condition(value)) {
             if (comma)
                 fmt::format_to(std::back_inserter(out), ",");
@@ -276,17 +289,17 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
     // "c" | str (or any)              | comment
     // "s" | float                     | stress
     // "m" | str                       | minimum column basis, "none" (default), "1280"
-    // "l" | array of arrays of floats | layout, if point is disconnected: empty list or ?[NaN, NaN]
-    // "i" | integer                   | UNUSED number of iterations?
+    // "d" | boolean                   | dodgy_titer_is_regular, false is default
     // "C" | array of floats           | forced column bases
     // "t" | array of floats           | transformation matrix
-    // "g" | array of floats           | antigens_sera_gradient_multipliers, float for each point
-    // "f" | array of floats           | avidity adjusts (antigens_sera_titers_multipliers), float for each point
-    // "d" | boolean                   | dodgy_titer_is_regular, false is default
-    // "e" | float                     | stress_diff_to_stop
     // "U" | array of integers         | list of indices of unmovable points (antigen/serum attribute for stress evaluation)
     // "D" | array of integers         | list of indices of disconnected points (antigen/serum attribute for stress evaluation)
     // "u" | array of integers         | list of indices of points unmovable in the last dimension (antigen/serum attribute for stress evaluation)
+    // "l" | array of arrays of floats | layout, if point is disconnected: empty list or ?[NaN, NaN]
+    // "i" | integer                   | UNUSED number of iterations?
+    // "g" | array of floats           | antigens_sera_gradient_multipliers, float for each point
+    // "f" | array of floats           | avidity adjusts (antigens_sera_titers_multipliers), float for each point
+    // "e" | float                     | stress_diff_to_stop
 
     if (!projections().empty()) {
         fmt::format_to(std::back_inserter(out), ",\n  \"P\": [");
@@ -298,16 +311,17 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
             auto comma8 = put_double(projection.stress(), always, "s", false);
             comma8 = put_str(projection.minimum_column_basis(), always, "m", comma8);
             comma8 = put_str(projection.comment(), not_empty, "c", comma8);
-            // "l"
-            // "C"
-            // "t"
-            // "g"
-            // "f"
-            // "d"
-            // "e"
+            comma8 = put_bool(projection.dodgy_titer_is_regular() == dodgy_titer_is_regular_e::yes, false, "d", comma8);
+            comma8 = put_array_double(projection.forced_column_bases(), not_empty, "C", comma8);
+            comma8 = put_array_double(projection.transformation().as_vector(), not_empty, "t", comma8, "\n    ");
             // "U"
             // "D"
             // "u"
+
+            // "l"
+            // "g"
+            // "f"
+            // "e"
             fmt::format_to(std::back_inserter(out), "}}");
             comma7 = true;
         }
