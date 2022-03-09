@@ -131,7 +131,7 @@ namespace ae::chart::v3
         const auto& homologous_antigens() const { return homologous_antigens_; }
         antigen_indexes& homologous_antigens() { return homologous_antigens_; }
 
-        std::optional<double> forced_column_basis() { return forced_column_basis_; }
+        std::optional<double> forced_column_basis() const { return forced_column_basis_; }
         void forced_column_basis(double forced) { forced_column_basis_ = forced; }
         void not_forced_column_basis() { forced_column_basis_ = std::nullopt; }
 

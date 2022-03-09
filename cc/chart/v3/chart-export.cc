@@ -46,6 +46,19 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
             return comma;
     };
 
+    const auto put_array_double = [&out](const auto& value, auto&& condition, std::string_view key, bool comma, std::string_view after_comma) -> bool {
+        if (condition(value)) {
+            if (comma)
+                fmt::format_to(std::back_inserter(out), ",");
+            if (!after_comma.empty())
+                fmt::format_to(std::back_inserter(out), "{}", after_comma);
+            fmt::format_to(std::back_inserter(out), "\"{}\":[{}]", key, fmt::join(value, ","));
+            return true;
+        }
+        else
+            return comma;
+    };
+
     const auto not_empty = [](const auto& val) { return !val.empty(); };
 
     fmt::format_to(std::back_inserter(out), R"({{"_": "-*- js-indent-level: 1 -*-",
@@ -94,7 +107,7 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
         fmt::format_to(std::back_inserter(out), "\n        ]");
         comma1 = true;
     }
-    fmt::format_to(std::back_inserter(out), "}},\n");
+    fmt::format_to(std::back_inserter(out), "}}");
 
     // Antigens
     //  "N" | str, mandatory                   | name: TYPE(SUBTYPE)/[HOST/]LOCATION/ISOLATION/YEAR or CDC_ABBR NAME or UNRECOGNIZED NAME
@@ -111,7 +124,7 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
     //  "c" | array of str                     | (DEPRECATED, use "s") clades, e.g. ["5.2.1"]
     //  "S" | str                              | (DEPRECATED, use "s") single letter semantic boolean attributes: R - reference, E - egg, V - current vaccine, v - previous vaccine, S - vaccine surrogate
 
-    fmt::format_to(std::back_inserter(out), "  \"a\": [");
+    fmt::format_to(std::back_inserter(out), ",\n  \"a\": [");
     auto comma3 = false;
     for (const auto& antigen : antigens()) {
         if (comma3)
@@ -130,7 +143,7 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
         fmt::format_to(std::back_inserter(out), "}}");
         comma3 = true;
     }
-    fmt::format_to(std::back_inserter(out), "\n  ],\n");
+    fmt::format_to(std::back_inserter(out), "\n  ]");
 
     // Sera
     //  "N" | str, mandatory   | name: TYPE(SUBTYPE)/[HOST/]LOCATION/ISOLATION/YEAR or CDC_ABBR NAME or UNRECOGNIZED NAME
@@ -148,7 +161,7 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
     //  "c" | array of str     | (DEPRECATED, use "s") clades, e.g. ["5.2.1"]
     //  "S" | str              | (DEPRECATED, use "s") single letter semantic boolean attributes: E - egg
 
-    fmt::format_to(std::back_inserter(out), "  \"s\": [");
+    fmt::format_to(std::back_inserter(out), ",\n  \"s\": [");
     auto comma5 = false;
     for (const auto& serum : sera()) {
         if (comma5)
@@ -168,7 +181,7 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
         fmt::format_to(std::back_inserter(out), "}}");
         comma5 = true;
     }
-    fmt::format_to(std::back_inserter(out), "\n  ],\n");
+    fmt::format_to(std::back_inserter(out), "\n  ]");
 
     // Titers
     //  "l" | array of arrays of str       | dense matrix of titers
@@ -191,7 +204,7 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
         }
     };
 
-    fmt::format_to(std::back_inserter(out), "  \"t\": {{");
+    fmt::format_to(std::back_inserter(out), ",\n  \"t\": {{");
     if (titers().is_dense()) {
         fmt::format_to(std::back_inserter(out), "\n   \"l\": [");
         for (const auto ag_no : titers().number_of_antigens()) {
@@ -223,11 +236,20 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
         }
         fmt::format_to(std::back_inserter(out), "\n   ]");
     }
-    fmt::format_to(std::back_inserter(out), "\n  }},\n");
+    fmt::format_to(std::back_inserter(out), "\n  }}");
 
-// -----+-----+-----+-----+----------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-//  "C" |     |     |     | array of floats                  | forced column bases for a new projections                                                                                                                      |
-// -----+-----+-----+-----+----------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+    //  "C" |     |     |     | array of floats                  | forced column bases for a new projections                                                                                                                      |
+    // stored with sera
+    std::vector<double> forced_column_bases(*sera().size(), 0.0);
+    bool forced_column_bases_present = false;
+    for (const auto sr_no : sera().size()) {
+        if (const auto fcb = sera()[sr_no].forced_column_basis(); fcb.has_value()) {
+            forced_column_bases[*sr_no] = *fcb;
+            forced_column_bases_present = true;
+        }
+    }
+    put_array_double(forced_column_bases, [forced_column_bases_present](auto&&) { return forced_column_bases_present; }, "C", true, "\n  ");
+
 //  "P" |     |     |     | array of key-value pairs         | Projections                                                                                                                                                    |
 //      | "c" |     |     | str (or any)                     | comment                                                                                                                                                        |
 //      | "l" |     |     | array of arrays of floats        | layout, if point is disconnected: emtpy list or ?[NaN, NaN]                                                                                                    |
@@ -290,7 +312,7 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
 //  "x" |     |     |     | key-value pairs                  | extensions not used by acmacs                                                                                                                                  |
 // -----+-----+-----+-----+----------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------|
 
-    fmt::format_to(std::back_inserter(out), "  \"x\": {{\n");
+    fmt::format_to(std::back_inserter(out), ",\n  \"x\": {{\n");
     fmt::format_to(std::back_inserter(out), "  }}\n");
 
     fmt::format_to(std::back_inserter(out), " }}\n}}\n");
