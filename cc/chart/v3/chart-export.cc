@@ -11,10 +11,15 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
 
     fmt::memory_buffer out;
 
-    const auto put_str = [&out](const auto& value, auto&& condition, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
+    const auto put_comma = [&out](bool comma) -> bool {
+        if (comma)
+            fmt::format_to(std::back_inserter(out), ",");
+        return true;
+    };
+
+    const auto put_str = [&out, put_comma](const auto& value, auto&& condition, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
         if (condition(value)) {
-            if (comma)
-                fmt::format_to(std::back_inserter(out), ",");
+            put_comma(comma);
             if (!after_comma.empty())
                 fmt::format_to(std::back_inserter(out), "{}", after_comma);
             fmt::format_to(std::back_inserter(out), "\"{}\":\"{}\"", key, value);
@@ -24,10 +29,9 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
             return comma;
     };
 
-    const auto put_double = [&out](const auto& value, auto&& condition, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
+    const auto put_double = [&out, put_comma](const auto& value, auto&& condition, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
         if (condition(value)) {
-            if (comma)
-                fmt::format_to(std::back_inserter(out), ",");
+            put_comma(comma);
             if (!after_comma.empty())
                 fmt::format_to(std::back_inserter(out), "{}", after_comma);
             fmt::format_to(std::back_inserter(out), "\"{}\":{}", key, ae::format_double(value));
@@ -37,10 +41,9 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
             return comma;
     };
 
-    const auto put_bool = [&out](bool value, bool dflt, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
+    const auto put_bool = [&out, put_comma](bool value, bool dflt, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
         if (value != dflt) {
-            if (comma)
-                fmt::format_to(std::back_inserter(out), ",");
+            put_comma(comma);
             if (!after_comma.empty())
                 fmt::format_to(std::back_inserter(out), "{}", after_comma);
             fmt::format_to(std::back_inserter(out), "\"{}\":{}", key, value);
@@ -50,10 +53,9 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
             return comma;
     };
 
-    const auto put_array_str = [&out](const auto& value, auto&& condition, std::string_view key, bool comma) -> bool {
+    const auto put_array_str = [&out, put_comma](const auto& value, auto&& condition, std::string_view key, bool comma) -> bool {
         if (condition(value)) {
-            if (comma)
-                fmt::format_to(std::back_inserter(out), ",");
+            put_comma(comma);
             fmt::format_to(std::back_inserter(out), "\"{}\":[\"{}\"]", key, fmt::join(value, "\",\""));
             return true;
         }
@@ -61,10 +63,11 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
             return comma;
     };
 
-    const auto put_array_int = [&out](const auto& value, auto&& condition, std::string_view key, bool comma) -> bool {
+    const auto put_array_int = [&out, put_comma](const auto& value, auto&& condition, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
         if (condition(value)) {
-            if (comma)
-                fmt::format_to(std::back_inserter(out), ",");
+            put_comma(comma);
+            if (!after_comma.empty())
+                fmt::format_to(std::back_inserter(out), "{}", after_comma);
             fmt::format_to(std::back_inserter(out), "\"{}\":[{}]", key, fmt::join(value, ","));
             return true;
         }
@@ -72,19 +75,19 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
             return comma;
     };
 
-    const auto put_array_double = [&out](const auto& value, auto&& condition, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
+    const auto put_array_double = [&out, put_comma](const auto& value, auto&& condition, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
         if (condition(value)) {
-            if (comma)
-                fmt::format_to(std::back_inserter(out), ",");
+            put_comma(comma);
             if (!after_comma.empty())
                 fmt::format_to(std::back_inserter(out), "{}", after_comma);
             fmt::format_to(std::back_inserter(out), "\"{}\":[", key);
             bool comma2 = false;
-            for (double en : value) {
-                if (comma2)
-                    fmt::format_to(std::back_inserter(out), ",");
+            for (const auto en : value) {
+                comma2 = put_comma(comma2);
+                // if constexpr (std::is_convertible_v<decltype(en), double>)
                 fmt::format_to(std::back_inserter(out), "{}", format_double(en));
-                comma2 = true;
+                // else
+                //     fmt::format_to(std::back_inserter(out), "{}", format_double(*en));
             }
             fmt::format_to(std::back_inserter(out), "]");
             return true;
@@ -92,6 +95,7 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
         else
             return comma;
     };
+
 
     const auto not_empty = [](const auto& val) { return !val.empty(); };
     const auto always = [](const auto&) { return true; };
@@ -128,19 +132,16 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
     fmt::format_to(std::back_inserter(out), "  \"i\": {{");
     auto comma1 = put_table_source(info());
     if (const auto& sources = info().sources(); !sources.empty()) {
-        if (comma1)
-            fmt::format_to(std::back_inserter(out), ",");
+        comma1 = put_comma(comma1);
         fmt::format_to(std::back_inserter(out), "\n        \"S\": [");
         auto comma2 = false;
         for (const auto& src : sources) {
-            if (comma2)
-                fmt::format_to(std::back_inserter(out), ",");
+            comma2 = put_comma(comma2);
             fmt::format_to(std::back_inserter(out), "\n         {{");
-            comma2 = put_table_source(src);
+            put_table_source(src);
             fmt::format_to(std::back_inserter(out), "}}");
         }
         fmt::format_to(std::back_inserter(out), "\n        ]");
-        comma1 = true;
     }
     fmt::format_to(std::back_inserter(out), "}}");
 
@@ -162,8 +163,7 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
     fmt::format_to(std::back_inserter(out), ",\n  \"a\": [");
     auto comma3 = false;
     for (const auto& antigen : antigens()) {
-        if (comma3)
-            fmt::format_to(std::back_inserter(out), ",");
+        comma3 = put_comma(comma3);
         fmt::format_to(std::back_inserter(out), "\n   {{");
         auto comma4 = put_str(antigen.name(), not_empty, "N", false);
         comma4 = put_array_str(antigen.annotations(), not_empty, "a", comma4);
@@ -176,7 +176,6 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
         comma4 = put_str(antigen.nuc(), not_empty, "B", comma4); // , "\n    ");
         // "s": {} -- semantic
         fmt::format_to(std::back_inserter(out), "}}");
-        comma3 = true;
     }
     fmt::format_to(std::back_inserter(out), "\n  ]");
 
@@ -199,8 +198,7 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
     fmt::format_to(std::back_inserter(out), ",\n  \"s\": [");
     auto comma5 = false;
     for (const auto& serum : sera()) {
-        if (comma5)
-            fmt::format_to(std::back_inserter(out), ",");
+        comma5 = put_comma(comma5);
         fmt::format_to(std::back_inserter(out), "\n   {{");
         auto comma6 = put_str(serum.name(), not_empty, "N", false);
         comma6 = put_array_str(serum.annotations(), not_empty, "a", comma6);
@@ -214,7 +212,6 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
         comma6 = put_str(serum.nuc(), not_empty, "B", comma6); // , "\n    ");
         // "s": {} -- semantic
         fmt::format_to(std::back_inserter(out), "}}");
-        comma5 = true;
     }
     fmt::format_to(std::back_inserter(out), "\n  ]");
 
@@ -223,17 +220,15 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
     //  "d" | array of key(str)-value(str) | sparse matrix, entry for each antigen present, key is serum index, value is titer, dont-care titers omitted
     //  "L" | array of arrays of key-value | layers of titers, each top level array element as in "d" or "l"
 
-    const auto put_sparse = [&out, this](const Titers::sparse_t& data, std::string_view indent) {
+    const auto put_sparse = [&out, put_comma, this](const Titers::sparse_t& data, std::string_view indent) {
         for (const auto ag_no : titers().number_of_antigens()) {
             if (ag_no != antigen_index{0})
                 fmt::format_to(std::back_inserter(out), ",");
             fmt::format_to(std::back_inserter(out), "\n{}{{", indent);
             bool comma = false;
             for (const auto& [sr_no, titer] : data[*ag_no]) {
-                if (comma)
-                    fmt::format_to(std::back_inserter(out), ",");
+                comma = put_comma(comma);
                 fmt::format_to(std::back_inserter(out), "\"{}\":\"{}\"", sr_no, titer);
-                comma = true;
             }
             fmt::format_to(std::back_inserter(out), "}}");
         }
@@ -305,8 +300,7 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
         fmt::format_to(std::back_inserter(out), ",\n  \"P\": [");
         auto comma7 = false;
         for (const auto& projection : projections()) {
-            if (comma7)
-                fmt::format_to(std::back_inserter(out), ",");
+            comma7 = put_comma(comma7);
             fmt::format_to(std::back_inserter(out), "\n   {{");
             auto comma8 = put_double(projection.stress(), always, "s", false);
             comma8 = put_str(projection.minimum_column_basis(), always, "m", comma8);
@@ -314,16 +308,32 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
             comma8 = put_bool(projection.dodgy_titer_is_regular() == dodgy_titer_is_regular_e::yes, false, "d", comma8);
             comma8 = put_array_double(projection.forced_column_bases(), not_empty, "C", comma8);
             comma8 = put_array_double(projection.transformation().as_vector(), not_empty, "t", comma8, "\n    ");
-            // "U"
-            // "D"
-            // "u"
+            comma8 = put_array_int(projection.unmovable(), not_empty, "U", comma8, "\n    ");
+            comma8 = put_array_int(projection.disconnected(), not_empty, "D", comma8, "\n    ");
+            comma8 = put_array_int(projection.unmovable_in_the_last_dimension(), not_empty, "u", comma8, "\n    ");
 
-            // "l"
+            const auto& layout = projection.layout();
+            comma8 = put_comma(comma8);
+            fmt::format_to(std::back_inserter(out), "\n    \"l\": [");
+            for (const auto point_no : layout.number_of_points()) {
+                if (point_no != point_index{0})
+                    fmt::format_to(std::back_inserter(out), ",");
+                fmt::format_to(std::back_inserter(out), "\n     [");
+                if (const auto point = layout.at(point_no); point.exists()) {
+                    bool comma9 = false;
+                    for (const auto coord : point) {
+                        comma9 = put_comma(comma9);
+                        fmt::format_to(std::back_inserter(out), "{}", format_double(coord));
+                    }
+                }
+                fmt::format_to(std::back_inserter(out), "]");
+            }
+            fmt::format_to(std::back_inserter(out), "\n    ]");
+
             // "g"
             // "f"
             // "e"
-            fmt::format_to(std::back_inserter(out), "}}");
-            comma7 = true;
+            fmt::format_to(std::back_inserter(out), "\n   }}");
         }
         fmt::format_to(std::back_inserter(out), "\n  ]");
     }
