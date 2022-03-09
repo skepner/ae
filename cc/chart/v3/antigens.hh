@@ -72,13 +72,21 @@ namespace ae::chart::v3
         AntigenSerum& operator=(const AntigenSerum&) = default;
         AntigenSerum& operator=(AntigenSerum&&) = default;
 
+        const auto& name() const { return name_; }
         void name(const virus::Name& name) { name_ = name; }
+        const auto& annotations() const { return annotations_; }
         Annotations& annotations() { return annotations_; }
+        const auto& lineage() const { return lineage_; }
         void lineage(const sequences::lineage_t& lineage) { lineage_ = lineage; }
+        const auto& passage() const { return passage_; }
         void passage(const virus::Passage& passage) { passage_ = passage; }
+        const auto& reassortant() const { return reassortant_; }
         void reassortant(const virus::Reassortant& reassortant) { reassortant_ = reassortant; }
+        const auto& aa() const { return aa_; }
         void aa(const sequences::sequence_aa_t& aa) { aa_ = aa; }
+        const auto& nuc() const { return nuc_; }
         void nuc(const sequences::sequence_nuc_t& nuc) { nuc_ = nuc; }
+        const auto& semantic() const { return semantic_; }
         SemanticAttributes& semantic() { return semantic_; }
 
       private:
@@ -99,7 +107,9 @@ namespace ae::chart::v3
       public:
         using AntigenSerum::AntigenSerum;
 
+        const auto& date() const { return date_; }
         void date(const Date& date) { date_ = date; }
+        const auto& lab_ids() const { return lab_ids_; }
         LabIds& lab_ids() { return lab_ids_; }
 
       private:
@@ -114,8 +124,11 @@ namespace ae::chart::v3
       public:
         using AntigenSerum::AntigenSerum;
 
+        const auto& serum_species() const { return serum_species_; }
         void serum_species(const SerumSpecies& serum_species) { serum_species_ = serum_species; }
+        const auto& serum_id() const { return serum_id_; }
         void serum_id(const SerumId& serum_id) { serum_id_ = serum_id; }
+        const auto& homologous_antigens() const { return homologous_antigens_; }
         antigen_indexes& homologous_antigens() { return homologous_antigens_; }
 
         std::optional<double> forced_column_basis() { return forced_column_basis_; }

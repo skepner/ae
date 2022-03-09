@@ -11,11 +11,35 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
 
     fmt::memory_buffer out;
 
-    const auto put = [&out](const auto& value, auto&& condition, std::string_view key, bool comma) -> bool {
+    const auto put_str = [&out](const auto& value, auto&& condition, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
         if (condition(value)) {
             if (comma)
                 fmt::format_to(std::back_inserter(out), ",");
+            if (!after_comma.empty())
+                fmt::format_to(std::back_inserter(out), "{}", after_comma);
             fmt::format_to(std::back_inserter(out), "\"{}\":\"{}\"", key, value);
+            return true;
+        }
+        else
+            return comma;
+    };
+
+    const auto put_array_str = [&out](const auto& value, auto&& condition, std::string_view key, bool comma) -> bool {
+        if (condition(value)) {
+            if (comma)
+                fmt::format_to(std::back_inserter(out), ",");
+            fmt::format_to(std::back_inserter(out), "\"{}\":[\"{}\"]", key, fmt::join(value, "\",\""));
+            return true;
+        }
+        else
+            return comma;
+    };
+
+    const auto put_array_int = [&out](const auto& value, auto&& condition, std::string_view key, bool comma) -> bool {
+        if (condition(value)) {
+            if (comma)
+                fmt::format_to(std::back_inserter(out), ",");
+            fmt::format_to(std::back_inserter(out), "\"{}\":[{}]", key, fmt::join(value, ","));
             return true;
         }
         else
@@ -42,21 +66,21 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
     //      | "T" |     |     | str                              | table type "A[NTIGENIC]" - default, "G[ENETIC]"                                                                                                                |
     //      | "S" |     |     | array of key-value pairs         | source table info list, each entry is like "i"                                                                                                                 |
 
-    const auto put_table_source = [put, not_empty](const TableSource& source) -> bool {
-        auto comma = put(source.name(), not_empty, "N", false);
-        comma = put(source.virus(), [](auto&& val) { return !val.empty() && val != ae::virus::virus_t{"INFLUENZA"}; }, "v", comma);
-        comma = put(source.type_subtype(), not_empty, "V", comma);
-        comma = put(source.lab(), not_empty, "l", comma);
-        comma = put(source.assay(), not_empty, "A", comma);
-        comma = put(source.date(), not_empty, "D", comma);
-        comma = put(source.rbc_species(), not_empty, "r", comma);
+    const auto put_table_source = [put_str, not_empty](const TableSource& source) -> bool {
+        auto comma = put_str(source.name(), not_empty, "N", false);
+        comma = put_str(source.virus(), [](auto&& val) { return !val.empty() && val != ae::virus::virus_t{"INFLUENZA"}; }, "v", comma);
+        comma = put_str(source.type_subtype(), not_empty, "V", comma);
+        comma = put_str(source.lab(), not_empty, "l", comma);
+        comma = put_str(source.assay(), not_empty, "A", comma);
+        comma = put_str(source.date(), not_empty, "D", comma);
+        comma = put_str(source.rbc_species(), not_empty, "r", comma);
         return comma;
     };
 
     fmt::format_to(std::back_inserter(out), "  \"i\": {{");
-    auto comma = put_table_source(info());
+    auto comma1 = put_table_source(info());
     if (const auto& sources = info().sources(); !sources.empty()) {
-        if (comma)
+        if (comma1)
             fmt::format_to(std::back_inserter(out), ",");
         fmt::format_to(std::back_inserter(out), "\n        \"S\": [");
         auto comma2 = false;
@@ -68,47 +92,82 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
             fmt::format_to(std::back_inserter(out), "}}");
         }
         fmt::format_to(std::back_inserter(out), "\n        ]");
-        comma = true;
+        comma1 = true;
     }
     fmt::format_to(std::back_inserter(out), "}},\n");
 
+    // Antigens
+    //  "N" | str, mandatory                   | name: TYPE(SUBTYPE)/[HOST/]LOCATION/ISOLATION/YEAR or CDC_ABBR NAME or UNRECOGNIZED NAME                                                                       |
+    //  "a" | array of str                     | annotations that distinguish antigens (prevent from merging): ["DISTINCT"], mutation information, unrecognized extra data                                      |
+    //  "R" | str                              | reassortant, e.g. "NYMC-51C"                                                                                                                                   |
+    //  "D" | str, date YYYYMMDD or YYYY-MM-DD | isolation date                                                                                                                                                 |
+    //  "L" | str                              | lineage: "Y[AMAGATA]" or "V[ICTORIA]"                                                                                                                          |
+    //  "P" | str                              | passage, e.g. "MDCK2/SIAT1 (2016-05-12)"                                                                                                                       |
+    //  "l" | array of str                     | lab ids ([lab#id]), e.g. ["CDC#2013706008"]                                                                                                                    |
+    //  "A" | str                              | aligned amino-acid sequence                                                                                                                                    |
+    //  "B" | str                              | aligned nucleotide sequence                                                                                                                                    |
+    //  "s" | key-value  pairs                 | semantic attributes by group (see below the table)                                                                                                             |
+    //  "C" | str                              | (DEPRECATED, use "s") continent: "ASIA", "AUSTRALIA-OCEANIA", "NORTH-AMERICA", "EUROPE", "RUSSIA", "AFRICA", "MIDDLE-EAST", "SOUTH-AMERICA", "CENTRAL-AMERICA" |
+    //  "c" | array of str                     | (DEPRECATED, use "s") clades, e.g. ["5.2.1"]                                                                                                                   |
+    //  "S" | str                              | (DEPRECATED, use "s") single letter semantic boolean attributes: R - reference, E - egg, V - current vaccine, v - previous vaccine, S - vaccine surrogate      |
 
-//  "a" |     |     |     | array of key-value pairs         | Antigen list                                                                                                                                                   |
-//      | "N" |     |     | str, mandatory                   | name: TYPE(SUBTYPE)/[HOST/]LOCATION/ISOLATION/YEAR or CDC_ABBR NAME or UNRECOGNIZED NAME                                                                       |
-//      | "a" |     |     | array of str                     | annotations that distinguish antigens (prevent from merging): ["DISTINCT"], mutation information, unrecognized extra data                                      |
-//      | "D" |     |     | str, date YYYYMMDD or YYYY-MM-DD | isolation date                                                                                                                                                 |
-//      | "L" |     |     | str                              | lineage: "Y[AMAGATA]" or "V[ICTORIA]"                                                                                                                          |
-//      | "P" |     |     | str                              | passage, e.g. "MDCK2/SIAT1 (2016-05-12)"                                                                                                                       |
-//      | "R" |     |     | str                              | reassortant, e.g. "NYMC-51C"                                                                                                                                   |
-//      | "l" |     |     | array of str                     | lab ids ([lab#id]), e.g. ["CDC#2013706008"]                                                                                                                    |
-//      | "A" |     |     | str                              | aligned amino-acid sequence                                                                                                                                    |
-//      | "B" |     |     | str                              | aligned nucleotide sequence                                                                                                                                    |
-//      | "s" |     |     | key-value  pairs                 | semantic attributes by group (see below the table)                                                                                                             |
-//      | "C" |     |     | str                              | (DEPRECATED, use "s") continent: "ASIA", "AUSTRALIA-OCEANIA", "NORTH-AMERICA", "EUROPE", "RUSSIA", "AFRICA", "MIDDLE-EAST", "SOUTH-AMERICA", "CENTRAL-AMERICA" |
-//      | "c" |     |     | array of str                     | (DEPRECATED, use "s") clades, e.g. ["5.2.1"]                                                                                                                   |
-//      | "S" |     |     | str                              | (DEPRECATED, use "s") single letter semantic boolean attributes: R - reference, E - egg, V - current vaccine, v - previous vaccine, S - vaccine surrogate      |
+    fmt::format_to(std::back_inserter(out), "  \"a\": [");
+    auto comma3 = false;
+    for (const auto& antigen : antigens()) {
+        if (comma3)
+            fmt::format_to(std::back_inserter(out), ",");
+        fmt::format_to(std::back_inserter(out), "\n   {{");
+        auto comma4 = put_str(antigen.name(), not_empty, "N", false);
+        comma4 = put_array_str(antigen.annotations(), not_empty, "a", comma4);
+        comma4 = put_str(antigen.reassortant(), not_empty, "R", comma4);
+        comma4 = put_str(antigen.date(), not_empty, "D", comma4);
+        comma4 = put_str(antigen.lineage(), not_empty, "L", comma4);
+        comma4 = put_str(antigen.passage(), not_empty, "P", comma4);
+        comma4 = put_array_str(antigen.lab_ids(), not_empty, "l", comma4);
+        comma4 = put_str(antigen.aa(), not_empty, "A", comma4); // , "\n    ");
+        comma4 = put_str(antigen.nuc(), not_empty, "B", comma4); // , "\n    ");
+        // "s": {} -- semantic
+        fmt::format_to(std::back_inserter(out), "}}");
+        comma3 = true;
+    }
+    fmt::format_to(std::back_inserter(out), "\n  ],\n");
 
-    fmt::format_to(std::back_inserter(out), "  \"a\": [\n");
-    fmt::format_to(std::back_inserter(out), "  ],\n");
+    // Sera
+    //  "N" | str, mandatory   | name: TYPE(SUBTYPE)/[HOST/]LOCATION/ISOLATION/YEAR or CDC_ABBR NAME or UNRECOGNIZED NAME                                                                       |
+    //  "a" | array of str     | annotations that distinguish sera (prevent from merging), e.g. ["BOOSTED", "CONC 2:1", "HA-Y156T"]                                                             |
+    //  "R" | str              | reassortant, e.g. "NYMC-51C"                                                                                                                                   |
+    //  "L" | str              | lineage: "Y[AMAGATA]" or "V[ICTORIA]"                                                                                                                          |
+    //  "P" | str              | passage, e.g. "MDCK2/SIAT1 (2016-05-12)"                                                                                                                       |
+    //  "I" | str              | serum id, e.g "CDC 2016-045"                                                                                                                                   |
+    //  "s" | str              | serum species, e.g "FERRET"                                                                                                                                    |
+    //  "h" | array of numbers | homologous antigen indices, e.g. [0]                                                                                                                           |
+    //  "A" | str              | aligned amino-acid sequence                                                                                                                                    |
+    //  "B" | str              | aligned nucleotide sequence                                                                                                                                    |
+    //  "s" | key-value  pairs | semantic attributes by group (see below the table)                                                                                                             |
+    //  "C" | str              | (DEPRECATED, use "s") continent: "ASIA", "AUSTRALIA-OCEANIA", "NORTH-AMERICA", "EUROPE", "RUSSIA", "AFRICA", "MIDDLE-EAST", "SOUTH-AMERICA", "CENTRAL-AMERICA" |
+    //  "c" | array of str     | (DEPRECATED, use "s") clades, e.g. ["5.2.1"]                                                                                                                   |
+    //  "S" | str              | (DEPRECATED, use "s") single letter semantic boolean attributes: E - egg                                                                                       |
 
-
-//  "s" |     |     |     | array of key-value pairs         | Serum list                                                                                                                                                     |
-//      | "N" |     |     | str, mandatory                   | name: TYPE(SUBTYPE)/[HOST/]LOCATION/ISOLATION/YEAR or CDC_ABBR NAME or UNRECOGNIZED NAME                                                                       |
-//      | "a" |     |     | array of str                     | annotations that distinguish sera (prevent from merging), e.g. ["BOOSTED", "CONC 2:1", "HA-Y156T"]                                                             |
-//      | "s" |     |     | str                              | serum species, e.g "FERRET"                                                                                                                                    |
-//      | "L" |     |     | str                              | lineage: "Y[AMAGATA]" or "V[ICTORIA]"                                                                                                                          |
-//      | "P" |     |     | str                              | passage, e.g. "MDCK2/SIAT1 (2016-05-12)"                                                                                                                       |
-//      | "R" |     |     | str                              | reassortant, e.g. "NYMC-51C"                                                                                                                                   |
-//      | "I" |     |     | str                              | serum id, e.g "CDC 2016-045"                                                                                                                                   |
-//      | "h" |     |     | array of numbers                 | homologous antigen indices, e.g. [0]                                                                                                                           |
-//      | "A" |     |     | str                              | aligned amino-acid sequence                                                                                                                                    |
-//      | "B" |     |     | str                              | aligned nucleotide sequence                                                                                                                                    |
-//      | "s" |     |     | key-value  pairs                 | semantic attributes by group (see below the table)                                                                                                             |
-//      | "C" |     |     | str                              | (DEPRECATED, use "s") continent: "ASIA", "AUSTRALIA-OCEANIA", "NORTH-AMERICA", "EUROPE", "RUSSIA", "AFRICA", "MIDDLE-EAST", "SOUTH-AMERICA", "CENTRAL-AMERICA" |
-//      | "c" |     |     | array of str                     | (DEPRECATED, use "s") clades, e.g. ["5.2.1"]                                                                                                                   |
-//      | "S" |     |     | str                              | (DEPRECATED, use "s") single letter semantic boolean attributes: E - egg                                                                                       |
-
-    fmt::format_to(std::back_inserter(out), "  \"s\": [\n");
+    fmt::format_to(std::back_inserter(out), "  \"s\": [");
+    auto comma5 = false;
+    for (const auto& serum : sera()) {
+        if (comma5)
+            fmt::format_to(std::back_inserter(out), ",");
+        fmt::format_to(std::back_inserter(out), "\n   {{");
+        auto comma6 = put_str(serum.name(), not_empty, "N", false);
+        comma6 = put_array_str(serum.annotations(), not_empty, "a", comma6);
+        comma6 = put_str(serum.reassortant(), not_empty, "R", comma6);
+        comma6 = put_str(serum.lineage(), not_empty, "L", comma6);
+        comma6 = put_str(serum.passage(), not_empty, "P", comma6);
+        comma6 = put_str(serum.serum_id(), not_empty, "I", comma6);
+        comma6 = put_str(serum.serum_species(), not_empty, "s", comma6);
+        comma6 = put_array_int(serum.homologous_antigens(), not_empty, "h", comma6);
+        comma6 = put_str(serum.aa(), not_empty, "A", comma6); // , "\n    ");
+        comma6 = put_str(serum.nuc(), not_empty, "B", comma6); // , "\n    ");
+        // "s": {} -- semantic
+        fmt::format_to(std::back_inserter(out), "}}");
+        comma5 = true;
+    }
     fmt::format_to(std::back_inserter(out), "  ],\n");
 
 //  "t" |     |     |     | key-value pairs                  | Titers                                                                                                                                                         |
