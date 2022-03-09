@@ -351,7 +351,7 @@ namespace ae::chart::v3
         // exporting
         bool is_dense() const { return std::holds_alternative<dense_t>(titers_); }
         const dense_t& dense_titers() const { return std::get<dense_t>(titers_); }
-        const sparse_t& sparse_titers() { return std::get<sparse_t>(titers_); }
+        const sparse_t& sparse_titers() const { return std::get<sparse_t>(titers_); }
 
       private:
         serum_index number_of_sera_{0};

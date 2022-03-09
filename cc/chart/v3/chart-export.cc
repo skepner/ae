@@ -168,12 +168,28 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
         fmt::format_to(std::back_inserter(out), "}}");
         comma5 = true;
     }
-    fmt::format_to(std::back_inserter(out), "  ],\n");
+    fmt::format_to(std::back_inserter(out), "\n  ],\n");
 
     // Titers
     //  "l" | array of arrays of str       | dense matrix of titers
     //  "d" | array of key(str)-value(str) | sparse matrix, entry for each antigen present, key is serum index, value is titer, dont-care titers omitted
     //  "L" | array of arrays of key-value | layers of titers, each top level array element as in "d" or "l"
+
+    const auto put_sparse = [&out, this](const Titers::sparse_t& data, std::string_view indent) {
+        for (const auto ag_no : titers().number_of_antigens()) {
+            if (ag_no != antigen_index{0})
+                fmt::format_to(std::back_inserter(out), ",");
+            fmt::format_to(std::back_inserter(out), "\n{}{{", indent);
+            bool comma = false;
+            for (const auto& [sr_no, titer] : data[*ag_no]) {
+                if (comma)
+                    fmt::format_to(std::back_inserter(out), ",");
+                fmt::format_to(std::back_inserter(out), "\"{}\":\"{}\"", sr_no, titer);
+                comma = true;
+            }
+            fmt::format_to(std::back_inserter(out), "}}");
+        }
+    };
 
     fmt::format_to(std::back_inserter(out), "  \"t\": {{");
     if (titers().is_dense()) {
@@ -193,10 +209,18 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
     }
     else {
         fmt::format_to(std::back_inserter(out), "\n   \"d\": [");
+        put_sparse(titers().sparse_titers(), "    ");
         fmt::format_to(std::back_inserter(out), "\n   ]");
     }
     if (titers().number_of_layers() > layer_index{1}) {
         fmt::format_to(std::back_inserter(out), ",\n   \"L\": [");
+        for (const auto layer_no : titers().number_of_layers()) {
+            if (layer_no != layer_index{0})
+                fmt::format_to(std::back_inserter(out), ",");
+            fmt::format_to(std::back_inserter(out), "\n    [");
+            put_sparse(titers().layer(layer_no), "     ");
+            fmt::format_to(std::back_inserter(out), "\n    ]");
+        }
         fmt::format_to(std::back_inserter(out), "\n   ]");
     }
     fmt::format_to(std::back_inserter(out), "\n  }},\n");
