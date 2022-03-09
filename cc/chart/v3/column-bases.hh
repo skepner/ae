@@ -33,9 +33,9 @@ namespace ae::chart::v3
         bool operator==(const minimum_column_basis& rhs) const { return float_equal(value_, rhs.value_); }
         bool operator!=(const minimum_column_basis& rhs) const { return !operator==(rhs); }
 
-        constexpr bool is_none() const { return float_zero(value_); }
+        bool is_none() const { return float_zero(value_); }
 
-        constexpr operator double() const noexcept { return value_; }
+        operator double() const noexcept { return value_; }
         double apply(double column_basis) const noexcept { return std::max(column_basis, value_); }
 
         enum class use_none { no, yes };

@@ -43,15 +43,15 @@ namespace ae::chart::v3
 
         void reset(number_of_dimensions_t num_dim) { operator=(Transformation(num_dim)); }
 
-        constexpr double _x(size_t offset) const { return operator[](offset); }
-        constexpr double& _x(size_t offset) { return operator[](offset); }
-        constexpr double _x(size_t row, size_t column) const { return operator[](detail::transformation_row_base[row] + column); }
-        constexpr double& _x(size_t row, size_t column) { return operator[](detail::transformation_row_base[row] + column); }
-        template <typename S> constexpr double& operator()(S row, S column) { return _x(static_cast<size_t>(row), static_cast<size_t>(column)); }
-        template <typename S> constexpr double operator()(S row, S column) const { return _x(static_cast<size_t>(row), static_cast<size_t>(column)); }
+        double _x(size_t offset) const { return operator[](offset); }
+        double& _x(size_t offset) { return operator[](offset); }
+        double _x(size_t row, size_t column) const { return operator[](detail::transformation_row_base[row] + column); }
+        double& _x(size_t row, size_t column) { return operator[](detail::transformation_row_base[row] + column); }
+        template <typename S> double& operator()(S row, S column) { return _x(static_cast<size_t>(row), static_cast<size_t>(column)); }
+        template <typename S> double operator()(S row, S column) const { return _x(static_cast<size_t>(row), static_cast<size_t>(column)); }
 
-        template <typename S> constexpr double& translation(S dimension) { return _x(detail::transformation_size - 1, static_cast<size_t>(dimension)); }
-        template <typename S> constexpr double translation(S dimension) const { return _x(detail::transformation_size - 1, static_cast<size_t>(dimension)); }
+        template <typename S> double& translation(S dimension) { return _x(detail::transformation_size - 1, static_cast<size_t>(dimension)); }
+        template <typename S> double translation(S dimension) const { return _x(detail::transformation_size - 1, static_cast<size_t>(dimension)); }
 
         std::vector<double> as_vector() const
         {
@@ -89,14 +89,14 @@ namespace ae::chart::v3
 
         // 2D --------------------------------------------------
 
-        constexpr double a() const { return _x(0, 0); }
-        constexpr double& a() { return _x(0, 0); }
-        constexpr double b() const { return _x(0, 1); }
-        constexpr double& b() { return _x(0, 1); }
-        constexpr double c() const { return _x(1, 0); }
-        constexpr double& c() { return _x(1, 0); }
-        constexpr double d() const { return _x(1, 1); }
-        constexpr double& d() { return _x(1, 1); }
+        double a() const { return _x(0, 0); }
+        double& a() { return _x(0, 0); }
+        double b() const { return _x(0, 1); }
+        double& b() { return _x(0, 1); }
+        double c() const { return _x(1, 0); }
+        double& c() { return _x(1, 0); }
+        double d() const { return _x(1, 1); }
+        double& d() { return _x(1, 1); }
 
         Transformation& set(double a11, double a12, double a21, double a22)
         {

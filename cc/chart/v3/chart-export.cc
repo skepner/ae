@@ -307,7 +307,7 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
             comma7 = put_comma(comma7);
             fmt::format_to(std::back_inserter(out), "\n   {{");
             auto comma8 = put_double(projection.stress(), always, "s", false);
-            comma8 = put_str(projection.minimum_column_basis(), always, "m", comma8);
+            comma8 = put_str(projection.minimum_column_basis(), [](const auto& mcb) { return !mcb.is_none(); }, "m", comma8);
             comma8 = put_str(projection.comment(), not_empty, "c", comma8);
             comma8 = put_bool(projection.dodgy_titer_is_regular() == dodgy_titer_is_regular_e::yes, false, "d", comma8);
             comma8 = put_array_double(projection.forced_column_bases(), not_empty, "C", comma8);
@@ -389,10 +389,10 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
                 comma11 = put_comma(comma11);
                 fmt::format_to(std::back_inserter(out), "\n    {{");
                 auto comma12 = put_bool(style.shown(), true, "+", false);
-                comma12 = put_str(style.fill(), not_empty, "F", comma12);
-                comma12 = put_str(style.outline(), not_empty, "O", comma12);
+                comma12 = put_str(style.fill(), [](const auto& color) { return color != Color{"transparent"}; }, "F", comma12);
+                comma12 = put_str(style.outline(), [](const auto& color) { return color != Color{"black"}; }, "O", comma12);
                 comma12 = put_double(style.outline_width(), [](double val) { return !float_equal(val, 1.0); }, "o", comma12);
-                comma12 = put_str(style.shape(), always, "S", comma12);
+                comma12 = put_str(style.shape(), [](const auto& shape) { return shape != point_shape{}; }, "S", comma12);
                 comma12 = put_double(style.size(), [](auto val) { return !float_equal(val, 1.0); }, "s", comma12);
                 comma12 = put_double(style.rotation(), [](auto val) { return !float_zero(*val); }, "r", comma12);
                 comma12 = put_double(style.aspect(), [](auto val) { return !float_equal(*val, 1.0); }, "a", comma12);
@@ -424,8 +424,8 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
 //  "x" |     |     |     | key-value pairs                  | extensions not used by acmacs
 // -----+-----+-----+-----+----------------------------------+---------------------------------------------------------------------------------------------------------------------
 
-    fmt::format_to(std::back_inserter(out), ",\n  \"x\": {{\n");
-    fmt::format_to(std::back_inserter(out), "  }}\n");
+    // fmt::format_to(std::back_inserter(out), ",\n  \"x\": {{\n");
+    // fmt::format_to(std::back_inserter(out), "  }}\n");
 
     fmt::format_to(std::back_inserter(out), " }}\n}}\n");
 

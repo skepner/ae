@@ -341,9 +341,9 @@ def main(args: argparse.Namespace): # input_file :Path, output_dir :Path):
         elif diffs := table_diff(output_name, whocc_table_path):
             table_date = table_name[-8:]
             if table_date > "2021":
-                print(f">:a diff-ace {output_name} {whocc_table_path}", file=sys.stderr)
+                print(f">:a diff-charts {output_name} {whocc_table_path}", file=sys.stderr)
             else:
-                print(f">:b diff-ace {output_name} {whocc_table_path}", file=sys.stderr)
+                print(f">:b diff-charts {output_name} {whocc_table_path}", file=sys.stderr)
         # else:
         #     print(f">>>> OK: {output_name} --> {whocc_table_path}", file=sys.stderr)
 

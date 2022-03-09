@@ -87,7 +87,7 @@ namespace ae::chart::v3
 
         double logged() const
         {
-            constexpr auto log_titer = [](std::string_view source) -> double { return std::log2(std::stod(std::string{source}) / 10.0); };
+            const auto log_titer = [](std::string_view source) -> double { return std::log2(std::stod(std::string{source}) / 10.0); };
 
             switch (type()) {
                 case Regular:
@@ -373,15 +373,15 @@ namespace ae::chart::v3
 
 } // namespace ae::chart::v3
 
-    // ----------------------------------------------------------------------
+// ----------------------------------------------------------------------
 
-    template <>
-    struct fmt::formatter<ae::chart::v3::Titer> : fmt::formatter<ae::fmt_helper::default_formatter>
+template <> struct fmt::formatter<ae::chart::v3::Titer> : fmt::formatter<ae::fmt_helper::default_formatter>
 {
     template <typename FormatCtx> constexpr auto format(const ae::chart::v3::Titer& titer, FormatCtx& ctx) const { return fmt::format_to(ctx.out(), "{}", titer.get()); }
 };
 
-template <> struct fmt::formatter<ae::chart::v3::TiterIterator::Data> : fmt::formatter<ae::fmt_helper::default_formatter> {
+template <> struct fmt::formatter<ae::chart::v3::TiterIterator::Data> : fmt::formatter<ae::fmt_helper::default_formatter>
+{
     template <typename FormatCtx> constexpr auto format(const ae::chart::v3::TiterIterator::Data& value, FormatCtx& ctx) const
     {
         return format_to(ctx.out(), "ag:{} sr:{} t:{}", value.antigen, value.serum, value.titer);
