@@ -81,6 +81,8 @@ namespace ae::draw::v2
 
         bool operator==(const text_style&) const = default;
 
+        bool empty() const { return slant == font_slant_t{} && weight == font_weight_t{} && font_family.empty(); }
+
         font_slant_t slant{};
         font_weight_t weight{};
         std::string font_family{};
@@ -95,6 +97,8 @@ namespace ae::draw::v2
         label_style() = default;
 
         bool operator==(const label_style&) const = default;
+
+        bool empty() const { return shown && color == Color{"black"} && float_equal(interline, 0.2) && style.empty(); }
 
         bool shown{true};
         // ae::draw::v1::Offset offset{0, 1};

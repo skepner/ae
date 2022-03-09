@@ -396,7 +396,23 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
                 comma12 = put_double(style.size(), [](auto val) { return !float_equal(val, 1.0); }, "s", comma12);
                 comma12 = put_double(style.rotation(), [](auto val) { return !float_zero(*val); }, "r", comma12);
                 comma12 = put_double(style.aspect(), [](auto val) { return !float_equal(*val, 1.0); }, "a", comma12);
-                // style.label()
+
+                if (const auto& label_style = style.label(); !label_style.empty()) {
+                    comma12 = put_comma(comma12);
+                    fmt::format_to(std::back_inserter(out), "\"l\":{{");
+                    auto comma13 = put_str(style.label_text(), not_empty, "t", false);
+                    comma13 = put_bool(label_style.shown, true, "+", comma13);
+                    // "p" offset
+                    comma13 = put_str(label_style.color, [](const auto& color) { return color != Color{"black"}; }, "c", comma13);
+                    comma13 = put_str(label_style.style.slant, [](const auto& slant) { return slant != ae::draw::v2::font_slant_t{"normal"}; }, "S", comma13);
+                    comma13 = put_str(label_style.style.weight, [](const auto& weight) { return weight != ae::draw::v2::font_weight_t{"normal"}; }, "W", comma13);
+                    comma13 = put_str(label_style.style.font_family, not_empty, "f", comma13);
+                    //      |     | "s" | float                   | label size, default 1.0
+                    //      |     | "r" | float                   | label rotation, default 0.0
+                    comma13 = put_double(label_style.interline, [](double interline) { return !float_equal(interline, 0.2); }, "i", comma13);
+                    fmt::format_to(std::back_inserter(out), "}}");
+                }
+
                 fmt::format_to(std::back_inserter(out), "}}");
             }
             fmt::format_to(std::back_inserter(out), "\n   ]");
