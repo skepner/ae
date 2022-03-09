@@ -42,18 +42,32 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
     //      | "T" |     |     | str                              | table type "A[NTIGENIC]" - default, "G[ENETIC]"                                                                                                                |
     //      | "S" |     |     | array of key-value pairs         | source table info list, each entry is like "i"                                                                                                                 |
 
+    const auto put_table_source = [put, not_empty](const TableSource& source) -> bool {
+        auto comma = put(source.name(), not_empty, "N", false);
+        comma = put(source.virus(), [](auto&& val) { return !val.empty() && val != ae::virus::virus_t{"INFLUENZA"}; }, "v", comma);
+        comma = put(source.type_subtype(), not_empty, "V", comma);
+        comma = put(source.lab(), not_empty, "l", comma);
+        comma = put(source.assay(), not_empty, "A", comma);
+        comma = put(source.date(), not_empty, "D", comma);
+        comma = put(source.rbc_species(), not_empty, "r", comma);
+        return comma;
+    };
+
     fmt::format_to(std::back_inserter(out), "  \"i\": {{");
-    auto comma = put(info().name(), not_empty, "N", false);
-    comma = put(info().virus(), [](auto&& val) { return !val.empty() && val != ae::virus::virus_t{"INFLUENZA"}; }, "v", comma);
-    comma = put(info().type_subtype(), not_empty, "V", comma);
-    comma = put(info().lab(), not_empty, "l", comma);
-    comma = put(info().assay(), not_empty, "A", comma);
-    comma = put(info().date(), not_empty, "D", comma);
-    comma = put(info().rbc_species(), not_empty, "r", comma);
+    auto comma = put_table_source(info());
     if (const auto& sources = info().sources(); !sources.empty()) {
         if (comma)
-            fmt::format_to(std::back_inserter(out), ",\n        \"S\": [");
-        fmt::format_to(std::back_inserter(out), "]");
+            fmt::format_to(std::back_inserter(out), ",");
+        fmt::format_to(std::back_inserter(out), "\n        \"S\": [");
+        auto comma2 = false;
+        for (const auto& src : sources) {
+            if (comma2)
+                fmt::format_to(std::back_inserter(out), ",");
+            fmt::format_to(std::back_inserter(out), "\n         {{");
+            comma2 = put_table_source(src);
+            fmt::format_to(std::back_inserter(out), "}}");
+        }
+        fmt::format_to(std::back_inserter(out), "\n        ]");
         comma = true;
     }
     fmt::format_to(std::back_inserter(out), "}},\n");
