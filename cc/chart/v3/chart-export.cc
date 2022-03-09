@@ -24,6 +24,19 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
             return comma;
     };
 
+    const auto put_double = [&out](const auto& value, auto&& condition, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
+        if (condition(value)) {
+            if (comma)
+                fmt::format_to(std::back_inserter(out), ",");
+            if (!after_comma.empty())
+                fmt::format_to(std::back_inserter(out), "{}", after_comma);
+            fmt::format_to(std::back_inserter(out), "\"{}\":{}", key, ae::format_double(value));
+            return true;
+        }
+        else
+            return comma;
+    };
+
     const auto put_array_str = [&out](const auto& value, auto&& condition, std::string_view key, bool comma) -> bool {
         if (condition(value)) {
             if (comma)
@@ -52,7 +65,15 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
                 fmt::format_to(std::back_inserter(out), ",");
             if (!after_comma.empty())
                 fmt::format_to(std::back_inserter(out), "{}", after_comma);
-            fmt::format_to(std::back_inserter(out), "\"{}\":[{}]", key, fmt::join(value, ","));
+            fmt::format_to(std::back_inserter(out), "\"{}\":[", key);
+            bool comma2 = false;
+            for (double en : value) {
+                if (comma2)
+                    fmt::format_to(std::back_inserter(out), ",");
+                fmt::format_to(std::back_inserter(out), "{}", format_double(en));
+                comma2 = true;
+            }
+            fmt::format_to(std::back_inserter(out), "]");
             return true;
         }
         else
@@ -60,6 +81,7 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
     };
 
     const auto not_empty = [](const auto& val) { return !val.empty(); };
+    const auto always = [](const auto&) { return true; };
 
     fmt::format_to(std::back_inserter(out), R"({{"_": "-*- js-indent-level: 1 -*-",
  "  version": "acmacs-ace-v1",
@@ -238,7 +260,7 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
     }
     fmt::format_to(std::back_inserter(out), "\n  }}");
 
-    //  "C" |     |     |     | array of floats                  | forced column bases for a new projections                                                                                                                      |
+    //  "C" |     |     |     | array of floats                  | forced column bases for a new projections
     // stored with sera
     std::vector<double> forced_column_bases(*sera().size(), 0.0);
     bool forced_column_bases_present = false;
@@ -250,67 +272,84 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
     }
     put_array_double(forced_column_bases, [forced_column_bases_present](auto&&) { return forced_column_bases_present; }, "C", true, "\n  ");
 
-//  "P" |     |     |     | array of key-value pairs         | Projections                                                                                                                                                    |
-//      | "c" |     |     | str (or any)                     | comment                                                                                                                                                        |
-//      | "l" |     |     | array of arrays of floats        | layout, if point is disconnected: emtpy list or ?[NaN, NaN]                                                                                                    |
-//      | "i" |     |     | integer                          | UNUSED number of iterations?                                                                                                                                   |
-//      | "s" |     |     | float                            | stress                                                                                                                                                         |
-//      | "m" |     |     | str                              | minimum column basis, "none" (default), "1280"                                                                                                                 |
-//      | "C" |     |     | array of floats                  | forced column bases                                                                                                                                            |
-//      | "t" |     |     | array of floats                  | transformation matrix                                                                                                                                          |
-//      | "g" |     |     | array of floats                  | antigens_sera_gradient_multipliers, float for each point                                                                                                       |
-//      | "f" |     |     | array of floats                  | avidity adjusts (antigens_sera_titers_multipliers), float for each point                                                                                       |
-//      | "d" |     |     | boolean                          | dodgy_titer_is_regular, false is default                                                                                                                       |
-//      | "e" |     |     | float                            | stress_diff_to_stop                                                                                                                                            |
-//      | "U" |     |     | array of integers                | list of indices of unmovable points (antigen/serum attribute for stress evaluation)                                                                            |
-//      | "D" |     |     | array of integers                | list of indices of disconnected points (antigen/serum attribute for stress evaluation)                                                                         |
-//      | "u" |     |     | array of integers                | list of indices of points unmovable in the last dimension (antigen/serum attribute for stress evaluation)                                                      |
-// -----+-----+-----+-----+----------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-//  "R" |     |     |     | key-value(key-value) pairs       | sematic attributes based plot specifications, key: name of the style                                                                                           |
-//      |     |     |     |                                  |                                                                                                                                                                |
-//      |     |     |     |                                  |                                                                                                                                                                |
-//      |     |     |     |                                  |                                                                                                                                                                |
-//      |     |     |     |                                  |                                                                                                                                                                |
-//      |     |     |     |                                  |                                                                                                                                                                |
-//      |     |     |     |                                  |                                                                                                                                                                |
-//      |     |     |     |                                  |                                                                                                                                                                |
-//      |     |     |     |                                  |                                                                                                                                                                |
-//      |     |     |     |                                  |                                                                                                                                                                |
-//      |     |     |     |                                  |                                                                                                                                                                |
-// -----+-----+-----+-----+----------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-//  "p" |     |     |     | key-value pairs                  | legacy lispmds stype plot specification                                                                                                                        |
-//      | "d" |     |     | array of integers                | drawing order, point indices                                                                                                                                   |
-//      | "E" |     |     | key-value pairs                  | error line positive, default: {"c": "blue"}                                                                                                                    |
-//      | "e" |     |     | key-value pairs                  | error line negative, default: {"c": "red"}                                                                                                                     |
-//      | "g" |     |     | ?                                | ? grid data                                                                                                                                                    |
-//      | "P" |     |     | array of key-value pairs         | list of plot styles                                                                                                                                            |
-//      |     | "+" |     | boolean                          | if point is shown, default is true, disconnected points are usually not shown and having NaN coordinates in layout                                             |
-//      |     | "F" |     | color, str                       | fill color: #FF0000 or T[RANSPARENT] or color name (red, green, blue, etc.), default is transparent                                                            |
-//      |     | "O" |     | color, str                       | outline color: #000000 or T[RANSPARENT] or color name (red, green, blue, etc.), default is black                                                               |
-//      |     | "o" |     | float                            | outline width, default 1.0                                                                                                                                     |
-//      |     | "S" |     | str                              | shape: "C[IRCLE]" (default), "B[OX]", "T[RIANGLE]", "E[GG]", "U[GLYEGG]"                                                                                       |
-//      |     | "s" |     | float                            | size, default 1.0                                                                                                                                              |
-//      |     | "r" |     | float                            | rotation in radians, default 0.0                                                                                                                               |
-//      |     | "a" |     | float                            | aspect ratio, default 1.0                                                                                                                                      |
-//      |     | "l" |     | key-value pairs                  | label style                                                                                                                                                    |
-//      |     |     | "+" | boolean                          | if label is shown                                                                                                                                              |
-//      |     |     | "p" | list of two floats               | label position (2D only), list of two doubles, default is [0, 1] means under point                                                                             |
-//      |     |     | "t" | str                              | label text if forced by user                                                                                                                                   |
-//      |     |     | "f" | str                              | font face                                                                                                                                                      |
-//      |     |     | "S" | str                              | font slant: "normal" (default), "italic"                                                                                                                       |
-//      |     |     | "W" | str                              | font weight: "normal" (default), "bold"                                                                                                                        |
-//      |     |     | "s" | float                            | label size, default 1.0                                                                                                                                        |
-//      |     |     | "c" | color, str                       | label color, default: "black"                                                                                                                                  |
-//      |     |     | "r" | float                            | label rotation, default 0.0                                                                                                                                    |
-//      |     |     | "i" | float                            | addtional interval between lines as a fraction of line height, default 0.2                                                                                     |
-//      | "p" |     |     | arrsy of integers                | index in "P" for each point, antigens followed by sera                                                                                                                                                               |
-//      | "l" |     |     | array of integers                | ? for each procrustes line, index in the "L" list                                                                                                              |
-//      | "L" |     |     | array                            | ? list of procrustes lines styles                                                                                                                              |
-//      | "s" |     |     | array of integers                | list of point indices for point shown on all maps in the time series                                                                                           |
-//      | "t" |     |     | key-value pairs                  | ? title style                                                                                                                                                  |
-// -----+-----+-----+-----+----------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-//  "x" |     |     |     | key-value pairs                  | extensions not used by acmacs                                                                                                                                  |
-// -----+-----+-----+-----+----------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+    // Projections
+    // "c" | str (or any)              | comment
+    // "s" | float                     | stress
+    // "m" | str                       | minimum column basis, "none" (default), "1280"
+    // "l" | array of arrays of floats | layout, if point is disconnected: empty list or ?[NaN, NaN]
+    // "i" | integer                   | UNUSED number of iterations?
+    // "C" | array of floats           | forced column bases
+    // "t" | array of floats           | transformation matrix
+    // "g" | array of floats           | antigens_sera_gradient_multipliers, float for each point
+    // "f" | array of floats           | avidity adjusts (antigens_sera_titers_multipliers), float for each point
+    // "d" | boolean                   | dodgy_titer_is_regular, false is default
+    // "e" | float                     | stress_diff_to_stop
+    // "U" | array of integers         | list of indices of unmovable points (antigen/serum attribute for stress evaluation)
+    // "D" | array of integers         | list of indices of disconnected points (antigen/serum attribute for stress evaluation)
+    // "u" | array of integers         | list of indices of points unmovable in the last dimension (antigen/serum attribute for stress evaluation)
+
+    if (!projections().empty()) {
+        fmt::format_to(std::back_inserter(out), ",\n  \"P\": [");
+        auto comma7 = false;
+        for (const auto& projection : projections()) {
+            if (comma7)
+                fmt::format_to(std::back_inserter(out), ",");
+            fmt::format_to(std::back_inserter(out), "\n   {{");
+            auto comma8 = put_double(projection.stress(), always, "s", false);
+            comma8 = put_str(projection.minimum_column_basis(), always, "m", comma8);
+            comma8 = put_str(projection.comment(), not_empty, "c", comma8);
+            // "l"
+            // "C"
+            // "t"
+            // "g"
+            // "f"
+            // "d"
+            // "e"
+            // "U"
+            // "D"
+            // "u"
+            fmt::format_to(std::back_inserter(out), "}}");
+            comma7 = true;
+        }
+        fmt::format_to(std::back_inserter(out), "\n  ]");
+    }
+
+// -----+-----+-----+-----+----------------------------------+---------------------------------------------------------------------------------------------------------------------
+//  "R" |     |     |     | key-value(key-value) pairs       | sematic attributes based plot specifications, key: name of the style
+// -----+-----+-----+-----+----------------------------------+---------------------------------------------------------------------------------------------------------------------
+//  "p" |     |     |     | key-value pairs                  | legacy lispmds stype plot specification
+//      | "d" |     |     | array of integers                | drawing order, point indices
+//      | "E" |     |     | key-value pairs                  | error line positive, default: {"c": "blue"}
+//      | "e" |     |     | key-value pairs                  | error line negative, default: {"c": "red"}
+//      | "g" |     |     | ?                                | ? grid data
+//      | "P" |     |     | array of key-value pairs         | list of plot styles
+//      |     | "+" |     | boolean                          | if point is shown, default is true, disconnected points are usually not shown and having NaN coordinates in layout
+//      |     | "F" |     | color, str                       | fill color: #FF0000 or T[RANSPARENT] or color name (red, green, blue, etc.), default is transparent
+//      |     | "O" |     | color, str                       | outline color: #000000 or T[RANSPARENT] or color name (red, green, blue, etc.), default is black
+//      |     | "o" |     | float                            | outline width, default 1.0
+//      |     | "S" |     | str                              | shape: "C[IRCLE]" (default), "B[OX]", "T[RIANGLE]", "E[GG]", "U[GLYEGG]"
+//      |     | "s" |     | float                            | size, default 1.0
+//      |     | "r" |     | float                            | rotation in radians, default 0.0
+//      |     | "a" |     | float                            | aspect ratio, default 1.0
+//      |     | "l" |     | key-value pairs                  | label style
+//      |     |     | "+" | boolean                          | if label is shown
+//      |     |     | "p" | list of two floats               | label position (2D only), list of two doubles, default is [0, 1] means under point
+//      |     |     | "t" | str                              | label text if forced by user
+//      |     |     | "f" | str                              | font face
+//      |     |     | "S" | str                              | font slant: "normal" (default), "italic"
+//      |     |     | "W" | str                              | font weight: "normal" (default), "bold"
+//      |     |     | "s" | float                            | label size, default 1.0
+//      |     |     | "c" | color, str                       | label color, default: "black"
+//      |     |     | "r" | float                            | label rotation, default 0.0
+//      |     |     | "i" | float                            | addtional interval between lines as a fraction of line height, default 0.2
+//      | "p" |     |     | arrsy of integers                | index in "P" for each point, antigens followed by sera                                                                                                                   |
+//      | "l" |     |     | array of integers                | ? for each procrustes line, index in the "L" list
+//      | "L" |     |     | array                            | ? list of procrustes lines styles
+//      | "s" |     |     | array of integers                | list of point indices for point shown on all maps in the time series
+//      | "t" |     |     | key-value pairs                  | ? title style
+// -----+-----+-----+-----+----------------------------------+---------------------------------------------------------------------------------------------------------------------
+//  "x" |     |     |     | key-value pairs                  | extensions not used by acmacs
+// -----+-----+-----+-----+----------------------------------+---------------------------------------------------------------------------------------------------------------------
 
     fmt::format_to(std::back_inserter(out), ",\n  \"x\": {{\n");
     fmt::format_to(std::back_inserter(out), "  }}\n");

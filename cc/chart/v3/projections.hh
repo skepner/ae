@@ -42,7 +42,7 @@ namespace ae::chart::v3
         // double stress_with_moved_point(size_t point_no, const PointCoordinates& move_to) const;
         Transformation& transformation() { return transformation_; }
         const Transformation& transformation() const { return transformation_; }
-        const std::string& comment() const { return comment_; }
+        std::string_view comment() const { return comment_; }
         void comment(std::string_view comm) { comment_ = comm; }
 
         class minimum_column_basis minimum_column_basis() const { return minimum_column_basis_; }
@@ -90,6 +90,8 @@ namespace ae::chart::v3
         unmovable_in_the_last_dimension_points unmovable_in_the_last_dimension_{};
         avidity_adjusts avidity_adjusts_{};
         enum dodgy_titer_is_regular dodgy_titer_is_regular_{dodgy_titer_is_regular::no};
+
+        double stress_recalculate() const;
     };
 
     // ----------------------------------------------------------------------

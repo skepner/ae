@@ -7,7 +7,6 @@
 
 #include "utils/log.hh"
 #include "ad/sfinae.hh"
-#include "ad/format-double.hh"
 
 // ----------------------------------------------------------------------
 
@@ -150,7 +149,7 @@ namespace to_json
                 else if constexpr (std::numeric_limits<std::decay_t<T>>::is_integer)
                     push_back(fmt::format("{}", std::forward<T>(a_val)));
                 else if constexpr (std::is_floating_point_v<std::decay_t<T>>)
-                    push_back(acmacs::format_double(a_val));
+                    push_back(ae::format_double(a_val));
                 else if constexpr (acmacs::sfinae::decay_equiv_v<T, bool>)
                     push_back(a_val ? "true" : "false");
                 else

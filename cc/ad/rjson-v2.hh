@@ -23,7 +23,6 @@
 #include <optional>
 
 #include "ad/sfinae.hh"
-#include "ad/format-double.hh"
 #include "utils/log.hh"
 #include "utils/string.hh"
 #include "ad/enumerate.hh"
@@ -407,7 +406,7 @@ namespace rjson::inline v2
                     if constexpr (std::is_same_v<Number, std::string>)
                         target = from;
                     else if constexpr (std::is_same_v<Number, double>)
-                        target = acmacs::format_double(from);
+                        target = ae::format_double(from);
                     else
                         target = fmt::format("{}", from);
                 }
