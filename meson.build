@@ -156,6 +156,8 @@ sources_chart_v3 = [
   'cc/chart/v3/stress.cc',
   'cc/chart/v3/table-distances.cc',
   'cc/chart/v3/randomizer.cc',
+  'cc/chart/v3/optimize.cc',
+  'cc/chart/v3/alglib.cc',
 ]
 
 sources_chart_v2 = [

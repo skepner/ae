@@ -1,6 +1,7 @@
 #include "utils/string.hh"
 #include "chart/v3/randomizer.hh"
 #include "chart/v3/chart.hh"
+#include "chart/v3/optimize.hh"
 
 // ----------------------------------------------------------------------
 
