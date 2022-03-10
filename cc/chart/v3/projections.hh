@@ -6,6 +6,7 @@
 #include "chart/v3/transformation.hh"
 #include "chart/v3/column-bases.hh"
 #include "chart/v3/avidity-adjusts.hh"
+#include "chart/v3/optimize-options.hh"
 
 // ----------------------------------------------------------------------
 
@@ -14,7 +15,6 @@ namespace ae::chart::v3
     class Chart;
 
     enum class recalculate_stress { /* no, */ if_necessary, yes };
-    enum class dodgy_titer_is_regular_e { no, yes };
 
     constexpr const double InvalidStress{-1.0};
 

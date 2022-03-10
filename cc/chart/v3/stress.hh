@@ -16,15 +16,15 @@ namespace ae::chart::v3
 
     struct StressParameters
     {
-        StressParameters(point_index a_number_of_points, unmovable_points&& a_unmovable, disconnected_points&& a_disconnected,
-                         unmovable_in_the_last_dimension_points&& a_unmovable_in_the_last_dimension, multiply_antigen_titer_until_column_adjust a_mult, avidity_adjusts&& a_avidity_adjusts,
-                         dodgy_titer_is_regular a_dodgy_titer_is_regular)
-            : number_of_points(a_number_of_points), unmovable(std::move(a_unmovable)), disconnected(std::move(a_disconnected)),
-              unmovable_in_the_last_dimension(std::move(a_unmovable_in_the_last_dimension)), mult(a_mult), m_avidity_adjusts(std::move(a_avidity_adjusts)),
-              dodgy_titer_is_regular(a_dodgy_titer_is_regular)
+        StressParameters(point_index a_number_of_points, const unmovable_points& a_unmovable, const disconnected_points& a_disconnected,
+                         const unmovable_in_the_last_dimension_points& a_unmovable_in_the_last_dimension, multiply_antigen_titer_until_column_adjust a_mult, const avidity_adjusts& a_avidity_adjusts,
+                         dodgy_titer_is_regular_e a_dodgy_titer_is_regular)
+            : number_of_points{a_number_of_points}, unmovable{a_unmovable}, disconnected{a_disconnected},
+              unmovable_in_the_last_dimension{a_unmovable_in_the_last_dimension}, mult{a_mult}, m_avidity_adjusts{a_avidity_adjusts},
+              dodgy_titer_is_regular{a_dodgy_titer_is_regular}
         {
         }
-        StressParameters(point_index a_number_of_points, multiply_antigen_titer_until_column_adjust a_mult, dodgy_titer_is_regular a_dodgy_titer_is_regular)
+        StressParameters(point_index a_number_of_points, multiply_antigen_titer_until_column_adjust a_mult, dodgy_titer_is_regular_e a_dodgy_titer_is_regular)
             : number_of_points(a_number_of_points), mult(a_mult), dodgy_titer_is_regular(a_dodgy_titer_is_regular)
         {
         }
@@ -36,7 +36,7 @@ namespace ae::chart::v3
         unmovable_in_the_last_dimension_points unmovable_in_the_last_dimension{};
         multiply_antigen_titer_until_column_adjust mult{multiply_antigen_titer_until_column_adjust::yes};
         avidity_adjusts m_avidity_adjusts{};
-        enum dodgy_titer_is_regular dodgy_titer_is_regular { dodgy_titer_is_regular::no };
+        dodgy_titer_is_regular_e dodgy_titer_is_regular { dodgy_titer_is_regular_e::no };
 
     }; // struct StressParameters
 
@@ -46,7 +46,7 @@ namespace ae::chart::v3
         using TableDistancesForPoint = typename TableDistances::EntriesForPoint;
 
         Stress(const Projection& projection, multiply_antigen_titer_until_column_adjust mult);
-        Stress(number_of_dimensions_t number_of_dimensions, point_index number_of_points, multiply_antigen_titer_until_column_adjust mult, dodgy_titer_is_regular a_dodgy_titer_is_regular);
+        Stress(number_of_dimensions_t number_of_dimensions, point_index number_of_points, multiply_antigen_titer_until_column_adjust mult, dodgy_titer_is_regular_e a_dodgy_titer_is_regular);
         Stress(number_of_dimensions_t number_of_dimensions, point_index number_of_points);
 
         double value(const double* first, const double* /* unused */ = nullptr) const;
@@ -64,11 +64,11 @@ namespace ae::chart::v3
 
         const TableDistances& table_distances() const { return table_distances_; }
         TableDistances& table_distances() { return table_distances_; }
-        TableDistancesForPoint table_distances_for(size_t point_no) const { return TableDistancesForPoint(point_no, table_distances_); }
+        TableDistancesForPoint table_distances_for(point_index point_no) const { return TableDistancesForPoint(point_no, table_distances_); }
         const StressParameters& parameters() const { return parameters_; }
         StressParameters& parameters() { return parameters_; }
         void set_disconnected(const disconnected_points& to_disconnect) { parameters_.disconnected = to_disconnect; }
-        void extend_disconnected(const disconnected_points& to_disconnect) { parameters_.disconnected.merge_in(to_disconnect); }
+        void extend_disconnected(const point_indexes& to_disconnect) { parameters_.disconnected.merge_in(to_disconnect); }
         size_t number_of_disconnected() const { return parameters_.disconnected.size(); }
         void set_unmovable(const unmovable_points& unmovable) { parameters_.unmovable = unmovable; }
         void set_unmovable_in_the_last_dimension(const unmovable_in_the_last_dimension_points& unmovable_in_the_last_dimension)
@@ -90,12 +90,12 @@ namespace ae::chart::v3
 
     Stress stress_factory(const Chart& chart, const Projection& projection, multiply_antigen_titer_until_column_adjust mult);
     Stress stress_factory(const Chart& chart, number_of_dimensions_t number_of_dimensions, minimum_column_basis mcb, multiply_antigen_titer_until_column_adjust mult,
-                          dodgy_titer_is_regular a_dodgy_titer_is_regular = dodgy_titer_is_regular::no);
+                          dodgy_titer_is_regular_e a_dodgy_titer_is_regular = dodgy_titer_is_regular_e::no);
 
     // avidity test support
-    Stress stress_factory(const Chart& chart, const Projection& projection, size_t antigen_no, double logged_avidity_adjust, multiply_antigen_titer_until_column_adjust mult);
+    Stress stress_factory(const Chart& chart, const Projection& projection, antigen_index antigen_no, double logged_avidity_adjust, multiply_antigen_titer_until_column_adjust mult);
 
-    TableDistances table_distances(const Chart& chart, minimum_column_basis mcb, dodgy_titer_is_regular a_dodgy_titer_is_regular = dodgy_titer_is_regular::no);
+    TableDistances table_distances(const Chart& chart, minimum_column_basis mcb, dodgy_titer_is_regular_e a_dodgy_titer_is_regular = dodgy_titer_is_regular_e::no);
 
     constexpr inline double SigmoidMutiplier() { return 10.0; }
 

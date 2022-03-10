@@ -12,6 +12,8 @@
 
 namespace ae::chart::v3
 {
+    struct StressParameters;
+
     namespace detail
     {
         class DistancesBase
@@ -51,7 +53,6 @@ namespace ae::chart::v3
 
               public:
                 bool operator==(const IteratorForPoint& rhs) const { return current_ == rhs.current_; }
-                bool operator!=(const IteratorForPoint& rhs) const { return !operator==(rhs); }
                 const Entry& operator*() const { return *current_; }
                 const Entry* operator->() const { return &*current_; }
 
@@ -90,20 +91,10 @@ namespace ae::chart::v3
         using detail::DistancesBase::less_than;
         // using detail::DistancesBase::more_than;
 
-        void dodgy_is_regular(dodgy_titer_is_regular dodgy_is_regular) { dodgy_is_regular_ = dodgy_is_regular; }
+        void dodgy_is_regular(dodgy_titer_is_regular_e dodgy_is_regular) { dodgy_is_regular_ = dodgy_is_regular; }
 
-        void update(const Titer& titer, point_index p1, point_index p2, double column_basis, double adjust, multiply_antigen_titer_until_column_adjust mult)
-        {
-            try {
-                auto distance = column_basis - titer.logged() - adjust;
-                if (distance < 0 && mult == multiply_antigen_titer_until_column_adjust::yes)
-                    distance = 0;
-                add_value(titer.type(), p1, p2, distance);
-            }
-            catch (invalid_titer&) {
-                // ignore dont-care
-            }
-        }
+        void update(const Titer& titer, point_index p1, point_index p2, double column_basis, double adjust, multiply_antigen_titer_until_column_adjust mult);
+        void update(const Titers& titers, const column_bases& col_bases, const StressParameters& parameters);
 
         // void report() const { std::cerr << "TableDistances regular: " << regular().size() << "  less-than: " << less_than().size() << '\n'; }
 
@@ -115,17 +106,7 @@ namespace ae::chart::v3
         };
         using entries_for_point_t = std::vector<EntryForPoint>;
 
-        static entries_for_point_t entries_for_point(const entries_t& source, point_index point_no)
-        {
-            entries_for_point_t result;
-            for (const auto& src : source) {
-                if (src.point_1 == point_no)
-                    result.emplace_back(src.point_2, src.distance);
-                else if (src.point_2 == point_no)
-                    result.emplace_back(src.point_1, src.distance);
-            }
-            return result;
-        }
+        static entries_for_point_t entries_for_point(const entries_t& source, point_index point_no);
 
         struct EntriesForPoint
         {
@@ -143,7 +124,7 @@ namespace ae::chart::v3
         {
             switch (type) {
                 case Titer::Dodgy:
-                    if (dodgy_is_regular_ == dodgy_titer_is_regular::no)
+                    if (dodgy_is_regular_ == dodgy_titer_is_regular_e::no)
                         break;
                     [[fallthrough]];
                 case Titer::Regular:
@@ -162,7 +143,7 @@ namespace ae::chart::v3
         }
 
       private:
-        dodgy_titer_is_regular dodgy_is_regular_{dodgy_titer_is_regular::no};
+        dodgy_titer_is_regular_e dodgy_is_regular_{dodgy_titer_is_regular_e::no};
 
     }; // class TableDistances
 

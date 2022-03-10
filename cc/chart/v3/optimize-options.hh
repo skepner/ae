@@ -18,7 +18,7 @@ namespace ae::chart::v3
         // optimlib_differential_evolution,
     };
     enum class multiply_antigen_titer_until_column_adjust { no, yes };
-    enum class dodgy_titer_is_regular { no, yes };
+    enum class dodgy_titer_is_regular_e { no, yes };
     enum class disconnect_few_numeric_titers { no, yes };
 
     using number_of_optimizations_t = named_size_t<struct number_of_optimizations_tag>;
@@ -128,15 +128,15 @@ template <> struct fmt::formatter<ae::chart::v3::multiply_antigen_titer_until_co
     }
 };
 
-template <> struct fmt::formatter<ae::chart::v3::dodgy_titer_is_regular> : public fmt::formatter<ae::fmt_helper::default_formatter>
+template <> struct fmt::formatter<ae::chart::v3::dodgy_titer_is_regular_e> : public fmt::formatter<ae::fmt_helper::default_formatter>
 {
-    template <typename FormatContext> auto format(const ae::chart::v3::dodgy_titer_is_regular& dod, FormatContext& ctx)
+    template <typename FormatContext> auto format(const ae::chart::v3::dodgy_titer_is_regular_e& dod, FormatContext& ctx)
     {
         using namespace ae::chart::v3;
         switch (dod) {
-          case dodgy_titer_is_regular::no:
+          case dodgy_titer_is_regular_e::no:
               return format_to(ctx.out(), "no");
-          case dodgy_titer_is_regular::yes:
+          case dodgy_titer_is_regular_e::yes:
               return format_to(ctx.out(), "yes");
         }
         return format_to(ctx.out(), "unknown"); // g++9

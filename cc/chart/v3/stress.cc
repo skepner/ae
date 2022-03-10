@@ -38,47 +38,43 @@ ae::chart::v3::Stress ae::chart::v3::stress_factory(const Chart& chart, const Pr
     auto cb = projection.forced_column_bases();
     if (cb.empty())
         cb = chart.column_bases(projection.minimum_column_basis());
-    chart.titers().update(stress.table_distances(), *cb, stress.parameters());
+    stress.table_distances().update(chart.titers(), cb, stress.parameters());
     return stress;
 
 } // ae::chart::v3::stress_factory
 
 // ----------------------------------------------------------------------
 
-ae::chart::v3::Stress ae::chart::v3::stress_factory(const Chart& chart, const Projection& projection, size_t antigen_no, double logged_avidity_adjust, multiply_antigen_titer_until_column_adjust mult)
+ae::chart::v3::Stress ae::chart::v3::stress_factory(const Chart& chart, const Projection& projection, antigen_index antigen_no, double logged_avidity_adjust, multiply_antigen_titer_until_column_adjust mult)
 {
     Stress stress(projection, mult);
-    stress.parameters().avidity_adjusts.set_logged(antigen_no, logged_avidity_adjust);
+    set_logged(stress.parameters().m_avidity_adjusts, antigen_no, logged_avidity_adjust);
     auto cb = projection.forced_column_bases();
     if (cb.empty())
         cb = chart.column_bases(projection.minimum_column_basis());
-    chart.titers().update(stress.table_distances(), *cb, stress.parameters());
+    stress.table_distances().update(chart.titers(), cb, stress.parameters());
     return stress;
 
 } // ae::chart::v3::stress_factory
 
 // ----------------------------------------------------------------------
 
-ae::chart::v3::Stress ae::chart::v3::stress_factory(const Chart& chart, number_of_dimensions_t number_of_dimensions, minimum_column_basis mcb, multiply_antigen_titer_until_column_adjust mult, dodgy_titer_is_regular a_dodgy_titer_is_regular)
+ae::chart::v3::Stress ae::chart::v3::stress_factory(const Chart& chart, number_of_dimensions_t number_of_dimensions, minimum_column_basis mcb, multiply_antigen_titer_until_column_adjust mult, dodgy_titer_is_regular_e a_dodgy_titer_is_regular)
 {
     Stress stress(number_of_dimensions, chart.number_of_points(), mult, a_dodgy_titer_is_regular);
-    auto cb = chart.forced_column_bases(mcb);
-    if (!cb)
-        cb = chart.column_bases(mcb);
-    chart.titers().update(stress.table_distances(), *cb, stress.parameters());
+    stress.table_distances().update(chart.titers(), chart.column_bases(mcb), stress.parameters());
     return stress;
 
 } // ae::chart::v3::stress_factory
 
 // ----------------------------------------------------------------------
 
-ae::chart::v3::TableDistances ae::chart::v3::table_distances(const Chart& chart, minimum_column_basis mcb, dodgy_titer_is_regular a_dodgy_titer_is_regular)
+ae::chart::v3::TableDistances ae::chart::v3::table_distances(const Chart& chart, minimum_column_basis mcb, dodgy_titer_is_regular_e a_dodgy_titer_is_regular)
 {
     Stress stress(number_of_dimensions_t{2}, chart.number_of_points(), multiply_antigen_titer_until_column_adjust::yes, a_dodgy_titer_is_regular);
-    auto cb = chart.forced_column_bases(mcb);
-    if (!cb)
-        cb = chart.column_bases(mcb);
-    return chart.titers().table_distances(*cb, stress.parameters());
+    TableDistances table_distances;
+    table_distances.update(chart.titers(), chart.column_bases(mcb), stress.parameters());
+    return table_distances;
 
 } // ae::chart::v3::table_distances
 
@@ -88,13 +84,13 @@ constexpr inline double non_zero(double value) { return float_zero(value) ? 1e-5
 
 // ----------------------------------------------------------------------
 
-static inline double map_distance(const double* first, size_t point_1, size_t point_2, ae::number_of_dimensions_t number_of_dimensions)
+static inline double map_distance(const double* first, ae::point_index point_1, ae::point_index point_2, ae::number_of_dimensions_t number_of_dimensions)
 {
     using diff_t = typename std::vector<double>::difference_type;
     return ae::chart::v3::vector_math::distance(
-        first + static_cast<diff_t>(number_of_dimensions.get() * point_1),
-        first + static_cast<diff_t>(number_of_dimensions.get() * (point_1 + 1)),
-        first + static_cast<diff_t>(number_of_dimensions.get() * point_2));
+        first + static_cast<diff_t>(number_of_dimensions.get() * point_1.get()),
+        first + static_cast<diff_t>(number_of_dimensions.get() * (point_1.get() + 1)),
+        first + static_cast<diff_t>(number_of_dimensions.get() * point_2.get()));
 
 } // map_distance
 
@@ -111,13 +107,13 @@ static inline double map_distance(const double* first, const typename ae::chart:
 ae::chart::v3::Stress::Stress(const Projection& projection, multiply_antigen_titer_until_column_adjust mult)
     : number_of_dimensions_(projection.number_of_dimensions()),
       parameters_(projection.number_of_points(), projection.unmovable(), projection.disconnected(), projection.unmovable_in_the_last_dimension(),
-                  mult, projection.avidity_adjusts(), projection.dodgy_titer_is_regular())
+                  mult, projection.avidity_adjusts_access(), projection.dodgy_titer_is_regular())
 {
 } // ae::chart::v3::Stress::Stress
 
 // ----------------------------------------------------------------------
 
-ae::chart::v3::Stress::Stress(number_of_dimensions_t number_of_dimensions, point_index number_of_points, multiply_antigen_titer_until_column_adjust mult, dodgy_titer_is_regular a_dodgy_titer_is_regular)
+ae::chart::v3::Stress::Stress(number_of_dimensions_t number_of_dimensions, point_index number_of_points, multiply_antigen_titer_until_column_adjust mult, dodgy_titer_is_regular_e a_dodgy_titer_is_regular)
     : number_of_dimensions_(number_of_dimensions),
       parameters_{number_of_points, mult, a_dodgy_titer_is_regular}
 {
@@ -133,13 +129,13 @@ ae::chart::v3::Stress::Stress(number_of_dimensions_t number_of_dimensions, point
 
 // ----------------------------------------------------------------------
 
-inline double contribution_regular(size_t point_1, size_t point_2, double table_distance, const double* first, ae::number_of_dimensions_t num_dim)
+inline double contribution_regular(ae::point_index point_1, ae::point_index point_2, double table_distance, const double* first, ae::number_of_dimensions_t num_dim)
 {
     const double diff = table_distance - map_distance(first, point_1, point_2, num_dim);
     return diff * diff;
 }
 
-inline double contribution_less_than(size_t point_1, size_t point_2, double table_distance, const double* first, ae::number_of_dimensions_t num_dim)
+inline double contribution_less_than(ae::point_index point_1, ae::point_index point_2, double table_distance, const double* first, ae::number_of_dimensions_t num_dim)
 {
     const double diff = table_distance - map_distance(first, point_1, point_2, num_dim) + 1;
     return diff * diff * ae::chart::v3::sigmoid(diff * ae::chart::v3::SigmoidMutiplier());
@@ -191,7 +187,7 @@ double ae::chart::v3::Stress::contribution(point_index point_no, const double* f
 
 double ae::chart::v3::Stress::contribution(point_index point_no, const Layout& aLayout) const
 {
-    return contribution(point_no, aLayout.as_flat_vector_double().data());
+    return contribution(point_no, aLayout.data());
 
 } // ae::chart::v3::Stress::contribution
 
@@ -212,7 +208,7 @@ double ae::chart::v3::Stress::contribution(point_index point_no, const TableDist
 
 double ae::chart::v3::Stress::contribution(point_index point_no, const TableDistancesForPoint& table_distances_for_point, const Layout& aLayout) const
 {
-    return contribution(point_no, table_distances_for_point, aLayout.as_flat_vector_double().data());
+    return contribution(point_no, table_distances_for_point, aLayout.data());
 
 } // ae::chart::v3::Stress::contribution
 
@@ -230,8 +226,7 @@ std::vector<double> ae::chart::v3::Stress::gradient(const double* first, const d
 
 std::vector<double> ae::chart::v3::Stress::gradient(const Layout& aLayout) const
 {
-    const auto& arg = aLayout.as_flat_vector_double();
-    return gradient(arg.data(), arg.data() + arg.size());
+    return gradient(aLayout.data(), aLayout.data() + aLayout.data_size());
 
 } // ae::chart::v3::Stress::gradient
 
@@ -261,13 +256,13 @@ void ae::chart::v3::Stress::gradient_plain(const double* first, const double* la
 {
     std::for_each(gradient_first, gradient_first + (last - first), [](double& val) { val = 0; });
 
-    auto update = [first,gradient_first,num_dim=static_cast<size_t>(number_of_dimensions_)](const auto& entry, double inc_base) {
+    auto update = [first,gradient_first,num_dim=number_of_dimensions_](const auto& entry, double inc_base) {
         using diff_t = typename std::vector<double>::difference_type;
         auto p1 = first + static_cast<diff_t>(entry.point_1 * num_dim),
                 p2 = first + static_cast<diff_t>(entry.point_2 * num_dim);
         auto r1 = gradient_first + static_cast<diff_t>(entry.point_1 * num_dim),
                 r2 = gradient_first + static_cast<diff_t>(entry.point_2 * num_dim);
-        for (size_t dim = 0; dim < num_dim; ++dim, ++p1, ++p2, ++r1, ++r2) {
+        for (number_of_dimensions_t dim{0}; dim < num_dim; ++dim, ++p1, ++p2, ++r1, ++r2) {
             const double inc = inc_base * (*p1 - *p2);
             *r1 -= inc;
             *r2 += inc;
@@ -296,16 +291,16 @@ void ae::chart::v3::Stress::gradient_plain(const double* first, const double* la
 
 void ae::chart::v3::Stress::gradient_with_unmovable(const double* first, const double* last, double* gradient_first) const
 {
-    std::vector<bool> unmovable(parameters_.number_of_points, false);
+    std::vector<bool> unmovable(parameters_.number_of_points.get(), false);
     for (const auto p_no: parameters_.unmovable)
-        unmovable[p_no] = true;
-    std::vector<bool> unmovable_in_the_last_dimension(parameters_.number_of_points, false);
+        unmovable[p_no.get()] = true;
+    std::vector<bool> unmovable_in_the_last_dimension(parameters_.number_of_points.get(), false);
     for (const auto p_no: parameters_.unmovable_in_the_last_dimension)
-        unmovable_in_the_last_dimension[p_no] = true;
+        unmovable_in_the_last_dimension[p_no.get()] = true;
 
     std::for_each(gradient_first, gradient_first + (last - first), [](double& val) { val = 0; });
 
-    auto update = [first,gradient_first,num_dim=static_cast<size_t>(number_of_dimensions_),&unmovable,&unmovable_in_the_last_dimension](const auto& entry, double inc_base) {
+    auto update = [first,gradient_first,num_dim=number_of_dimensions_,&unmovable,&unmovable_in_the_last_dimension](const auto& entry, double inc_base) {
         using diff_t = typename std::vector<double>::difference_type;
         auto p1f = [p=static_cast<diff_t>(entry.point_1 * num_dim)] (auto b) { return b + p; };
         auto p2f = [p=static_cast<diff_t>(entry.point_2 * num_dim)] (auto b) { return b + p; };
@@ -313,11 +308,11 @@ void ae::chart::v3::Stress::gradient_with_unmovable(const double* first, const d
         auto r1 = p1f(gradient_first);
         auto p2 = p2f(first);
         auto r2 = p2f(gradient_first);
-        for (size_t dim = 0; dim < num_dim; ++dim, ++p1, ++p2, ++r1, ++r2) {
+        for (number_of_dimensions_t dim{0}; dim < num_dim; ++dim, ++p1, ++p2, ++r1, ++r2) {
             const double inc = inc_base * (*p1 - *p2);
-            if (!unmovable[entry.point_1] && (!unmovable_in_the_last_dimension[entry.point_1] || (dim + 1) < num_dim))
+            if (!unmovable[entry.point_1.get()] && (!unmovable_in_the_last_dimension[entry.point_1.get()] || (dim + number_of_dimensions_t{1}) < num_dim))
                 *r1 -= inc;
-            if (!unmovable[entry.point_2] && (!unmovable_in_the_last_dimension[entry.point_2] || (dim + 1) < num_dim))
+            if (!unmovable[entry.point_2.get()] && (!unmovable_in_the_last_dimension[entry.point_2.get()] || (dim + number_of_dimensions_t{1}) < num_dim))
                 *r2 += inc;
         }
     };
@@ -346,8 +341,8 @@ void ae::chart::v3::Stress::set_coordinates_of_disconnected(double* first, [[may
 {
     // do not use number_of_dimensions_! after pca its value is wrong!
     for (auto p_no : parameters_.disconnected) {
-        for (number_of_dimensions_t dim{0}; dim < number_of_dimensions; ++dim)
-            *(first + p_no * static_cast<size_t>(number_of_dimensions) + static_cast<size_t>(dim)) = value;
+        for (const auto dim : number_of_dimensions)
+            *(first + p_no * number_of_dimensions + static_cast<size_t>(dim)) = value;
     }
 
     // if (float_zero(value)) {

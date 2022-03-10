@@ -112,6 +112,7 @@ namespace ae::chart::v3
         void add_value(double value) { data_.push_back(value); }
 
         const double* data() const { return data_.data(); }
+        size_t data_size() const { return data_.size(); }
 
       private:
         number_of_dimensions_t number_of_dimensions_{2};

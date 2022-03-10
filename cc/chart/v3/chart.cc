@@ -62,14 +62,14 @@ void ae::chart::v3::Chart::relax(number_of_optimizations_t number_of_optimizatio
 {
     const auto start_num_dim = options.dimension_annealing == use_dimension_annealing::yes && *number_of_dimensions < 5 ? number_of_dimensions_t{5} : number_of_dimensions;
     // auto titrs = titers();
-    auto stress = stress_factory(*this, start_num_dim, mcb, options.mult, dodgy_titer_is_regular::no);
+    auto stress = stress_factory(*this, start_num_dim, mcb, options.mult, dodgy_titer_is_regular_e::no);
     stress.set_disconnected(disconnected);
     if (options.disconnect_too_few_numeric_titers == disconnect_few_numeric_titers::yes)
         stress.extend_disconnected(titers().having_too_few_numeric_titers());
     if (const auto num_connected = antigens().size().get() + sera().size().get() - stress.number_of_disconnected(); num_connected < 3)
         throw std::runtime_error{AD_FORMAT("cannot relax: too few connected points: {}", num_connected)};
     // report_disconnected_unmovable(stress.parameters().disconnected, stress.parameters().unmovable);
-    auto rnd = randomizer_plain_from_sample_optimization(*this, stress, start_num_dim, mcb, options.randomization_diameter_multiplier);
+//    auto rnd = randomizer_plain_from_sample_optimization(*this, stress, start_num_dim, mcb, options.randomization_diameter_multiplier);
 
 //     std::vector<std::shared_ptr<ProjectionModifyNew>> projections(*number_of_optimizations);
 //     std::transform(projections.begin(), projections.end(), projections.begin(), [start_num_dim, minimum_column_basis, this, &stress](const auto&) {

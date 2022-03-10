@@ -96,15 +96,21 @@ namespace ae
     using number_of_dimensions_t = index_tt<struct number_of_dimensions_tag>;
     inline bool valid(number_of_dimensions_t nd) { return nd.get() > 0; }
 
+    inline point_index operator+(antigen_index ag_no, serum_index sr_no) { return point_index{ag_no.get() + sr_no.get()}; }
+    inline size_t operator*(point_index point_no, number_of_dimensions_t num_dim) { return point_no.get() * num_dim.get(); }
+
     // ----------------------------------------------------------------------
 
     using antigen_indexes = ae::named_vector_t<antigen_index, struct antigen_indexes_tag>;
     using serum_indexes = ae::named_vector_t<serum_index, struct serum_indexes_tag>;
     using point_indexes = ae::named_vector_t<point_index, struct point_indexes_tag>;
 
-    using disconnected_points = ae::named_vector_t<point_index, struct disconnected_points_tag>;
-    using unmovable_points = ae::named_vector_t<point_index, struct unmovable_points_tag>;
-    using unmovable_in_the_last_dimension_points = ae::named_vector_t<point_index, struct unmovable_in_the_last_dimension_points_tag>;
+    class disconnected_points : public point_indexes { public: using point_indexes::point_indexes; };
+    class unmovable_points : public point_indexes { public: using point_indexes::point_indexes; };
+    class unmovable_in_the_last_dimension_points : public point_indexes { public: using point_indexes::point_indexes; };
+    // using disconnected_points = ae::named_vector_t<point_index, struct disconnected_points_tag>;
+    // using unmovable_points = ae::named_vector_t<point_index, struct unmovable_points_tag>;
+    // using unmovable_in_the_last_dimension_points = ae::named_vector_t<point_index, struct unmovable_in_the_last_dimension_points_tag>;
 
 } // namespace ae
 
