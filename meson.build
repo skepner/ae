@@ -155,6 +155,7 @@ sources_chart_v3 = [
   'cc/chart/v3/chart-export.cc',
   'cc/chart/v3/stress.cc',
   'cc/chart/v3/table-distances.cc',
+  'cc/chart/v3/randomizer.cc',
 ]
 
 sources_chart_v2 = [

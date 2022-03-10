@@ -603,3 +603,24 @@ double ae::chart::v3::Titers::column_basis(serum_index sr_no) const
 } // ae::chart::v3::Titers::column_basis
 
 // ----------------------------------------------------------------------
+
+double ae::chart::v3::Titers::max_distance(const column_bases& cb) const
+{
+    double max_distance{0.0};
+    if (number_of_sera() > serum_index{0}) {
+        for (const auto& titer_ref : titers_existing()) {
+            max_distance = std::max(max_distance, cb.column_basis(titer_ref.serum) - titer_ref.titer.logged_with_thresholded());
+            if (std::isnan(max_distance) || std::isinf(max_distance))
+                throw std::runtime_error{fmt::format("Titers::max_distance invalid: {} after titer [{}] column_bases:{} @@ {}:{}: {}", max_distance, titer_ref, cb, __builtin_FILE(), __builtin_LINE(),
+                                                     __builtin_FUNCTION())};
+        }
+    }
+    else {
+        throw std::runtime_error(AD_FORMAT("genetic table support not implemented"));
+    }
+
+    return max_distance;
+
+} // ae::chart::v3::Titers::max_distance
+
+// ----------------------------------------------------------------------

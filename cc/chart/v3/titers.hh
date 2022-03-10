@@ -257,9 +257,7 @@ namespace ae::chart::v3
         double column_basis(serum_index sr_no) const; // raw value, not adjusted by minimum column basis
         // std::shared_ptr<ColumnBasesData> computed_column_bases(MinimumColumnBasis aMinimumColumnBasis) const;
 
-        // TableDistances table_distances(const ColumnBases& column_bases, const StressParameters& parameters);
-        // void update(TableDistances& table_distances, const ColumnBases& column_bases, const StressParameters& parameters) const;
-        // double max_distance(const ColumnBases& column_bases);
+        double max_distance(const column_bases& cb) const;
 
         class TiterGetterExisting : public TiterIterator::TiterGetter
         {

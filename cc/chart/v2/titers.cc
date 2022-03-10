@@ -300,7 +300,6 @@ bool ae::chart::v2::Titers::is_dense() const noexcept
 
 double ae::chart::v2::Titers::max_distance(const ae::chart::v2::ColumnBases& column_bases)
 {
-
     double max_distance = 0;
     if (number_of_sera()) {
         for (const auto& titer_ref : titers_existing()) {
