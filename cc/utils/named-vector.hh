@@ -55,6 +55,7 @@ namespace ae
             for (const auto& val : another)
                 insert_if_not_present(val);
         }
+
     };
 
     template <typename Tag> constexpr bool operator<(const named_vector_t<std::string, Tag>& lhs, const named_vector_t<std::string, Tag>& rhs) noexcept

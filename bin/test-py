@@ -12,6 +12,8 @@ def main(args: argparse.Namespace):
     print(chart)
     print(chart.name(0))
     print(chart.name_for_file())
+    chart.relax()
+    print(chart.name(0))
     if args.output:
         chart.write(args.output)
 

@@ -6,6 +6,7 @@
 
 #include "utils/named-type.hh"
 #include "chart/v3/index.hh"
+#include "chart/v3/column-bases.hh"
 
 // ----------------------------------------------------------------------
 
@@ -253,6 +254,7 @@ namespace ae::chart::v3
         double percent_of_non_dont_cares() const { return static_cast<double>(number_of_non_dont_cares()) / static_cast<double>(number_of_antigens().get() * number_of_sera().get()); }
         // bool use_dense() const noexcept { return percent_of_non_dont_cares() > dense_sparse_boundary; }
 
+        double column_basis(serum_index sr_no) const; // raw value, not adjusted by minimum column basis
         // std::shared_ptr<ColumnBasesData> computed_column_bases(MinimumColumnBasis aMinimumColumnBasis) const;
 
         // TableDistances table_distances(const ColumnBases& column_bases, const StressParameters& parameters);

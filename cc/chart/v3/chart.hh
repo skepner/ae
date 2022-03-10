@@ -7,6 +7,7 @@
 #include "chart/v3/projections.hh"
 #include "chart/v3/styles.hh"
 #include "chart/v3/legacy-plot-spec.hh"
+#include "chart/v3/optimize-options.hh"
 
 // ----------------------------------------------------------------------
 
@@ -51,6 +52,13 @@ namespace ae::chart::v3
 
         std::string name(std::optional<projection_index> aProjectionNo = std::nullopt) const;
         std::string name_for_file() const;
+
+        point_index number_of_points() const { return point_index{antigens().size().get() + sera().size().get()}; }
+        column_bases column_bases(minimum_column_basis mcb) const;
+
+        void relax(number_of_optimizations_t number_of_optimizations, minimum_column_basis mcb, number_of_dimensions_t number_of_dimensions,
+                   const optimization_options& options, const disconnected_points& disconnected = disconnected_points{});
+        void relax_incremental(projection_index source_projection_no, number_of_optimizations_t number_of_optimizations, const optimization_options& options);
 
       private:
         Info info_{};

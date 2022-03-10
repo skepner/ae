@@ -153,6 +153,7 @@ sources_chart_v3 = [
   'cc/chart/v3/projections.cc',
   'cc/chart/v3/chart-import.cc',
   'cc/chart/v3/chart-export.cc',
+  'cc/chart/v3/stress.cc',
 ]
 
 sources_chart_v2 = [

@@ -589,3 +589,17 @@ std::pair<ae::chart::v3::Titer, ae::chart::v3::Titers::titer_merge> ae::chart::v
 } // ae::chart::v3::Titers::merge_titers
 
 // ----------------------------------------------------------------------
+
+// raw value, not adjusted by minimum column basis
+double ae::chart::v3::Titers::column_basis(serum_index sr_no) const
+{
+    double cb{0.0};
+    for (const auto& titer_ref : titers_existing()) {
+        if (titer_ref.serum == sr_no)
+            cb = std::max(cb, titer_ref.titer.logged_for_column_bases());
+    }
+    return cb;
+
+} // ae::chart::v3::Titers::column_basis
+
+// ----------------------------------------------------------------------
