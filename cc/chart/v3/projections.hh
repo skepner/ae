@@ -116,7 +116,7 @@ namespace ae::chart::v3
         const Projection& best() const { return operator[](projection_index{0}); }
         auto begin() const { return data_.begin(); }
         auto end() const { return data_.end(); }
-        Projection& add() { return data_.emplace_back(); }
+        template <typename ... Args> Projection& add(Args&& ... args) { return data_.emplace_back(std::forward<Args>(args) ...); }
         // std::string make_info(size_t max_number_of_projections_to_show = 20) const;
 
         void sort()

@@ -5,7 +5,7 @@
 #include "chart/v3/stress.hh"
 #include "chart/v3/chart.hh"
 #include "chart/v3/randomizer.hh"
-// #include "chart/v3/disconnected-points-handler.hh"
+#include "chart/v3/disconnected-points-handler.hh"
 #include "chart/v3/alglib.hh"
 
 // ----------------------------------------------------------------------
@@ -97,9 +97,9 @@ ae::chart::v3::optimization_status ae::chart::v3::optimize(Chart& chart, Project
 
 ae::chart::v3::optimization_status ae::chart::v3::optimize(Chart& chart, minimum_column_basis mcb, const dimension_schedule& schedule, optimization_options options)
 {
-    auto& projection = chart.projections().new_from_scratch(schedule.initial(), mcb);
-    projection.randomize_layout(randomizer_plain_with_table_max_distance(*projection));
-    return optimize(projection, schedule, options);
+    auto& projection = chart.projections().add(chart.number_of_points(), schedule.initial(), mcb);
+    projection.randomize_layout(randomizer_plain_with_table_max_distance(chart, projection));
+    return optimize(chart, projection, schedule, options);
 
 } // ae::chart::v3::optimize
 
@@ -144,12 +144,12 @@ ae::chart::v3::optimization_status ae::chart::v3::optimize(optimization_method o
 
 // ----------------------------------------------------------------------
 
-ae::chart::v3::ErrorLines ae::chart::v3::error_lines(const Projection& projection)
+ae::chart::v3::ErrorLines ae::chart::v3::error_lines(const Chart& chart, const Projection& projection)
 {
-    auto layout = projection.layout();
-    auto stress = stress_factory(projection, multiply_antigen_titer_until_column_adjust::yes);
+    auto& layout = projection.layout();
+    auto stress = stress_factory(chart, projection, multiply_antigen_titer_until_column_adjust::yes);
     const auto& table_distances = stress.table_distances();
-    const MapDistances map_distances(*layout, table_distances);
+    const MapDistances map_distances(layout, table_distances);
     ErrorLines result;
     for (auto td = table_distances.regular().begin(), md = map_distances.regular().begin(); td != table_distances.regular().end(); ++td, ++md) {
         result.emplace_back(td->point_1, td->point_2, td->distance - md->distance);
