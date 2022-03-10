@@ -32,6 +32,12 @@ namespace ae::string
         return source;
     }
 
+    inline std::string& lowercase_in_place(std::string& source)
+    {
+        std::transform(std::begin(source), std::end(source), std::begin(source), [](auto cc) { return std::tolower(cc); });
+        return source;
+    }
+
     template <typename Iter, typename F> inline std::string transform(Iter first, Iter last, F&& func)
     {
         std::string result(static_cast<size_t>(last - first), '?');

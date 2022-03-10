@@ -99,6 +99,20 @@ std::string ae::chart::v3::Info::make_virus_type() const
 
 // ----------------------------------------------------------------------
 
+std::string ae::chart::v3::Info::make_virus_subtype() const
+{
+    const auto vt = make_virus_type();
+    if (vt == "A(H1N1)")
+        return "H1";
+    else if (vt == "A(H3N2)")
+        return "H3";
+    else
+        return vt;
+
+} // ae::chart::v3::Info::make_virus_subtype
+
+// ----------------------------------------------------------------------
+
 std::string ae::chart::v3::Info::make_assay(Assay::assay_name_t tassay) const
 {
     return assay().name(tassay);

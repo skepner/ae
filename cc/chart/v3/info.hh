@@ -106,6 +106,7 @@ namespace ae::chart::v3
         // computed from sources if necessary
         std::string make_virus_not_influenza() const;
         std::string make_virus_type() const;
+        std::string make_virus_subtype() const;
         std::string make_assay(Assay::assay_name_t tassay) const;
         std::string make_rbc_species() const;
         std::string make_lab() const;

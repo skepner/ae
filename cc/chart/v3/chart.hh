@@ -50,6 +50,7 @@ namespace ae::chart::v3
         void write(const std::filesystem::path& filename) const;
 
         std::string name(std::optional<projection_index> aProjectionNo = std::nullopt) const;
+        std::string name_for_file() const;
 
       private:
         Info info_{};
