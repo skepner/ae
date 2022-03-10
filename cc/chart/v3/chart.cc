@@ -1,3 +1,4 @@
+#include "ext/omp.hh"
 #include "chart/v3/chart.hh"
 #include "chart/v3/stress.hh"
 #include "chart/v3/randomizer.hh"
@@ -61,7 +62,7 @@ ae::chart::v3::column_bases ae::chart::v3::Chart::column_bases(minimum_column_ba
 
 void ae::chart::v3::Chart::relax(number_of_optimizations_t number_of_optimizations, minimum_column_basis mcb, number_of_dimensions_t number_of_dimensions, const optimization_options& options, const disconnected_points& disconnected)
 {
-    const auto start_num_dim = options.dimension_annealing == use_dimension_annealing::yes && *number_of_dimensions < 5 ? number_of_dimensions_t{5} : number_of_dimensions;
+    const auto start_num_dim = options.dimension_annealing == use_dimension_annealing::yes && number_of_dimensions < number_of_dimensions_t{5} ? number_of_dimensions_t{5} : number_of_dimensions;
     // auto titrs = titers();
     auto stress = stress_factory(*this, start_num_dim, mcb, options.mult, dodgy_titer_is_regular_e::no);
     stress.set_disconnected(disconnected);
@@ -72,18 +73,17 @@ void ae::chart::v3::Chart::relax(number_of_optimizations_t number_of_optimizatio
     // report_disconnected_unmovable(stress.parameters().disconnected, stress.parameters().unmovable);
     auto rnd = randomizer_plain_from_sample_optimization(*this, stress, start_num_dim, mcb, options.randomization_diameter_multiplier);
 
-//     std::vector<std::shared_ptr<ProjectionModifyNew>> projections(*number_of_optimizations);
-//     std::transform(projections.begin(), projections.end(), projections.begin(), [start_num_dim, minimum_column_basis, this, &stress](const auto&) {
-//         auto projection = projections_modify().new_from_scratch(start_num_dim, minimum_column_basis);
-//         projection->set_disconnected(stress.parameters().disconnected);
-//         projection->set_unmovable(stress.parameters().unmovable);
-//         return projection;
-//     });
+    const auto first = projections().size();
+    for (const auto opt_no : number_of_optimizations) {
+        auto& projection = projections().add(number_of_points(), start_num_dim, mcb);
+        projection.disconnected() = stress.parameters().disconnected;
+        projection.unmovable() = stress.parameters().unmovable;
+    }
 
-// #ifdef _OPENMP
-//     const int num_threads = options.num_threads <= 0 ? omp_get_max_threads() : options.num_threads;
-//     const int slot_size = number_of_antigens() < 1000 ? 4 : 1;
-// #endif
+#ifdef _OPENMP
+    const int num_threads = options.num_threads <= 0 ? omp_get_max_threads() : options.num_threads;
+    const int slot_size = antigens().size() < antigen_index{1000} ? 4 : 1;
+#endif
 // #pragma omp parallel for default(shared) num_threads(num_threads) firstprivate(stress) schedule(static, slot_size)
 //     for (size_t p_no = 0; p_no < projections.size(); ++p_no) {
 //         auto projection = projections[p_no];

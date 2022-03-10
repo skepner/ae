@@ -21,7 +21,7 @@ namespace ae::chart::v3
     enum class dodgy_titer_is_regular_e { no, yes };
     enum class disconnect_few_numeric_titers { no, yes };
 
-    using number_of_optimizations_t = named_size_t<struct number_of_optimizations_tag>;
+    using number_of_optimizations_t = index_tt<struct number_of_optimizations_tag>;
 
     enum class use_dimension_annealing { no, yes };
     constexpr inline use_dimension_annealing use_dimension_annealing_from_bool(bool use) { return use ? use_dimension_annealing::yes : use_dimension_annealing::no; }
