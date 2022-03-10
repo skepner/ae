@@ -65,6 +65,12 @@ namespace ae::chart::v3
 
         void randomize_layout(std::shared_ptr<LayoutRandomizer> randomizer);
 
+        void transformation_reset()
+        {
+            transformation_.reset(number_of_dimensions());
+            // transformed_layout_.reset();
+        }
+
         // std::shared_ptr<Layout> transformed_layout() const { return layout()->transform(transformation()); }
         // double stress_diff_to_stop() const = 0;
 

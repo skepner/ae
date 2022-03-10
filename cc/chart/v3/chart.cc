@@ -2,6 +2,7 @@
 #include "chart/v3/chart.hh"
 #include "chart/v3/stress.hh"
 #include "chart/v3/randomizer.hh"
+#include "chart/v3/optimize.hh"
 
 // ----------------------------------------------------------------------
 
@@ -84,30 +85,29 @@ void ae::chart::v3::Chart::relax(number_of_optimizations_t number_of_optimizatio
     const int num_threads = options.num_threads <= 0 ? omp_get_max_threads() : options.num_threads;
     const int slot_size = antigens().size() < antigen_index{1000} ? 4 : 1;
 #endif
-// #pragma omp parallel for default(shared) num_threads(num_threads) firstprivate(stress) schedule(static, slot_size)
-//     for (size_t p_no = 0; p_no < projections.size(); ++p_no) {
-//         auto projection = projections[p_no];
-//         projection->randomize_layout(rnd);
-//         auto layout = projection->layout_modified();
-//         stress.change_number_of_dimensions(start_num_dim);
-//         const auto status1 =
-//             optimize(options.method, stress, layout->data(), layout->data() + layout->size(), start_num_dim > number_of_dimensions ? optimization_precision::rough : options.precision);
-//         if (start_num_dim > number_of_dimensions) {
-//             do_dimension_annealing(options.method, stress, projection->number_of_dimensions(), number_of_dimensions, layout->data(), layout->data() + layout->size());
-//             layout->change_number_of_dimensions(number_of_dimensions);
-//             stress.change_number_of_dimensions(number_of_dimensions);
-//             const auto status2 = optimize(options.method, stress, layout->data(), layout->data() + layout->size(), options.precision);
-//             if (!std::isnan(status2.final_stress))
-//                 projection->stress_ = status2.final_stress;
-//         }
-//         else {
-//             if (!std::isnan(status1.final_stress))
-//                 projection->stress_ = status1.final_stress;
-//         }
-//         projection->transformation_reset();
-//         AD_LOG(ae::log::report_stresses, "{:3d} {:.4f}", p_no, *projection->stress_);
-//     }
-
+#pragma omp parallel for default(shared) num_threads(num_threads) firstprivate(stress) schedule(static, slot_size)
+    for (size_t p_no = *first; p_no < *projections().size(); ++p_no) {
+        auto& projection = projections()[projection_index{p_no}];
+        projection.randomize_layout(rnd);
+        auto& layout = projection.layout();
+        stress.change_number_of_dimensions(start_num_dim);
+        const auto status1 =
+            optimize(options.method, stress, layout.data(), layout.data() + layout.data_size(), start_num_dim > number_of_dimensions ? optimization_precision::rough : options.precision);
+        if (start_num_dim > number_of_dimensions) {
+            do_dimension_annealing(options.method, stress, projection.number_of_dimensions(), number_of_dimensions, layout.data(), layout.data() + layout.data_size());
+            layout.change_number_of_dimensions(number_of_dimensions);
+            stress.change_number_of_dimensions(number_of_dimensions);
+            const auto status2 = optimize(options.method, stress, layout.data(), layout.data() + layout.data_size(), options.precision);
+            if (!std::isnan(status2.final_stress))
+                projection.stress(status2.final_stress);
+        }
+        else {
+            if (!std::isnan(status1.final_stress))
+                projection.stress(status1.final_stress);
+        }
+        projection.transformation_reset();
+        // AD_LOG(ae::log::report_stresses, "{:3d} {:.4f}", p_no, *projection->stress_);
+    }
 
 } // ae::chart::v3::Chart::relax
 
