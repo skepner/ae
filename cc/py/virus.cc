@@ -77,10 +77,10 @@ void ae::py::virus(pybind11::module_& mdl)
 
     mdl.def(
         "passage_parse",
-        [](pybind11::object source, bool trace, pybind11::object filename, size_t line_no) {
+        [](pybind11::object source, bool trace, const std::filesystem::path& filename, size_t line_no) {
             ae::virus::passage::parse_settings settings{trace ? ae::virus::passage::parse_settings::tracing::yes : ae::virus::passage::parse_settings::tracing::no};
             ae::Messages messages;
-            auto deconstructed_passage = ae::virus::passage::parse(std::string{pybind11::str(source)}, settings, messages, ae::MessageLocation{std::string{pybind11::str(filename)}, line_no});
+            auto deconstructed_passage = ae::virus::passage::parse(std::string{pybind11::str(source)}, settings, messages, ae::MessageLocation{filename, line_no});
             return PassageParsingResult{std::move(deconstructed_passage), std::move(messages)};
         },
         "source"_a, "trace"_a = false, "filename"_a = "", "line_no"_a = 0);

@@ -30,11 +30,10 @@ void ae::py::sequences(pybind11::module_& mdl)
         "verbose"_a = false, pybind11::return_value_policy::reference);
     seqdb_submodule.def("save", &seqdb_save);
 
-    pybind11::class_<Seqdb>(seqdb_submodule, "SeqdbForSubtype")                                     //
-        .def("add", &Seqdb::add, "raw_sequence"_a, pybind11::doc{"returns if sequence was added."}) //
-        .def(
-            "save", [](const Seqdb& seqdb, pybind11::object filename) { seqdb.save(std::string{pybind11::str(filename)}); }, "filename"_a) //
-        .def("select_all", &Seqdb::select_all)                                                                                             //
+    pybind11::class_<Seqdb>(seqdb_submodule, "SeqdbForSubtype")                                         //
+        .def("add", &Seqdb::add, "raw_sequence"_a, pybind11::doc{"returns if sequence was added."})     //
+        .def("save", pybind11::overload_cast<const std::filesystem::path&>(&Seqdb::save, pybind11::const_), "filename"_a) //
+        .def("select_all", &Seqdb::select_all)                                                          //
         ;
 
     pybind11::class_<SeqdbSelected, std::shared_ptr<SeqdbSelected>>(seqdb_submodule, "Selected") //
@@ -128,8 +127,7 @@ void ae::py::sequences(pybind11::module_& mdl)
             "move_name_to_beginning", [](SeqdbSelected& selected, const std::string& name) -> SeqdbSelected& { return selected.move_name_to_beginning(std::vector<std::string>{name}); }, "names"_a,
             pybind11::doc("if name starts with ~ use regex matching (~ removed), if name contains _ use seq_id matching")) //
         .def("find_masters", &SeqdbSelected::find_masters)                                                                 //
-        .def(
-            "find_clades", [](SeqdbSelected& selected, pybind11::object path) { return selected.find_clades(std::string{pybind11::str(path)}); }, "clades_file"_a) //
+        .def("find_clades", &SeqdbSelected::find_clades, "clades_file"_a) //
         .def("remove_hash_duplicates", &SeqdbSelected::remove_hash_duplicates)                                                                                     //
         .def("replace_with_master", &SeqdbSelected::replace_with_master)                                                                                           //
         ;
@@ -145,7 +143,7 @@ void ae::py::sequences(pybind11::module_& mdl)
         .def("has_issues", [](const SeqdbSeqRef& ref) { return ref.seq->issues.has_issues(); })          //
         .def("issues", [](const SeqdbSeqRef& ref) { return ref.seq->issues.to_strings(); })              //
         .def("has_insertions", [](const SeqdbSeqRef& ref) { return !ref.seq->aa_insertions.empty(); })   //
-        .def("insertions", [](const SeqdbSeqRef& ref) { return ref.seq->aa_insertions; })   //
+        .def("insertions", [](const SeqdbSeqRef& ref) { return ref.seq->aa_insertions; })                //
         .def("country", [](const SeqdbSeqRef& ref) { return ref.entry->country; })                       //
         .def("continent", [](const SeqdbSeqRef& ref) { return ref.entry->continent; })                   //
         .def("host", [](const SeqdbSeqRef& ref) { return ref.entry->host; })                             //
@@ -246,7 +244,7 @@ void ae::py::sequences(pybind11::module_& mdl)
         ;
 
     pybind11::class_<fasta::Reader>(raw_sequence_submodule, "FastaReader")                                                        //
-        .def(pybind11::init([](pybind11::object path) { return fasta::Reader(std::string{pybind11::str(path)}); }), "filename"_a) //
+        .def(pybind11::init<const std::filesystem::path&>(), "filename"_a) //
         .def(
             "__iter__", [](fasta::Reader& reader) { return pybind11::make_iterator(reader.begin(), reader.end()); }, pybind11::keep_alive<0, 1>()) //
         ;

@@ -103,9 +103,9 @@ void ae::py::tree(pybind11::module_& mdl)
                     throw std::invalid_argument{fmt::format("unknow ladderization method \"{}\", supported: \"number-of-leaves\", \"max-edge-length\", \"none\"", method)};
                 tree.ladderize(lm);
             },
-            "method"_a = "number-of-leaves")                                                  //
+            "method"_a = "number-of-leaves")                                                                                              //
         .def("remove_leaves_isolated_before", &Tree::remove_leaves_isolated_before, "date"_a, "important"_a = std::vector<std::string>{}) //
-        .def("number_of_leaves", &Tree::number_of_leaves) //
+        .def("number_of_leaves", &Tree::number_of_leaves)                                                                                 //
         ;
 
     pybind11::class_<Nodes>(tree_submodule, "Nodes")                                                       //
@@ -150,10 +150,8 @@ void ae::py::tree(pybind11::module_& mdl)
             pybind11::doc("insert leaf into the tree as a child of the parent of self")) //
         ;
 
-    tree_submodule.def(
-        "load", [](pybind11::object path) { return load(std::string{pybind11::str(path)}); }, "filename"_a);
-    tree_submodule.def(
-        "export", [](const Tree& tree, pybind11::object path) { export_tree(tree, std::string{pybind11::str(path)}); }, "tree"_a, "filename"_a);
+    tree_submodule.def("load", &load, "filename"_a);
+    tree_submodule.def("export", &export_tree, "tree"_a, "filename"_a);
 
     // ----------------------------------------------------------------------
 }

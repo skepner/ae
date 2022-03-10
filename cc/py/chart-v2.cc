@@ -165,7 +165,7 @@ void ae::py::chart_v2(pybind11::module_& mdl)
     auto chart_v2_submodule = mdl.def_submodule("chart_v2", "chart_v2 api");
 
     pybind11::class_<ChartModify, std::shared_ptr<ChartModify>>(chart_v2_submodule, "Chart") //
-        .def(pybind11::init([](pybind11::object path) { return std::make_shared<ChartModify>(import_from_file(pybind11::str(path))); }), "filename"_a, pybind11::doc("imports chart from a file"))
+        .def(pybind11::init([](const std::filesystem::path& path) { return std::make_shared<ChartModify>(import_from_file(path)); }), "filename"_a, pybind11::doc("imports chart from a file"))
 
         .def(
             "clone",                                                                                                                                           //

@@ -75,8 +75,7 @@ void ae::py::whocc(pybind11::module_& mdl)
 
     auto xlsx_submodule = whocc_submodule.def_submodule("xlsx", "xlsx access");
 
-    xlsx_submodule.def(
-        "open", [](pybind11::object filename) { return ae::xlsx::open(static_cast<std::string>(pybind11::str(filename))); }, "filename"_a);
+    xlsx_submodule.def("open", &ae::xlsx::open, "filename"_a);
 
     xlsx_submodule.def(
         "extractor",
