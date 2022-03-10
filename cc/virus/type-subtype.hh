@@ -14,6 +14,7 @@ namespace ae::virus::inline v2
 
         operator std::string_view() const { return value_; }
         std::string_view operator*() const { return value_; }
+        std::string_view get() const { return value_; }
 
         bool operator==(const type_subtype_t& rhs) const { return value_ == rhs.value_; }
         bool operator<(const type_subtype_t& rhs) const { return value_ < rhs.value_; }

@@ -106,7 +106,7 @@ namespace ae::chart::v3
         Projections& operator=(Projections&&) = default;
 
         bool empty() const { return data_.empty(); }
-        size_t size() const { return data_.size(); }
+        projection_index size() const { return projection_index{data_.size()}; }
         const Projection& operator[](projection_index aIndex) const { return data_[*aIndex]; }
         Projection& operator[](projection_index aIndex) { return data_[*aIndex]; }
         const Projection& best() const { return operator[](projection_index{0}); }

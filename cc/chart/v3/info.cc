@@ -1,4 +1,27 @@
+#include "utils/string.hh"
 #include "chart/v3/info.hh"
+
+// ----------------------------------------------------------------------
+
+std::string ae::chart::v3::Assay::name(assay_name_t an) const
+{
+    switch (an) {
+        case assay_name_t::full:
+            return get();
+        case assay_name_t::brief:
+            return short_name();
+        case assay_name_t::hi_or_neut:
+            return hi_or_neut(no_hi::no);
+        case assay_name_t::HI_or_Neut:
+            return HI_or_Neut(no_hi::no);
+        case assay_name_t::no_hi:
+            return hi_or_neut(no_hi::yes);
+        case assay_name_t::no_HI:
+            return hi_or_neut(no_hi::yes);
+    }
+    return get();
+
+} // ae::chart::v3::Assay::name
 
 // ----------------------------------------------------------------------
 
@@ -41,5 +64,78 @@ std::string ae::chart::v3::Assay::short_name() const
     else
         return get();
 }
+
+// ----------------------------------------------------------------------
+
+template <typename Field> static inline std::string info_make_field(const ae::chart::v3::Info& info, const Field& (ae::chart::v3::TableSource::*func)() const)
+{
+    if (const auto& field = std::invoke(func, info); !field.empty() || info.sources().empty())
+        return std::string{field.get()};
+
+    std::vector<std::string> composition(info.sources().size());
+    std::transform(info.sources().begin(), info.sources().end(), composition.begin(), [&func](const auto& source) { return std::string{std::invoke(func, source).get()}; });
+    std::sort(composition.begin(), composition.end());
+    composition.erase(std::unique(composition.begin(), composition.end()), composition.end());
+    return ae::string::join("+", composition);
+}
+
+std::string ae::chart::v3::Info::make_virus_not_influenza() const
+{
+    const auto vir = ::info_make_field(*this, &TableSource::virus);
+    if (vir == "INFLUENZA")
+        return {};
+    else
+        return vir;
+
+} // ae::chart::v3::Info::make_virus_not_influenza
+
+// ----------------------------------------------------------------------
+
+std::string ae::chart::v3::Info::make_virus_type() const
+{
+    return ::info_make_field(*this, &TableSource::type_subtype);
+
+} // ae::chart::v3::Info::make_virus_type
+
+// ----------------------------------------------------------------------
+
+std::string ae::chart::v3::Info::make_assay(Assay::assay_name_t tassay) const
+{
+    return assay().name(tassay);
+
+} // ae::chart::v3::Info::make_assay
+
+// ----------------------------------------------------------------------
+
+std::string ae::chart::v3::Info::make_rbc_species() const
+{
+    return ::info_make_field(*this, &TableSource::rbc_species);
+
+} // ae::chart::v3::Info::make_rbc_species
+
+// ----------------------------------------------------------------------
+
+std::string ae::chart::v3::Info::make_lab() const
+{
+    return ::info_make_field(*this, &TableSource::lab);
+
+} // ae::chart::v3::Info::make_lab
+
+// ----------------------------------------------------------------------
+
+std::string ae::chart::v3::Info::make_date(include_number_of_tables inc) const
+{
+    if (!date().empty() || sources().empty())
+        return std::string{date().get()};
+
+    std::vector<std::string> composition(sources().size());
+    std::transform(sources().begin(), sources().end(), composition.begin(), [](const auto& source) { return std::string{source.date().get()}; });
+    std::sort(composition.begin(), composition.end());
+    if (inc == include_number_of_tables::yes)
+        return fmt::format("{}-{} ({} tables)", composition.front(), composition.back(), sources().size());
+    else
+        return fmt::format("{}-{}", composition.front(), composition.back());
+
+} // ae::chart::v3::Info::make_date
 
 // ----------------------------------------------------------------------

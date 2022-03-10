@@ -9,6 +9,7 @@ import ae_backend
 def main(args: argparse.Namespace):
     chart = ae_backend.chart_v3.Chart(args.chart)
     # chart.populate_from_seqdb(remove_old_sequences_clades=True)
+    print(chart.name(0))
     if args.output:
         chart.write(args.output)
 

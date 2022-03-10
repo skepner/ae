@@ -145,6 +145,7 @@ sources_ad = [
 # ----------------------------------------------------------------------
 
 sources_chart_v3 = [
+  'cc/chart/v3/chart.cc',
   'cc/chart/v3/info.cc',
   'cc/chart/v3/antigens.cc',
   'cc/chart/v3/titers.cc',

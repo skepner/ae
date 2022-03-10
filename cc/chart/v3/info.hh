@@ -13,8 +13,10 @@ namespace ae::chart::v3
     {
       public:
         using ae::named_string_t<std::string, struct assay_tag>::named_string_t;
+        enum class assay_name_t { full, brief, hi_or_neut, HI_or_Neut, no_hi, no_HI };
         enum class no_hi { no, yes };
 
+        std::string name(assay_name_t an) const;
         std::string hi_or_neut(no_hi nh = no_hi::no) const;
         std::string HI_or_Neut(no_hi nh = no_hi::no) const;
         std::string short_name() const;
@@ -78,6 +80,7 @@ namespace ae::chart::v3
         const auto& name() const { return name_; }
         void name(const std::string& name) { name_ = name; }
 
+
       private:
         ae::virus::virus_t virus_{};
         ae::virus::type_subtype_t type_subtype_{};
@@ -95,9 +98,18 @@ namespace ae::chart::v3
     {
       public:
         using TableSource::TableSource;
+        enum class include_number_of_tables { no, yes };
 
         auto& sources() { return sources_; }
         const auto& sources() const { return sources_; }
+
+        // computed from sources if necessary
+        std::string make_virus_not_influenza() const;
+        std::string make_virus_type() const;
+        std::string make_assay(Assay::assay_name_t tassay) const;
+        std::string make_rbc_species() const;
+        std::string make_lab() const;
+        std::string make_date(include_number_of_tables inc = include_number_of_tables::yes) const;
 
       private:
         std::vector<TableSource> sources_{};

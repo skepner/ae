@@ -49,6 +49,8 @@ namespace ae::chart::v3
 
         void write(const std::filesystem::path& filename) const;
 
+        std::string name(std::optional<projection_index> aProjectionNo = std::nullopt) const;
+
       private:
         Info info_{};
         Antigens antigens_{};
