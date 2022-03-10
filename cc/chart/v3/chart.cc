@@ -106,7 +106,7 @@ void ae::chart::v3::Chart::relax(number_of_optimizations_t number_of_optimizatio
                 projection.stress(status1.final_stress);
         }
         projection.transformation_reset();
-        // AD_LOG(ae::log::report_stresses, "{:3d} {:.4f}", p_no, *projection->stress_);
+        AD_DEBUG("{:3d} {:.4f}", p_no, projection.stress());
     }
 
 } // ae::chart::v3::Chart::relax
