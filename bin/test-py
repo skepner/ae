@@ -1,0 +1,34 @@
+#! /usr/bin/env python3
+
+import os, sys, pprint, argparse, traceback
+from pathlib import Path
+import ae_backend
+
+# ----------------------------------------------------------------------
+
+def main(args: argparse.Namespace):
+    chart = ae_backend.chart_v3.Chart(args.chart)
+    # chart.populate_from_seqdb(remove_old_sequences_clades=True)
+    if args.output:
+        chart.write(args.output)
+
+# ----------------------------------------------------------------------
+
+def position_data(antigen, positions: list[int]):
+    seq = antigen.sequence_aa()
+    return [f"{pos}{seq[pos]}" for pos in positions]
+
+# ----------------------------------------------------------------------
+
+try:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("chart", type=Path)
+    parser.add_argument("--output", type=Path, help="export resulting chart")
+    args = parser.parse_args()
+    exit_code = main(args) or 0
+except Exception as err:
+    print(f"> {err}\n{traceback.format_exc()}", file=sys.stderr)
+    exit_code = 1
+exit(exit_code)
+
+# ----------------------------------------------------------------------

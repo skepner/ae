@@ -10,6 +10,7 @@ namespace ae::py
     void tree(pybind11::module_& mdl);
     void virus(pybind11::module_& mdl);
     void whocc(pybind11::module_& mdl);
+    void chart_v3(pybind11::module_& mdl);
     void chart_v2(pybind11::module_& mdl);
     void utils(pybind11::module_& mdl);
 
