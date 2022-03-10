@@ -1,5 +1,6 @@
 #include "utils/log.hh"
 #include "chart/v3/projections.hh"
+#include "chart/v3/randomizer.hh"
 
 // ----------------------------------------------------------------------
 
@@ -31,5 +32,14 @@ double ae::chart::v3::Projection::stress_recalculate() const
     return InvalidStress;
 
 } // ae::chart::v3::Projection::stress_recalculate
+
+// ----------------------------------------------------------------------
+
+void ae::chart::v3::Projection::randomize_layout(std::shared_ptr<LayoutRandomizer> randomizer)
+{
+    for (const auto point_no : layout().number_of_points())
+        layout().update(point_no, randomizer->get(layout().number_of_dimensions()));
+
+} // ae::chart::v3::Projection::randomize_layout
 
 // ----------------------------------------------------------------------

@@ -135,8 +135,8 @@ namespace ae::chart::v3
     std::shared_ptr<LayoutRandomizer> randomizer_plain_from_sample_optimization(const Chart& chart, const Stress& stress, number_of_dimensions_t number_of_dimensions, minimum_column_basis mcb, double diameter_multiplier, LayoutRandomizer::seed_t seed = std::nullopt);
     std::shared_ptr<LayoutRandomizer> randomizer_plain_from_sample_optimization(const Chart& chart, const Projection& projection, const Stress& stress, double diameter_multiplier, LayoutRandomizer::seed_t seed = std::nullopt);
 
-    std::shared_ptr<LayoutRandomizer> randomizer_plain_with_current_layout_area(const Projection& projection, double diameter_multiplier, LayoutRandomizer::seed_t seed = std::nullopt);
-    std::shared_ptr<LayoutRandomizer> randomizer_border_with_current_layout_area(const Projection& projection, double diameter_multiplier, const ae::draw::v2::LineSide& line_side, LayoutRandomizer::seed_t seed = std::nullopt);
+    std::shared_ptr<LayoutRandomizer> randomizer_plain_with_current_layout_area(const Chart& chart, const Projection& projection, double diameter_multiplier, LayoutRandomizer::seed_t seed = std::nullopt);
+    std::shared_ptr<LayoutRandomizer> randomizer_border_with_current_layout_area(const Chart& chart, const Projection& projection, double diameter_multiplier, const ae::draw::v2::LineSide& line_side, LayoutRandomizer::seed_t seed = std::nullopt);
 
 } // namespace ae::chart::v3
 

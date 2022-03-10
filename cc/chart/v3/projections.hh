@@ -13,6 +13,7 @@
 namespace ae::chart::v3
 {
     class Chart;
+    class LayoutRandomizer;
 
     enum class recalculate_stress { /* no, */ if_necessary, yes };
 
@@ -24,6 +25,7 @@ namespace ae::chart::v3
         Projection() = default;
         Projection(const Projection&) = default;
         Projection(Projection&&) = default;
+        Projection(point_index num_points, number_of_dimensions_t num_dim, minimum_column_basis mcb) : layout_{num_points, num_dim}, minimum_column_basis_{mcb} {}
         Projection& operator=(const Projection&) = default;
         Projection& operator=(Projection&&) = default;
 
@@ -60,6 +62,8 @@ namespace ae::chart::v3
         const unmovable_in_the_last_dimension_points unmovable_in_the_last_dimension() const { return unmovable_in_the_last_dimension_; }
         dodgy_titer_is_regular_e dodgy_titer_is_regular() const { return dodgy_titer_is_regular_; }
         void dodgy_titer_is_regular(dodgy_titer_is_regular_e dtir) { dodgy_titer_is_regular_ = dtir; }
+
+        void randomize_layout(std::shared_ptr<LayoutRandomizer> randomizer);
 
         // std::shared_ptr<Layout> transformed_layout() const { return layout()->transform(transformation()); }
         // double stress_diff_to_stop() const = 0;
