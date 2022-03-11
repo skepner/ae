@@ -17,12 +17,12 @@ namespace ae::chart::v3
 
         enum None { None };
 
-        // Selected() = default;
+        // all antigens/sera
         Selected(std::shared_ptr<Chart> a_chart) : chart{a_chart}, indexes(*a_chart->antigens_sera<AgSr>().size(), typename AgSr::index_t{0}) {
             const auto num{a_chart->antigens_sera<AgSr>().size()};
             std::copy(num.begin(), num.end(), indexes.begin());
         }
-        // ranges::views::iota(0ul, *a_chart->antigens_sera<AgSr>().size()) | ranges::views::transform([](size_t ind) { return typename AgSr::index_t{ind}; })} {} // ag_sr()->all_indexes()} {}
+        // no antigens/sera
         Selected(std::shared_ptr<Chart> a_chart, enum None) : chart{a_chart}, indexes{} {}
         // call func for each antigen/serum and select ag/sr if func returns true
         template <typename F>
