@@ -11,6 +11,11 @@ def main(args: argparse.Namespace):
         num_projections = chart.number_of_projections()
         print(chart.name(0), f"{chart.number_of_antigens()}:{chart.number_of_sera()}", f"projections:{num_projections}" if num_projections else "no projections")
         print(chart.name_for_file())
+        if args.all:
+            print()
+            for projection_no in range(num_projections):
+                projection = chart.projection(projection_no)
+                print(f"{projection_no:3d}  {projection.stress():9.4f} >={projection.minimum_column_basis()} <{projection.comment()}> {projection.forced_column_bases()}")
 
 # ----------------------------------------------------------------------
 

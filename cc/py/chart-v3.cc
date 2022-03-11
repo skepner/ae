@@ -5,7 +5,27 @@
 
 namespace ae::py
 {
-}
+    struct ProjectionRef
+    {
+        std::shared_ptr<ae::chart::v3::Chart> chart;
+        projection_index projection_no;
+
+        ProjectionRef(std::shared_ptr<ae::chart::v3::Chart> a_chart, projection_index a_projection_no) : chart{a_chart}, projection_no{a_projection_no}
+            {
+                if (projection_no >= chart->projections().size())
+                    throw std::invalid_argument{fmt::format("invalid projection_no {}, number of projections in chart: {}", projection_no, chart->projections().size())};
+            }
+
+        ae::chart::v3::Projection& p() { return chart->projections()[projection_no]; }
+        const ae::chart::v3::Projection& p() const { return chart->projections()[projection_no]; }
+
+        double stress() const { return p().stress(); }
+        std::string_view comment() const { return p().comment(); }
+        std::string minimum_column_basis() const { return p().minimum_column_basis().format("{}", ae::chart::v3::minimum_column_basis::use_none::yes); }
+        const std::vector<double>& forced_column_bases() const { return p().forced_column_bases().data(); }
+    };
+
+} // namespace ae::py
 
 // ======================================================================
 
@@ -25,7 +45,7 @@ void ae::py::chart_v3(pybind11::module_& mdl)
         .def(pybind11::init<const Chart&>(), "chart"_a, pybind11::doc("clone chart"))                                  //
         .def("write", &Chart::write, "filename"_a, pybind11::doc("exports chart into a file"))                         //
 
-        .def("__str__", [](const Chart& chart) { return chart.name(); })                                        //
+        .def("__str__", [](const Chart& chart) { return chart.name(); }) //
         .def(
             "name",
             [](const Chart& chart, std::optional<size_t> projection_no) {
@@ -36,9 +56,16 @@ void ae::py::chart_v3(pybind11::module_& mdl)
             },
             "projection_no"_a = std::nullopt, pybind11::doc("short name of a chart"))                           //
         .def("name_for_file", &Chart::name_for_file, pybind11::doc("name of a chart to be used as a filename")) //
-        .def("number_of_antigens", [](const Chart& chart) -> size_t { return *chart.antigens().size(); }) //
-        .def("number_of_sera", [](const Chart& chart) -> size_t { return *chart.sera().size(); }) //
+        .def("number_of_antigens", [](const Chart& chart) -> size_t { return *chart.antigens().size(); })       //
+        .def("number_of_sera", [](const Chart& chart) -> size_t { return *chart.sera().size(); })               //
         .def("number_of_projections", [](const Chart& chart) -> size_t { return *chart.projections().size(); }) //
+
+        .def(
+            "projection",
+            [](std::shared_ptr<Chart> chart, size_t projection_no) {
+                return ProjectionRef{chart, projection_index{projection_no}};
+            },
+            "projection_no"_a = 0) //
 
         .def(
             "relax", //
@@ -334,6 +361,15 @@ void ae::py::chart_v3(pybind11::module_& mdl)
         //     chart.remove_antigens_sera(antigens=chart.select_antigens(lambda ag: ag.lineage == "VICTORIA"), sera=chart.select_sera(lambda sr: sr.lineage == "VICTORIA"))
         // )"))                                                                                    //
 
+        ;
+
+    // ----------------------------------------------------------------------
+
+    pybind11::class_<ae::py::ProjectionRef>(chart_v3_submodule, "Projection")      //
+        .def("stress", &ae::py::ProjectionRef::stress)                             //
+        .def("comment", &ae::py::ProjectionRef::comment)                           //
+        .def("minimum_column_basis", &ae::py::ProjectionRef::minimum_column_basis) //
+        .def("forced_column_bases", &ae::py::ProjectionRef::forced_column_bases)   //
         ;
 }
 

@@ -98,6 +98,7 @@ namespace ae::chart::v3
 
         auto begin() const { return data_.begin(); }
         auto end() const { return data_.end(); }
+        const auto& data() const { return data_; }
 
       private:
         std::vector<double> data_{};
