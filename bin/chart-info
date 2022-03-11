@@ -12,7 +12,10 @@ def main(args: argparse.Namespace):
         print(chart.name_for_file())
         print(chart.name(0), f"{chart.number_of_antigens()}:{chart.number_of_sera()}", f"projections:{num_projections}" if num_projections else "no projections")
         if chart_forced_column_bases := chart.forced_column_bases():
-            print("  forced column bases:", chart_forced_column_bases)
+            if args.all:
+                print("  forced column bases: see after sources below")
+            else:
+                print("  forced column bases:", chart_forced_column_bases)
         if args.all:
             print()
             for projection_no in range(num_projections):
@@ -28,6 +31,8 @@ def main(args: argparse.Namespace):
                 print()
             print()
             print("all sources")
+            if chart_forced_column_bases:
+                print("  forced column bases:", chart_forced_column_bases)
 
 # ----------------------------------------------------------------------
 
