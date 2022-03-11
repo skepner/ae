@@ -39,6 +39,7 @@ namespace ae::chart::v3
         const Antigens& antigens() const { return antigens_; }
         Sera& sera() { return sera_; }
         const Sera& sera() const { return sera_; }
+        template <typename AgSr> AgSr& antigens_sera() { if constexpr (std::is_same_v<AgSr, Antigens>) return antigens_; else return sera_; }
         Titers& titers() { return titers_; }
         const Titers& titers() const { return titers_; }
         Projections& projections() { return projections_; }

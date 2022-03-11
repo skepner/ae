@@ -1,5 +1,6 @@
 #include "py/module.hh"
 #include "chart/v3/chart.hh"
+#include "chart/v3/selected-antigens-sera.hh"
 
 // ======================================================================
 
@@ -46,6 +47,14 @@ namespace ae::py
                 throw std::invalid_argument{fmt::format("invalid source_no {}, number of sources in the chart table: {}", no, sources->size())};
             return new InfoRef{chart, (*sources)[no]};
         }
+    };
+
+    template <typename AgSr> struct SelectionData
+    {
+        std::shared_ptr<ae::chart::v3::Chart> chart;
+        typename AgSr::index_t index{0};
+        projection_index projection_no;
+        const AgSr& ag_sr;
     };
 
 } // namespace ae::py
@@ -136,6 +145,57 @@ void ae::py::chart_v3(pybind11::module_& mdl)
             "unmovable_non_nan_points"_a = false) //
 
         //         .def("grid_test", &grid_test, "antigens"_a = nullptr, "sera"_a = nullptr, "projection_no"_a = 0, "grid_step"_a = 0.1, "threads"_a = 0) //
+
+        // ----------------------------------------------------------------------
+
+        .def(
+            "select_antigens", //
+            [](std::shared_ptr<Chart> chart, const std::function<bool(const SelectionData<Antigen>&)>& func, size_t projection_no, bool report) {
+                auto selected = new SelectedAntigens{chart, func, projection_index{projection_no}};
+                // AD_PRINT_L(report, [&selected]() { return selected->report("{ag_sr} {no0:{num_digits}d} {name_full_passage}\n"); });
+                return selected;
+            },                                                        //
+            "predicate"_a, "projection_no"_a = 0, "report"_a = false, //
+            pybind11::doc("Passed predicate (function with one arg: SelectionDataAntigen object)\n"
+                          "is called for each antigen, selects just antigens for which predicate\n"
+                          "returns True, returns SelectedAntigens object.")) //
+        .def(
+            "select_all_antigens",                                                         //
+            [](std::shared_ptr<Chart> chart) { return new SelectedAntigens{chart}; },      //
+            pybind11::doc(R"(Selects all antigens and returns SelectedAntigens object.)")) //
+        .def(
+            "select_no_antigens", //
+            [](std::shared_ptr<Chart> chart) {
+                return new SelectedAntigens{chart, SelectedAntigens::None};
+            },                                                                            //
+            pybind11::doc(R"(Selects no antigens and returns SelectedAntigens object.)")) //
+
+        // .def("antigens_by_aa_at_pos", &ae::py::antigens_sera_by_aa_at_pos<SelectedAntigens>, "pos"_a,
+        //      pybind11::doc(R"(Returns dict with AA at passed pos as keys and SelectedAntigens as values.)")) //
+        // .def("sera_by_aa_at_pos", &ae::py::antigens_sera_by_aa_at_pos<SelectedSera>, "pos"_a,
+        //      pybind11::doc(R"(Returns dict with AA at passed pos as keys and SelectedSera as values.)")) //
+
+        .def(
+            "select_sera", //
+            [](std::shared_ptr<Chart> chart, const std::function<bool(const SelectionData<Serum>&)>& func, size_t projection_no, bool report) {
+                auto selected = new SelectedSera{chart, func, projection_index{projection_no}};
+                // AD_PRINT_L(report, [&selected]() { return selected->report("{ag_sr} {no0:{num_digits}d} {name_full_passage}\n"); });
+                return selected;
+            },                                                        //
+            "predicate"_a, "projection_no"_a = 0, "report"_a = false, //
+            pybind11::doc("Passed predicate (function with one arg: SelectionDataSerum object)\n"
+                          "is called for each serum, selects just sera for which predicate\n"
+                          "returns True, returns SelectedSera object.")) //
+        .def(
+            "select_all_sera",                                                     //
+            [](std::shared_ptr<Chart> chart) { return new SelectedSera{chart}; },  //
+            pybind11::doc(R"(Selects all sera and returns SelectedSera object.)")) //
+        .def(
+            "select_no_sera", //
+            [](std::shared_ptr<Chart> chart) {
+                return new SelectedSera{chart, SelectedSera::None};
+            },                                                                    //
+            pybind11::doc(R"(Selects no sera and returns SelectedSera object.)")) //
 
         // ----------------------------------------------------------------------
 
@@ -245,17 +305,6 @@ void ae::py::chart_v3(pybind11::module_& mdl)
         //         .def("antigen", &ChartModify::antigen, "antigen_no"_a) //
         //         .def("serum", &ChartModify::serum, "serum_no"_a)       //
 
-        //         .def(
-        //             "select_antigens", //
-        //             [](std::shared_ptr<ChartModify> chart, const std::function<bool(const SelectionData<Antigen>&)>& func, size_t projection_no, bool report) {
-        //                 auto selected = std::make_shared<SelectedAntigensModify>(chart, func, projection_no);
-        //                 AD_PRINT_L(report, [&selected]() { return selected->report("{ag_sr} {no0:{num_digits}d} {name_full_passage}\n"); });
-        //                 return selected;
-        //             },                                                        //
-        //             "predicate"_a, "projection_no"_a = 0, "report"_a = false, //
-        //             pybind11::doc("Passed predicate (function with one arg: SelectionDataAntigen object)\n"
-        //                           "is called for each antigen, selects just antigens for which predicate\n"
-        //                           "returns True, returns SelectedAntigens object.")) //
         //         // .def(
         //         //     "select_antigens_by_aa", //
         //         //     [](std::shared_ptr<ChartModify> chart, const std::vector<std::string>& criteria, bool report) {
@@ -279,31 +328,6 @@ void ae::py::chart_v3(pybind11::module_& mdl)
         //         //     },                                                                                                //
         //         //     "clades"_a, "report"_a = false,                                                                   //
         //         //     pybind11::doc(R"(Select antigens with a clade from clades, one or more entries in clades must match)")) //
-        //         .def(
-        //             "select_all_antigens",                                                                              //
-        //             [](std::shared_ptr<ChartModify> chart) { return std::make_shared<SelectedAntigensModify>(chart); }, //
-        //             pybind11::doc(R"(Selects all antigens and returns SelectedAntigens object.)"))                      //
-        //         .def(
-        //             "select_no_antigens",                                                                                                             //
-        //             [](std::shared_ptr<ChartModify> chart) { return std::make_shared<SelectedAntigensModify>(chart, SelectedAntigensModify::None); }, //
-        //             pybind11::doc(R"(Selects no antigens and returns SelectedAntigens object.)"))                                                     //
-
-        //         .def("antigens_by_aa_at_pos", &ae::py::antigens_sera_by_aa_at_pos<SelectedAntigensModify>, "pos"_a,
-        //              pybind11::doc(R"(Returns dict with AA at passed pos as keys and SelectedAntigens as values.)")) //
-        //         .def("sera_by_aa_at_pos", &ae::py::antigens_sera_by_aa_at_pos<SelectedSeraModify>, "pos"_a,
-        //              pybind11::doc(R"(Returns dict with AA at passed pos as keys and SelectedSera as values.)")) //
-
-        //         .def(
-        //             "select_sera", //
-        //             [](std::shared_ptr<ChartModify> chart, const std::function<bool(const SelectionData<Serum>&)>& func, size_t projection_no, bool report) {
-        //                 auto selected = std::make_shared<SelectedSeraModify>(chart, func, projection_no);
-        //                 AD_PRINT_L(report, [&selected]() { return selected->report("{ag_sr} {no0:{num_digits}d} {name_full_passage}\n"); });
-        //                 return selected;
-        //             },                                                        //
-        //             "predicate"_a, "projection_no"_a = 0, "report"_a = false, //
-        //             pybind11::doc("Passed predicate (function with one arg: SelectionDataSerum object)\n"
-        //                           "is called for each serum, selects just sera for which predicate\n"
-        //                           "returns True, returns SelectedSera object.")) //
         //         // .def(
         //         //     "select_sera_by_aa", //
         //         //     [](std::shared_ptr<ChartModify> chart, const std::vector<std::string>& criteria, bool report) {
@@ -327,14 +351,6 @@ void ae::py::chart_v3(pybind11::module_& mdl)
         //         //     },                                                                                            //
         //         //     "clades"_a, "report"_a = false,                                                               //
         //         //     pybind11::doc(R"(Select sera with a clade from clades, one or more entries in clades must match)")) //
-        //         .def(
-        //             "select_all_sera",                                                                              //
-        //             [](std::shared_ptr<ChartModify> chart) { return std::make_shared<SelectedSeraModify>(chart); }, //
-        //             pybind11::doc(R"(Selects all sera and returns SelectedSera object.)"))                          //
-        //         .def(
-        //             "select_no_sera",                                                                                                         //
-        //             [](std::shared_ptr<ChartModify> chart) { return std::make_shared<SelectedSeraModify>(chart, SelectedSeraModify::None); }, //
-        //             pybind11::doc(R"(Selects no sera and returns SelectedSera object.)"))                                                     //
 
         //         .def("titers", &ChartModify::titers_modify_ptr, pybind11::doc("returns Titers oject"))
 

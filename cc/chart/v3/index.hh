@@ -3,6 +3,7 @@
 #include <concepts>
 
 #include "ext/fmt.hh"
+#include "ext/range-v3.hh"
 #include "utils/named-vector.hh"
 
 // ----------------------------------------------------------------------
@@ -19,12 +20,24 @@ namespace ae
         explicit index_tt() : value_{0} {}
         index_tt(const index_tt&) = default;
         index_tt(index_tt&&) = default;
-        template <typename T2> requires std::constructible_from<value_type, T2> explicit index_tt(T2&& value) : value_(std::forward<T2>(value)) {}
+        template <typename T2>
+        requires std::constructible_from<value_type, T2>
+        explicit index_tt(T2&& value) : value_(std::forward<T2>(value)) {}
 
         index_tt& operator=(const index_tt&) = default;
         index_tt& operator=(index_tt&&) = default;
-        template <typename T2> requires std::assignable_from<value_type&, T2> index_tt& operator=(const T2& value) { value_ = value; return *this; }
-        template <typename T2> requires std::assignable_from<value_type&, T2> index_tt& operator=(T2&& value) { value_ = std::move(value); return *this; }
+        template <typename T2>
+        requires std::assignable_from<value_type&, T2> index_tt& operator=(const T2& value)
+        {
+            value_ = value;
+            return *this;
+        }
+        template <typename T2>
+        requires std::assignable_from<value_type&, T2> index_tt& operator=(T2&& value)
+        {
+            value_ = std::move(value);
+            return *this;
+        }
 
         auto operator<=>(const index_tt&) const = default;
 
@@ -36,10 +49,28 @@ namespace ae
         explicit operator value_type&() noexcept { return value_; }
         explicit operator const value_type&() const noexcept { return value_; }
 
-        index_tt<Tag>& operator++() { ++this->get(); return *this; }
-        index_tt<Tag> operator++(int) { const auto saved{*this}; ++this->get(); return saved; }
-        index_tt<Tag>& operator--() { --this->get(); return *this; }
-        index_tt<Tag> operator--(int) { const auto saved{*this}; --this->get(); return saved; }
+        index_tt<Tag>& operator++()
+        {
+            ++this->get();
+            return *this;
+        }
+        index_tt<Tag> operator++(int)
+        {
+            const auto saved{*this};
+            ++this->get();
+            return saved;
+        }
+        index_tt<Tag>& operator--()
+        {
+            --this->get();
+            return *this;
+        }
+        index_tt<Tag> operator--(int)
+        {
+            const auto saved{*this};
+            --this->get();
+            return saved;
+        }
 
         index_tt<Tag> operator+(index_tt<Tag> rhs) { return index_tt<Tag>{get() + rhs.get()}; }
 
@@ -71,10 +102,28 @@ namespace ae
         index_tt<Tag>& operator*() noexcept { return value_; }
         const index_tt<Tag>& operator*() const noexcept { return value_; }
 
-        index_iterator_tt<Tag>& operator++() { ++value_; return *this; }
-        index_iterator_tt<Tag> operator++(int) { const auto saved{*this}; ++value_; return saved; }
-        index_iterator_tt<Tag>& operator--() { --value_; return *this; }
-        index_iterator_tt<Tag> operator--(int) { const auto saved{*this}; --value_; return saved; }
+        index_iterator_tt<Tag>& operator++()
+        {
+            ++value_;
+            return *this;
+        }
+        index_iterator_tt<Tag> operator++(int)
+        {
+            const auto saved{*this};
+            ++value_;
+            return saved;
+        }
+        index_iterator_tt<Tag>& operator--()
+        {
+            --value_;
+            return *this;
+        }
+        index_iterator_tt<Tag> operator--(int)
+        {
+            const auto saved{*this};
+            --value_;
+            return saved;
+        }
 
         auto operator<=>(const index_iterator_tt&) const = default;
 
@@ -105,9 +154,30 @@ namespace ae
     using serum_indexes = ae::named_vector_t<serum_index, struct serum_indexes_tag>;
     using point_indexes = ae::named_vector_t<point_index, struct point_indexes_tag>;
 
-    class disconnected_points : public point_indexes { public: using point_indexes::point_indexes; };
-    class unmovable_points : public point_indexes { public: using point_indexes::point_indexes; };
-    class unmovable_in_the_last_dimension_points : public point_indexes { public: using point_indexes::point_indexes; };
+    inline point_indexes to_point_indexes(const antigen_indexes& agi, antigen_index = antigen_index{0})
+    {
+        return point_indexes{ranges::views::transform(agi, [](antigen_index index) { return point_index{*index}; }) | ranges::to_vector};
+    }
+    inline point_indexes to_point_indexes(const serum_indexes& sri, antigen_index number_of_antigens)
+    {
+        return point_indexes{ranges::views::transform(sri, [number_of_antigens](serum_index index) { return number_of_antigens + index; }) | ranges::to_vector};
+    }
+
+    class disconnected_points : public point_indexes
+    {
+      public:
+        using point_indexes::point_indexes;
+    };
+    class unmovable_points : public point_indexes
+    {
+      public:
+        using point_indexes::point_indexes;
+    };
+    class unmovable_in_the_last_dimension_points : public point_indexes
+    {
+      public:
+        using point_indexes::point_indexes;
+    };
     // using disconnected_points = ae::named_vector_t<point_index, struct disconnected_points_tag>;
     // using unmovable_points = ae::named_vector_t<point_index, struct unmovable_points_tag>;
     // using unmovable_in_the_last_dimension_points = ae::named_vector_t<point_index, struct unmovable_in_the_last_dimension_points_tag>;

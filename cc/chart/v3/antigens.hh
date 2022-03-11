@@ -105,6 +105,9 @@ namespace ae::chart::v3
     class Antigen : public AntigenSerum
     {
       public:
+        using index_t = antigen_index;
+        using indexes_t = antigen_indexes;
+
         using AntigenSerum::AntigenSerum;
 
         const auto& date() const { return date_; }
@@ -122,6 +125,9 @@ namespace ae::chart::v3
     class Serum : public AntigenSerum
     {
       public:
+        using index_t = serum_index;
+        using indexes_t = serum_indexes;
+
         using AntigenSerum::AntigenSerum;
 
         const auto& serum_species() const { return serum_species_; }
@@ -144,18 +150,21 @@ namespace ae::chart::v3
 
     // ----------------------------------------------------------------------
 
-    template <typename Index, typename Element> class AntigensSera
+    template <typename Element> class AntigensSera
     {
       public:
+        using index_t = typename Element::index_t;
+        using indexes_t = typename Element::indexes_t;
+
         AntigensSera() = default;
         AntigensSera(const AntigensSera&) = default;
         AntigensSera(AntigensSera&&) = default;
         AntigensSera& operator=(const AntigensSera&) = default;
         AntigensSera& operator=(AntigensSera&&) = default;
 
-        Index size() const { return Index{data_.size()}; }
-        Element& operator[](Index index) { return data_[*index]; }
-        const Element& operator[](Index index) const { return data_[*index]; }
+        index_t size() const { return index_t{data_.size()}; }
+        Element& operator[](index_t index) { return data_[*index]; }
+        const Element& operator[](index_t index) const { return data_[*index]; }
 
         auto begin() const { return data_.begin(); }
         auto begin() { return data_.begin(); }
@@ -170,18 +179,18 @@ namespace ae::chart::v3
 
     // ----------------------------------------------------------------------
 
-    class Antigens : public AntigensSera<antigen_index, Antigen>
+    class Antigens : public AntigensSera<Antigen>
     {
       public:
-        using AntigensSera<antigen_index, Antigen>::AntigensSera;
+        using AntigensSera<Antigen>::AntigensSera;
     };
 
     // ----------------------------------------------------------------------
 
-    class Sera : public AntigensSera<serum_index, Serum>
+    class Sera : public AntigensSera<Serum>
     {
       public:
-        using AntigensSera<serum_index, Serum>::AntigensSera;
+        using AntigensSera<Serum>::AntigensSera;
     };
 
 }
