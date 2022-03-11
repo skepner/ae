@@ -8,21 +8,44 @@ namespace ae::py
     struct ProjectionRef
     {
         std::shared_ptr<ae::chart::v3::Chart> chart;
-        projection_index projection_no;
+        ae::chart::v3::Projection& projection;
 
-        ProjectionRef(std::shared_ptr<ae::chart::v3::Chart> a_chart, projection_index a_projection_no) : chart{a_chart}, projection_no{a_projection_no}
-            {
-                if (projection_no >= chart->projections().size())
-                    throw std::invalid_argument{fmt::format("invalid projection_no {}, number of projections in chart: {}", projection_no, chart->projections().size())};
-            }
+        ProjectionRef(std::shared_ptr<ae::chart::v3::Chart> a_chart, ae::chart::v3::Projection& a_projection) : chart{a_chart}, projection{a_projection} {}
 
-        ae::chart::v3::Projection& p() { return chart->projections()[projection_no]; }
-        const ae::chart::v3::Projection& p() const { return chart->projections()[projection_no]; }
+        // ae::chart::v3::Projection& p() { return chart->projections()[projection_no]; }
+        // const ae::chart::v3::Projection& p() const { return chart->projections()[projection_no]; }
 
-        double stress() const { return p().stress(); }
-        std::string_view comment() const { return p().comment(); }
-        std::string minimum_column_basis() const { return p().minimum_column_basis().format("{}", ae::chart::v3::minimum_column_basis::use_none::yes); }
-        const std::vector<double>& forced_column_bases() const { return p().forced_column_bases().data(); }
+        double stress() const { return projection.stress(); }
+        std::string_view comment() const { return projection.comment(); }
+        std::string minimum_column_basis() const { return projection.minimum_column_basis().format("{}", ae::chart::v3::minimum_column_basis::use_none::yes); }
+        const std::vector<double>& forced_column_bases() const { return projection.forced_column_bases().data(); }
+    };
+
+    struct InfoRef
+    {
+        std::shared_ptr<ae::chart::v3::Chart> chart;
+        ae::chart::v3::TableSource& table_source;
+        std::vector<ae::chart::v3::TableSource>* sources;
+
+        InfoRef(std::shared_ptr<ae::chart::v3::Chart> a_chart) : chart{a_chart}, table_source{a_chart->info()}, sources{&a_chart->info().sources()} {}
+        InfoRef(std::shared_ptr<ae::chart::v3::Chart> a_chart, ae::chart::v3::TableSource& a_table_source) : chart{a_chart}, table_source{a_table_source}, sources{nullptr} {}
+
+        std::string_view virus() const { return *table_source.virus(); }
+        std::string_view type_subtype() const { return *table_source.type_subtype(); }
+        std::string_view assay() const { return *table_source.assay(); }
+        std::string_view rbc_species() const { return *table_source.rbc_species(); }
+        std::string_view lab() const { return *table_source.lab(); }
+        std::string_view date() const { return *table_source.date(); }
+        std::string_view name() const { return table_source.name(); }
+
+        size_t number_of_sources() const { return sources ? sources->size() : 0ul; }
+        InfoRef* source(size_t no) {
+            if (!sources || sources->empty())
+                throw std::invalid_argument{"chart table has no sources"};
+            else if (no >= sources->size())
+                throw std::invalid_argument{fmt::format("invalid source_no {}, number of sources in the chart table: {}", no, sources->size())};
+            return new InfoRef{chart, (*sources)[no]};
+        }
     };
 
 } // namespace ae::py
@@ -61,10 +84,14 @@ void ae::py::chart_v3(pybind11::module_& mdl)
         .def("number_of_projections", [](const Chart& chart) -> size_t { return *chart.projections().size(); }) //
         .def("forced_column_bases", [](const Chart& chart) { return chart.forced_column_bases().data(); })      //
 
+        .def("info", [](std::shared_ptr<Chart> chart) { return new InfoRef{chart}; }) //
+
         .def(
             "projection",
             [](std::shared_ptr<Chart> chart, size_t projection_no) {
-                return ProjectionRef{chart, projection_index{projection_no}};
+                if (projection_index{projection_no} >= chart->projections().size())
+                    throw std::invalid_argument{fmt::format("invalid projection_no {}, number of projections in chart: {}", projection_no, chart->projections().size())};
+                return new ProjectionRef{chart, chart->projections()[projection_index{projection_no}]}; // owned by python program
             },
             "projection_no"_a = 0) //
 
@@ -366,11 +393,23 @@ void ae::py::chart_v3(pybind11::module_& mdl)
 
     // ----------------------------------------------------------------------
 
-    pybind11::class_<ae::py::ProjectionRef>(chart_v3_submodule, "Projection")      //
-        .def("stress", &ae::py::ProjectionRef::stress)                             //
-        .def("comment", &ae::py::ProjectionRef::comment)                           //
-        .def("minimum_column_basis", &ae::py::ProjectionRef::minimum_column_basis) //
-        .def("forced_column_bases", &ae::py::ProjectionRef::forced_column_bases)   //
+    pybind11::class_<ProjectionRef>(chart_v3_submodule, "Projection")      //
+        .def("stress", &ProjectionRef::stress)                             //
+        .def("comment", &ProjectionRef::comment)                           //
+        .def("minimum_column_basis", &ProjectionRef::minimum_column_basis) //
+        .def("forced_column_bases", &ProjectionRef::forced_column_bases)   //
+        ;
+
+    pybind11::class_<InfoRef>(chart_v3_submodule, "Info")      //
+        .def("virus", &InfoRef::virus)                         //
+        .def("type_subtype", &InfoRef::type_subtype)           //
+        .def("assay", &InfoRef::assay)                         //
+        .def("rbc_species", &InfoRef::rbc_species)             //
+        .def("lab", &InfoRef::lab)                             //
+        .def("date", &InfoRef::date)                           //
+        .def("name", &InfoRef::name)                           //
+        .def("number_of_sources", &InfoRef::number_of_sources) //
+        .def("source", &InfoRef::source, "source_no"_a)        //
         ;
 }
 

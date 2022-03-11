@@ -30,7 +30,12 @@ def main(args: argparse.Namespace):
                         print("", projection_forced_column_bases, end="")
                 print()
             print()
-            print("all sources")
+            info = chart.info()
+            if num_sources := info.number_of_sources():
+                for source_no in range(num_sources):
+                    source = info.source(source_no)
+                    print(f"{source_no:3d} {source.date()} {source.name()}")
+                print()
             if chart_forced_column_bases:
                 print("  forced column bases:", chart_forced_column_bases)
 

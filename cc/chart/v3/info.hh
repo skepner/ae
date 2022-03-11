@@ -80,7 +80,6 @@ namespace ae::chart::v3
         const auto& name() const { return name_; }
         void name(const std::string& name) { name_ = name; }
 
-
       private:
         ae::virus::virus_t virus_{};
         ae::virus::type_subtype_t type_subtype_{};
