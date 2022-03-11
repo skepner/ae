@@ -59,6 +59,7 @@ void ae::py::chart_v3(pybind11::module_& mdl)
         .def("number_of_antigens", [](const Chart& chart) -> size_t { return *chart.antigens().size(); })       //
         .def("number_of_sera", [](const Chart& chart) -> size_t { return *chart.sera().size(); })               //
         .def("number_of_projections", [](const Chart& chart) -> size_t { return *chart.projections().size(); }) //
+        .def("forced_column_bases", [](const Chart& chart) { return chart.forced_column_bases().data(); })      //
 
         .def(
             "projection",

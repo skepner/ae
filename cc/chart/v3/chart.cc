@@ -47,7 +47,7 @@ std::string ae::chart::v3::Chart::name_for_file() const
 
 ae::chart::v3::column_bases ae::chart::v3::Chart::column_bases(minimum_column_basis mcb) const
 {
-    // forced column bases are stored with sera
+    // forced column bases are stored with the sera
     class column_bases cb;
     for (const auto sr_no : sera().size()) {
         if (const auto fcb = sera()[sr_no].forced_column_basis(); fcb.has_value())
@@ -58,6 +58,25 @@ ae::chart::v3::column_bases ae::chart::v3::Chart::column_bases(minimum_column_ba
     return cb;
 
 } // ae::chart::v3::Chart::column_bases
+
+// ----------------------------------------------------------------------
+
+ae::chart::v3::column_bases ae::chart::v3::Chart::forced_column_bases() const
+{
+    // forced column bases are stored with the sera
+    class column_bases cb;
+    for (const auto sr_no : sera().size()) {
+        if (const auto fcb = sera()[sr_no].forced_column_basis(); fcb.has_value())
+            cb.add(*fcb);
+        else
+            cb.add(0.0);
+    }
+    if (std::all_of(cb.begin(), cb.end(), [](double cbs) { return float_zero(cbs); }))
+        return ae::chart::v3::column_bases{};
+    else
+        return cb;
+
+} // ae::chart::v3::Chart::forced_column_bases
 
 // ----------------------------------------------------------------------
 
