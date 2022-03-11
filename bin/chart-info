@@ -1,0 +1,28 @@
+#! /usr/bin/env python3
+import os, sys, json, argparse, traceback
+from pathlib import Path
+import ae_backend
+
+# ----------------------------------------------------------------------
+
+def main(args: argparse.Namespace):
+    for chart_file in args.chart:
+        chart = ae_backend.chart_v3.Chart(chart_file)
+        num_projections = chart.number_of_projections()
+        print(chart.name(0), f"{chart.number_of_antigens()}:{chart.number_of_sera()}", f"projections:{num_projections}" if num_projections else "no projections")
+        print(chart.name_for_file())
+
+# ----------------------------------------------------------------------
+
+try:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("chart", nargs="+", type=Path)
+    parser.add_argument("-a", "--all", dest="all", action="store_true", default=False, help="show all possible information")
+    args = parser.parse_args()
+    exit_code = main(args) or 0
+except Exception as err:
+    print(f"> {err}\n{traceback.format_exc()}", file=sys.stderr)
+    exit_code = 1
+exit(exit_code)
+
+# ======================================================================
