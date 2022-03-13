@@ -37,12 +37,17 @@ def make_ace(chart: dict):
             "i": get_info(chart["chart_info"]),
             "a": [make_antigen(ag) for ag in chart["table"]["antigens"]],
             "s": [make_serum(sr) for sr in chart["table"]["sera"]],
-            "t": {
-                },
-            }
+            "t": make_titers(chart["table"]["titers"]),
+        }
     }
     if chart["chart_info"].get("sources"):
         ace["c"]["i"]["S"] = [get_info(src) for src in chart["chart_info"]["sources"]]
+    if chart["table"].get('column_bases'):
+        ace["c"]["C"] = chart["table"]['column_bases']
+    if chart.get('projections'):
+        ace["c"]["P"] = [make_projection(src) for src in chart['projections']]
+    if chart.get('plot_spec'):
+        ace["c"]["p"] = make_plot_spec(chart['plot_spec'])
     return json.dumps(ace, indent=1)
 
 # ----------------------------------------------------------------------
@@ -128,6 +133,72 @@ def make_annotations(source: dict):
     if source.get("extra"):
         ann.append(source["extra"])
     return ann or None
+
+# ----------------------------------------------------------------------
+
+def make_titers(source: dict):
+    titers = {}
+    layers = source.get('layers_dict_for_antigen')
+    if layers:
+        titers["L"] = layers
+    titers_list_of_list = source.get('titers_list_of_list')
+    if titers_list_of_list:
+        titers["l"] = titers_list_of_list
+    titers_list_of_dict = source.get('titers_list_of_dict')
+    if titers_list_of_dict:
+        titers["d"] = titers_list_of_dict
+    return titers
+
+# ----------------------------------------------------------------------
+
+def make_plot_spec(source: dict):
+    return remove_nulls({
+        "d": [en2 for en in source.get("drawing_order", [[]]) for en2 in en] or None,
+        "p": source.get('points'),
+        "s": source.get('shown_on_all') or None,
+        "P": [make_style(style) for style in source.get('styles', [])] or None,
+    })
+
+# ----------------------------------------------------------------------
+
+def make_style(source: dict):
+    return remove_nulls({
+        "+": source.get("shown"),
+        "F": make_color(source.get('fill_color')),
+        "O": make_color(source.get('outline_color')),
+        "o": source.get("outline_width"),
+        "S": source.get('shape', "").upper() or None,
+        "s": source.get("size"),
+        "r": source.get("rotation"),
+        "a": source.get("aspect"),
+    })
+
+# ----------------------------------------------------------------------
+
+def make_color(source):
+    if isinstance(source, int):
+        return "#{:06X}".format(source)
+    else:
+        return source
+
+# ----------------------------------------------------------------------
+
+def make_projection(source: dict):
+    return remove_nulls({
+        "c": source.get("comment"),
+        "l": source.get("layout"),
+        "s": source.get("stress"),
+        "t": [tt for en in source.get('transformation', []) for tt in en] or None,
+        "m": source.get('stress_evaluator_parameters', {}).get('minimum_column_basis'),
+        "C": source.get('stress_evaluator_parameters', {}).get('column_bases'),
+        "d": source.get('stress_evaluator_parameters', {}).get('dodgy_titer_is_regular'),
+        # "e" | float             | stress_diff_to_stop                                                                                                                                            |
+        # "U" | array of integers | list of indices of unmovable points (antigen/serum attribute for stress evaluation)                                                                            |
+        # "D" | array of integers | list of indices of disconnected points (antigen/serum attribute for stress evaluation)                                                                         |
+        # "u" | array of integers | list of indices of points unmovable in the last dimension (antigen/serum attribute for stress evaluation)                                                      |
+        # "g" | array of floats   | antigens_sera_gradient_multipliers, float for each point                                                                                                       |
+        # "f" | array of floats   | avidity adjusts (antigens_sera_titers_multipliers), float for each point                                                                                       |
+    })
 
 # ----------------------------------------------------------------------
 
