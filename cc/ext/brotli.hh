@@ -85,7 +85,7 @@ namespace ae::file
             }
             BrotliDecoderDestroyInstance(decoder_);
             decoder_ = nullptr;
-            if ((cic == check_if_compressed::yes && (result == BROTLI_DECODER_RESULT_SUCCESS || result == BROTLI_DECODER_RESULT_NEEDS_MORE_INPUT)) ||
+            if ((cic == check_if_compressed::yes && (result == BROTLI_DECODER_RESULT_SUCCESS || result == BROTLI_DECODER_RESULT_NEEDS_MORE_INPUT) && !output.empty()) ||
                 (result == BROTLI_DECODER_RESULT_SUCCESS && !available_in)) {
                 output.reserve(output.size() + padding());
                 return output;
