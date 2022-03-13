@@ -1,0 +1,77 @@
+#! /usr/bin/env python3
+import os, sys, json, lzma, datetime, argparse, traceback
+from pathlib import Path
+
+
+# ----------------------------------------------------------------------
+
+def main(args: argparse.Namespace):
+    chart = read(args.input)
+    output = make_ace(chart)
+    if args.output is None:
+        print(output)
+    else:
+        with args.output.open("w") as out:
+            out.write(output)
+
+# ----------------------------------------------------------------------
+
+def read(filename: Path):
+    if not filename:
+        source = sys.stdin.read()
+    elif filename.suffix == '.xz':
+        source = lzma.open(filename).read()
+    else:
+        source = filename.open().read()
+    globls = {}
+    chart = exec(source, globls)
+    return globls["data"]
+
+# ----------------------------------------------------------------------
+
+def make_ace(chart: dict):
+    ace = {
+        "  version": "acmacs-ace-v1",
+        "?created": Path(sys.argv[0]).name,
+        "c": {
+            "i": get_info(chart["chart_info"]),
+            "a": [
+                ],
+            "s": [
+                ],
+            "t": {
+                },
+            }
+    }
+    if chart["chart_info"].get("sources"):
+        ace["c"]["i"]["S"] = [get_info(src) for src in chart["chart_info"]["sources"]]
+    return json.dumps(ace, indent=1)
+
+# ----------------------------------------------------------------------
+
+def get_info(source: dict):
+    return {k: v for k, v in {
+        "v": source.get("virus"),
+        "V": source.get("virus_ty") or source.get("flu_type"),
+        "A": source.get("assay"),
+        "D": source.get("date"),
+        "N": source.get("name"),
+        "l": source.get("lab"),
+        "r": source.get("rbc_species"),
+        "s": source.get("virus_subset") or source.get("flu_subset"),
+    }.items() if v}
+
+# ----------------------------------------------------------------------
+
+try:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("input", nargs="?", type=Path, default=None)
+    parser.add_argument("output", nargs="?", type=Path, default=None)
+    args = parser.parse_args()
+    exit_code = main(args) or 0
+except Exception as err:
+    print(f"> {err}\n{traceback.format_exc()}", file=sys.stderr)
+    exit_code = 1
+exit(exit_code)
+
+# ======================================================================
