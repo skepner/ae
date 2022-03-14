@@ -543,6 +543,18 @@ void ae::py::chart_v3(pybind11::module_& mdl)
         //      pybind11::doc("modifier(sr_no, serum) is called for each selected serum, serum fields, e.g. name, can be modified in the function.")) //
         ;
 
+    pybind11::class_<SelectionData<Antigen>>(chart_v3_submodule, "SelectionData_Antigen")
+        .def_property_readonly("no", [](const SelectionData<Antigen>& sd) -> size_t { return *sd.index; })
+        .def_property_readonly("point_no", [](const SelectionData<Antigen>& sd) -> size_t { return *sd.index; })
+        .def_property_readonly(
+            "antigen", [](const SelectionData<Antigen>& sd) -> const Antigen& { return sd.ag_sr; }, pybind11::return_value_policy::reference_internal);
+
+    pybind11::class_<SelectionData<Serum>>(chart_v3_submodule, "SelectionData_Serum")
+        .def_property_readonly("no", [](const SelectionData<Serum>& sd) -> size_t { return *sd.index; })
+        .def_property_readonly("point_no", [](const SelectionData<Serum>& sd) -> size_t { return *(sd.chart->antigens().size() + sd.index); })
+        .def_property_readonly(
+            "serum", [](const SelectionData<Serum>& sd) -> const Serum& { return sd.ag_sr; }, pybind11::return_value_policy::reference_internal);
+
     // ----------------------------------------------------------------------
 }
 

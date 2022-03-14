@@ -16,6 +16,14 @@ def main(args: argparse.Namespace):
                 print("  forced column bases: see after sources below")
             else:
                 print("  forced column bases:", chart_forced_column_bases)
+
+        # def sel_ser(serum_ref):
+        #     print(serum_ref.no, serum_ref.point_no, serum_ref.serum.name(), serum_ref.serum.serum_id(), serum_ref.serum.passage())
+        #     return "DARWIN" in serum_ref.serum.name()
+
+        # srr = chart.select_sera(sel_ser)
+        # print(len(srr), [[no, sr.name()] for no, sr in srr])
+
         if args.all:
             print()
             for projection_no in range(num_projections):
