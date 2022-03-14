@@ -55,7 +55,7 @@ def make_ace(chart: dict):
 def get_info(source: dict):
     return remove_nulls({
         "v": source.get("virus"),
-        "V": source.get("virus_ty") or source.get("flu_type"),
+        "V": source.get("virus_type") or source.get("flu_type"),
         "A": source.get("assay"),
         "D": source.get("date"),
         "N": source.get("name"),
@@ -93,9 +93,12 @@ def make_serum(source: dict):
 # ----------------------------------------------------------------------
 
 def make_name(source: dict):
+    host = source.get('host')
+    if host == "HUMAN":
+        host = None
     return source.get("name") or "/".join(val for val in [
         source.get('virus_type'),
-        source.get('host'),
+        host,
         source.get('location', {}).get('name'),
         source.get('isolation_number'),
         source.get('year')
@@ -162,21 +165,32 @@ def make_plot_spec(source: dict):
 # ----------------------------------------------------------------------
 
 def make_style(source: dict):
+    shape = source.get('shape', "").upper() or None
+    if shape == "CIRCLE":
+        shape = None
+    rotation = source.get("rotation")
+    if rotation == 0.0:
+        rotation = None
+    aspect = source.get("aspect")
+    if aspect == 1.0:
+        aspect = None
     return remove_nulls({
         "+": source.get("shown"),
-        "F": make_color(source.get('fill_color')),
-        "O": make_color(source.get('outline_color')),
+        "F": make_color(source.get('fill_color'), 0xFF000000),
+        "O": make_color(source.get('outline_color'), 0),
         "o": source.get("outline_width"),
-        "S": source.get('shape', "").upper() or None,
+        "S": shape,
         "s": source.get("size"),
-        "r": source.get("rotation"),
-        "a": source.get("aspect"),
+        "r": rotation,
+        "a": aspect,
     })
 
 # ----------------------------------------------------------------------
 
-def make_color(source):
-    if isinstance(source, int):
+def make_color(source, dflt):
+    if source == dflt:
+        return None
+    elif isinstance(source, int):
         return "#{:06X}".format(source)
     else:
         return source
@@ -188,10 +202,10 @@ def make_projection(source: dict):
         "c": source.get("comment"),
         "l": source.get("layout"),
         "s": source.get("stress"),
-        "t": [tt for en in source.get('transformation', []) for tt in en] or None,
-        "m": source.get('stress_evaluator_parameters', {}).get('minimum_column_basis'),
-        "C": source.get('stress_evaluator_parameters', {}).get('column_bases'),
-        "d": source.get('stress_evaluator_parameters', {}).get('dodgy_titer_is_regular'),
+        "t": [tt for en in (source.get('transformation') or []) for tt in en] or None,
+        "m": (source.get('stress_evaluator_parameters') or {}).get('minimum_column_basis'),
+        "C": (source.get('stress_evaluator_parameters') or {}).get('column_bases'),
+        "d": (source.get('stress_evaluator_parameters') or {}).get('dodgy_titer_is_regular') or None,
         # "e" | float             | stress_diff_to_stop                                                                                                                                            |
         # "U" | array of integers | list of indices of unmovable points (antigen/serum attribute for stress evaluation)                                                                            |
         # "D" | array of integers | list of indices of disconnected points (antigen/serum attribute for stress evaluation)                                                                         |
