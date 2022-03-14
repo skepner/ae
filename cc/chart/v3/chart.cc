@@ -94,7 +94,7 @@ void ae::chart::v3::Chart::relax(number_of_optimizations_t number_of_optimizatio
     auto rnd = randomizer_plain_from_sample_optimization(*this, stress, start_num_dim, mcb, options.randomization_diameter_multiplier);
 
     const auto first = projections().size();
-    for (const auto opt_no : number_of_optimizations) {
+    for ([[maybe_unused]] const auto opt_no : number_of_optimizations) {
         auto& projection = projections().add(number_of_points(), start_num_dim, mcb);
         projection.disconnected() = stress.parameters().disconnected;
         projection.unmovable() = stress.parameters().unmovable;

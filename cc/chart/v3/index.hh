@@ -178,9 +178,6 @@ namespace ae
       public:
         using point_indexes::point_indexes;
     };
-    // using disconnected_points = ae::named_vector_t<point_index, struct disconnected_points_tag>;
-    // using unmovable_points = ae::named_vector_t<point_index, struct unmovable_points_tag>;
-    // using unmovable_in_the_last_dimension_points = ae::named_vector_t<point_index, struct unmovable_in_the_last_dimension_points_tag>;
 
 } // namespace ae
 

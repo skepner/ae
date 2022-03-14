@@ -801,8 +801,8 @@ void AntigenModify::update_with(const Antigen& main)
     else if (main.lineage() != BLineage::Unknown && lineage_ != main.lineage()) {
         AD_WARNING("merged antigen lineages {} vs. {}", lineage_, main.lineage());
     }
-    lab_ids_.merge_in(main.lab_ids());
-    clades_.merge_in(main.clades());
+    lab_ids_.insert_if_not_present(main.lab_ids());
+    clades_.insert_if_not_present(main.clades());
 
     reference_ |= main.reference();
 

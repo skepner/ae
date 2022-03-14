@@ -53,7 +53,7 @@ namespace ae
                 this->get().emplace_back(std::forward<T2>(val));
         }
 
-        void merge_in(const named_vector_t<T, Tag>& another)
+        template <constructible_from<T> T2, typename Tag2> void insert_if_not_present(const named_vector_t<T2, Tag2>& another)
         {
             for (const auto& val : another)
                 insert_if_not_present(val);

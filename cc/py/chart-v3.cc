@@ -99,26 +99,23 @@ void ae::py::chart_v3(pybind11::module_& mdl)
         .def(
             "relax", //
             [](Chart& chart, size_t number_of_dimensions, size_t number_of_optimizations, std::string_view mcb, bool dimension_annealing, bool rough,
-               size_t /*number_of_best_distinct_projections_to_keep*/
-                      //, std::shared_ptr<SelectedAntigensModify> antigens_to_disconnect, std::shared_ptr<SelectedSeraModify> sera_to_disconnect
-            ) {
+               size_t /*number_of_best_distinct_projections_to_keep*/, std::shared_ptr<SelectedAntigens> antigens_to_disconnect, std::shared_ptr<SelectedSera> sera_to_disconnect) {
                 if (number_of_optimizations == 0)
                     number_of_optimizations = 100;
                 optimization_options opt;
                 opt.precision = rough ? optimization_precision::rough : optimization_precision::fine;
                 opt.dimension_annealing = use_dimension_annealing_from_bool(dimension_annealing);
                 ae::disconnected_points disconnect;
-                // if (antigens_to_disconnect && !antigens_to_disconnect->empty())
-                //     disconnect.extend(antigens_to_disconnect->points());
-                // if (sera_to_disconnect && !sera_to_disconnect->empty())
-                //     disconnect.extend(sera_to_disconnect->points());
+                if (antigens_to_disconnect && !antigens_to_disconnect->empty())
+                    disconnect.insert_if_not_present(antigens_to_disconnect->points());
+                if (sera_to_disconnect && !sera_to_disconnect->empty())
+                    disconnect.insert_if_not_present(sera_to_disconnect->points());
                 chart.relax(number_of_optimizations_t{number_of_optimizations}, minimum_column_basis{mcb}, number_of_dimensions_t{number_of_dimensions}, opt, disconnect);
                 chart.projections().sort();
             },                                                                                                                                                    //
             "number_of_dimensions"_a = 2, "number_of_optimizations"_a = 0, "minimum_column_basis"_a = "none", "dimension_annealing"_a = false, "rough"_a = false, //
-            "unused_number_of_best_distinct_projections_to_keep"_a = 5,
-            // "disconnect_antigens"_a = nullptr, "disconnect_sera"_a = nullptr,                         //
-            pybind11::doc{"makes one or more antigenic maps from random starting layouts, adds new projections, projections are sorted by stress"}) //
+            "unused_number_of_best_distinct_projections_to_keep"_a = 5, "disconnect_antigens"_a = nullptr, "disconnect_sera"_a = nullptr,                         //
+            pybind11::doc{"makes one or more antigenic maps from random starting layouts, adds new projections, projections are sorted by stress"})               //
 
         .def(
             "relax_incremental", //
@@ -142,12 +139,10 @@ void ae::py::chart_v3(pybind11::module_& mdl)
 
         .def(
             "select_antigens", //
-            [](std::shared_ptr<Chart> chart, const std::function<bool(const SelectionData<Antigen>&)>& func, size_t projection_no, bool report) {
-                auto selected = new SelectedAntigens{chart, func, projection_index{projection_no}};
-                // AD_PRINT_L(report, [&selected]() { return selected->report("{ag_sr} {no0:{num_digits}d} {name_full_passage}\n"); });
-                return selected;
+            [](std::shared_ptr<Chart> chart, const std::function<bool(const SelectionData<Antigen>&)>& func, size_t projection_no) {
+                return new SelectedAntigens{chart, func, projection_index{projection_no}};
             },                                                        //
-            "predicate"_a, "projection_no"_a = 0, "report"_a = false, //
+            "predicate"_a, "projection_no"_a = 0, //
             pybind11::doc("Passed predicate (function with one arg: SelectionDataAntigen object)\n"
                           "is called for each antigen, selects just antigens for which predicate\n"
                           "returns True, returns SelectedAntigens object.")) //
@@ -169,12 +164,10 @@ void ae::py::chart_v3(pybind11::module_& mdl)
 
         .def(
             "select_sera", //
-            [](std::shared_ptr<Chart> chart, const std::function<bool(const SelectionData<Serum>&)>& func, size_t projection_no, bool report) {
-                auto selected = new SelectedSera{chart, func, projection_index{projection_no}};
-                // AD_PRINT_L(report, [&selected]() { return selected->report("{ag_sr} {no0:{num_digits}d} {name_full_passage}\n"); });
-                return selected;
+            [](std::shared_ptr<Chart> chart, const std::function<bool(const SelectionData<Serum>&)>& func, size_t projection_no) {
+                return new SelectedSera{chart, func, projection_index{projection_no}};
             },                                                        //
-            "predicate"_a, "projection_no"_a = 0, "report"_a = false, //
+            "predicate"_a, "projection_no"_a = 0, //
             pybind11::doc("Passed predicate (function with one arg: SelectionDataSerum object)\n"
                           "is called for each serum, selects just sera for which predicate\n"
                           "returns True, returns SelectedSera object.")) //

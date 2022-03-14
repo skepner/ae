@@ -68,7 +68,7 @@ namespace ae::chart::v3
         const StressParameters& parameters() const { return parameters_; }
         StressParameters& parameters() { return parameters_; }
         void set_disconnected(const disconnected_points& to_disconnect) { parameters_.disconnected = to_disconnect; }
-        void extend_disconnected(const point_indexes& to_disconnect) { parameters_.disconnected.merge_in(to_disconnect); }
+        void extend_disconnected(const point_indexes& to_disconnect) { parameters_.disconnected.insert_if_not_present(to_disconnect); }
         size_t number_of_disconnected() const { return parameters_.disconnected.size(); }
         void set_unmovable(const unmovable_points& unmovable) { parameters_.unmovable = unmovable; }
         void set_unmovable_in_the_last_dimension(const unmovable_in_the_last_dimension_points& unmovable_in_the_last_dimension)
