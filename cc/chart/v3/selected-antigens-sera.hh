@@ -10,6 +10,18 @@ namespace ae::chart::v3
 {
     template <typename AgSr> struct SelectedIterator;
 
+    // ----------------------------------------------------------------------
+
+    template <typename AgSr> struct SelectionData
+    {
+        std::shared_ptr<ae::chart::v3::Chart> chart;
+        typename AgSr::index_t index{0};
+        projection_index projection_no;
+        const AgSr& ag_sr;
+    };
+
+    // ----------------------------------------------------------------------
+
     template <typename AgSr> struct Selected
     {
         using AntigensSeraType = AgSr;
@@ -18,16 +30,41 @@ namespace ae::chart::v3
         enum None { None };
 
         // all antigens/sera
-        Selected(std::shared_ptr<Chart> a_chart) : chart{a_chart}, indexes(*a_chart->antigens_sera<AgSr>().size(), typename AgSr::index_t{0}) {
+        Selected(std::shared_ptr<Chart> a_chart) : chart{a_chart}, indexes(*a_chart->antigens_sera<AgSr>().size(), typename AgSr::index_t{0})
+        {
             const auto num{a_chart->antigens_sera<AgSr>().size()};
             std::copy(num.begin(), num.end(), indexes.begin());
         }
         // no antigens/sera
         Selected(std::shared_ptr<Chart> a_chart, enum None) : chart{a_chart}, indexes{} {}
         // call func for each antigen/serum and select ag/sr if func returns true
-        template <typename F>
-            Selected(std::shared_ptr<Chart> a_chart, F&& func, projection_index projection_no) : chart{a_chart}, indexes{} // a_chart->template indexes<AgSr, F>(*ag_sr(), std::forward<F>(func), projection_no)}
+        template <typename F> Selected(std::shared_ptr<Chart> a_chart, F&& func, projection_index projection_no) : chart{a_chart}, indexes{}
         {
+            // if (projection_no < a_chart->projections().size()) {
+            //     // use transformed layout
+            // }
+            // else {
+            // }
+
+            const auto call = [&](auto no, const typename AgSr::element_t& ref) -> bool {
+                    return func(
+                        SelectionData<typename AgSr::element_t>{.chart = a_chart, .index = no, .projection_no = projection_no, .ag_sr = ref});
+                    // if constexpr (std::is_invocable_v<F, const typename AgSr::element_t&>)
+                    //     return func(ref);
+                    // else if constexpr (std::is_invocable_v<F, size_t, const typename AgSr::element_t&>)
+                    //     return func(no, ref);
+                    // else if constexpr (std::is_invocable_v<F, const SelectionData<typename AgSr::element_t>&>)
+                    //     return func(
+                    //         SelectionData<typename AgSr::element_t>>{.chart = a_chart, .index = no, .projection_no = projection_no, .ag_sr = ref});
+                    // else
+                    //     static_assert(std::is_invocable_v<F, void, int>, "unsupported filter function signature");
+            };
+
+            const auto& ag_sr = a_chart->antigens_sera<AgSr>();
+            for (const auto no : ag_sr.size()) {
+                if (call(no, ag_sr[no]))
+                    indexes.push_back(no);
+            }
         }
 
         std::shared_ptr<AgSr> ag_sr() const;
@@ -39,7 +76,9 @@ namespace ae::chart::v3
         {
             // no is not a antigen_no/serum_no, it's no in index, i.e. 0 to size()
             const auto ag_sr_no = indexes[no];
-            return std::pair{ag_sr_no, ag_sr()->ptr_at(ag_sr_no)};
+            return std::pair<size_t, const typename AgSr::element_t&>{*ag_sr_no, chart->antigens_sera<AgSr>()[ag_sr_no]};
+            // return std::pair<typename AgSr::index_t, const typename AgSr::element_t&>{ag_sr_no, chart->antigens_sera<AgSr>()[ag_sr_no]};
+            // return chart->antigens_sera<AgSr>()[ag_sr_no];
         }
 
         // substitutions in format: {no0} {no1} {ag_sr} {name} {full_name}
@@ -89,28 +128,28 @@ namespace ae::chart::v3
     template <typename AgSr> struct SelectedIterator
     {
       public:
-        //   SelectedIterator(const Selected<AgSr>& parent, typename PointIndexList::const_iterator current) : parent_{parent}, current_{current} {}
+        SelectedIterator(const Selected<AgSr>& parent, typename AgSr::indexes_t::const_iterator current) : parent_{parent}, current_{current} {}
 
-        //   SelectedIterator& operator++()
-        //   {
-        //       ++current_;
-        //       return *this;
-        //   }
+          SelectedIterator& operator++()
+          {
+              ++current_;
+              return *this;
+          }
 
-        //   auto operator*() { return parent_[static_cast<size_t>(current_ - parent_.indexes.begin())]; }
+          auto operator*() { return parent_[current_ - parent_.indexes.begin()]; }
 
-        //   bool operator==(const SelectedIterator& rhs) const { return current_ == rhs.current_; }
+          bool operator==(const SelectedIterator& rhs) const { return current_ == rhs.current_; }
 
-        // private:
-        //   Selected<AgSr, Chrt> parent_;
-        //   PointIndexList::const_iterator current_;
+        private:
+          Selected<AgSr> parent_;
+          typename AgSr::indexes_t::const_iterator current_;
     };
 
-    // template <typename AgSr, typename Chrt> SelectedIterator<AgSr, Chrt> Selected<AgSr, Chrt>::begin() { return SelectedIterator<AgSr, Chrt>{*this, indexes.begin()}; }
-    // template <typename AgSr, typename Chrt> SelectedIterator<AgSr, Chrt> Selected<AgSr, Chrt>::end() { return SelectedIterator<AgSr, Chrt>{*this, indexes.end()}; }
+    template <typename AgSr> SelectedIterator<AgSr> Selected<AgSr>::begin() { return SelectedIterator<AgSr>{*this, indexes.begin()}; }
+    template <typename AgSr> SelectedIterator<AgSr> Selected<AgSr>::end() { return SelectedIterator<AgSr>{*this, indexes.end()}; }
 
-    // template <typename AgSr, typename Chrt> SelectedIterator<AgSr, Chrt> Selected<AgSr, Chrt>::begin() const { return SelectedIterator<AgSr, Chrt>{*this, indexes.begin()}; }
-    // template <typename AgSr, typename Chrt> SelectedIterator<AgSr, Chrt> Selected<AgSr, Chrt>::end() const { return SelectedIterator<AgSr, Chrt>{*this, indexes.end()}; }
+    template <typename AgSr> SelectedIterator<AgSr> Selected<AgSr>::begin() const { return SelectedIterator<AgSr>{*this, indexes.begin()}; }
+    template <typename AgSr> SelectedIterator<AgSr> Selected<AgSr>::end() const { return SelectedIterator<AgSr>{*this, indexes.end()}; }
 
     // template <> inline std::shared_ptr<Antigens> Selected<Antigens, Chart>::ag_sr() const { return chart->antigens(); }
     // template <> inline std::shared_ptr<AntigensModify> Selected<AntigensModify, ChartModify>::ag_sr() const { return chart->antigens_modify_ptr(); }

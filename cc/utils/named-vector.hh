@@ -13,10 +13,13 @@ namespace ae
       public:
         using value_type = T;
         using named_t<std::vector<T>, Tag>::named_t;
+        using iterator = typename std::vector<T>::iterator;
+        using const_iterator = typename std::vector<T>::const_iterator;
+
         explicit named_vector_t(size_t size, T val) : named_t<std::vector<T>, Tag>{std::vector<T>(size, val)} {}
 
-        constexpr auto begin() const { return this->get().begin(); }
-        constexpr auto end() const { return this->get().end(); }
+        constexpr const_iterator begin() const { return this->get().begin(); }
+        constexpr const_iterator end() const { return this->get().end(); }
         constexpr auto begin() { return this->get().begin(); }
         constexpr auto end() { return this->get().end(); }
         constexpr auto rbegin() { return this->get().rbegin(); }

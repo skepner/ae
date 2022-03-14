@@ -49,14 +49,6 @@ namespace ae::py
         }
     };
 
-    template <typename AgSr> struct SelectionData
-    {
-        std::shared_ptr<ae::chart::v3::Chart> chart;
-        typename AgSr::index_t index{0};
-        projection_index projection_no;
-        const AgSr& ag_sr;
-    };
-
 } // namespace ae::py
 
 // ======================================================================
@@ -427,6 +419,131 @@ void ae::py::chart_v3(pybind11::module_& mdl)
         .def("number_of_sources", &InfoRef::number_of_sources) //
         .def("source", &InfoRef::source, "source_no"_a)        //
         ;
+
+    // ----------------------------------------------------------------------
+
+    pybind11::class_<AntigenSerum>(chart_v3_submodule, "AntigenSerum")                                                                           //
+        .def("name", [](const AntigenSerum& ag) { return *ag.name(); })                                                                          //
+        .def("name", [](AntigenSerum& ag, std::string_view new_name) { ag.name(virus::Name{new_name}); })                                        //
+        .def("passage", [](const AntigenSerum& ag) { return ag.passage(); })                                                                     //
+        .def("passage", [](AntigenSerum& ag, std::string_view new_passage) { ag.passage(ae::virus::Passage{new_passage}); })                     //
+        .def("passage", [](AntigenSerum& ag, const ae::virus::Passage& new_passage) { ag.passage(new_passage); })                                //
+        .def("reassortant", [](const AntigenSerum& ag) { return *ag.reassortant(); })                                                            //
+        .def("reassortant", [](AntigenSerum& ag, std::string_view new_reassortant) { ag.reassortant(ae::virus::Reassortant{new_reassortant}); }) //
+        .def("annotations", pybind11::overload_cast<>(&AntigenSerum::annotations, pybind11::const_))                                             //
+        .def(
+            "add_annotation", [](AntigenSerum& ag, std::string_view ann) { ag.annotations().add(ann); }, "annotation"_a) //
+        .def(
+            "remove_annotation", [](AntigenSerum& ag, const std::string& ann) { ag.annotations().remove(ann); }, "annotation_to_remove"_a) //
+
+        .def("sequence_aa", [](AntigenSerum& ag) { return ag.aa(); })                                                          //
+        .def("sequence_aa", [](AntigenSerum& ag, std::string_view sequence) { ag.aa(sequences::sequence_aa_t{sequence}); })    //
+        .def("sequence_nuc", [](AntigenSerum& ag) { return ag.nuc(); })                                                        //
+        .def("sequence_nuc", [](AntigenSerum& ag, std::string_view sequence) { ag.nuc(sequences::sequence_nuc_t{sequence}); }) //
+        ;
+
+    pybind11::class_<Antigen, AntigenSerum>(chart_v3_submodule, "Antigen")                      //
+        .def("date", [](const Antigen& ag) { return *ag.date(); })                              //
+        .def("date", [](Antigen& ag, const std::string& new_date) { ag.date(Date{new_date}); }) //
+        .def("lab_ids", [](const Antigen& ag) { return *ag.lab_ids(); })                        //
+        ;
+
+    pybind11::class_<Serum, AntigenSerum>(chart_v3_submodule, "Serum")                                                               //
+        .def("serum_id", [](const Serum& sr) { return *sr.serum_id(); })                                                             //
+        .def("serum_id", [](Serum& sr, const std::string& new_serum_id) { return sr.serum_id(SerumId{new_serum_id}); })              //
+        .def("serum_species", [](const Serum& sr) { return *sr.serum_species(); })                                                   //
+        .def("serum_species", [](Serum& sr, const std::string& new_species) { return sr.serum_species(SerumSpecies{new_species}); }) //
+        ;
+
+    // ----------------------------------------------------------------------
+
+    pybind11::class_<SelectedAntigens, std::shared_ptr<SelectedAntigens>>(chart_v3_submodule, "SelectedAntigens")
+        // .def(
+        //     "deselect_by_aa",
+        //     [](SelectedAntigens& selected, const std::vector<std::string>& criteria) {
+        //         ae::py::populate_from_seqdb(selected.chart);
+        //         ae::py::deselect_by_aa(selected.indexes, *selected.chart->antigens(), criteria);
+        //         return selected;
+        //     },
+        //     "criteria"_a, pybind11::doc("Criteria is a list of strings, e.g. [\"156K\", \"!145K\"], all criteria is the list must match")) //
+        // .def(
+        //     "exclude",
+        //     [](SelectedAntigens& selected, const SelectedAntigens& exclude) {
+        //         selected.exclude(exclude);
+        //         return selected;
+        //     },
+        //     "exclude"_a, pybind11::doc("Deselect antigens selected by exclusion list")) //
+        // .def(
+        //     "filter_sequenced",
+        //     [](SelectedAntigens& selected) {
+        //         ae::py::populate_from_seqdb(selected.chart);
+        //         ae::py::deselect_not_sequenced(selected.indexes, *selected.chart->antigens());
+        //         return selected;
+        //     },
+        //     pybind11::doc("deselect not sequenced"))                                                                                   //
+        // .def("report", &SelectedAntigens::report, "format"_a = "{no0},")                                                         //
+        // .def("report_list", &SelectedAntigens::report_list, "format"_a = "{name}")                                               //
+        // .def("__repr__", [](const SelectedAntigens& selected) { return fmt::format("SelectedAntigens ({})", selected.size()); }) //
+        // .def("empty", &SelectedAntigens::empty)                                                                                  //
+        // .def("size", &SelectedAntigens::size)                                                                                    //
+        .def("__len__", &SelectedAntigens::size)                                                              //
+        .def("__getitem__", &SelectedAntigens::operator[], pybind11::return_value_policy::reference_internal) //
+        .def("__bool_", [](const SelectedAntigens& antigens) { return !antigens.empty(); })                   //
+        .def(
+            "__iter__", [](const SelectedAntigens& antigens) { return pybind11::make_iterator(antigens.begin(), antigens.end()); }, pybind11::keep_alive<0, 1>()) //
+        // .def("indexes", [](const SelectedAntigens& selected) { return *selected.indexes; })                                                                 //
+        // .def(
+        //     "points", [](const SelectedAntigens& selected) { return *selected.points(); }, pybind11::doc("return point numbers")) //
+        // .def(
+        //     "area", [](const SelectedAntigens& selected, size_t projection_no) { return selected.area(projection_no); }, "projection_no"_a = 0,
+        //     pybind11::doc("return boundaries of the selected points (not transformed)")) //
+        // .def(
+        //     "area_transformed", [](const SelectedAntigens& selected, size_t projection_no) { return selected.area_transformed(projection_no); }, "projection_no"_a = 0,
+        //     pybind11::doc("return boundaries of the selected points (transformed)")) //
+        // .def("for_each", &SelectedAntigens::for_each, "modifier"_a,
+        //      pybind11::doc("modifier(ag_no, antigen) is called for each selected antigen, antigen fields, e.g. name, can be modified in the function.")) //
+        ;
+
+    pybind11::class_<SelectedSera, std::shared_ptr<SelectedSera>>(chart_v3_submodule, "SelectedSera")
+        // .def(
+        //     "deselect_by_aa",
+        //     [](SelectedSera& selected, const std::vector<std::string>& criteria) {
+        //         ae::py::populate_from_seqdb(selected.chart);
+        //         ae::py::deselect_by_aa(selected.indexes, *selected.chart->sera(), criteria);
+        //         return selected;
+        //     },
+        //     "criteria"_a, pybind11::doc("Criteria is a list of strings, e.g. [\"156K\", \"!145K\"], all criteria is the list must match")) //
+        // .def(
+        //     "exclude",
+        //     [](SelectedSera& selected, const SelectedSera& exclude) {
+        //         selected.exclude(exclude);
+        //         return selected;
+        //     },
+        //     "exclude"_a, pybind11::doc("Deselect sera selected by exclusion list")) //
+        // .def(
+        //     "filter_sequenced",
+        //     [](SelectedSera& selected) {
+        //         ae::py::populate_from_seqdb(selected.chart);
+        //         ae::py::deselect_not_sequenced(selected.indexes, *selected.chart->sera());
+        //         return selected;
+        //     },
+        //     pybind11::doc("deselect not sequenced"))                                                                           //
+        // .def("report", &SelectedSera::report, "format"_a = "{no0},")                                                     //
+        // .def("report_list", &SelectedSera::report_list, "format"_a = "{name}")                                           //
+        // .def("__repr__", [](const SelectedSera& selected) { return fmt::format("SelectedSera ({})", selected.size()); }) //
+        // .def("empty", &SelectedSera::empty)                                                                              //
+        // .def("size", &SelectedSera::size)                                                                                //
+        .def("__len__", &SelectedSera::size)                                                              //
+        .def("__getitem__", &SelectedSera::operator[], pybind11::return_value_policy::reference_internal) //
+        .def("__bool_", [](const SelectedSera& sera) { return !sera.empty(); })                           //
+        .def(
+            "__iter__", [](const SelectedSera& sera) { return pybind11::make_iterator(sera.begin(), sera.end()); }, pybind11::keep_alive<0, 1>()) //
+        // .def("indexes", [](const SelectedSera& selected) { return *selected.indexes; })                                                     //
+        // .def("for_each", &SelectedSera::for_each, "modifier"_a,
+        //      pybind11::doc("modifier(sr_no, serum) is called for each selected serum, serum fields, e.g. name, can be modified in the function.")) //
+        ;
+
+    // ----------------------------------------------------------------------
 }
 
 // ----------------------------------------------------------------------

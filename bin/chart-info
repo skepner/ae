@@ -1,5 +1,5 @@
 #! /usr/bin/env python3
-import os, sys, json, argparse, traceback
+import os, sys, re, json, argparse, traceback
 from pathlib import Path
 import ae_backend
 
@@ -20,7 +20,7 @@ def main(args: argparse.Namespace):
             print()
             for projection_no in range(num_projections):
                 projection = chart.projection(projection_no)
-                print(f"{projection_no:3d}  {projection.stress():9.4f} >={projection.minimum_column_basis()}", end="")
+                print(f"{projection_no:3d}  {projection.stress():11.6f} >={projection.minimum_column_basis()}", end="")
                 if comment := projection.comment():
                     print(f" <{comment}>", end="")
                 if projection_forced_column_bases := projection.forced_column_bases():
@@ -32,12 +32,18 @@ def main(args: argparse.Namespace):
             print()
             info = chart.info()
             if num_sources := info.number_of_sources():
+                print("sources", num_sources)
                 for source_no in range(num_sources):
                     source = info.source(source_no)
                     print(f"{source_no:3d} {source.date()} {source.name()}")
                 print()
             if chart_forced_column_bases:
-                print("  forced column bases:", chart_forced_column_bases)
+                print("forced column bases")
+                for no, sr in chart.select_all_sera():
+                    fcb = f"{chart_forced_column_bases[no]:11.8f}"
+                    fcb = re.sub(r"0+$", lambda m: " " * len(m.group(0)), fcb)
+                    fcb = re.sub(r"\. ", "  ", fcb)
+                    print(f"{no:3d}     {fcb}   {sr.name()} {sr.serum_id()} {sr.passage()}")
 
 # ----------------------------------------------------------------------
 

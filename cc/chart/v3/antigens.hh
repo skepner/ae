@@ -153,6 +153,7 @@ namespace ae::chart::v3
     template <typename Element> class AntigensSera
     {
       public:
+        using element_t = Element;
         using index_t = typename Element::index_t;
         using indexes_t = typename Element::indexes_t;
 
