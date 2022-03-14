@@ -17,6 +17,7 @@
 #pragma GCC diagnostic pop
 
 #include "ext/compressor.hh"
+#include "utils/log.hh"
 
 // ----------------------------------------------------------------------
 
@@ -85,7 +86,7 @@ namespace ae::file
             }
             BrotliDecoderDestroyInstance(decoder_);
             decoder_ = nullptr;
-            if ((cic == check_if_compressed::yes && (result == BROTLI_DECODER_RESULT_SUCCESS || result == BROTLI_DECODER_RESULT_NEEDS_MORE_INPUT) && !output.empty()) ||
+            if ((cic == check_if_compressed::yes && ((result == BROTLI_DECODER_RESULT_SUCCESS && !output.empty()) || result == BROTLI_DECODER_RESULT_NEEDS_MORE_INPUT)) ||
                 (result == BROTLI_DECODER_RESULT_SUCCESS && !available_in)) {
                 output.reserve(output.size() + padding());
                 return output;
@@ -104,7 +105,7 @@ namespace ae::file
     inline bool brotli_compressed(std::string_view input)
     {
         try {
-            Brotli_Compressor().decompress_and_check(input.substr(0, 100), Brotli_Compressor::check_if_compressed::yes);
+            Brotli_Compressor().decompress_and_check(input.substr(0, 1000), Brotli_Compressor::check_if_compressed::yes);
             return true;
         }
         catch (compressor_failed&) {
