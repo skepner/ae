@@ -151,11 +151,6 @@ namespace ae::chart::v3
     template <typename AgSr> SelectedIterator<AgSr> Selected<AgSr>::begin() const { return SelectedIterator<AgSr>{*this, indexes.begin()}; }
     template <typename AgSr> SelectedIterator<AgSr> Selected<AgSr>::end() const { return SelectedIterator<AgSr>{*this, indexes.end()}; }
 
-    // template <> inline std::shared_ptr<Antigens> Selected<Antigens, Chart>::ag_sr() const { return chart->antigens(); }
-    // template <> inline std::shared_ptr<AntigensModify> Selected<AntigensModify, ChartModify>::ag_sr() const { return chart->antigens_modify_ptr(); }
-    // template <> inline std::shared_ptr<Sera> Selected<Sera, Chart>::ag_sr() const { return chart->sera(); }
-    // template <> inline std::shared_ptr<SeraModify> Selected<SeraModify, ChartModify>::ag_sr() const { return chart->sera_modify_ptr(); }
-
     struct SelectedAntigens : public Selected<Antigens>
     {
         using Selected<Antigens>::Selected;
