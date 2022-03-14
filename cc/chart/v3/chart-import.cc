@@ -172,16 +172,20 @@ inline void read_sera(ae::chart::v3::Sera& target, ::simdjson::ondemand::array s
 
 // ----------------------------------------------------------------------
 
-inline void read_sparse(ae::chart::v3::Titers::sparse_t& target, ::simdjson::ondemand::array source)
+// returns number of sera (max serum index + 1)
+inline ae::serum_index read_sparse(ae::chart::v3::Titers::sparse_t& target, ::simdjson::ondemand::array source)
 {
+    ae::serum_index number_of_sera{0};
     ae::antigen_index ag_no{0};
     for (auto row : source) {
         auto& target_row = target.emplace_back();
         for (auto source_entry : row.get_object()) {
-            target_row.emplace_back(ae::serum_index{ae::from_chars<ae::serum_index::value_type>(static_cast<std::string_view>(source_entry.unescaped_key()))},
-                                    ae::chart::v3::Titer{static_cast<std::string_view>(source_entry.value())});
+            const ae::serum_index sr_no{ae::from_chars<ae::serum_index::value_type>(static_cast<std::string_view>(source_entry.unescaped_key()))};
+            target_row.emplace_back(sr_no, ae::chart::v3::Titer{static_cast<std::string_view>(source_entry.value())});
+            number_of_sera = std::max(number_of_sera, sr_no + ae::serum_index{1});
         }
     }
+    return number_of_sera;
 }
 
 // ----------------------------------------------------------------------
@@ -206,7 +210,8 @@ inline void read_titers(ae::chart::v3::Titers& target, ::simdjson::ondemand::obj
             }
         }
         else if (key == "d") {  // sparse matrix
-            read_sparse(target.create_sparse_titers(), field.value().get_array());
+            const auto number_of_sera = read_sparse(target.create_sparse_titers(), field.value().get_array());
+            target.number_of_sera(number_of_sera);
         }
         else if (key == "L") {  // layers (sparse matrices)
             for (auto source_layer : field.value().get_array())

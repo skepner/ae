@@ -21,7 +21,7 @@ std::string ae::chart::v3::Chart::name(std::optional<projection_index> aProjecti
         const auto& prj = prjs[*aProjectionNo];
         fmt::format_to(std::back_inserter(name), "{}", prj.minimum_column_basis().format(" >={}", minimum_column_basis::use_none::no));
         if (const auto stress = prj.stress(); !std::isnan(stress))
-            fmt::format_to(std::back_inserter(name), " {:.4f}", stress);
+            fmt::format_to(std::back_inserter(name), " {}d {:.4f}", prj.number_of_dimensions(), stress);
     }
     return fmt::to_string(name);
 

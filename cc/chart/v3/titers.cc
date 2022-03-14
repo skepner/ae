@@ -249,9 +249,8 @@ std::vector<ae::layer_index> ae::chart::v3::Titers::layers_with_serum(serum_inde
 
 ae::antigen_index ae::chart::v3::Titers::number_of_antigens() const
 {
-    auto num_ags = [this](const auto& titers) -> antigen_index {
-        using T = std::decay_t<decltype(titers)>;
-        if constexpr (std::is_same_v<T, dense_t>)
+    auto num_ags = [this]<typename TT>(const TT& titers) -> antigen_index {
+        if constexpr (std::is_same_v<TT, dense_t>)
             return antigen_index{titers.size() / this->number_of_sera_.get()};
         else
             return antigen_index{titers.size()};

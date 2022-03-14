@@ -72,7 +72,7 @@ namespace ae
             return saved;
         }
 
-        index_tt<Tag> operator+(index_tt<Tag> rhs) { return index_tt<Tag>{get() + rhs.get()}; }
+        index_tt<Tag> operator+(index_tt<Tag> rhs) const { return index_tt<Tag>{get() + rhs.get()}; }
 
         // to iterate from 0 to this index
         index_iterator_tt<Tag> begin() const;
@@ -145,6 +145,8 @@ namespace ae
     using number_of_dimensions_t = index_tt<struct number_of_dimensions_tag>;
     inline bool valid(number_of_dimensions_t nd) { return nd.get() > 0; }
 
+    // inline antigen_index operator+(antigen_index ag1, antigen_index ag2) { return antigen_index{ag1.get() + ag2.get()}; }
+    // inline serum_index operator+(serum_index sr1, serum_index sr2) { return serum_index{sr1.get() + sr2.get()}; }
     inline point_index operator+(antigen_index ag_no, serum_index sr_no) { return point_index{ag_no.get() + sr_no.get()}; }
     inline size_t operator*(point_index point_no, number_of_dimensions_t num_dim) { return point_no.get() * num_dim.get(); }
 
