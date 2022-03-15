@@ -165,6 +165,13 @@ namespace ae
         return point_indexes{ranges::views::transform(sri, [number_of_antigens](serum_index index) { return number_of_antigens + index; }) | ranges::to_vector};
     }
 
+    template <typename Index, typename Tag> inline std::vector<typename Index::value_type> to_vector_base_t(const ae::named_vector_t<Index, Tag>& source)
+    {
+        std::vector<typename Index::value_type> result(source.size());
+        std::transform(source.begin(), source.end(), result.begin(), [](auto src) { return *src; });
+        return result;
+    }
+
     class disconnected_points : public point_indexes
     {
       public:

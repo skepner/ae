@@ -20,6 +20,9 @@ namespace ae::py
         std::string_view comment() const { return projection.comment(); }
         std::string minimum_column_basis() const { return projection.minimum_column_basis().format("{}", ae::chart::v3::minimum_column_basis::use_none::yes); }
         const std::vector<double>& forced_column_bases() const { return projection.forced_column_bases().data(); }
+        std::vector<size_t> disconnected() const { return to_vector_base_t(projection.disconnected()); }
+        std::vector<size_t> unmovable() const { return to_vector_base_t(projection.unmovable()); }
+        std::vector<size_t> unmovable_in_the_last_dimension() const { return to_vector_base_t(projection.unmovable_in_the_last_dimension()); }
     };
 
     struct InfoRef
@@ -141,7 +144,7 @@ void ae::py::chart_v3(pybind11::module_& mdl)
             "select_antigens", //
             [](std::shared_ptr<Chart> chart, const std::function<bool(const SelectionData<Antigen>&)>& func, size_t projection_no) {
                 return new SelectedAntigens{chart, func, projection_index{projection_no}};
-            },                                                        //
+            },                                    //
             "predicate"_a, "projection_no"_a = 0, //
             pybind11::doc("Passed predicate (function with one arg: SelectionDataAntigen object)\n"
                           "is called for each antigen, selects just antigens for which predicate\n"
@@ -166,7 +169,7 @@ void ae::py::chart_v3(pybind11::module_& mdl)
             "select_sera", //
             [](std::shared_ptr<Chart> chart, const std::function<bool(const SelectionData<Serum>&)>& func, size_t projection_no) {
                 return new SelectedSera{chart, func, projection_index{projection_no}};
-            },                                                        //
+            },                                    //
             "predicate"_a, "projection_no"_a = 0, //
             pybind11::doc("Passed predicate (function with one arg: SelectionDataSerum object)\n"
                           "is called for each serum, selects just sera for which predicate\n"
@@ -257,18 +260,18 @@ void ae::py::chart_v3(pybind11::module_& mdl)
         //             [](Chart& chart, size_t projection_no) { return chart.projection_modify(projection_no); }, //
         //             "projection_no"_a = 0)                                                                           //
 
-                .def("remove_all_projections",                                                   //
-                     [](Chart& chart) { return chart.projections().remove_all(); }) //
-        //         .def(
+        .def("remove_all_projections",                                      //
+             [](Chart& chart) { return chart.projections().remove_all(); }) //
+                                                                            //         .def(
         //             "remove_all_projections_except",                                                                                    //
         //             [](Chart& chart, size_t to_keep) { return chart.projections_modify().remove_all_except(to_keep); }, "keep"_a) //
-                .def(
-                    "remove_projection",                                                                                                  //
-                    [](Chart& chart, size_t to_remove) { return chart.projections().remove(projection_index{to_remove}); }, "projection_no"_a) //
-                .def(
-                    "keep_projections",                                                                               //
-                    [](Chart& chart, size_t to_keep) { return chart.projections().keep(projection_index{to_keep}); }, //
-                    "keep"_a)                                                                                         //
+        .def(
+            "remove_projection",                                                                                                       //
+            [](Chart& chart, size_t to_remove) { return chart.projections().remove(projection_index{to_remove}); }, "projection_no"_a) //
+        .def(
+            "keep_projections",                                                                               //
+            [](Chart& chart, size_t to_keep) { return chart.projections().keep(projection_index{to_keep}); }, //
+            "keep"_a)                                                                                         //
 
         //         .def(
         //             "orient_to",
@@ -394,11 +397,14 @@ void ae::py::chart_v3(pybind11::module_& mdl)
 
     // ----------------------------------------------------------------------
 
-    pybind11::class_<ProjectionRef>(chart_v3_submodule, "Projection")      //
-        .def("stress", &ProjectionRef::stress)                             //
-        .def("comment", &ProjectionRef::comment)                           //
-        .def("minimum_column_basis", &ProjectionRef::minimum_column_basis) //
-        .def("forced_column_bases", &ProjectionRef::forced_column_bases)   //
+    pybind11::class_<ProjectionRef>(chart_v3_submodule, "Projection")                            //
+        .def("stress", &ProjectionRef::stress)                                                   //
+        .def("comment", &ProjectionRef::comment)                                                 //
+        .def("minimum_column_basis", &ProjectionRef::minimum_column_basis)                       //
+        .def("forced_column_bases", &ProjectionRef::forced_column_bases)                         //
+        .def("disconnected", &ProjectionRef::disconnected)                                       //
+        .def("unmovable", &ProjectionRef::unmovable)                                             //
+        .def("unmovable_in_the_last_dimension", &ProjectionRef::unmovable_in_the_last_dimension) //
         ;
 
     pybind11::class_<InfoRef>(chart_v3_submodule, "Info")      //

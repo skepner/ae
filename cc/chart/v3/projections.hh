@@ -58,8 +58,8 @@ namespace ae::chart::v3
         const unmovable_points& unmovable() const { return unmovable_; }
         disconnected_points& disconnected() { return disconnected_; }
         const disconnected_points& disconnected() const { return disconnected_; }
-        unmovable_in_the_last_dimension_points unmovable_in_the_last_dimension() { return unmovable_in_the_last_dimension_; }
-        const unmovable_in_the_last_dimension_points unmovable_in_the_last_dimension() const { return unmovable_in_the_last_dimension_; }
+        unmovable_in_the_last_dimension_points& unmovable_in_the_last_dimension() { return unmovable_in_the_last_dimension_; }
+        const unmovable_in_the_last_dimension_points& unmovable_in_the_last_dimension() const { return unmovable_in_the_last_dimension_; }
         dodgy_titer_is_regular_e dodgy_titer_is_regular() const { return dodgy_titer_is_regular_; }
         void dodgy_titer_is_regular(dodgy_titer_is_regular_e dtir) { dodgy_titer_is_regular_ = dtir; }
 

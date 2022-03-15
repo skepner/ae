@@ -341,7 +341,7 @@ inline void read_legacy_point_style(ae::chart::v3::PointStyle& target, ::simdjso
             target.aspect(ae::draw::v2::Aspect{field.value()});
         }
         else if (key == "l") {  // label style
-            unhandled_key({"c", "p", "P", key});
+            // unhandled_key({"c", "p", "P", key});
         }
         else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
             unhandled_key({"c", "p", "P", key});

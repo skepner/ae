@@ -36,6 +36,12 @@ def main(args: argparse.Namespace):
                         print(" chart-forced-column-bases", end="")
                     else:
                         print("", projection_forced_column_bases, end="")
+                if disconnected := projection.disconnected():
+                    print(f" discon:{disconnected}", end="")
+                if unmovable := projection.unmovable():
+                    print(f" unmov:{unmovable}", end="")
+                if unmovable_in_the_last_dimension := projection.unmovable_in_the_last_dimension():
+                    print(f" unmov-last:{unmovable_in_the_last_dimension}", end="")
                 print()
             print()
             info = chart.info()
