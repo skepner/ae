@@ -86,10 +86,10 @@ void ae::chart::v3::Chart::relax(number_of_optimizations_t number_of_optimizatio
 {
     const auto start_num_dim = options.dimension_annealing == use_dimension_annealing::yes && number_of_dimensions < number_of_dimensions_t{5} ? number_of_dimensions_t{5} : number_of_dimensions;
     // auto titrs = titers();
-    auto stress = stress_factory(*this, start_num_dim, mcb, options.mult, dodgy_titer_is_regular_e::no);
-    stress.set_disconnected(disconnected);
-    if (options.disconnect_too_few_numeric_titers == disconnect_few_numeric_titers::yes)
-        stress.extend_disconnected(titers().having_too_few_numeric_titers());
+    auto stress = stress_factory(*this, start_num_dim, mcb, disconnected, options.disconnect_too_few_numeric_titers, options.mult, dodgy_titer_is_regular_e::no);
+    // stress.set_disconnected(disconnected);
+    // if (options.disconnect_too_few_numeric_titers == disconnect_few_numeric_titers::yes)
+    //     stress.extend_disconnected(titers().having_too_few_numeric_titers());
     if (const auto num_connected = antigens().size().get() + sera().size().get() - stress.number_of_disconnected(); num_connected < 3)
         throw std::runtime_error{AD_FORMAT("cannot relax: too few connected points: {}", num_connected)};
     // report_disconnected_unmovable(stress.parameters().disconnected, stress.parameters().unmovable);
@@ -106,7 +106,7 @@ void ae::chart::v3::Chart::relax(number_of_optimizations_t number_of_optimizatio
     const int num_threads = options.num_threads <= 0 ? omp_get_max_threads() : options.num_threads;
     const int slot_size = antigens().size() < antigen_index{1000} ? 4 : 1;
 #endif
-// #pragma omp parallel for default(shared) num_threads(num_threads) firstprivate(stress) schedule(static, slot_size)
+#pragma omp parallel for default(shared) num_threads(num_threads) firstprivate(stress) schedule(static, slot_size)
     for (size_t p_no = *first; p_no < *projections().size(); ++p_no) {
         auto& projection = projections()[projection_index{p_no}];
         projection.randomize_layout(rnd);

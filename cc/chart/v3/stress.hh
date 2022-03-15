@@ -19,9 +19,8 @@ namespace ae::chart::v3
         StressParameters(point_index a_number_of_points, const unmovable_points& a_unmovable, const disconnected_points& a_disconnected,
                          const unmovable_in_the_last_dimension_points& a_unmovable_in_the_last_dimension, multiply_antigen_titer_until_column_adjust a_mult, const avidity_adjusts& a_avidity_adjusts,
                          dodgy_titer_is_regular_e a_dodgy_titer_is_regular)
-            : number_of_points{a_number_of_points}, unmovable{a_unmovable}, disconnected{a_disconnected},
-              unmovable_in_the_last_dimension{a_unmovable_in_the_last_dimension}, mult{a_mult}, m_avidity_adjusts{a_avidity_adjusts},
-              dodgy_titer_is_regular{a_dodgy_titer_is_regular}
+            : number_of_points{a_number_of_points}, unmovable{a_unmovable}, disconnected{a_disconnected}, unmovable_in_the_last_dimension{a_unmovable_in_the_last_dimension}, mult{a_mult},
+              m_avidity_adjusts{a_avidity_adjusts}, dodgy_titer_is_regular{a_dodgy_titer_is_regular}
         {
         }
         StressParameters(point_index a_number_of_points, multiply_antigen_titer_until_column_adjust a_mult, dodgy_titer_is_regular_e a_dodgy_titer_is_regular)
@@ -36,7 +35,7 @@ namespace ae::chart::v3
         unmovable_in_the_last_dimension_points unmovable_in_the_last_dimension{};
         multiply_antigen_titer_until_column_adjust mult{multiply_antigen_titer_until_column_adjust::yes};
         avidity_adjusts m_avidity_adjusts{};
-        dodgy_titer_is_regular_e dodgy_titer_is_regular { dodgy_titer_is_regular_e::no };
+        dodgy_titer_is_regular_e dodgy_titer_is_regular{dodgy_titer_is_regular_e::no};
 
     }; // struct StressParameters
 
@@ -89,7 +88,8 @@ namespace ae::chart::v3
     }; // class Stress
 
     Stress stress_factory(const Chart& chart, const Projection& projection, multiply_antigen_titer_until_column_adjust mult);
-    Stress stress_factory(const Chart& chart, number_of_dimensions_t number_of_dimensions, minimum_column_basis mcb, multiply_antigen_titer_until_column_adjust mult,
+    Stress stress_factory(const Chart& chart, number_of_dimensions_t number_of_dimensions, minimum_column_basis mcb, const disconnected_points& disconnected,
+                          disconnect_few_numeric_titers disconnect_too_few_numeric_titers, multiply_antigen_titer_until_column_adjust mult,
                           dodgy_titer_is_regular_e a_dodgy_titer_is_regular = dodgy_titer_is_regular_e::no);
 
     // avidity test support

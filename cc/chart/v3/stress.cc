@@ -59,10 +59,15 @@ ae::chart::v3::Stress ae::chart::v3::stress_factory(const Chart& chart, const Pr
 
 // ----------------------------------------------------------------------
 
-ae::chart::v3::Stress ae::chart::v3::stress_factory(const Chart& chart, number_of_dimensions_t number_of_dimensions, minimum_column_basis mcb, multiply_antigen_titer_until_column_adjust mult, dodgy_titer_is_regular_e a_dodgy_titer_is_regular)
+ae::chart::v3::Stress ae::chart::v3::stress_factory(const Chart& chart, number_of_dimensions_t number_of_dimensions, minimum_column_basis mcb, const disconnected_points& disconnected,
+                                                    disconnect_few_numeric_titers disconnect_too_few_numeric_titers, multiply_antigen_titer_until_column_adjust mult,
+                                                    dodgy_titer_is_regular_e a_dodgy_titer_is_regular)
 {
     Stress stress(number_of_dimensions, chart.number_of_points(), mult, a_dodgy_titer_is_regular);
-    AD_DEBUG("stress_factory disconnected {}", stress.parameters().disconnected);
+    stress.set_disconnected(disconnected);
+    if (disconnect_too_few_numeric_titers == disconnect_few_numeric_titers::yes)
+        stress.extend_disconnected(chart.titers().having_too_few_numeric_titers());
+    // after setting disconnected points!
     stress.table_distances().update(chart.titers(), chart.column_bases(mcb), stress.parameters());
     return stress;
 
