@@ -114,10 +114,10 @@ void ae::chart::v3::Chart::relax(number_of_optimizations_t number_of_optimizatio
         stress.change_number_of_dimensions(start_num_dim);
         const auto status1 =
             optimize(options.method, stress, layout.span(), start_num_dim > number_of_dimensions ? optimization_precision::rough : options.precision);
-        {
-            DisconnectedPointsHandler disconnected_point_handler{stress, layout.span()};
-            AD_DEBUG("final_stress: {}  stress: {} diff: {}", status1.final_stress, stress.value(layout.span()), status1.final_stress - stress.value(layout));
-        }
+        // {
+        //     DisconnectedPointsHandler disconnected_point_handler{stress, layout.span()};
+        //     AD_DEBUG("final_stress: {}  stress: {} diff: {}", status1.final_stress, stress.value(layout.span()), status1.final_stress - stress.value(layout));
+        // }
         if (start_num_dim > number_of_dimensions) {
             do_dimension_annealing(options.method, stress, projection.number_of_dimensions(), number_of_dimensions, layout.span());
             layout.change_number_of_dimensions(number_of_dimensions);

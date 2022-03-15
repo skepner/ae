@@ -22,7 +22,6 @@ void ae::chart::v3::TableDistances::update(const Titer& titer, point_index p1, p
 
 void ae::chart::v3::TableDistances::update(const Titers& titers, const column_bases& col_bases, const StressParameters& parameters)
 {
-    AD_DEBUG("TableDistances::update disconnected {}", parameters.disconnected);
     const auto logged_adjusts = logged(parameters.m_avidity_adjusts);
     dodgy_is_regular(parameters.dodgy_titer_is_regular);
     if (titers.number_of_sera() > serum_index{0}) {
