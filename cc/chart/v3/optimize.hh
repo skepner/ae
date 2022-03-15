@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 #include <chrono>
+#include <span>
 
 #include "chart/v3/layout.hh"
 #include "chart/v3/optimize-options.hh"
@@ -72,17 +73,13 @@ namespace ae::chart::v3
     // creates new projection and optimizes it with or without dimension annealing
     optimization_status optimize(Chart& chart, minimum_column_basis mcb, const dimension_schedule& schedule, optimization_options options = optimization_options{});
 
-    optimization_status optimize(optimization_method method, const Stress& stress, double* arg_first, double* arg_last, optimization_precision precision = optimization_precision::fine);
-    inline optimization_status optimize(optimization_method method, const Stress& stress, double* arg_first, size_t arg_size, optimization_precision precision = optimization_precision::fine)
-    {
-        return optimize(method, stress, arg_first, arg_first + arg_size, precision);
-    }
+    optimization_status optimize(optimization_method method, const Stress& stress, std::span<double> args, optimization_precision precision = optimization_precision::fine);
 
     DimensionAnnelingStatus do_dimension_annealing(optimization_method optimization_method, const Stress& stress, number_of_dimensions_t source_number_of_dimensions,
-                                                number_of_dimensions_t target_number_of_dimensions, double* arg_first, double* arg_last);
+                                                number_of_dimensions_t target_number_of_dimensions, std::span<double> args);
 
-    // replaces layout in (arg_first, arg_last)
-    void pca(const Stress& stress, number_of_dimensions_t number_of_dimensions, double* arg_first, double* arg_last);
+    // replaces layout in args
+    void pca(const Stress& stress, number_of_dimensions_t number_of_dimensions, std::span<double> args);
 
     // ----------------------------------------------------------------------
 

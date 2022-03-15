@@ -92,7 +92,7 @@ inline std::pair<double, double> eps(ae::chart::v3::optimization_precision preci
 
 // ----------------------------------------------------------------------
 
-void ae::alglib::lbfgs_optimize(ae::chart::v3::optimization_status& status, ae::chart::v3::OptimiserCallbackData& callback_data, double* arg_first, double* arg_last,
+void ae::alglib::lbfgs_optimize(ae::chart::v3::optimization_status& status, ae::chart::v3::OptimiserCallbackData& callback_data, std::span<double> args,
                             ae::chart::v3::optimization_precision precision)
 {
     try {
@@ -102,7 +102,7 @@ void ae::alglib::lbfgs_optimize(ae::chart::v3::optimization_status& status, ae::
         const ::alglib::ae_int_t max_iterations = 0;
 
         ::alglib::real_1d_array x;
-        x.attach_to_ptr(arg_last - arg_first, arg_first);
+        x.attach_to_ptr(args.size(), args.data());
 
         ::alglib::minlbfgsstate state;
         minlbfgscreate(1, x, state);
@@ -134,7 +134,7 @@ void ae::alglib::lbfgs_optimize(ae::chart::v3::optimization_status& status, ae::
 void ae::alglib::lbfgs_optimize_grad(const ::alglib::real_1d_array& x, double& func, ::alglib::real_1d_array& grad, void* ptr)
 {
     auto* callback_data = reinterpret_cast<ae::chart::v3::OptimiserCallbackData*>(ptr);
-    func = callback_data->stress.value_gradient(x.getcontent(), x.getcontent() + x.length(), grad.getcontent());
+    func = callback_data->stress.value_gradient(std::span(x.getcontent(), x.length()), grad.getcontent());
       //std::cout << "grad " << ++called << ' ' << func << '\n';
 
       // terminate optimization (need to pass state in ptr)
@@ -153,7 +153,7 @@ void ae::alglib::lbfgs_optimize_step(const ::alglib::real_1d_array& x, double fu
 
 // ----------------------------------------------------------------------
 
-void ae::alglib::cg_optimize(ae::chart::v3::optimization_status& status, ae::chart::v3::OptimiserCallbackData& callback_data, double* arg_first, double* arg_last,
+void ae::alglib::cg_optimize(ae::chart::v3::optimization_status& status, ae::chart::v3::OptimiserCallbackData& callback_data, std::span<double> args,
                          ae::chart::v3::optimization_precision precision)
 {
     try {
@@ -162,7 +162,7 @@ void ae::alglib::cg_optimize(ae::chart::v3::optimization_status& status, ae::cha
         const ::alglib::ae_int_t max_iterations = 0;
 
         ::alglib::real_1d_array x;
-        x.attach_to_ptr(arg_last - arg_first, arg_first);
+        x.attach_to_ptr(args.size(), args.data());
 
         ::alglib::mincgstate state;
         mincgcreate(x, state);
@@ -191,18 +191,18 @@ void ae::alglib::cg_optimize(ae::chart::v3::optimization_status& status, ae::cha
 // ----------------------------------------------------------------------
 
 void ae::alglib::pca(ae::chart::v3::OptimiserCallbackData& callback_data, ae::number_of_dimensions_t source_number_of_dimensions, ae::number_of_dimensions_t target_number_of_dimensions,
-                     double* arg_first, double* arg_last)
+                     std::span<double> args)
 {
     try {
         const double eps{0};
         const aint_t maxits{0};
-        const aint_t number_of_points = (arg_last - arg_first) / cint(source_number_of_dimensions);
+        const aint_t number_of_points = args.size() / cint(source_number_of_dimensions);
 
         // alglib does not like NaN coordinates of disconnected points, set them to 0
-        callback_data.stress.set_coordinates_of_disconnected(arg_first, static_cast<size_t>(arg_last - arg_first), 0.0, source_number_of_dimensions);
+        callback_data.stress.set_coordinates_of_disconnected(args, 0.0, source_number_of_dimensions);
 
         ::alglib::real_2d_array x;
-        x.attach_to_ptr(number_of_points, cint(source_number_of_dimensions), arg_first);
+        x.attach_to_ptr(number_of_points, cint(source_number_of_dimensions), args.data());
         ::alglib::real_1d_array s2; // output Variance values corresponding to basis vectors.
         s2.setlength(cint(target_number_of_dimensions));
         ::alglib::real_2d_array v; // output matrix to transform x to target
@@ -217,7 +217,7 @@ void ae::alglib::pca(ae::chart::v3::OptimiserCallbackData& callback_data, ae::nu
         t.setlength(number_of_points, cint(target_number_of_dimensions));
         ::alglib::rmatrixgemm(number_of_points, cint(target_number_of_dimensions), cint(source_number_of_dimensions), 1.0, x, 0, 0, 0, v, 0, 0, 0, 0, t, 0, 0);
 
-        double* target = arg_first;
+        double* target = args.data();
         for (aint_t p_no = 0; p_no < number_of_points; ++p_no) {
             for (aint_t dim_no = 0; dim_no < cint(target_number_of_dimensions); ++dim_no) {
                 *target++ = t(p_no, dim_no);
@@ -226,7 +226,7 @@ void ae::alglib::pca(ae::chart::v3::OptimiserCallbackData& callback_data, ae::nu
 
         // return back NaN for disconnected points
         // number of dimensions changed!
-        callback_data.stress.set_coordinates_of_disconnected(arg_first, 0ul, std::numeric_limits<double>::quiet_NaN(), target_number_of_dimensions);
+        callback_data.stress.set_coordinates_of_disconnected(args, std::numeric_limits<double>::quiet_NaN(), target_number_of_dimensions);
     }
     catch (::alglib::ap_error& err) {
         AD_ERROR("ae::alglib::pca: {}", err.msg);
@@ -237,16 +237,16 @@ void ae::alglib::pca(ae::chart::v3::OptimiserCallbackData& callback_data, ae::nu
 
 // ----------------------------------------------------------------------
 
-void ae::alglib::pca_full(ae::chart::v3::OptimiserCallbackData& callback_data, ae::number_of_dimensions_t number_of_dimensions, double* arg_first, double* arg_last)
+void ae::alglib::pca_full(ae::chart::v3::OptimiserCallbackData& callback_data, ae::number_of_dimensions_t number_of_dimensions, std::span<double> args)
 {
     try {
-        const aint_t number_of_points = (arg_last - arg_first) / cint(number_of_dimensions);
+        const aint_t number_of_points = args.size() / cint(number_of_dimensions);
 
         // alglib does not like NaN coordinates of disconnected points, set them to 0
-        callback_data.stress.set_coordinates_of_disconnected(arg_first, static_cast<size_t>(arg_last - arg_first), 0.0, number_of_dimensions);
+        callback_data.stress.set_coordinates_of_disconnected(args, 0.0, number_of_dimensions);
 
         ::alglib::real_2d_array x;
-        x.attach_to_ptr(number_of_points, cint(number_of_dimensions), arg_first);
+        x.attach_to_ptr(number_of_points, cint(number_of_dimensions), args.data());
         ::alglib::real_1d_array s2; // output Variance values corresponding to basis vectors.
         s2.setlength(cint(number_of_dimensions));
         ::alglib::real_2d_array v; // output matrix to transform x to target
@@ -273,7 +273,7 @@ void ae::alglib::pca_full(ae::chart::v3::OptimiserCallbackData& callback_data, a
         t.setlength(number_of_points, cint(number_of_dimensions));
         ::alglib::rmatrixgemm(number_of_points, cint(number_of_dimensions), cint(number_of_dimensions), 1.0, x, 0, 0, 0, v, 0, 0, 0, 0, t, 0, 0);
 
-        double* target = arg_first;
+        double* target = args.data();
         for (aint_t p_no = 0; p_no < number_of_points; ++p_no) {
             for (aint_t dim_no = 0; dim_no < cint(number_of_dimensions); ++dim_no) {
                 *target++ = t(p_no, dim_no);
@@ -282,7 +282,7 @@ void ae::alglib::pca_full(ae::chart::v3::OptimiserCallbackData& callback_data, a
 
         // return back NaN for disconnected points
         // number of dimensions changed!
-        callback_data.stress.set_coordinates_of_disconnected(arg_first, 0, std::numeric_limits<double>::quiet_NaN(), number_of_dimensions);
+        callback_data.stress.set_coordinates_of_disconnected(args, std::numeric_limits<double>::quiet_NaN(), number_of_dimensions);
     }
     catch (::alglib::ap_error& err) {
         throw ae::chart::v3::optimization_error{"ae::alglib::pca_full error:", err.msg};

@@ -12,7 +12,7 @@
 
 namespace ae::chart::v3
 {
-    static optimization_status optimize(ae::chart::v3::optimization_method optimization_method, OptimiserCallbackData& callback_data, double* arg_first, double* arg_last, optimization_precision precision);
+    static optimization_status optimize(ae::chart::v3::optimization_method optimization_method, OptimiserCallbackData& callback_data, std::span<double> args, optimization_precision precision);
 }
 
 // ----------------------------------------------------------------------
@@ -41,7 +41,7 @@ ae::chart::v3::optimization_status ae::chart::v3::optimize(Chart& chart, Project
     auto& layout = projection.layout();
     auto stress = stress_factory(chart, projection, options.mult);
     OptimiserCallbackData callback_data(stress);
-    return optimize(options.method, callback_data, layout.data(), layout.data() + layout.data_size(), options.precision);
+    return optimize(options.method, callback_data, layout.span(), options.precision);
 
 } // ae::chart::v3::optimize
 
@@ -52,7 +52,7 @@ ae::chart::v3::optimization_status ae::chart::v3::optimize(Chart& chart, Project
     auto& layout = projection.layout();
     auto stress = stress_factory(chart, projection, options.mult);
     OptimiserCallbackData callback_data(stress, intermediate_layouts);
-    return optimize(options.method, callback_data, layout.data(), layout.data() + layout.data_size(), options.precision);
+    return optimize(options.method, callback_data, layout.span(), options.precision);
 
 } // ae::chart::v3::optimize
 
@@ -71,11 +71,11 @@ ae::chart::v3::optimization_status ae::chart::v3::optimize(Chart& chart, Project
     bool initial_opt = true;
     for (auto num_dims: schedule) {
         if (!initial_opt) {
-            do_dimension_annealing(options.method, stress, projection.number_of_dimensions(), num_dims, layout.data(), layout.data() + layout.data_size());
+            do_dimension_annealing(options.method, stress, projection.number_of_dimensions(), num_dims, layout.span());
             layout.change_number_of_dimensions(num_dims);
             stress.change_number_of_dimensions(num_dims);
         }
-        const auto sub_status = optimize(options.method, stress, layout.data(), layout.data() + layout.data_size(), options.precision);
+        const auto sub_status = optimize(options.method, stress, layout.span(), options.precision);
         if (initial_opt) {
             status.initial_stress = sub_status.initial_stress;
             status.termination_report = sub_status.termination_report;
@@ -105,28 +105,27 @@ ae::chart::v3::optimization_status ae::chart::v3::optimize(Chart& chart, minimum
 
 // ----------------------------------------------------------------------
 
-ae::chart::v3::optimization_status ae::chart::v3::optimize(optimization_method optimization_method, const Stress& stress, double* arg_first, double* arg_last, optimization_precision precision)
+ae::chart::v3::optimization_status ae::chart::v3::optimize(optimization_method optimization_method, const Stress& stress, std::span<double> args, optimization_precision precision)
 {
     OptimiserCallbackData callback_data(stress);
-    return optimize(optimization_method, callback_data, arg_first, arg_last, precision);
+    return optimize(optimization_method, callback_data, args, precision);
 
 } // ae::chart::v3::optimize
 
 // ----------------------------------------------------------------------
 
-ae::chart::v3::optimization_status ae::chart::v3::optimize(optimization_method optimization_method, OptimiserCallbackData& callback_data, double* arg_first, double* arg_last,
-                                                           optimization_precision precision)
+ae::chart::v3::optimization_status ae::chart::v3::optimize(optimization_method optimization_method, OptimiserCallbackData& callback_data, std::span<double> args, optimization_precision precision)
 {
-    DisconnectedPointsHandler disconnected_point_handler{callback_data.stress, arg_first, static_cast<size_t>(arg_last - arg_first)};
+    DisconnectedPointsHandler disconnected_point_handler{callback_data.stress, args};
     optimization_status status(optimization_method);
-    status.initial_stress = callback_data.stress.value(arg_first);
+    status.initial_stress = callback_data.stress.value(args);
     const auto start = std::chrono::high_resolution_clock::now();
     switch (optimization_method) {
         case optimization_method::alglib_lbfgs_pca:
-            alglib::lbfgs_optimize(status, callback_data, arg_first, arg_last, precision);
+            alglib::lbfgs_optimize(status, callback_data, args, precision);
             break;
         case optimization_method::alglib_cg_pca:
-            alglib::cg_optimize(status, callback_data, arg_first, arg_last, precision);
+            alglib::cg_optimize(status, callback_data, args, precision);
             break;
         // case optimization_method::optimlib_bfgs_pca:
         //     optim::bfgs(status, callback_data, arg_first, arg_last, precision);
@@ -137,7 +136,7 @@ ae::chart::v3::optimization_status ae::chart::v3::optimize(optimization_method o
         //     break;
     }
     status.time = std::chrono::duration_cast<decltype(status.time)>(std::chrono::high_resolution_clock::now() - start);
-    status.final_stress = callback_data.stress.value(arg_first);
+    status.final_stress = callback_data.stress.value(args);
     return status;
 
 } // ae::chart::v3::optimize
@@ -166,7 +165,7 @@ ae::chart::v3::ErrorLines ae::chart::v3::error_lines(const Chart& chart, const P
 // ----------------------------------------------------------------------
 
 ae::chart::v3::DimensionAnnelingStatus ae::chart::v3::do_dimension_annealing(optimization_method optimization_method, const Stress& stress, number_of_dimensions_t source_number_of_dimensions,
-                                                                          number_of_dimensions_t target_number_of_dimensions, double* arg_first, double* arg_last)
+                                                                          number_of_dimensions_t target_number_of_dimensions, std::span<double> args)
 {
     DimensionAnnelingStatus status;
     OptimiserCallbackData callback_data(stress);
@@ -176,7 +175,7 @@ ae::chart::v3::DimensionAnnelingStatus ae::chart::v3::do_dimension_annealing(opt
         case optimization_method::alglib_lbfgs_pca:
         case optimization_method::alglib_cg_pca:
             // case optimization_method::optimlib_bfgs_pca:
-            alglib::pca(callback_data, source_number_of_dimensions, target_number_of_dimensions, arg_first, arg_last);
+            alglib::pca(callback_data, source_number_of_dimensions, target_number_of_dimensions, args);
             break;
             // case optimization_method::optimlib_differential_evolution:
             //     throw std::runtime_error{"optimlib_differential_evolution method does not support dimension annealing"};
@@ -189,10 +188,10 @@ ae::chart::v3::DimensionAnnelingStatus ae::chart::v3::do_dimension_annealing(opt
 
 // ----------------------------------------------------------------------
 
-void ae::chart::v3::pca(const Stress& stress, number_of_dimensions_t number_of_dimensions, double* arg_first, double* arg_last)
+void ae::chart::v3::pca(const Stress& stress, number_of_dimensions_t number_of_dimensions, std::span<double> args)
 {
     OptimiserCallbackData callback_data(stress);
-    alglib::pca_full(callback_data, number_of_dimensions, arg_first, arg_last);
+    alglib::pca_full(callback_data, number_of_dimensions, args);
 
 } // ae::chart::v3::pca
 

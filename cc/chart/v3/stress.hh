@@ -49,15 +49,15 @@ namespace ae::chart::v3
         Stress(number_of_dimensions_t number_of_dimensions, point_index number_of_points, multiply_antigen_titer_until_column_adjust mult, dodgy_titer_is_regular_e a_dodgy_titer_is_regular);
         Stress(number_of_dimensions_t number_of_dimensions, point_index number_of_points);
 
-        double value(const double* first, const double* /* unused */ = nullptr) const;
+        double value(std::span<const double> args) const;
         double value(const Layout& aLayout) const;
-        double contribution(point_index point_no, const double* first) const;
+        double contribution(point_index point_no, std::span<const double> args) const;
         double contribution(point_index point_no, const Layout& aLayout) const;
-        double contribution(point_index point_no, const TableDistancesForPoint& table_distances_for_point, const double* first) const;
+        double contribution(point_index point_no, const TableDistancesForPoint& table_distances_for_point, std::span<const double> args) const;
         double contribution(point_index point_no, const TableDistancesForPoint& table_distances_for_point, const Layout& aLayout) const;
-        std::vector<double> gradient(const double* first, const double* last) const;
-        void gradient(const double* first, const double* last, double* gradient_first) const;
-        double value_gradient(const double* first, const double* last, double* gradient_first) const;
+        std::vector<double> gradient(std::span<const double> args) const;
+        void gradient(std::span<const double> args, double* gradient_first) const;
+        double value_gradient(std::span<const double> args, double* gradient_first) const;
         std::vector<double> gradient(const Layout& aLayout) const;
         auto number_of_dimensions() const { return number_of_dimensions_; }
         void change_number_of_dimensions(number_of_dimensions_t num_dim) { number_of_dimensions_ = num_dim; }
@@ -76,15 +76,15 @@ namespace ae::chart::v3
             parameters_.unmovable_in_the_last_dimension = unmovable_in_the_last_dimension;
         }
 
-        void set_coordinates_of_disconnected(double* first, size_t num_args, double value, number_of_dimensions_t number_of_dimensions) const;
+        void set_coordinates_of_disconnected(std::span<double> args, double value, number_of_dimensions_t number_of_dimensions) const;
 
       private:
         number_of_dimensions_t number_of_dimensions_{0};
         TableDistances table_distances_{};
         StressParameters parameters_;
 
-        void gradient_plain(const double* first, const double* last, double* gradient_first) const;
-        void gradient_with_unmovable(const double* first, const double* last, double* gradient_first) const;
+        void gradient_plain(std::span<const double> args, double* gradient_first) const;
+        void gradient_with_unmovable(std::span<const double> args, double* gradient_first) const;
 
     }; // class Stress
 

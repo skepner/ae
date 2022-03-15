@@ -39,13 +39,13 @@ std::shared_ptr<ae::chart::v3::LayoutRandomizer> ae::chart::v3::randomizer_borde
 
 // ----------------------------------------------------------------------
 
-inline std::shared_ptr<ae::chart::v3::LayoutRandomizer> randomizer_plain_from_sample_optimization_internal(const ae::chart::v3::Chart& chart, ae::chart::v3::Projection&& projection, const ae::chart::v3::Stress& stress,
-                                                                                                    double diameter_multiplier, ae::chart::v3::LayoutRandomizer::seed_t seed)
+inline std::shared_ptr<ae::chart::v3::LayoutRandomizer> randomizer_plain_from_sample_optimization_internal(const ae::chart::v3::Chart& chart, ae::chart::v3::Projection&& projection,
+                                                                                                           const ae::chart::v3::Stress& stress, double diameter_multiplier,
+                                                                                                           ae::chart::v3::LayoutRandomizer::seed_t seed)
 {
     auto rnd = randomizer_plain_with_table_max_distance(chart, projection, seed);
     projection.randomize_layout(rnd);
-    ae::chart::v3::optimize(ae::chart::v3::optimization_method::alglib_cg_pca, stress, projection.layout().data(), projection.layout().data_size(),
-                            ae::chart::v3::optimization_precision::very_rough);
+    ae::chart::v3::optimize(ae::chart::v3::optimization_method::alglib_cg_pca, stress, projection.layout().span(), ae::chart::v3::optimization_precision::very_rough);
     auto sq = [](double v) { return v * v; };
     const auto mm = projection.layout().minmax();
     const auto diameter = std::sqrt(std::accumulate(mm.begin(), mm.end(), 0.0, [&sq](double sum, const auto& p) { return sum + sq(p.second - p.first); }));

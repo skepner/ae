@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cassert>
+#include <span>
 
 #include "chart/v3/point-coordinates.hh"
 
@@ -111,9 +112,8 @@ namespace ae::chart::v3
         void number_of_dimensions(number_of_dimensions_t num_dim) { number_of_dimensions_ = num_dim; }
         void add_value(double value) { data_.push_back(value); }
 
-        const double* data() const { return data_.data(); }
-        double* data() { return data_.data(); }
-        size_t data_size() const { return data_.size(); }
+        std::span<double> span() { return std::span(data_.data(), data_.size()); }
+        std::span<const double> span() const { return std::span(data_.data(), data_.size()); }
 
       private:
         number_of_dimensions_t number_of_dimensions_{2};
