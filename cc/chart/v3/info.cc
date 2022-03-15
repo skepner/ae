@@ -17,7 +17,7 @@ std::string ae::chart::v3::Assay::name(assay_name_t an) const
         case assay_name_t::no_hi:
             return hi_or_neut(no_hi::yes);
         case assay_name_t::no_HI:
-            return hi_or_neut(no_hi::yes);
+            return HI_or_Neut(no_hi::yes);
     }
     return get();
 

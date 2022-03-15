@@ -6,7 +6,7 @@ import ae_backend
 # ----------------------------------------------------------------------
 
 def main(args: argparse.Namespace):
-    chart = ae_backend.chart_v3.Chart(args.source)
+    chart = ae_backend.chart_v2.Chart(args.source)
     if args.incremental:
         chart.relax_incremental(number_of_optimizations=args.number_of_optimizations, remove_source_projection=not args.keep_original_projections, unmovable_non_nan_points=args.unmovable_non_nan_points)
     else:
@@ -15,54 +15,9 @@ def main(args: argparse.Namespace):
         print(f">> grid test not yet implemented", file=sys.stderr)
     if args.keep_projections:
         chart.keep_projections(args.keep_projections)
-    print(chart.name(0), f"{chart.number_of_antigens()}:{chart.number_of_sera()}", f"projections:{chart.number_of_projections()}")
+    print(chart.make_name(0), f"{chart.number_of_antigens()}:{chart.number_of_sera()}", f"projections:{chart.number_of_projections()}")
     if args.output:
-        chart.write(args.output)
-
-        # num_projections = chart.number_of_projections()
-        # print(chart.name_for_file())
-        # print(chart.name(0), f"{chart.number_of_antigens()}:{chart.number_of_sera()}", f"projections:{num_projections}" if num_projections else "no projections")
-        # if chart_forced_column_bases := chart.forced_column_bases():
-        #     if args.all:
-        #         print("  forced column bases: see after sources below")
-        #     else:
-        #         print("  forced column bases:", chart_forced_column_bases)
-
-        # # def sel_ser(serum_ref):
-        # #     print(serum_ref.no, serum_ref.point_no, serum_ref.serum.name(), serum_ref.serum.serum_id(), serum_ref.serum.passage())
-        # #     return "DARWIN" in serum_ref.serum.name()
-
-        # # srr = chart.select_sera(sel_ser)
-        # # print(len(srr), [[no, sr.name()] for no, sr in srr])
-
-        # if args.all:
-        #     print()
-        #     for projection_no in range(num_projections):
-        #         projection = chart.projection(projection_no)
-        #         print(f"{projection_no:3d}  {projection.stress():11.6f} >={projection.minimum_column_basis()}", end="")
-        #         if comment := projection.comment():
-        #             print(f" <{comment}>", end="")
-        #         if projection_forced_column_bases := projection.forced_column_bases():
-        #             if projection_forced_column_bases == chart_forced_column_bases:
-        #                 print(" chart-forced-column-bases", end="")
-        #             else:
-        #                 print("", projection_forced_column_bases, end="")
-        #         print()
-        #     print()
-        #     info = chart.info()
-        #     if num_sources := info.number_of_sources():
-        #         print("sources", num_sources)
-        #         for source_no in range(num_sources):
-        #             source = info.source(source_no)
-        #             print(f"{source_no:3d} {source.date()} {source.name()}")
-        #         print()
-        #     if chart_forced_column_bases:
-        #         print("forced column bases")
-        #         for no, sr in chart.select_all_sera():
-        #             fcb = f"{chart_forced_column_bases[no]:11.8f}"
-        #             fcb = re.sub(r"0+$", lambda m: " " * len(m.group(0)), fcb)
-        #             fcb = re.sub(r"\. ", "  ", fcb)
-        #             print(f"{no:3d}     {fcb}   {sr.name()} {sr.serum_id()} {sr.passage()}")
+        chart.export(args.output)
 
 # ----------------------------------------------------------------------
 

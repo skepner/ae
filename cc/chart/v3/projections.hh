@@ -131,7 +131,7 @@ namespace ae::chart::v3
             // set_projection_no();
         }
 
-        void keep_just(projection_index number_of_projections_to_keep)
+        void keep(projection_index number_of_projections_to_keep)
         {
             if (data_.size() > *number_of_projections_to_keep)
                 data_.erase(data_.begin() + static_cast<decltype(data_)::difference_type>(*number_of_projections_to_keep), data_.end());

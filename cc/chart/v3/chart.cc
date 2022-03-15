@@ -14,7 +14,7 @@ std::string ae::chart::v3::Chart::name(std::optional<projection_index> aProjecti
     }
     else {
         fmt::format_to(std::back_inserter(name), "{}",
-                       ae::string::join(" ", info().make_lab(), info().make_virus_not_influenza(), info().make_virus_type(), info().make_assay(Assay::assay_name_t::no_hi), info().make_rbc_species(),
+                       ae::string::join(" ", info().make_lab(), info().make_virus_not_influenza(), info().make_virus_type(), info().make_assay(Assay::assay_name_t::no_HI), info().make_rbc_species(),
                                         info().make_date()));
     }
     if (const auto& prjs = projections(); !prjs.empty() && aProjectionNo.has_value() && *aProjectionNo < prjs.size()) {

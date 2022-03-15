@@ -186,7 +186,7 @@ void ae::py::chart_v3(pybind11::module_& mdl)
 
         //         .def(
         //             "table_as_text", //
-        //             [](const ChartModify& chart, int layer_no, bool sort, bool clades, bool org_mode_separators, bool show_aa) {
+        //             [](const Chart& chart, int layer_no, bool sort, bool clades, bool org_mode_separators, bool show_aa) {
         //                 const auto layer{layer_no >= 0 ? std::optional<size_t>{static_cast<size_t>(layer_no)} : std::nullopt};
         //                 const show_clades_t show_clades{clades ? show_clades_t::yes : show_clades_t::no};
         //                 const org_mode_separators_t org_mode_sep{org_mode_separators ? org_mode_separators_t::yes : org_mode_separators_t::no};
@@ -196,37 +196,37 @@ void ae::py::chart_v3(pybind11::module_& mdl)
         //             pybind11::doc("returns table as text\nif layer >= 0 shows corresponding layer\nif sort is True sort antigens/sera to be able to compare with another table")) //
         //         .def(
         //             "names_as_text",                                                                                                                  //
-        //             [](std::shared_ptr<ChartModify> chart, const std::string& format) { return ae::chart::v3::export_names_to_text(chart, format); }, //
+        //             [](std::shared_ptr<Chart> chart, const std::string& format) { return ae::chart::v3::export_names_to_text(chart, format); }, //
         //             "format"_a = "{ag_sr} {no0} {name_full}{ }{species}{ }{date_in_brackets}{ }{lab_ids}{ }{ref}\n",                                  //
         //             pybind11::doc("returns antigen and /serum names as text"))                                                                        //
         //         .def(
         //             "names_as_text", //
-        //             [](const ChartModify& chart, const SelectedAntigensModify& antigens, const SelectedSeraModify& sera, const std::string& format) {
+        //             [](const Chart& chart, const SelectedAntigensModify& antigens, const SelectedSeraModify& sera, const std::string& format) {
         //                 return ae::chart::v3::export_names_to_text(chart, format, antigens, sera);
         //             },                                                                                                                       //
         //             "antigens"_a, "sera"_a, "format"_a = "{ag_sr} {no0} {name_full}{ }{species}{ }{date_in_brackets}{ }{lab_ids}{ }{ref}\n", //
         //             pybind11::doc("returns antigen and /serum names as text for pre-selected antigens/sera"))                                //
 
-        //         .def("subtype", [](const ChartModify& chart) { return *chart.info()->virus_type(); })                            //
-        //         .def("subtype_short", [](const ChartModify& chart) { return std::string{chart.info()->virus_type().h_or_b()}; }) //
-        //         .def("subset", [](const ChartModify& chart) { return chart.info()->subset(); })                                  //
-        //         .def("assay", [](const ChartModify& chart) { return *chart.info()->assay(); })                                   //
-        //         .def("assay_hi_or_neut", [](const ChartModify& chart) { return chart.info()->assay().hi_or_neut(); })            //
-        //         .def("lab", [](const ChartModify& chart) { return *chart.info()->lab(); })                                       //
-        //         .def("rbc", [](const ChartModify& chart) { return *chart.info()->rbc_species(); })                               //
+        //         .def("subtype", [](const Chart& chart) { return *chart.info()->virus_type(); })                            //
+        //         .def("subtype_short", [](const Chart& chart) { return std::string{chart.info()->virus_type().h_or_b()}; }) //
+        //         .def("subset", [](const Chart& chart) { return chart.info()->subset(); })                                  //
+        //         .def("assay", [](const Chart& chart) { return *chart.info()->assay(); })                                   //
+        //         .def("assay_hi_or_neut", [](const Chart& chart) { return chart.info()->assay().hi_or_neut(); })            //
+        //         .def("lab", [](const Chart& chart) { return *chart.info()->lab(); })                                       //
+        //         .def("rbc", [](const Chart& chart) { return *chart.info()->rbc_species(); })                               //
         //         .def("assay_rbc",
-        //              [](const ChartModify& chart) {
+        //              [](const Chart& chart) {
         //                  const auto assay = chart.info()->assay().short_name();
         //                  if (assay == "HI")
         //                      return fmt::format("HI-{}", *chart.info()->rbc_species());
         //                  else
         //                      return assay;
         //              })                                                                                        //
-        //         .def("date", [](const ChartModify& chart) { return *chart.info()->date(Info::Compute::Yes); }) //
+        //         .def("date", [](const Chart& chart) { return *chart.info()->date(Info::Compute::Yes); }) //
         //         .def(
-        //             "lineage", [](const ChartModify& chart) -> std::string { return chart.lineage(); }, pybind11::doc("returns chart lineage: VICTORIA, YAMAGATA")) //
+        //             "lineage", [](const Chart& chart) -> std::string { return chart.lineage(); }, pybind11::doc("returns chart lineage: VICTORIA, YAMAGATA")) //
         //         .def("subtype_lineage",
-        //              [](const ChartModify& chart) {
+        //              [](const Chart& chart) {
         //                  const auto subtype = chart.info()->virus_type().h_or_b();
         //                  if (subtype == "B")
         //                      return fmt::format("B{}", chart.lineage());
@@ -240,7 +240,7 @@ void ae::py::chart_v3(pybind11::module_& mdl)
 
         //         .def(
         //             "make_info", //
-        //             [](const ChartModify& chart, size_t max_number_of_projections_to_show, bool column_bases, bool tables, bool tables_for_sera, bool antigen_dates) {
+        //             [](const Chart& chart, size_t max_number_of_projections_to_show, bool column_bases, bool tables, bool tables_for_sera, bool antigen_dates) {
         //                 return chart.make_info(max_number_of_projections_to_show, make_info_data(column_bases, tables, tables_for_sera, antigen_dates));
         //             },                                                                                                                                               //
         //             "max_number_of_projections_to_show"_a = 20, "column_bases"_a = true, "tables"_a = false, "tables_for_sera"_a = false, "antigen_dates"_a = false, //
@@ -254,25 +254,25 @@ void ae::py::chart_v3(pybind11::module_& mdl)
 
         //         .def(
         //             "projection",                                                                                    //
-        //             [](ChartModify& chart, size_t projection_no) { return chart.projection_modify(projection_no); }, //
+        //             [](Chart& chart, size_t projection_no) { return chart.projection_modify(projection_no); }, //
         //             "projection_no"_a = 0)                                                                           //
 
-        //         .def("remove_all_projections",                                                   //
-        //              [](ChartModify& chart) { return chart.projections_modify().remove_all(); }) //
+                .def("remove_all_projections",                                                   //
+                     [](Chart& chart) { return chart.projections().remove_all(); }) //
         //         .def(
         //             "remove_all_projections_except",                                                                                    //
-        //             [](ChartModify& chart, size_t to_keep) { return chart.projections_modify().remove_all_except(to_keep); }, "keep"_a) //
-        //         .def(
-        //             "remove_projection",                                                                                                  //
-        //             [](ChartModify& chart, size_t to_remove) { return chart.projections_modify().remove(to_remove); }, "projection_no"_a) //
-        //         .def(
-        //             "keep_projections",                                                                               //
-        //             [](ChartModify& chart, size_t to_keep) { return chart.projections_modify().keep_just(to_keep); }, //
-        //             "keep"_a)                                                                                         //
+        //             [](Chart& chart, size_t to_keep) { return chart.projections_modify().remove_all_except(to_keep); }, "keep"_a) //
+                .def(
+                    "remove_projection",                                                                                                  //
+                    [](Chart& chart, size_t to_remove) { return chart.projections().remove(projection_index{to_remove}); }, "projection_no"_a) //
+                .def(
+                    "keep_projections",                                                                               //
+                    [](Chart& chart, size_t to_keep) { return chart.projections().keep(projection_index{to_keep}); }, //
+                    "keep"_a)                                                                                         //
 
         //         .def(
         //             "orient_to",
-        //             [](ChartModify& chart, const ChartModify& master, size_t projection_no) {
+        //             [](Chart& chart, const Chart& master, size_t projection_no) {
         //                 ae::chart::v3::CommonAntigensSera common(master, chart, CommonAntigensSera::match_level_t::strict);
         //                 const auto procrustes_data = ae::chart::v3::procrustes(*master.projection(0), *chart.projection(projection_no), common.points(), ae::chart::v3::procrustes_scaling_t::no);
         //                 chart.projection_modify(projection_no)->transformation(procrustes_data.transformation);
@@ -281,18 +281,18 @@ void ae::py::chart_v3(pybind11::module_& mdl)
 
         //         .def(
         //             "export", //
-        //             [](ChartModify& chart, pybind11::object path, pybind11::object program_name) {
+        //             [](Chart& chart, pybind11::object path, pybind11::object program_name) {
         //                 const std::string path_s = pybind11::str(path), pn_s = pybind11::str(program_name);
         //                 ae::chart::v3::export_factory(chart, path_s, pn_s);
         //             },                                            //
         //             "filename"_a, "program_name"_a = "acmacs-py") //
 
-        //         .def("antigen", &ChartModify::antigen, "antigen_no"_a) //
-        //         .def("serum", &ChartModify::serum, "serum_no"_a)       //
+        //         .def("antigen", &Chart::antigen, "antigen_no"_a) //
+        //         .def("serum", &Chart::serum, "serum_no"_a)       //
 
         //         // .def(
         //         //     "select_antigens_by_aa", //
-        //         //     [](std::shared_ptr<ChartModify> chart, const std::vector<std::string>& criteria, bool report) {
+        //         //     [](std::shared_ptr<Chart> chart, const std::vector<std::string>& criteria, bool report) {
         //         //         auto selected = std::make_shared<SelectedAntigensModify>(chart);
         //         //         ae::py::populate_from_seqdb(chart);
         //         //         ae::py::select_by_aa(selected->indexes, *chart->antigens(), criteria);
@@ -303,7 +303,7 @@ void ae::py::chart_v3(pybind11::module_& mdl)
         //         //     pybind11::doc(R"(Criteria is a list of strings, e.g. ["156K", "!145K"], all criteria is the list must match)")) //
         //         // .def(
         //         //     "select_antigens_by_clade", //
-        //         //     [](std::shared_ptr<ChartModify> chart, const std::vector<std::string>& clades, bool report) {
+        //         //     [](std::shared_ptr<Chart> chart, const std::vector<std::string>& clades, bool report) {
         //         //         auto selected = std::make_shared<SelectedAntigensModify>(chart);
         //         //         ae::py::populate_from_seqdb(chart);
         //         //         const auto pred = [&clades, antigens = chart->antigens()](auto index) { return antigens->at(index)->clades().exists_any_of(clades); };
@@ -315,7 +315,7 @@ void ae::py::chart_v3(pybind11::module_& mdl)
         //         //     pybind11::doc(R"(Select antigens with a clade from clades, one or more entries in clades must match)")) //
         //         // .def(
         //         //     "select_sera_by_aa", //
-        //         //     [](std::shared_ptr<ChartModify> chart, const std::vector<std::string>& criteria, bool report) {
+        //         //     [](std::shared_ptr<Chart> chart, const std::vector<std::string>& criteria, bool report) {
         //         //         auto selected = std::make_shared<SelectedSeraModify>(chart);
         //         //         ae::py::populate_from_seqdb(chart);
         //         //         ae::py::select_by_aa(selected->indexes, *chart->sera(), criteria);
@@ -326,7 +326,7 @@ void ae::py::chart_v3(pybind11::module_& mdl)
         //         //     pybind11::doc("Criteria is a list of strings, e.g. [\"156K\", \"!145K\"], all criteria is the list must match")) //
         //         // .def(
         //         //     "select_sera_by_clade", //
-        //         //     [](std::shared_ptr<ChartModify> chart, const std::vector<std::string>& clades, bool report) {
+        //         //     [](std::shared_ptr<Chart> chart, const std::vector<std::string>& clades, bool report) {
         //         //         auto selected = std::make_shared<SelectedSeraModify>(chart);
         //         //         ae::py::populate_from_seqdb(chart);
         //         //         const auto pred = [&clades, sera = chart->sera()](auto index) { return sera->at(index)->clades().exists_any_of(clades); };
@@ -337,23 +337,23 @@ void ae::py::chart_v3(pybind11::module_& mdl)
         //         //     "clades"_a, "report"_a = false,                                                               //
         //         //     pybind11::doc(R"(Select sera with a clade from clades, one or more entries in clades must match)")) //
 
-        //         .def("titers", &ChartModify::titers_modify_ptr, pybind11::doc("returns Titers oject"))
+        //         .def("titers", &Chart::titers_modify_ptr, pybind11::doc("returns Titers oject"))
 
-        //         .def("column_basis", &ChartModify::column_basis, "serum_no"_a, "projection_no"_a = 0, pybind11::doc("return column_basis for the passed serum"))
+        //         .def("column_basis", &Chart::column_basis, "serum_no"_a, "projection_no"_a = 0, pybind11::doc("return column_basis for the passed serum"))
         //         .def(
-        //             "column_bases", [](const ChartModify& chart, std::string_view minimum_column_basis) { return chart.column_bases(MinimumColumnBasis{minimum_column_basis})->data(); },
+        //             "column_bases", [](const Chart& chart, std::string_view minimum_column_basis) { return chart.column_bases(MinimumColumnBasis{minimum_column_basis})->data(); },
         //             "minimum_column_basis"_a, pybind11::doc("get column bases")) //
         //         .def(
-        //             "column_bases", [](ChartModify& chart, const std::vector<double>& column_bases) { chart.forced_column_bases_modify(ColumnBasesData{column_bases}); }, "column_bases"_a,
+        //             "column_bases", [](Chart& chart, const std::vector<double>& column_bases) { chart.forced_column_bases_modify(ColumnBasesData{column_bases}); }, "column_bases"_a,
         //             pybind11::doc("set forced column bases")) //
 
-        //         .def("plot_spec", [](ChartModify& chart) { return PlotSpecRef{.plot_spec = chart.plot_spec_modify_ptr(), .number_of_antigens = chart.number_of_antigens()}; }) //
+        //         .def("plot_spec", [](Chart& chart) { return PlotSpecRef{.plot_spec = chart.plot_spec_modify_ptr(), .number_of_antigens = chart.number_of_antigens()}; }) //
 
-        //         .def("combine_projections", &ChartModify::combine_projections, "merge_in"_a) //
+        //         .def("combine_projections", &Chart::combine_projections, "merge_in"_a) //
 
         //         .def(
         //             "remove_antigens_sera",
-        //             [](ChartModify& chart, std::shared_ptr<SelectedAntigensModify> antigens, std::shared_ptr<SelectedSeraModify> sera, bool remove_projections) {
+        //             [](Chart& chart, std::shared_ptr<SelectedAntigensModify> antigens, std::shared_ptr<SelectedSeraModify> sera, bool remove_projections) {
         //                 if (remove_projections)
         //                     chart.projections_modify().remove_all();
         //                 if (antigens && !antigens->empty())
@@ -368,7 +368,7 @@ void ae::py::chart_v3(pybind11::module_& mdl)
         // )"))                                                                                    //
         //         .def(
         //             "keep_antigens_sera",
-        //             [](ChartModify& chart, std::shared_ptr<SelectedAntigensModify> antigens, std::shared_ptr<SelectedSeraModify> sera, bool remove_projections) {
+        //             [](Chart& chart, std::shared_ptr<SelectedAntigensModify> antigens, std::shared_ptr<SelectedSeraModify> sera, bool remove_projections) {
         //                 if (remove_projections)
         //                     chart.projections_modify().remove_all();
         //                 if (antigens && !antigens->empty()) {
