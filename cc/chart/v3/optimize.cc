@@ -128,11 +128,11 @@ ae::chart::v3::optimization_status ae::chart::v3::optimize(optimization_method o
             alglib::cg_optimize(status, callback_data, args, precision);
             break;
         // case optimization_method::optimlib_bfgs_pca:
-        //     optim::bfgs(status, callback_data, arg_first, arg_last, precision);
+        //     optim::bfgs(status, callback_data, args, precision);
         //     break;
         // case optimization_method::optimlib_differential_evolution:
-        //     optim::differential_evolution(status, callback_data, arg_first, arg_last, precision);
-        //     alglib::cg_optimize(status, callback_data, arg_first, arg_last, precision);
+        //     optim::differential_evolution(status, callback_data, args, precision);
+        //     alglib::cg_optimize(status, callback_data, args, precision);
         //     break;
     }
     status.time = std::chrono::duration_cast<decltype(status.time)>(std::chrono::high_resolution_clock::now() - start);
