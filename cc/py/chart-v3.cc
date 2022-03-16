@@ -33,6 +33,8 @@ namespace ae::py
 
         InfoRef(std::shared_ptr<ae::chart::v3::Chart> a_chart) : chart{a_chart}, table_source{a_chart->info()}, sources{&a_chart->info().sources()} {}
         InfoRef(std::shared_ptr<ae::chart::v3::Chart> a_chart, ae::chart::v3::TableSource& a_table_source) : chart{a_chart}, table_source{a_table_source}, sources{nullptr} {}
+        InfoRef(const InfoRef&) = delete;
+        InfoRef& operator=(const InfoRef&) = delete;
 
         std::string_view virus() const { return *table_source.virus(); }
         std::string_view type_subtype() const { return *table_source.type_subtype(); }
