@@ -189,7 +189,7 @@ namespace ae::chart::v3
                 }
                 bool operator==(const data_dense&) const = default;
 
-                auto& operator++()
+                data_dense& operator++()
                 {
                     ++current_titer;
                     skip_dont_care();
@@ -217,7 +217,7 @@ namespace ae::chart::v3
 
                 bool operator==(const data_sparse&) const = default;
 
-                auto& operator++()
+                data_sparse& operator++()
                 {
                     if (current_row != end_rows) {
                         ++current_titer;
