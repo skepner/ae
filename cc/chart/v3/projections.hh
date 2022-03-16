@@ -126,6 +126,7 @@ namespace ae::chart::v3
         auto begin() const { return data_.begin(); }
         auto end() const { return data_.end(); }
         template <typename ... Args> Projection& add(Args&& ... args) { return data_.emplace_back(std::forward<Args>(args) ...); }
+        // void reserve(size_t size) { data_.reserve(size); }
         // std::string make_info(size_t max_number_of_projections_to_show = 20) const;
 
         void sort()

@@ -136,9 +136,11 @@ void ae::chart::v3::Chart::relax(number_of_optimizations_t number_of_optimizatio
 
 void ae::chart::v3::Chart::relax_incremental(projection_index source_projection_no, number_of_optimizations_t number_of_optimizations, const optimization_options& options, const disconnected_points& disconnected, const unmovable_points& unmovable)
 {
-    const auto& source_projection = projections()[source_projection_no];
-    const auto num_dim = source_projection.number_of_dimensions();
-    const auto mcb = source_projection.minimum_column_basis();
+    // cannot keep Projection& to the source bacause projection storage can be reallocated while adding new projections below
+    const auto src = [this, source_projection_no](){ return projections()[source_projection_no]; };
+
+    const auto num_dim = src().number_of_dimensions();
+    const auto mcb = src().minimum_column_basis();
 
     disconnected_points my_disconnected{disconnected};
     if (options.disconnect_too_few_numeric_titers == disconnect_few_numeric_titers::yes)
@@ -146,7 +148,7 @@ void ae::chart::v3::Chart::relax_incremental(projection_index source_projection_
 
     unmovable_points my_unmovable{unmovable};
     if (options.unnp == unmovable_non_nan_points::yes)
-        my_unmovable.insert_if_not_present(source_projection.non_nan_points());
+        my_unmovable.insert_if_not_present(src().non_nan_points());
 
     auto stress = stress_factory(*this, num_dim, mcb, my_disconnected, my_unmovable, options);
 
@@ -157,14 +159,14 @@ void ae::chart::v3::Chart::relax_incremental(projection_index source_projection_
     auto rnd = randomizer_plain_from_sample_optimization(*this, stress, num_dim, mcb, options.randomization_diameter_multiplier);
 
     point_indexes points_with_nan_coordinates;
-    for (const auto p_no : source_projection.layout().number_of_points()) {
-        if (!source_projection.layout().point_has_coordinates(p_no) && !disconnected.contains(p_no))
+    for (const auto p_no : src().layout().number_of_points()) {
+        if (!src().layout().point_has_coordinates(p_no) && !disconnected.contains(p_no))
             points_with_nan_coordinates.insert(p_no);
     }
 
     const auto first = projections().size();
     for ([[maybe_unused]] const auto opt_no : number_of_optimizations) {
-        auto& projection = projections().add(source_projection);
+        auto& projection = projections().add(src());
         projection.disconnected() = stress.parameters().disconnected;
         projection.unmovable() = stress.parameters().unmovable;
     }
