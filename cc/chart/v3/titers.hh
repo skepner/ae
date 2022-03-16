@@ -236,12 +236,15 @@ namespace ae::chart::v3
                 dense_t::const_iterator end_titers;
 
                 data_dense(serum_index ns, dense_t::const_iterator first, dense_t::const_iterator last) : number_of_sera{ns}, current_titer{first}, end_titers{last} { skip_dont_care(); }
+                bool operator==(const data_dense&) const = default;
+
                 auto& operator++()
                 {
                     ++current_titer;
                     skip_dont_care();
                     return *this;
                 }
+
                 void skip_dont_care()
                 {
                     while (current_titer != end_titers && current_titer->is_dont_care())
@@ -259,6 +262,8 @@ namespace ae::chart::v3
                 sparse_t::const_iterator end_rows;
                 sparse_row_t::const_iterator current_titer;
                 sparse_row_t::const_iterator end_titers;
+
+                bool operator==(const data_sparse&) const = default;
 
                 auto& operator++()
                 {
@@ -280,16 +285,18 @@ namespace ae::chart::v3
                 }
 
                 const Titer& operator*() const { return current_titer->second; }
-
             };
 
           public:
-            bool operator==(const iterator& rhs) const = default; // { return data_ == rhs.data_; }
+            bool operator==(const iterator&) const = default;
+
             const Titer& operator*() const
             {
                 return std::visit([](auto& dat) -> const Titer& { return *dat; }, data_);
             }
+
             const Titer* operator->() const { return &operator*(); }
+
             iterator& operator++()
             {
                 std::visit([](auto& dat) { ++dat; }, data_);
@@ -299,8 +306,14 @@ namespace ae::chart::v3
           private:
             enum _scroll_to_end { scroll_to_end };
 
-            iterator(const sparse_t& titers, serum_index) : data_{data_sparse{.current_row = titers.begin(), .end_rows = titers.end(), .current_titer = titers.front().begin(), .end_titers = titers.front().end()}} {}
-            iterator(const sparse_t& titers, serum_index, _scroll_to_end) : data_{data_sparse{.current_row = titers.begin(), .end_rows = titers.end(), .current_titer = titers.front().begin(), .end_titers = titers.front().end()}} {}
+            iterator(const sparse_t& titers, serum_index)
+                : data_{data_sparse{.current_row = titers.begin(), .end_rows = titers.end(), .current_titer = titers.front().begin(), .end_titers = titers.front().end()}}
+            {
+            }
+            iterator(const sparse_t& titers, serum_index, _scroll_to_end)
+                : data_{data_sparse{.current_row = titers.begin(), .end_rows = titers.end(), .current_titer = titers.front().begin(), .end_titers = titers.front().end()}}
+            {
+            }
             iterator(const dense_t& titers, serum_index number_of_sera) : data_{data_dense{number_of_sera, titers.begin(), titers.end()}} {}
             iterator(const dense_t& titers, serum_index number_of_sera, _scroll_to_end) : data_{data_dense{number_of_sera, titers.end(), titers.end()}} {}
 
