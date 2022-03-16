@@ -404,7 +404,6 @@ ae::point_indexes ae::chart::v3::Titers::having_too_few_numeric_titers(size_t th
 {
     std::vector<size_t> number_of_numeric_titers(*(number_of_antigens() + number_of_sera()), 0);
     for (const auto titer_ref : titers_existing()) {
-        // AD_DEBUG(titer_ref.serum == serum_index{16}, "{:3d} {:3d} {} {}", titer_ref.antigen, titer_ref.serum, titer_ref.titer, titer_ref.titer.is_regular());
         if (titer_ref.titer.is_regular()) {
             ++number_of_numeric_titers[*titer_ref.antigen];
             ++number_of_numeric_titers[*(number_of_antigens() + titer_ref.serum)];
@@ -412,7 +411,6 @@ ae::point_indexes ae::chart::v3::Titers::having_too_few_numeric_titers(size_t th
     }
     point_indexes result;
     for (auto ind = number_of_numeric_titers.begin(); ind != number_of_numeric_titers.end(); ++ind) {
-        // AD_DEBUG("having_too_few_numeric_titers {:4d}  {:3d}", ind - number_of_numeric_titers.begin(), *ind);
         if (*ind < threshold)
             result.push_back(point_index{ind - number_of_numeric_titers.begin()});
     }

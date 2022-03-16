@@ -239,7 +239,6 @@ namespace ae::chart::v3
                 antigen_index antigen() const { return antigen_index{current_row - begin_rows}; }
                 serum_index serum() const { return current_titer->first; }
                 ref operator*() const { return ref{antigen(), serum(), current_titer->second}; }
-                // ref operator*() const { const ref rr{antigen(), serum(), current_titer->second}; AD_DEBUG("data_sparse rr ag:{} sr:{} t:{} ==end: {}", rr.antigen, rr.serum, *rr.titer, current_row == end_rows); return rr; }
             };
 
           public:
