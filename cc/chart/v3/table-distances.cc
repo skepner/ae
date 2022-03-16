@@ -25,7 +25,7 @@ void ae::chart::v3::TableDistances::update(const Titers& titers, const column_ba
     const auto logged_adjusts = logged(parameters.m_avidity_adjusts);
     dodgy_is_regular(parameters.dodgy_titer_is_regular);
     if (titers.number_of_sera() > serum_index{0}) {
-        for (const auto& titer_ref : titers.titers_existing()) {
+        for (const auto titer_ref : titers.titers_existing()) {
             if (!parameters.disconnected.exists(titer_ref.antigen) && !parameters.disconnected.exists(titers.number_of_antigens() + titer_ref.serum)) {
                 double adj{0.0};
                 if (!logged_adjusts.empty())

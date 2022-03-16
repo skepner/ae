@@ -325,7 +325,7 @@ std::pair<ae::antigen_indexes, ae::serum_indexes> ae::chart::v3::Titers::antigen
     ae::antigen_indexes antigens;
     ae::serum_indexes sera;
 
-    for (const auto& titer_ref : titers_existing_from_layer(aLayerNo)) {
+    for (const auto titer_ref : titers_existing_from_layer(aLayerNo)) {
         antigens.insert_if_not_present(titer_ref.antigen);
         sera.insert_if_not_present(titer_ref.serum);
     }
@@ -342,7 +342,7 @@ std::pair<ae::antigen_indexes, ae::serum_indexes> ae::chart::v3::Titers::antigen
     std::unordered_map<serum_index, layer_set, index_hash_for_unordered_map, std::equal_to<>> serum_to_layers;
 
     for (const auto layer_no :number_of_layers()) {
-        for (const auto& titer_ref : titers_existing_from_layer(layer_no)) {
+        for (const auto titer_ref : titers_existing_from_layer(layer_no)) {
             antigen_to_layers[titer_ref.antigen].insert(layer_no);
             serum_to_layers[titer_ref.serum].insert(layer_no);
         }
@@ -366,7 +366,7 @@ std::pair<ae::antigen_indexes, ae::serum_indexes> ae::chart::v3::Titers::antigen
 bool ae::chart::v3::Titers::has_morethan_in_layers() const
 {
     for (const auto  layer_no : number_of_layers()) {
-        for (const auto& titer_ref : titers_existing_from_layer(layer_no)) {
+        for (const auto titer_ref : titers_existing_from_layer(layer_no)) {
             if (titer_ref.titer.is_more_than())
                 return true;
         }
@@ -382,14 +382,14 @@ ae::point_indexes ae::chart::v3::Titers::having_titers_with(point_index point_no
     point_indexes result;
     if (point_no.get() < number_of_antigens().get()) {
         const auto base = return_point_no ? number_of_antigens().get() : 0ul;
-        for (const auto& titer_ref : titers_existing()) {
+        for (const auto titer_ref : titers_existing()) {
             if (titer_ref.antigen.get() == point_no.get())
                 result.push_back(point_index{titer_ref.serum.get() + base});
         }
     }
     else {
         const auto serum_no = point_no.get() - number_of_antigens().get();
-        for (const auto& titer_ref : titers_existing()) {
+        for (const auto titer_ref : titers_existing()) {
             if (titer_ref.serum.get() == serum_no)
                 result.push_back(point_index{titer_ref.antigen});
         }
@@ -403,7 +403,7 @@ ae::point_indexes ae::chart::v3::Titers::having_titers_with(point_index point_no
 ae::point_indexes ae::chart::v3::Titers::having_too_few_numeric_titers(size_t threshold) const
 {
     std::vector<size_t> number_of_numeric_titers(*(number_of_antigens() + number_of_sera()), 0);
-    for (const auto& titer_ref : titers_existing()) {
+    for (const auto titer_ref : titers_existing()) {
         AD_DEBUG(titer_ref.serum == serum_index{16}, "{:3d} {:3d} {} {}", titer_ref.antigen, titer_ref.serum, titer_ref.titer, titer_ref.titer.is_regular());
         if (titer_ref.titer.is_regular()) {
             ++number_of_numeric_titers[*titer_ref.antigen];
@@ -595,7 +595,7 @@ std::pair<ae::chart::v3::Titer, ae::chart::v3::Titers::titer_merge> ae::chart::v
 double ae::chart::v3::Titers::column_basis(serum_index sr_no) const
 {
     double cb{0.0};
-    for (const auto& titer_ref : titers_existing()) {
+    for (const auto titer_ref : titers_existing()) {
         if (titer_ref.serum == sr_no)
             cb = std::max(cb, titer_ref.titer.logged_for_column_bases());
     }
@@ -609,7 +609,7 @@ double ae::chart::v3::Titers::max_distance(const column_bases& cb) const
 {
     double max_distance{0.0};
     if (number_of_sera() > serum_index{0}) {
-        for (const auto& titer_ref : titers_existing()) {
+        for (const auto titer_ref : titers_existing()) {
             max_distance = std::max(max_distance, cb.column_basis(titer_ref.serum) - titer_ref.titer.logged_with_thresholded());
             if (std::isnan(max_distance) || std::isinf(max_distance))
                 throw std::runtime_error{fmt::format("Titers::max_distance invalid: {} after titer [{}] column_bases:{} @@ {}:{}: {}", max_distance, titer_ref, cb, __builtin_FILE(), __builtin_LINE(),

@@ -228,20 +228,21 @@ namespace ae::chart::v3
 
         class iterator
         {
-          private:
+          public:
             struct ref
             {
-                antigen_index antigen;
-                serum_index serum;
+                const antigen_index antigen;
+                const serum_index serum;
                 const Titer& titer;
             };
 
+          private:
             struct data_dense
             {
-                serum_index number_of_sera;
+                const serum_index number_of_sera;
                 dense_t::const_iterator current_titer;
-                dense_t::const_iterator begin_titers;
-                dense_t::const_iterator end_titers;
+                const dense_t::const_iterator begin_titers;
+                const dense_t::const_iterator end_titers;
 
                 data_dense(serum_index ns, dense_t::const_iterator first, dense_t::const_iterator last) : number_of_sera{ns}, current_titer{first}, end_titers{last} { skip_dont_care(); }
                 bool operator==(const data_dense&) const = default;
@@ -267,8 +268,8 @@ namespace ae::chart::v3
             struct data_sparse
             {
                 sparse_t::const_iterator current_row;
-                sparse_t::const_iterator begin_rows;
-                sparse_t::const_iterator end_rows;
+                const sparse_t::const_iterator begin_rows;
+                const sparse_t::const_iterator end_rows;
                 sparse_row_t::const_iterator current_titer;
                 sparse_row_t::const_iterator end_titers;
 
@@ -513,20 +514,12 @@ template <> struct fmt::formatter<ae::chart::v3::Titer> : fmt::formatter<ae::fmt
     template <typename FormatCtx> constexpr auto format(const ae::chart::v3::Titer& titer, FormatCtx& ctx) const { return fmt::format_to(ctx.out(), "{}", titer.get()); }
 };
 
-// template <> struct fmt::formatter<ae::chart::v3::Titers::iterator::Data> : fmt::formatter<ae::fmt_helper::default_formatter>
-// {
-//     template <typename FormatCtx> constexpr auto format(const ae::chart::v3::TiterIterator::Data& value, FormatCtx& ctx) const
-//     {
-//         return format_to(ctx.out(), "ag:{} sr:{} t:{}", value.antigen, value.serum, value.titer);
-//     }
-// };
-
-// template <> struct fmt::formatter<ae::chart::v3::TiterIterator::Data> : fmt::formatter<ae::fmt_helper::default_formatter>
-// {
-//     template <typename FormatCtx> constexpr auto format(const ae::chart::v3::TiterIterator::Data& value, FormatCtx& ctx) const
-//     {
-//         return format_to(ctx.out(), "ag:{} sr:{} t:{}", value.antigen, value.serum, value.titer);
-//     }
-// };
+template <> struct fmt::formatter<ae::chart::v3::Titers::iterator::ref> : fmt::formatter<ae::fmt_helper::default_formatter>
+{
+    template <typename FormatCtx> constexpr auto format(const ae::chart::v3::Titers::iterator::ref& value, FormatCtx& ctx) const
+    {
+        return format_to(ctx.out(), "ag:{} sr:{} t:{}", value.antigen, value.serum, value.titer);
+    }
+};
 
 // ----------------------------------------------------------------------
