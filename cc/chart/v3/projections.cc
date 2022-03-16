@@ -43,3 +43,17 @@ void ae::chart::v3::Projection::randomize_layout(std::shared_ptr<LayoutRandomize
 } // ae::chart::v3::Projection::randomize_layout
 
 // ----------------------------------------------------------------------
+
+ae::point_indexes ae::chart::v3::Projection::non_nan_points() const
+{
+    const auto& layt = layout();
+    point_indexes non_nan;
+    for (const auto point_no : layt.number_of_points()) {
+        if (layt.point_has_coordinates(point_no))
+            non_nan.insert(point_no);
+    }
+    return non_nan;
+
+} // ae::chart::v3::Projection::non_nan_points
+
+// ----------------------------------------------------------------------

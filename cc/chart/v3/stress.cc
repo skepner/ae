@@ -60,13 +60,23 @@ ae::chart::v3::Stress ae::chart::v3::stress_factory(const Chart& chart, const Pr
 // ----------------------------------------------------------------------
 
 ae::chart::v3::Stress ae::chart::v3::stress_factory(const Chart& chart, number_of_dimensions_t number_of_dimensions, minimum_column_basis mcb, const disconnected_points& disconnected,
-                                                    disconnect_few_numeric_titers disconnect_too_few_numeric_titers, multiply_antigen_titer_until_column_adjust mult,
-                                                    dodgy_titer_is_regular_e a_dodgy_titer_is_regular)
+                                                    const unmovable_points& unmovable, const optimization_options& options)
 {
-    Stress stress(number_of_dimensions, chart.number_of_points(), mult, a_dodgy_titer_is_regular);
+    Stress stress(number_of_dimensions, chart.number_of_points(), options.mult, options.dodgy_titer_is_regular);
     stress.set_disconnected(disconnected);
-    if (disconnect_too_few_numeric_titers == disconnect_few_numeric_titers::yes)
+    if (options.disconnect_too_few_numeric_titers == disconnect_few_numeric_titers::yes)
         stress.extend_disconnected(chart.titers().having_too_few_numeric_titers());
+
+    // remove unmovable points from disconnected, it affects stress
+    // value but keeping them is ambiguous: if after merge one of the
+    // unmovable point (i.e. from the primary chart) has too few
+    // numreic titers, disconnecting it leads to erasing its
+    // coordinate, this leaves of impression of a bug in the program
+    // which is hard to catch.
+    stress.remove_from_disconnected(unmovable);
+
+    stress.set_unmovable(unmovable);
+
     // after setting disconnected points!
     stress.table_distances().update(chart.titers(), chart.column_bases(mcb), stress.parameters());
     return stress;

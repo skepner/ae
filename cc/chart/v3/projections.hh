@@ -71,6 +71,8 @@ namespace ae::chart::v3
             // transformed_layout_.reset();
         }
 
+        point_indexes non_nan_points() const; // for relax_incremental and enum unmovable_non_nan_points
+
         // std::shared_ptr<Layout> transformed_layout() const { return layout()->transform(transformation()); }
         // double stress_diff_to_stop() const = 0;
 

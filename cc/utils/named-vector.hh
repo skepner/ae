@@ -47,10 +47,15 @@ namespace ae
             return std::any_of(std::begin(vals), std::end(vals), [this](const T& val) { return exists(val); });
         }
 
+        template <constructible_from<T> T2> void insert(T2&& val)
+        {
+            this->get().emplace_back(std::forward<T2>(val));
+        }
+
         template <constructible_from<T> T2> void insert_if_not_present(T2&& val)
         {
             if (!exists(std::forward<T2>(val)))
-                this->get().emplace_back(std::forward<T2>(val));
+                insert(std::forward<T2>(val));
         }
 
         template <constructible_from<T> T2, typename Tag2> void insert_if_not_present(const named_vector_t<T2, Tag2>& another)
@@ -58,7 +63,6 @@ namespace ae
             for (const auto& val : another)
                 insert_if_not_present(val);
         }
-
     };
 
     template <typename Tag> constexpr bool operator<(const named_vector_t<std::string, Tag>& lhs, const named_vector_t<std::string, Tag>& rhs) noexcept

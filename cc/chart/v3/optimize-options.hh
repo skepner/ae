@@ -30,16 +30,6 @@ namespace ae::chart::v3
 
     struct optimization_options
     {
-        // optimization_options() = default;
-        // optimization_options(optimization_precision a_precision, double a_randomization_diameter_multiplier = 2.0)
-        //     : precision{a_precision}, randomization_diameter_multiplier{a_randomization_diameter_multiplier}
-        // {
-        // }
-        // optimization_options(optimization_method a_method, optimization_precision a_precision = optimization_precision::fine, double a_randomization_diameter_multiplier = 2.0)
-        //     : method{a_method}, precision{a_precision}, randomization_diameter_multiplier{a_randomization_diameter_multiplier}
-        // {
-        // }
-
         optimization_method method{optimization_method::alglib_cg_pca};
         optimization_precision precision{optimization_precision::fine};
         disconnect_few_numeric_titers disconnect_too_few_numeric_titers{disconnect_few_numeric_titers::yes};
@@ -49,6 +39,7 @@ namespace ae::chart::v3
         use_dimension_annealing dimension_annealing{use_dimension_annealing::no};
         remove_source_projection rsp{remove_source_projection::yes};
         unmovable_non_nan_points unnp{unmovable_non_nan_points::no};
+        dodgy_titer_is_regular_e dodgy_titer_is_regular{dodgy_titer_is_regular_e::no};
 
     }; // struct optimization_options
 

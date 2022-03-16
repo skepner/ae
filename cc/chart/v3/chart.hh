@@ -39,7 +39,13 @@ namespace ae::chart::v3
         const Antigens& antigens() const { return antigens_; }
         Sera& sera() { return sera_; }
         const Sera& sera() const { return sera_; }
-        template <typename AgSr> AgSr& antigens_sera() { if constexpr (std::is_same_v<AgSr, Antigens>) return antigens_; else return sera_; }
+        template <typename AgSr> AgSr& antigens_sera()
+        {
+            if constexpr (std::is_same_v<AgSr, Antigens>)
+                return antigens_;
+            else
+                return sera_;
+        }
         Titers& titers() { return titers_; }
         const Titers& titers() const { return titers_; }
         Projections& projections() { return projections_; }
@@ -58,9 +64,10 @@ namespace ae::chart::v3
         class column_bases column_bases(minimum_column_basis mcb) const;
         class column_bases forced_column_bases() const;
 
-        void relax(number_of_optimizations_t number_of_optimizations, minimum_column_basis mcb, number_of_dimensions_t number_of_dimensions,
-                   const optimization_options& options, const disconnected_points& disconnected = disconnected_points{});
-        void relax_incremental(projection_index source_projection_no, number_of_optimizations_t number_of_optimizations, const optimization_options& options);
+        void relax(number_of_optimizations_t number_of_optimizations, minimum_column_basis mcb, number_of_dimensions_t number_of_dimensions, const optimization_options& options,
+                   const disconnected_points& disconnected = disconnected_points{}, const unmovable_points& unmovable = unmovable_points{});
+        void relax_incremental(projection_index source_projection_no, number_of_optimizations_t number_of_optimizations, const optimization_options& options,
+                               const disconnected_points& disconnected = disconnected_points{}, const unmovable_points& unmovable = unmovable_points{});
 
       private:
         Info info_{};

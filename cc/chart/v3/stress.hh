@@ -68,6 +68,7 @@ namespace ae::chart::v3
         StressParameters& parameters() { return parameters_; }
         void set_disconnected(const disconnected_points& to_disconnect) { parameters_.disconnected = to_disconnect; }
         void extend_disconnected(const point_indexes& to_disconnect) { parameters_.disconnected.insert_if_not_present(to_disconnect); }
+        void remove_from_disconnected(const unmovable_points& unmovable) { for (const auto pnt : unmovable) parameters_.disconnected.remove(pnt); }
         size_t number_of_disconnected() const { return parameters_.disconnected.size(); }
         void set_unmovable(const unmovable_points& unmovable) { parameters_.unmovable = unmovable; }
         void set_unmovable_in_the_last_dimension(const unmovable_in_the_last_dimension_points& unmovable_in_the_last_dimension)
@@ -89,8 +90,7 @@ namespace ae::chart::v3
 
     Stress stress_factory(const Chart& chart, const Projection& projection, multiply_antigen_titer_until_column_adjust mult);
     Stress stress_factory(const Chart& chart, number_of_dimensions_t number_of_dimensions, minimum_column_basis mcb, const disconnected_points& disconnected,
-                          disconnect_few_numeric_titers disconnect_too_few_numeric_titers, multiply_antigen_titer_until_column_adjust mult,
-                          dodgy_titer_is_regular_e a_dodgy_titer_is_regular = dodgy_titer_is_regular_e::no);
+                          const unmovable_points& unmovable, const optimization_options& options);
 
     // avidity test support
     Stress stress_factory(const Chart& chart, const Projection& projection, antigen_index antigen_no, double logged_avidity_adjust, multiply_antigen_titer_until_column_adjust mult);

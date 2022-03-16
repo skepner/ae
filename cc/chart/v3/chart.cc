@@ -82,10 +82,10 @@ ae::chart::v3::column_bases ae::chart::v3::Chart::forced_column_bases() const
 
 // ----------------------------------------------------------------------
 
-void ae::chart::v3::Chart::relax(number_of_optimizations_t number_of_optimizations, minimum_column_basis mcb, number_of_dimensions_t number_of_dimensions, const optimization_options& options, const disconnected_points& disconnected)
+void ae::chart::v3::Chart::relax(number_of_optimizations_t number_of_optimizations, minimum_column_basis mcb, number_of_dimensions_t number_of_dimensions, const optimization_options& options, const disconnected_points& disconnected, const unmovable_points& unmovable)
 {
     const auto start_num_dim = options.dimension_annealing == use_dimension_annealing::yes && number_of_dimensions < number_of_dimensions_t{5} ? number_of_dimensions_t{5} : number_of_dimensions;
-    auto stress = stress_factory(*this, start_num_dim, mcb, disconnected, options.disconnect_too_few_numeric_titers, options.mult, dodgy_titer_is_regular_e::no);
+    auto stress = stress_factory(*this, start_num_dim, mcb, disconnected, unmovable, options);
     if (const auto num_connected = antigens().size().get() + sera().size().get() - stress.number_of_disconnected(); num_connected < 3)
         throw std::runtime_error{AD_FORMAT("cannot relax: too few connected points: {}", num_connected)};
     // report_disconnected_unmovable(stress.parameters().disconnected, stress.parameters().unmovable);
@@ -134,8 +134,74 @@ void ae::chart::v3::Chart::relax(number_of_optimizations_t number_of_optimizatio
 
 // ----------------------------------------------------------------------
 
-void ae::chart::v3::Chart::relax_incremental(projection_index source_projection_no, number_of_optimizations_t number_of_optimizations, const optimization_options& options)
+void ae::chart::v3::Chart::relax_incremental(projection_index source_projection_no, number_of_optimizations_t number_of_optimizations, const optimization_options& options, const disconnected_points& disconnected, const unmovable_points& unmovable)
 {
+    const auto& source_projection = projections()[source_projection_no];
+    const auto num_dim = source_projection.number_of_dimensions();
+    const auto mcb = source_projection.minimum_column_basis();
+
+    disconnected_points my_disconnected{disconnected};
+    if (options.disconnect_too_few_numeric_titers == disconnect_few_numeric_titers::yes)
+        my_disconnected.insert_if_not_present(titers().having_too_few_numeric_titers());
+
+    unmovable_points my_unmovable{unmovable};
+    if (options.unnp == unmovable_non_nan_points::yes)
+        my_unmovable.insert_if_not_present(source_projection.non_nan_points());
+
+    auto stress = stress_factory(*this, num_dim, mcb, my_disconnected, my_unmovable, options);
+
+//     if (const auto num_connected = number_of_antigens() + number_of_sera() - stress.number_of_disconnected(); num_connected < 3)
+//         throw std::runtime_error{AD_FORMAT("cannot relax: too few connected points: {}", num_connected)};
+//     report_disconnected_unmovable(stress.parameters().disconnected, stress.parameters().unmovable);
+
+//     // AD_DEBUG("relax_incremental: {}", number_of_points());
+//     auto rnd = randomizer_plain_from_sample_optimization(*this, stress, num_dim, mcb, options.randomization_diameter_multiplier);
+
+//     auto make_points_with_nan_coordinates = [&source_projection, &disconnected_points]() -> PointIndexList {
+//         PointIndexList result;
+//         auto source_layout = source_projection->layout();
+//         for (size_t p_no = 0; p_no < source_layout->number_of_points(); ++p_no) {
+//             if (!source_layout->point_has_coordinates(p_no) && !disconnected_points.contains(p_no))
+//                 result.insert(p_no);
+//         }
+//         return result;
+//     };
+//     const auto points_with_nan_coordinates = make_points_with_nan_coordinates();
+//     // AD_INFO("about to randomize coordinates of {} points", points_with_nan_coordinates.size());
+
+//     std::vector<std::shared_ptr<ProjectionModifyNew>> projections(*number_of_optimizations);
+//     std::transform(projections.begin(), projections.end(), projections.begin(), [&stress, &source_projection, this](const auto&) {
+//         auto projection = projections_modify().new_by_cloning(*source_projection);
+//         projection->set_disconnected(stress.parameters().disconnected);
+//         projection->set_unmovable(stress.parameters().unmovable);
+//         return projection;
+//     });
+
+// #ifdef _OPENMP
+//     const int num_threads = options.num_threads <= 0 ? omp_get_max_threads() : options.num_threads;
+//     const int slot_size = number_of_antigens() < 1000 ? 4 : 1;
+// #endif
+// #pragma omp parallel for default(shared) num_threads(num_threads) firstprivate(stress) schedule(static, slot_size)
+//     for (size_t p_no = 0; p_no < projections.size(); ++p_no) {
+//         auto projection = projections[p_no];
+//         projection->randomize_layout(points_with_nan_coordinates, rnd);
+//         auto layout = projection->layout_modified();
+//         const auto status = optimize(options.method, stress, layout->data(), layout->data() + layout->size(), optimization_precision::rough);
+//         if (!std::isnan(status.final_stress))
+//             projection->stress_ = status.final_stress;
+//     }
+
+//     if (rsp == remove_source_projection::yes)
+//         projections_modify().remove(source_projection_no);
+//     projections_modify().sort();
+
+//     if (options.precision == optimization_precision::fine) {
+//         const size_t top_projections = std::min(5UL, *number_of_optimizations);
+//         for (size_t p_no = 0; p_no < top_projections; ++p_no)
+//             projections_modify().at(p_no)->relax(options); // do not omp parallel, occasionally fails
+//         projections_modify().sort();
+//     }
+
 
 } // ae::chart::v3::Chart::relax_incremental
 
