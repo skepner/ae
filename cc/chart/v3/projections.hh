@@ -63,7 +63,8 @@ namespace ae::chart::v3
         dodgy_titer_is_regular_e dodgy_titer_is_regular() const { return dodgy_titer_is_regular_; }
         void dodgy_titer_is_regular(dodgy_titer_is_regular_e dtir) { dodgy_titer_is_regular_ = dtir; }
 
-        void randomize_layout(std::shared_ptr<LayoutRandomizer> randomizer);
+        void randomize_layout(LayoutRandomizer& randomizer);
+        void randomize_layout(const point_indexes& to_randomize, LayoutRandomizer& randomizer); // randomize just some point coordinates
 
         void transformation_reset()
         {

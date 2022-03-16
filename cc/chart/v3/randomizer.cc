@@ -44,7 +44,7 @@ inline std::shared_ptr<ae::chart::v3::LayoutRandomizer> randomizer_plain_from_sa
                                                                                                            ae::chart::v3::LayoutRandomizer::seed_t seed)
 {
     auto rnd = randomizer_plain_with_table_max_distance(chart, projection, seed);
-    projection.randomize_layout(rnd);
+    projection.randomize_layout(*rnd);
     ae::chart::v3::optimize(ae::chart::v3::optimization_method::alglib_cg_pca, stress, projection.layout().span(), ae::chart::v3::optimization_precision::very_rough);
     auto sq = [](double v) { return v * v; };
     const auto mm = projection.layout().minmax();

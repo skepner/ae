@@ -35,10 +35,19 @@ double ae::chart::v3::Projection::stress_recalculate() const
 
 // ----------------------------------------------------------------------
 
-void ae::chart::v3::Projection::randomize_layout(std::shared_ptr<LayoutRandomizer> randomizer)
+void ae::chart::v3::Projection::randomize_layout(LayoutRandomizer& randomizer)
 {
     for (const auto point_no : layout().number_of_points())
-        layout().update(point_no, randomizer->get(layout().number_of_dimensions()));
+        layout().update(point_no, randomizer.get(layout().number_of_dimensions()));
+
+} // ae::chart::v3::Projection::randomize_layout
+
+// ----------------------------------------------------------------------
+
+void ae::chart::v3::Projection::randomize_layout(const point_indexes& to_randomize, LayoutRandomizer& randomizer)
+{
+    for (const auto point_no : to_randomize)
+        layout().update(point_no, randomizer.get(layout().number_of_dimensions()));
 
 } // ae::chart::v3::Projection::randomize_layout
 

@@ -105,7 +105,7 @@ void ae::chart::v3::Chart::relax(number_of_optimizations_t number_of_optimizatio
 #pragma omp parallel for default(shared) num_threads(num_threads) firstprivate(stress) schedule(static, slot_size)
     for (size_t p_no = *first; p_no < *projections().size(); ++p_no) {
         auto& projection = projections()[projection_index{p_no}];
-        projection.randomize_layout(rnd);
+        projection.randomize_layout(*rnd);
         auto& layout = projection.layout();
         stress.change_number_of_dimensions(start_num_dim);
         const auto status1 =
@@ -169,31 +169,30 @@ void ae::chart::v3::Chart::relax_incremental(projection_index source_projection_
         projection.unmovable() = stress.parameters().unmovable;
     }
 
-// #ifdef _OPENMP
-//     const int num_threads = options.num_threads <= 0 ? omp_get_max_threads() : options.num_threads;
-//     const int slot_size = number_of_antigens() < 1000 ? 4 : 1;
-// #endif
-// #pragma omp parallel for default(shared) num_threads(num_threads) firstprivate(stress) schedule(static, slot_size)
-//     for (size_t p_no = 0; p_no < projections.size(); ++p_no) {
-//         auto projection = projections[p_no];
-//         projection->randomize_layout(points_with_nan_coordinates, rnd);
-//         auto layout = projection->layout_modified();
-//         const auto status = optimize(options.method, stress, layout->data(), layout->data() + layout->size(), optimization_precision::rough);
-//         if (!std::isnan(status.final_stress))
-//             projection->stress_ = status.final_stress;
-//     }
+#ifdef _OPENMP
+    const int num_threads = options.num_threads <= 0 ? omp_get_max_threads() : options.num_threads;
+    const int slot_size = antigens().size() < antigen_index{1000} ? 4 : 1;
+#endif
+#pragma omp parallel for default(shared) num_threads(num_threads) firstprivate(stress) schedule(static, slot_size)
+    for (size_t p_no = *first; p_no < *projections().size(); ++p_no) {
+        auto& projection = projections()[projection_index{p_no}];
+        projection.randomize_layout(points_with_nan_coordinates, *rnd);
+        auto& layout = projection.layout();
+        const auto status = optimize(options.method, stress, layout.span(), optimization_precision::rough);
+        if (!std::isnan(status.final_stress))
+            projection.stress(status.final_stress);
+    }
 
-//     if (rsp == remove_source_projection::yes)
-//         projections_modify().remove(source_projection_no);
-//     projections_modify().sort();
+    if (options.rsp == remove_source_projection::yes)
+        projections().remove(source_projection_no);
+    projections().sort();
 
-//     if (options.precision == optimization_precision::fine) {
-//         const size_t top_projections = std::min(5UL, *number_of_optimizations);
-//         for (size_t p_no = 0; p_no < top_projections; ++p_no)
-//             projections_modify().at(p_no)->relax(options); // do not omp parallel, occasionally fails
-//         projections_modify().sort();
-//     }
-
+    // if (options.precision == optimization_precision::fine) {
+    //     const projection_index top_projections{std::min(5UL, *number_of_optimizations)};
+    //     for (const auto p_no : top_projections)
+    //         projections()[p_no].relax(options); // do not omp parallel, occasionally fails
+    //     projections().sort();
+    // }
 
 } // ae::chart::v3::Chart::relax_incremental
 

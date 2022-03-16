@@ -98,7 +98,7 @@ ae::chart::v3::optimization_status ae::chart::v3::optimize(Chart& chart, Project
 ae::chart::v3::optimization_status ae::chart::v3::optimize(Chart& chart, minimum_column_basis mcb, const dimension_schedule& schedule, optimization_options options)
 {
     auto& projection = chart.projections().add(chart.number_of_points(), schedule.initial(), mcb);
-    projection.randomize_layout(randomizer_plain_with_table_max_distance(chart, projection));
+    projection.randomize_layout(*randomizer_plain_with_table_max_distance(chart, projection));
     return optimize(chart, projection, schedule, options);
 
 } // ae::chart::v3::optimize
