@@ -85,11 +85,7 @@ ae::chart::v3::column_bases ae::chart::v3::Chart::forced_column_bases() const
 void ae::chart::v3::Chart::relax(number_of_optimizations_t number_of_optimizations, minimum_column_basis mcb, number_of_dimensions_t number_of_dimensions, const optimization_options& options, const disconnected_points& disconnected)
 {
     const auto start_num_dim = options.dimension_annealing == use_dimension_annealing::yes && number_of_dimensions < number_of_dimensions_t{5} ? number_of_dimensions_t{5} : number_of_dimensions;
-    // auto titrs = titers();
     auto stress = stress_factory(*this, start_num_dim, mcb, disconnected, options.disconnect_too_few_numeric_titers, options.mult, dodgy_titer_is_regular_e::no);
-    // stress.set_disconnected(disconnected);
-    // if (options.disconnect_too_few_numeric_titers == disconnect_few_numeric_titers::yes)
-    //     stress.extend_disconnected(titers().having_too_few_numeric_titers());
     if (const auto num_connected = antigens().size().get() + sera().size().get() - stress.number_of_disconnected(); num_connected < 3)
         throw std::runtime_error{AD_FORMAT("cannot relax: too few connected points: {}", num_connected)};
     // report_disconnected_unmovable(stress.parameters().disconnected, stress.parameters().unmovable);

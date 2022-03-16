@@ -244,7 +244,11 @@ namespace ae::chart::v3
                 const dense_t::const_iterator begin_titers;
                 const dense_t::const_iterator end_titers;
 
-                data_dense(serum_index ns, dense_t::const_iterator first, dense_t::const_iterator last) : number_of_sera{ns}, current_titer{first}, end_titers{last} { skip_dont_care(); }
+                data_dense(serum_index ns, dense_t::const_iterator current, dense_t::const_iterator first, dense_t::const_iterator last)
+                    : number_of_sera{ns}, current_titer{current}, begin_titers{first}, end_titers{last}
+                {
+                    skip_dont_care();
+                }
                 bool operator==(const data_dense&) const = default;
 
                 auto& operator++()
@@ -315,22 +319,28 @@ namespace ae::chart::v3
                 return *this;
             }
 
-            antigen_index antigen() const { return std::visit([](const auto& dat) { return dat.antigen(); }, data_); }
-            serum_index serum() const { return std::visit([](const auto& dat) { return dat.serum(); }, data_); }
+            antigen_index antigen() const
+            {
+                return std::visit([](const auto& dat) { return dat.antigen(); }, data_);
+            }
+            serum_index serum() const
+            {
+                return std::visit([](const auto& dat) { return dat.serum(); }, data_);
+            }
 
           private:
             enum _scroll_to_end { scroll_to_end };
 
             iterator(const sparse_t& titers, serum_index)
-                : data_{data_sparse{.current_row = titers.begin(), .end_rows = titers.end(), .current_titer = titers.front().begin(), .end_titers = titers.front().end()}}
+                : data_{data_sparse{.current_row = titers.begin(), .begin_rows = titers.begin(), .end_rows = titers.end(), .current_titer = titers.front().begin(), .end_titers = titers.front().end()}}
             {
             }
             iterator(const sparse_t& titers, serum_index, _scroll_to_end)
-                : data_{data_sparse{.current_row = titers.begin(), .end_rows = titers.end(), .current_titer = titers.front().begin(), .end_titers = titers.front().end()}}
+                : data_{data_sparse{.current_row = titers.begin(), .begin_rows = titers.begin(), .end_rows = titers.end(), .current_titer = titers.front().begin(), .end_titers = titers.front().end()}}
             {
             }
-            iterator(const dense_t& titers, serum_index number_of_sera) : data_{data_dense{number_of_sera, titers.begin(), titers.end()}} {}
-            iterator(const dense_t& titers, serum_index number_of_sera, _scroll_to_end) : data_{data_dense{number_of_sera, titers.end(), titers.end()}} {}
+            iterator(const dense_t& titers, serum_index number_of_sera) : data_{data_dense{number_of_sera, titers.begin(), titers.begin(), titers.end()}} {}
+            iterator(const dense_t& titers, serum_index number_of_sera, _scroll_to_end) : data_{data_dense{number_of_sera, titers.end(), titers.begin(), titers.end()}} {}
 
             std::variant<data_dense, data_sparse> data_;
 
@@ -355,7 +365,11 @@ namespace ae::chart::v3
         layer_index number_of_layers() const { return layer_index{layers_.size()}; }
         auto& layer(layer_index layer_no) { return layers_[layer_no.get()]; }
         const auto& layer(layer_index layer_no) const { return layers_[layer_no.get()]; }
-        void check_layers(layer_index layer_no = layer_index{0}) const { if (number_of_layers() <= layer_no) throw data_not_available{"invalid layer number or no layers present"}; }
+        void check_layers(layer_index layer_no = layer_index{0}) const
+        {
+            if (number_of_layers() <= layer_no)
+                throw data_not_available{"invalid layer number or no layers present"};
+        }
         Titer titer_of_layer(layer_index aLayerNo, antigen_index aAntigenNo, serum_index aSerumNo) const { return titer_in_sparse_t(layers_[aLayerNo.get()], aAntigenNo, aSerumNo); }
         std::vector<Titer> titers_for_layers(antigen_index aAntigenNo, serum_index aSerumNo,
                                              include_dotcare inc = include_dotcare::no) const; // returns list of non-dont-care titers in layers, may throw data_not_available
@@ -380,8 +394,16 @@ namespace ae::chart::v3
 
         // importing
         void number_of_sera(serum_index num) { number_of_sera_ = num; }
-        dense_t& create_dense_titers() { titers_ = dense_t{}; return std::get<dense_t>(titers_); }
-        sparse_t& create_sparse_titers() { titers_ = sparse_t{}; return std::get<sparse_t>(titers_); }
+        dense_t& create_dense_titers()
+        {
+            titers_ = dense_t{};
+            return std::get<dense_t>(titers_);
+        }
+        sparse_t& create_sparse_titers()
+        {
+            titers_ = sparse_t{};
+            return std::get<sparse_t>(titers_);
+        }
         layers_t& layers() { return layers_; }
 
         // exporting
@@ -391,8 +413,14 @@ namespace ae::chart::v3
 
         // ----------------------------------------------------------------------
 
-        iterator begin() const { return std::visit([this](const auto& en) { return iterator{en, number_of_sera_}; }, titers_); }
-        iterator end() const { return std::visit([this](const auto& en) { return iterator{en, number_of_sera_, iterator::scroll_to_end}; }, titers_); }
+        iterator begin() const
+        {
+            return std::visit([this](const auto& en) { return iterator{en, number_of_sera_}; }, titers_);
+        }
+        iterator end() const
+        {
+            return std::visit([this](const auto& en) { return iterator{en, number_of_sera_, iterator::scroll_to_end}; }, titers_);
+        }
 
         class iterator_gen
         {
@@ -406,7 +434,7 @@ namespace ae::chart::v3
         };
 
         iterator_gen titers_existing() const { return iterator_gen{begin(), end()}; }
-        iterator_gen titers_regular() const { return iterator_gen{begin(), end()}; }
+        // iterator_gen titers_regular() const { throw std::runtime_error{}; }
         iterator_gen titers_existing_from_layer(layer_index layer_no) const
         {
             return iterator_gen{iterator{layers_[*layer_no], number_of_sera_}, iterator{layers_[*layer_no], number_of_sera_, iterator::scroll_to_end}};
@@ -482,7 +510,8 @@ namespace ae::chart::v3
         // TiterIteratorMaker titers_existing_from_layer(layer_index layer_no) const
         // {
         //     return TiterIteratorMaker(
-        //         std::make_shared<TiterGetterExisting>([this, layer_no](antigen_index ag, serum_index sr) { return this->titer_of_layer(layer_no, ag, sr); }, number_of_antigens(), number_of_sera()));
+        //         std::make_shared<TiterGetterExisting>([this, layer_no](antigen_index ag, serum_index sr) { return this->titer_of_layer(layer_no, ag, sr); }, number_of_antigens(),
+        //         number_of_sera()));
         // }
 
         // ----------------------------------------------------------------------
