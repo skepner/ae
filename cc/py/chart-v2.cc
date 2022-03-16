@@ -125,7 +125,7 @@ namespace ae::py
 
     template <typename AgSr> static inline bool clade_any_of(const ae::chart::v2::SelectionData<AgSr> data, const std::vector<std::string>& clades)
     {
-        return data.ag_sr->clades().exists_any_of(clades);
+        return data.ag_sr->clades().contains_any_of(clades);
     }
 
     template <typename AgSr> void deselect_not_sequenced(ae::chart::v2::PointIndexList& indexes, const AgSr& antigens)
@@ -354,7 +354,7 @@ void ae::py::chart_v2(pybind11::module_& mdl)
         //     [](std::shared_ptr<ChartModify> chart, const std::vector<std::string>& clades, bool report) {
         //         auto selected = std::make_shared<SelectedAntigensModify>(chart);
         //         ae::py::populate_from_seqdb(chart);
-        //         const auto pred = [&clades, antigens = chart->antigens()](auto index) { return antigens->at(index)->clades().exists_any_of(clades); };
+        //         const auto pred = [&clades, antigens = chart->antigens()](auto index) { return antigens->at(index)->clades().contains_any_of(clades); };
         //         selected->indexes.get().erase(std::remove_if(selected->indexes.begin(), selected->indexes.end(), pred), selected->indexes.end());
         //         AD_PRINT_L(report, [&selected]() { return selected->report("{ag_sr} {no0:{num_digits}d} {name_full_passage}\n"); });
         //         return selected;
@@ -402,7 +402,7 @@ void ae::py::chart_v2(pybind11::module_& mdl)
         //     [](std::shared_ptr<ChartModify> chart, const std::vector<std::string>& clades, bool report) {
         //         auto selected = std::make_shared<SelectedSeraModify>(chart);
         //         ae::py::populate_from_seqdb(chart);
-        //         const auto pred = [&clades, sera = chart->sera()](auto index) { return sera->at(index)->clades().exists_any_of(clades); };
+        //         const auto pred = [&clades, sera = chart->sera()](auto index) { return sera->at(index)->clades().contains_any_of(clades); };
         //         selected->indexes.get().erase(std::remove_if(selected->indexes.begin(), selected->indexes.end(), pred), selected->indexes.end());
         //         AD_PRINT_L(report, [&selected]() { return selected->report("{ag_sr} {no0:{num_digits}d} {name_full_passage}\n"); });
         //         return selected;

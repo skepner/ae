@@ -150,32 +150,24 @@ void ae::chart::v3::Chart::relax_incremental(projection_index source_projection_
 
     auto stress = stress_factory(*this, num_dim, mcb, my_disconnected, my_unmovable, options);
 
-//     if (const auto num_connected = number_of_antigens() + number_of_sera() - stress.number_of_disconnected(); num_connected < 3)
-//         throw std::runtime_error{AD_FORMAT("cannot relax: too few connected points: {}", num_connected)};
-//     report_disconnected_unmovable(stress.parameters().disconnected, stress.parameters().unmovable);
+    if (const auto num_connected = antigens().size().get() + sera().size().get() - stress.number_of_disconnected(); num_connected < 3)
+        throw std::runtime_error{AD_FORMAT("cannot relax: too few connected points: {}", num_connected)};
+    // report_disconnected_unmovable(stress.parameters().disconnected, stress.parameters().unmovable);
 
-//     // AD_DEBUG("relax_incremental: {}", number_of_points());
-//     auto rnd = randomizer_plain_from_sample_optimization(*this, stress, num_dim, mcb, options.randomization_diameter_multiplier);
+    auto rnd = randomizer_plain_from_sample_optimization(*this, stress, num_dim, mcb, options.randomization_diameter_multiplier);
 
-//     auto make_points_with_nan_coordinates = [&source_projection, &disconnected_points]() -> PointIndexList {
-//         PointIndexList result;
-//         auto source_layout = source_projection->layout();
-//         for (size_t p_no = 0; p_no < source_layout->number_of_points(); ++p_no) {
-//             if (!source_layout->point_has_coordinates(p_no) && !disconnected_points.contains(p_no))
-//                 result.insert(p_no);
-//         }
-//         return result;
-//     };
-//     const auto points_with_nan_coordinates = make_points_with_nan_coordinates();
-//     // AD_INFO("about to randomize coordinates of {} points", points_with_nan_coordinates.size());
+    point_indexes points_with_nan_coordinates;
+    for (const auto p_no : source_projection.layout().number_of_points()) {
+        if (!source_projection.layout().point_has_coordinates(p_no) && !disconnected.contains(p_no))
+            points_with_nan_coordinates.insert(p_no);
+    }
 
-//     std::vector<std::shared_ptr<ProjectionModifyNew>> projections(*number_of_optimizations);
-//     std::transform(projections.begin(), projections.end(), projections.begin(), [&stress, &source_projection, this](const auto&) {
-//         auto projection = projections_modify().new_by_cloning(*source_projection);
-//         projection->set_disconnected(stress.parameters().disconnected);
-//         projection->set_unmovable(stress.parameters().unmovable);
-//         return projection;
-//     });
+    const auto first = projections().size();
+    for ([[maybe_unused]] const auto opt_no : number_of_optimizations) {
+        auto& projection = projections().add(source_projection);
+        projection.disconnected() = stress.parameters().disconnected;
+        projection.unmovable() = stress.parameters().unmovable;
+    }
 
 // #ifdef _OPENMP
 //     const int num_threads = options.num_threads <= 0 ? omp_get_max_threads() : options.num_threads;

@@ -40,11 +40,11 @@ namespace ae
         }
 
         // set like
-        template <constructible_from<T> T2> bool exists(T2&& val) const { return std::find(begin(), end(), T{std::forward<T2>(val)}) != end(); }
+        template <constructible_from<T> T2> bool contains(T2&& val) const { return std::find(begin(), end(), T{std::forward<T2>(val)}) != end(); }
 
-        bool exists_any_of(const std::vector<T>& vals) const
+        bool contains_any_of(const std::vector<T>& vals) const
         {
-            return std::any_of(std::begin(vals), std::end(vals), [this](const T& val) { return exists(val); });
+            return std::any_of(std::begin(vals), std::end(vals), [this](const T& val) { return contains(val); });
         }
 
         template <constructible_from<T> T2> void insert(T2&& val)
@@ -54,7 +54,7 @@ namespace ae
 
         template <constructible_from<T> T2> void insert_if_not_present(T2&& val)
         {
-            if (!exists(std::forward<T2>(val)))
+            if (!contains(std::forward<T2>(val)))
                 insert(std::forward<T2>(val));
         }
 
