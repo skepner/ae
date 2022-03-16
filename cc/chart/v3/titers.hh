@@ -121,65 +121,65 @@ namespace ae::chart::v3
 
     // ----------------------------------------------------------------------
 
-    class Titers;
+    // class Titers;
 
-    class TiterIterator
-    {
-      public:
-        struct Data
-        {
-            Data() = default;
-            Data(const Data&) = default;
-            operator const Titer&() const { return titer; }
-            auto operator<=>(const Data& rhs) const = default;
-            Titer titer{};
-            antigen_index antigen{};
-            serum_index serum{};
-        };
+    // class TiterIterator
+    // {
+    //   public:
+    //     struct Data
+    //     {
+    //         Data() = default;
+    //         Data(const Data&) = default;
+    //         operator const Titer&() const { return titer; }
+    //         auto operator<=>(const Data& rhs) const = default;
+    //         Titer titer{};
+    //         antigen_index antigen{};
+    //         serum_index serum{};
+    //     };
 
-        class TiterGetter
-        {
-          public:
-            virtual ~TiterGetter() = default;
+    //     class TiterGetter
+    //     {
+    //       public:
+    //         virtual ~TiterGetter() = default;
 
-            virtual void first(Data& data) const = 0;
-            virtual void last(Data& data) const = 0;
-            virtual void next(Data& data) const = 0;
-        };
+    //         virtual void first(Data& data) const = 0;
+    //         virtual void last(Data& data) const = 0;
+    //         virtual void next(Data& data) const = 0;
+    //     };
 
-        auto operator<=>(const TiterIterator& rhs) const { return data_ <=> rhs.data_; }
-        auto operator!=(const TiterIterator& rhs) const { return data_ != rhs.data_; }
-        const Data& operator*() const { return data_; }
-        const Data* operator->() const { return &data_; }
-        const TiterIterator& operator++()
-        {
-            getter_->next(data_);
-            return *this;
-        }
+    //     auto operator<=>(const TiterIterator& rhs) const { return data_ <=> rhs.data_; }
+    //     auto operator!=(const TiterIterator& rhs) const { return data_ != rhs.data_; }
+    //     const Data& operator*() const { return data_; }
+    //     const Data* operator->() const { return &data_; }
+    //     const TiterIterator& operator++()
+    //     {
+    //         getter_->next(data_);
+    //         return *this;
+    //     }
 
-      private:
-        Data data_{};
-        std::shared_ptr<TiterGetter> getter_{};
-        enum class begin { begin };
-        enum class end { end };
+    //   private:
+    //     Data data_{};
+    //     std::shared_ptr<TiterGetter> getter_{};
+    //     enum class begin { begin };
+    //     enum class end { end };
 
-        TiterIterator(enum begin, std::shared_ptr<TiterGetter> titer_getter) : getter_{titer_getter} { getter_->first(data_); }
-        TiterIterator(enum end, std::shared_ptr<TiterGetter> titer_getter) : getter_{titer_getter} { getter_->last(data_); }
+    //     TiterIterator(enum begin, std::shared_ptr<TiterGetter> titer_getter) : getter_{titer_getter} { getter_->first(data_); }
+    //     TiterIterator(enum end, std::shared_ptr<TiterGetter> titer_getter) : getter_{titer_getter} { getter_->last(data_); }
 
-        friend class TiterIteratorMaker;
+    //     friend class TiterIteratorMaker;
 
-    }; // class TiterIterator
+    // }; // class TiterIterator
 
-    class TiterIteratorMaker
-    {
-      public:
-        TiterIteratorMaker(std::shared_ptr<TiterIterator::TiterGetter> titer_getter) : getter_{titer_getter} {}
-        TiterIterator begin() const { return TiterIterator(TiterIterator::begin::begin, getter_); }
-        TiterIterator end() const { return TiterIterator(TiterIterator::end::end, getter_); }
+    // class TiterIteratorMaker
+    // {
+    //   public:
+    //     TiterIteratorMaker(std::shared_ptr<TiterIterator::TiterGetter> titer_getter) : getter_{titer_getter} {}
+    //     TiterIterator begin() const { return TiterIterator(TiterIterator::begin::begin, getter_); }
+    //     TiterIterator end() const { return TiterIterator(TiterIterator::end::end, getter_); }
 
-      private:
-        std::shared_ptr<TiterIterator::TiterGetter> getter_;
-    };
+    //   private:
+    //     std::shared_ptr<TiterIterator::TiterGetter> getter_;
+    // };
 
     // ----------------------------------------------------------------------
 
@@ -226,6 +226,91 @@ namespace ae::chart::v3
 
         // ----------------------------------------------------------------------
 
+        class iterator
+        {
+          private:
+            struct data_dense
+            {
+                serum_index number_of_sera;
+                dense_t::const_iterator current_titer;
+                dense_t::const_iterator end_titers;
+
+                data_dense(serum_index ns, dense_t::const_iterator first, dense_t::const_iterator last) : number_of_sera{ns}, current_titer{first}, end_titers{last} { skip_dont_care(); }
+                auto& operator++()
+                {
+                    ++current_titer;
+                    skip_dont_care();
+                    return *this;
+                }
+                void skip_dont_care()
+                {
+                    while (current_titer != end_titers && current_titer->is_dont_care())
+                        ++current_titer;
+                }
+
+                const Titer& operator*() const { return *current_titer; }
+                // antigen_index antigen() const {}
+                // serum_index serum() const {}
+            };
+
+            struct data_sparse
+            {
+                sparse_t::const_iterator current_row;
+                sparse_t::const_iterator end_rows;
+                sparse_row_t::const_iterator current_titer;
+                sparse_row_t::const_iterator end_titers;
+
+                auto& operator++()
+                {
+                    if (current_row != end_rows) {
+                        ++current_titer;
+                        if (current_titer == end_titers) {
+                            ++current_row;
+                            if (current_row != end_rows) {
+                                current_titer = current_row->begin();
+                                end_titers = current_row->end();
+                            }
+                            else {
+                                current_titer = std::prev(current_row)->end();
+                                end_titers = current_titer;
+                            }
+                        }
+                    }
+                    return *this;
+                }
+
+                const Titer& operator*() const { return current_titer->second; }
+
+            };
+
+          public:
+            bool operator==(const iterator& rhs) const = default; // { return data_ == rhs.data_; }
+            const Titer& operator*() const
+            {
+                return std::visit([](auto& dat) -> const Titer& { return *dat; }, data_);
+            }
+            const Titer* operator->() const { return &operator*(); }
+            iterator& operator++()
+            {
+                std::visit([](auto& dat) { ++dat; }, data_);
+                return *this;
+            }
+
+          private:
+            enum _scroll_to_end { scroll_to_end };
+
+            iterator(const sparse_t& titers, serum_index) : data_{data_sparse{.current_row = titers.begin(), .end_rows = titers.end(), .current_titer = titers.front().begin(), .end_titers = titers.front().end()}} {}
+            iterator(const sparse_t& titers, serum_index, _scroll_to_end) : data_{data_sparse{.current_row = titers.begin(), .end_rows = titers.end(), .current_titer = titers.front().begin(), .end_titers = titers.front().end()}} {}
+            iterator(const dense_t& titers, serum_index number_of_sera) : data_{data_dense{number_of_sera, titers.begin(), titers.end()}} {}
+            iterator(const dense_t& titers, serum_index number_of_sera, _scroll_to_end) : data_{data_dense{number_of_sera, titers.end(), titers.end()}} {}
+
+            std::variant<data_dense, data_sparse> data_;
+
+            friend class Titers;
+        };
+
+        // ----------------------------------------------------------------------
+
         Titers() = default;
         Titers(const Titers&) = default;
         Titers(Titers&&) = default;
@@ -252,85 +337,10 @@ namespace ae::chart::v3
         size_t titrations_for_antigen(antigen_index antigen_no) const;
         size_t titrations_for_serum(serum_index serum_no) const;
         double percent_of_non_dont_cares() const { return static_cast<double>(number_of_non_dont_cares()) / static_cast<double>(number_of_antigens().get() * number_of_sera().get()); }
-        // bool use_dense() const noexcept { return percent_of_non_dont_cares() > dense_sparse_boundary; }
 
         double column_basis(serum_index sr_no) const; // raw value, not adjusted by minimum column basis
-        // std::shared_ptr<ColumnBasesData> computed_column_bases(MinimumColumnBasis aMinimumColumnBasis) const;
 
         double max_distance(const column_bases& cb) const;
-
-        class TiterGetterExisting : public TiterIterator::TiterGetter
-        {
-          public:
-            using titer_getter_t = std::function<Titer(antigen_index, serum_index)>;
-
-            TiterGetterExisting(titer_getter_t a_getter, antigen_index number_of_antigens, serum_index number_of_sera)
-                : getter_{a_getter}, number_of_antigens_{number_of_antigens}, number_of_sera_{number_of_sera}
-            {
-            }
-            void first(TiterIterator::Data& data) const override
-            {
-                set(data, antigen_index{0}, serum_index{0});
-                if (!valid(data.titer))
-                    next(data);
-            }
-            void last(TiterIterator::Data& data) const override
-            {
-                data.antigen = number_of_antigens_;
-                data.serum = serum_index{0};
-            }
-            void next(TiterIterator::Data& data) const override
-            {
-                while (data.antigen < number_of_antigens_) {
-                    set(data, data.antigen, data.serum + serum_index{1});
-                    if (data.serum >= number_of_sera_)
-                        set(data, data.antigen + antigen_index{1}, serum_index{0});
-                    if (valid(data.titer))
-                        break;
-                }
-            }
-
-          protected:
-            virtual bool valid(const Titer& titer) const { return !titer.is_dont_care(); }
-
-          private:
-            titer_getter_t getter_;
-            antigen_index number_of_antigens_;
-            serum_index number_of_sera_;
-
-            void set(TiterIterator::Data& data, antigen_index ag, serum_index sr) const
-            {
-                data.antigen = ag;
-                data.serum = sr;
-                if (ag < number_of_antigens_ && sr < number_of_sera_)
-                    data.titer = getter_(ag, sr);
-                else
-                    data.titer = Titer{};
-            }
-        };
-
-        class TiterGetterRegular : public TiterGetterExisting
-        {
-          public:
-            using TiterGetterExisting::TiterGetterExisting;
-
-          protected:
-            bool valid(const Titer& titer) const override { return titer.is_regular(); }
-        };
-
-        TiterIteratorMaker titers_existing() const
-        {
-            return TiterIteratorMaker(std::make_shared<TiterGetterExisting>([this](antigen_index ag, serum_index sr) { return this->titer(ag, sr); }, number_of_antigens(), number_of_sera()));
-        }
-        TiterIteratorMaker titers_regular() const
-        {
-            return TiterIteratorMaker(std::make_shared<TiterGetterRegular>([this](antigen_index ag, serum_index sr) { return this->titer(ag, sr); }, number_of_antigens(), number_of_sera()));
-        }
-        TiterIteratorMaker titers_existing_from_layer(layer_index layer_no) const
-        {
-            return TiterIteratorMaker(
-                std::make_shared<TiterGetterExisting>([this, layer_no](antigen_index ag, serum_index sr) { return this->titer_of_layer(layer_no, ag, sr); }, number_of_antigens(), number_of_sera()));
-        }
 
         std::pair<antigen_indexes, serum_indexes> antigens_sera_of_layer(layer_index aLayerNo) const;
         std::pair<antigen_indexes, serum_indexes> antigens_sera_in_multiple_layers() const;
@@ -339,8 +349,6 @@ namespace ae::chart::v3
         point_indexes having_titers_with(point_index point_no, bool return_point_no = true) const;
         // returns list of points having less than threshold numeric titers
         point_indexes having_too_few_numeric_titers(size_t threshold = 3) const;
-
-        // std::string print() const;
 
         // importing
         void number_of_sera(serum_index num) { number_of_sera_ = num; }
@@ -352,6 +360,104 @@ namespace ae::chart::v3
         bool is_dense() const { return std::holds_alternative<dense_t>(titers_); }
         const dense_t& dense_titers() const { return std::get<dense_t>(titers_); }
         const sparse_t& sparse_titers() const { return std::get<sparse_t>(titers_); }
+
+        // ----------------------------------------------------------------------
+
+        iterator begin() const { return std::visit([this](const auto& en) { return iterator{en, number_of_sera_}; }, titers_); }
+        iterator end() const { return std::visit([this](const auto& en) { return iterator{en, number_of_sera_, iterator::scroll_to_end}; }, titers_); }
+
+        class iterator_gen
+        {
+          public:
+            iterator_gen(iterator first, iterator last) : begin_{first}, end_{last} {}
+            iterator begin() const { return begin_; }
+            iterator end() const { return end_; }
+
+          private:
+            iterator begin_, end_;
+        };
+
+        iterator_gen titers_existing() const { return iterator_gen{begin(), end()}; }
+        iterator_gen titers_regular() const { return iterator_gen{begin(), end()}; }
+        iterator_gen titers_existing_from_layer(layer_index layer_no) const
+        {
+            return iterator_gen{iterator{layers_[*layer_no], number_of_sera_}, iterator{layers_[*layer_no], number_of_sera_, iterator::scroll_to_end}};
+        }
+
+        // class TiterGetterExisting : public TiterIterator::TiterGetter
+        // {
+        //   public:
+        //     using titer_getter_t = std::function<Titer(antigen_index, serum_index)>;
+
+        //     TiterGetterExisting(titer_getter_t a_getter, antigen_index number_of_antigens, serum_index number_of_sera)
+        //         : getter_{a_getter}, number_of_antigens_{number_of_antigens}, number_of_sera_{number_of_sera}
+        //     {
+        //     }
+        //     void first(TiterIterator::Data& data) const override
+        //     {
+        //         set(data, antigen_index{0}, serum_index{0});
+        //         if (!valid(data.titer))
+        //             next(data);
+        //     }
+        //     void last(TiterIterator::Data& data) const override
+        //     {
+        //         data.antigen = number_of_antigens_;
+        //         data.serum = serum_index{0};
+        //     }
+        //     void next(TiterIterator::Data& data) const override
+        //     {
+        //         while (data.antigen < number_of_antigens_) {
+        //             set(data, data.antigen, data.serum + serum_index{1});
+        //             if (data.serum >= number_of_sera_)
+        //                 set(data, data.antigen + antigen_index{1}, serum_index{0});
+        //             if (valid(data.titer))
+        //                 break;
+        //         }
+        //     }
+
+        //   protected:
+        //     virtual bool valid(const Titer& titer) const { return !titer.is_dont_care(); }
+
+        //   private:
+        //     titer_getter_t getter_;
+        //     antigen_index number_of_antigens_;
+        //     serum_index number_of_sera_;
+
+        //     void set(TiterIterator::Data& data, antigen_index ag, serum_index sr) const
+        //     {
+        //         data.antigen = ag;
+        //         data.serum = sr;
+        //         if (ag < number_of_antigens_ && sr < number_of_sera_)
+        //             data.titer = getter_(ag, sr);
+        //         else
+        //             data.titer = Titer{};
+        //     }
+        // };
+
+        // class TiterGetterRegular : public TiterGetterExisting
+        // {
+        //   public:
+        //     using TiterGetterExisting::TiterGetterExisting;
+
+        //   protected:
+        //     bool valid(const Titer& titer) const override { return titer.is_regular(); }
+        // };
+
+        // TiterIteratorMaker titers_existing() const
+        // {
+        //     return TiterIteratorMaker(std::make_shared<TiterGetterExisting>([this](antigen_index ag, serum_index sr) { return this->titer(ag, sr); }, number_of_antigens(), number_of_sera()));
+        // }
+        // TiterIteratorMaker titers_regular() const
+        // {
+        //     return TiterIteratorMaker(std::make_shared<TiterGetterRegular>([this](antigen_index ag, serum_index sr) { return this->titer(ag, sr); }, number_of_antigens(), number_of_sera()));
+        // }
+        // TiterIteratorMaker titers_existing_from_layer(layer_index layer_no) const
+        // {
+        //     return TiterIteratorMaker(
+        //         std::make_shared<TiterGetterExisting>([this, layer_no](antigen_index ag, serum_index sr) { return this->titer_of_layer(layer_no, ag, sr); }, number_of_antigens(), number_of_sera()));
+        // }
+
+        // ----------------------------------------------------------------------
 
       private:
         serum_index number_of_sera_{0};
@@ -380,12 +486,20 @@ template <> struct fmt::formatter<ae::chart::v3::Titer> : fmt::formatter<ae::fmt
     template <typename FormatCtx> constexpr auto format(const ae::chart::v3::Titer& titer, FormatCtx& ctx) const { return fmt::format_to(ctx.out(), "{}", titer.get()); }
 };
 
-template <> struct fmt::formatter<ae::chart::v3::TiterIterator::Data> : fmt::formatter<ae::fmt_helper::default_formatter>
-{
-    template <typename FormatCtx> constexpr auto format(const ae::chart::v3::TiterIterator::Data& value, FormatCtx& ctx) const
-    {
-        return format_to(ctx.out(), "ag:{} sr:{} t:{}", value.antigen, value.serum, value.titer);
-    }
-};
+// template <> struct fmt::formatter<ae::chart::v3::Titers::iterator::Data> : fmt::formatter<ae::fmt_helper::default_formatter>
+// {
+//     template <typename FormatCtx> constexpr auto format(const ae::chart::v3::TiterIterator::Data& value, FormatCtx& ctx) const
+//     {
+//         return format_to(ctx.out(), "ag:{} sr:{} t:{}", value.antigen, value.serum, value.titer);
+//     }
+// };
+
+// template <> struct fmt::formatter<ae::chart::v3::TiterIterator::Data> : fmt::formatter<ae::fmt_helper::default_formatter>
+// {
+//     template <typename FormatCtx> constexpr auto format(const ae::chart::v3::TiterIterator::Data& value, FormatCtx& ctx) const
+//     {
+//         return format_to(ctx.out(), "ag:{} sr:{} t:{}", value.antigen, value.serum, value.titer);
+//     }
+// };
 
 // ----------------------------------------------------------------------
