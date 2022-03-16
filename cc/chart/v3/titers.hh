@@ -229,10 +229,18 @@ namespace ae::chart::v3
         class iterator
         {
           private:
+            struct ref
+            {
+                antigen_index antigen;
+                serum_index serum;
+                const Titer& titer;
+            };
+
             struct data_dense
             {
                 serum_index number_of_sera;
                 dense_t::const_iterator current_titer;
+                dense_t::const_iterator begin_titers;
                 dense_t::const_iterator end_titers;
 
                 data_dense(serum_index ns, dense_t::const_iterator first, dense_t::const_iterator last) : number_of_sera{ns}, current_titer{first}, end_titers{last} { skip_dont_care(); }
@@ -251,14 +259,15 @@ namespace ae::chart::v3
                         ++current_titer;
                 }
 
-                const Titer& operator*() const { return *current_titer; }
-                // antigen_index antigen() const {}
-                // serum_index serum() const {}
+                antigen_index antigen() const { return antigen_index{(current_titer - begin_titers) / *number_of_sera}; }
+                serum_index serum() const { return serum_index{(current_titer - begin_titers) % *number_of_sera}; }
+                ref operator*() const { return ref{antigen(), serum(), *current_titer}; }
             };
 
             struct data_sparse
             {
                 sparse_t::const_iterator current_row;
+                sparse_t::const_iterator begin_rows;
                 sparse_t::const_iterator end_rows;
                 sparse_row_t::const_iterator current_titer;
                 sparse_row_t::const_iterator end_titers;
@@ -284,24 +293,29 @@ namespace ae::chart::v3
                     return *this;
                 }
 
-                const Titer& operator*() const { return current_titer->second; }
+                antigen_index antigen() const { return antigen_index{current_row - begin_rows}; }
+                serum_index serum() const { return current_titer->first; }
+                ref operator*() const { return ref{antigen(), serum(), current_titer->second}; }
             };
 
           public:
             bool operator==(const iterator&) const = default;
 
-            const Titer& operator*() const
+            ref operator*() const
             {
-                return std::visit([](auto& dat) -> const Titer& { return *dat; }, data_);
+                return std::visit([](auto& dat) -> ref { return *dat; }, data_);
             }
 
-            const Titer* operator->() const { return &operator*(); }
+            const Titer* operator->() const { return &operator*().titer; }
 
             iterator& operator++()
             {
                 std::visit([](auto& dat) { ++dat; }, data_);
                 return *this;
             }
+
+            antigen_index antigen() const { return std::visit([](const auto& dat) { return dat.antigen(); }, data_); }
+            serum_index serum() const { return std::visit([](const auto& dat) { return dat.serum(); }, data_); }
 
           private:
             enum _scroll_to_end { scroll_to_end };
