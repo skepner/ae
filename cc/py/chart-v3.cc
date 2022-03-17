@@ -68,8 +68,37 @@ namespace ae::py
 
     // ----------------------------------------------------------------------
 
-    std::pair<std::string, std::shared_ptr<ae::chart::v3::Chart>> merge(const ae::chart::v3::Chart& chart1, const ae::chart::v3::Chart& chart2, std::string_view match, std::string_view merge_type, bool combine_cheating_assays)
+    static inline std::pair<std::shared_ptr<ae::chart::v3::Chart>, ae::chart::v3::merge_report_t> merge(const ae::chart::v3::Chart& chart1, const ae::chart::v3::Chart& chart2, std::string_view match,
+                                                                                                        std::string_view merge_type, bool cca)
     {
+        using namespace ae::chart::v3;
+        merge_settings_t settings{.combine_cheating_assays_ = cca ? combine_cheating_assays::yes : combine_cheating_assays::no};
+
+        if (match == "auto")
+            settings.match_level = common_antigens_sera_t::match_level_t::automatic;
+        else if (match == "strict")
+            settings.match_level = common_antigens_sera_t::match_level_t::strict;
+        else if (match == "relaxed")
+            settings.match_level = common_antigens_sera_t::match_level_t::relaxed;
+        else if (match == "ignored")
+            settings.match_level = common_antigens_sera_t::match_level_t::ignored;
+        else
+            AD_WARNING("unrecognized merge match level \"{}\"", match);
+
+        if (merge_type == "simple" || merge_type == "type1")
+            settings.projection_merge = projection_merge_t::type1;
+        else if (merge_type == "incremental" || merge_type == "type2")
+            settings.projection_merge = projection_merge_t::type2;
+        else if (merge_type == "overlay" || merge_type == "type3")
+            settings.projection_merge = projection_merge_t::type3;
+        else if (merge_type == "type4")
+            settings.projection_merge = projection_merge_t::type4;
+        else if (merge_type == "type5")
+            settings.projection_merge = projection_merge_t::type5;
+        else
+            AD_WARNING("unrecognized merge type1 \"{}\"", merge_type);
+
+        return ae::chart::v3::merge(chart1, chart2, settings);
     }
 
 } // namespace ae::py

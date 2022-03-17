@@ -3,7 +3,38 @@
 // #include "acmacs-chart-2/log.hh"
 #include "chart/v3/common.hh"
 
-using namespace ae::chart::v3;
+// ----------------------------------------------------------------------
+
+ae::chart::v3::common_antigens_sera_t::common_antigens_sera_t(const Chart& primary, const Chart& secondary, match_level_t match_level)
+    : antigens_{primary.antigens(), secondary.antigens()}, sera_{primary.sera(), secondary.sera()}
+{
+
+} // ae::chart::v3::common_antigens_sera_t::common_antigens_sera_t
+
+// ----------------------------------------------------------------------
+
+std::vector<std::pair<ae::point_index, ae::point_index>> ae::chart::v3::common_antigens_sera_t::points() const
+{
+    const auto ags = antigens();
+    const auto srs = sera();
+    std::vector<std::pair<ae::point_index, ae::point_index>> points(ags.size() + srs.size());
+    const auto output_last = std::transform(ags.begin(), ags.end(), points.begin(), [](const auto& src) { return std::pair{point_index{*src.first}, point_index{*src.second}}; });
+    std::transform(srs.begin(), srs.end(), output_last, [ps = antigens_.size_primary(), ss = antigens_.size_secondary()](const auto& src) {
+        return std::pair{ps + src.first, ss + src.second};
+    });
+    return points;
+
+} // ae::chart::v3::common_antigens_sera_t::points
+
+// ----------------------------------------------------------------------
+
+
+// ======================================================================
+// ======================================================================
+// ======================================================================
+
+
+// using namespace ae::chart::v3;
 
 #if 0
 // ----------------------------------------------------------------------

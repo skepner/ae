@@ -6,189 +6,203 @@
 
 namespace ae::chart::v3
 {
-    namespace common
-    {
-        struct CoreEntry
-        {
-            CoreEntry() = default;
-            CoreEntry(const CoreEntry&) = default;
-            CoreEntry(CoreEntry&&) = default;
-            template <typename AgSr> CoreEntry(size_t a_index, const AgSr& ag_sr) : index(a_index), name(ag_sr.name()), reassortant(ag_sr.reassortant()), annotations(ag_sr.annotations()) {}
-            virtual ~CoreEntry() = default;
-            CoreEntry& operator=(const CoreEntry&) = default;
-            CoreEntry& operator=(CoreEntry&&) = default;
+    // namespace common
+    // {
+    //     struct CoreEntry
+    //     {
+    //         CoreEntry() = default;
+    //         CoreEntry(const CoreEntry&) = default;
+    //         CoreEntry(CoreEntry&&) = default;
+    //         template <typename AgSr> CoreEntry(size_t a_index, const AgSr& ag_sr) : index(a_index), name(ag_sr.name()), reassortant(ag_sr.reassortant()), annotations(ag_sr.annotations()) {}
+    //         // virtual ~CoreEntry() = default;
+    //         CoreEntry& operator=(const CoreEntry&) = default;
+    //         CoreEntry& operator=(CoreEntry&&) = default;
 
-            auto operator<=>(const CoreEntry& rhs) const
-                {
-                    if (const auto cmp = name <=> rhs.name; cmp != std::strong_ordering::equal)
-                        return cmp;
-                    if (const auto cmp = annotations <=> rhs.annotations; cmp != std::strong_ordering::equal)
-                        return cmp;
-                    if (const auto cmp = reassortant <=> rhs.reassortant; cmp != std::strong_ordering::equal)
-                        return cmp;
-                    return std::strong_ordering::equal;
-                }
+    //         auto operator<=>(const CoreEntry& rhs) const
+    //         {
+    //             if (const auto cmp = name <=> rhs.name; cmp != std::strong_ordering::equal)
+    //                 return cmp;
+    //             if (const auto cmp = annotations <=> rhs.annotations; cmp != std::strong_ordering::equal)
+    //                 return cmp;
+    //             if (const auto cmp = reassortant <=> rhs.reassortant; cmp != std::strong_ordering::equal)
+    //                 return cmp;
+    //             return std::strong_ordering::equal;
+    //         }
 
-            // static inline int compare(const CoreEntry& lhs, const CoreEntry& rhs)
-            // {
-            //     if (auto n_c = lhs.name.compare(rhs.name); n_c != 0)
-            //         return n_c;
-            //     if (auto r_c = lhs.reassortant.compare(rhs.reassortant); r_c != 0)
-            //         return r_c;
-            //     return ::string::compare(fmt::format("{: }", lhs.annotations), fmt::format("{: }", rhs.annotations));
-            // }
+    //         // static inline int compare(const CoreEntry& lhs, const CoreEntry& rhs)
+    //         // {
+    //         //     if (auto n_c = lhs.name.compare(rhs.name); n_c != 0)
+    //         //         return n_c;
+    //         //     if (auto r_c = lhs.reassortant.compare(rhs.reassortant); r_c != 0)
+    //         //         return r_c;
+    //         //     return ::string::compare(fmt::format("{: }", lhs.annotations), fmt::format("{: }", rhs.annotations));
+    //         // }
 
-            // static inline bool less(const CoreEntry& lhs, const CoreEntry& rhs) { return compare(lhs, rhs) < 0; }
+    //         // static inline bool less(const CoreEntry& lhs, const CoreEntry& rhs) { return compare(lhs, rhs) < 0; }
 
-            virtual std::string full_name() const = 0; // for make_orig()
+    //         // virtual std::string full_name() const = 0; // for make_orig()
 
-            size_t index;
-            virus::Name name;
-            virus::Reassortant reassortant;
-            Annotations annotations;
-            std::string orig_full_name_;
+    //         virus::Name name;
+    //         virus::Reassortant reassortant;
+    //         Annotations annotations;
+    //         std::string orig_full_name_;
 
-            void make_orig()    // to report if fields were updated by antigen_selector_t or serum_selector_t (in acmacs-py)
-            {
-                if (orig_full_name_.empty())
-                    orig_full_name_ = full_name();
-            }
+    //         void make_orig() // to report if fields were updated by antigen_selector_t or serum_selector_t (in acmacs-py)
+    //         {
+    //             if (orig_full_name_.empty())
+    //                 orig_full_name_ = full_name();
+    //         }
 
-        }; // struct CoreEntry
+    //     }; // struct CoreEntry
 
-        // struct AntigenEntry : public CoreEntry
-        // {
-        //     AntigenEntry() = default;
-        //     AntigenEntry(size_t a_index, const Antigen& antigen) : CoreEntry(a_index, antigen), passage(antigen.passage()) {}
+    //     struct AntigenEntry : public CoreEntry
+    //     {
+    //         AntigenEntry() = default;
+    //         AntigenEntry(size_t a_index, const Antigen& antigen) : CoreEntry(a_index, antigen), passage(antigen.passage()) {}
 
-        //     std::string_view ag_sr() const
-        //     {
-        //         using namespace std::string_view_literals;
-        //         return "AG"sv;
-        //     }
-        //     std::string full_name() const override
-        //     {
-        //         auto fname = acmacs::string::join(acmacs::string::join_space, name, reassortant, acmacs::string::join(acmacs::string::join_space, annotations), passage);
-        //         if (!orig_full_name_.empty())
-        //             fname += fmt::format(" (orig: {})", orig_full_name_);
-        //         return fname;
-        //     }
-        //     size_t full_name_length() const
-        //     {
-        //         return name.size() + reassortant.size() + annotations.total_length() + passage.size() + 1 + (reassortant.empty() ? 0 : 1) + annotations->size() +
-        //                (orig_full_name_.empty() ? 0 : orig_full_name_.size() + 9);
-        //     }
-        //     bool operator<(const AntigenEntry& rhs) const { return compare(*this, rhs) < 0; }
+    //         std::string_view ag_sr() const { return "AG"sv; }
+    //         std::string full_name() const
+    //         {
+    //             auto fname = acmacs::string::join(acmacs::string::join_space, name, reassortant, acmacs::string::join(acmacs::string::join_space, annotations), passage);
+    //             if (!orig_full_name_.empty())
+    //                 fname += fmt::format(" (orig: {})", orig_full_name_);
+    //             return fname;
+    //         }
+    //         size_t full_name_length() const
+    //         {
+    //             return name.size() + reassortant.size() + annotations.total_length() + passage.size() + 1 + (reassortant.empty() ? 0 : 1) + annotations->size() +
+    //                    (orig_full_name_.empty() ? 0 : orig_full_name_.size() + 9);
+    //         }
+    //         bool operator<(const AntigenEntry& rhs) const { return compare(*this, rhs) < 0; }
 
-        //     static inline int compare(const AntigenEntry& lhs, const AntigenEntry& rhs)
-        //     {
-        //         if (auto np_c = CoreEntry::compare(lhs, rhs); np_c != 0)
-        //             return np_c;
-        //         return lhs.passage.compare(rhs.passage);
-        //     }
+    //         static inline int compare(const AntigenEntry& lhs, const AntigenEntry& rhs)
+    //         {
+    //             if (auto np_c = CoreEntry::compare(lhs, rhs); np_c != 0)
+    //                 return np_c;
+    //             return lhs.passage.compare(rhs.passage);
+    //         }
 
-        //     acmacs::virus::Passage passage;
+    //         antigen_index index;
+    //         virus::Passage passage;
 
-        // }; // class AntigenEntry
+    //     }; // class AntigenEntry
 
-        // struct SerumEntry : public CoreEntry
-        // {
-        //     SerumEntry() = default;
-        //     SerumEntry(size_t a_index, const Serum& serum) : CoreEntry(a_index, serum), serum_id(serum.serum_id()), passage(serum.passage()) {}
+    //     struct SerumEntry : public CoreEntry
+    //     {
+    //         SerumEntry() = default;
+    //         SerumEntry(size_t a_index, const Serum& serum) : CoreEntry(a_index, serum), serum_id(serum.serum_id()), passage(serum.passage()) {}
 
-        //     std::string_view ag_sr() const
-        //     {
-        //         using namespace std::string_view_literals;
-        //         return "SR"sv;
-        //     }
-        //     std::string full_name() const override
-        //     {
-        //         auto fname = acmacs::string::join(acmacs::string::join_space, name, reassortant, acmacs::string::join(acmacs::string::join_space, annotations), serum_id, passage);
-        //         if (!orig_full_name_.empty())
-        //             fname += fmt::format(" (orig: {})", orig_full_name_);
-        //         return fname;
-        //     }
-        //     size_t full_name_length() const
-        //     {
-        //         return name.size() + reassortant.size() + annotations.total_length() + serum_id.size() + 1 + (reassortant.empty() ? 0 : 1) + annotations->size() + passage.size() +
-        //             (passage.empty() ? 0 : 1) + (orig_full_name_.empty() ? 0 : orig_full_name_.size() + 9);
-        //     }
-        //     bool operator<(const SerumEntry& rhs) const { return compare(*this, rhs) < 0; }
+    //         std::string_view ag_sr() const { return "SR"; }
 
-        //     static inline int compare(const SerumEntry& lhs, const SerumEntry& rhs)
-        //     {
-        //         if (auto np_c = CoreEntry::compare(lhs, rhs); np_c != 0)
-        //             return np_c;
-        //         return lhs.serum_id.compare(rhs.serum_id);
-        //     }
+    //         std::string full_name() const override
+    //         {
+    //             auto fname = acmacs::string::join(acmacs::string::join_space, name, reassortant, acmacs::string::join(acmacs::string::join_space, annotations), serum_id, passage);
+    //             if (!orig_full_name_.empty())
+    //                 fname += fmt::format(" (orig: {})", orig_full_name_);
+    //             return fname;
+    //         }
+    //         size_t full_name_length() const
+    //         {
+    //             return name.size() + reassortant.size() + annotations.total_length() + serum_id.size() + 1 + (reassortant.empty() ? 0 : 1) + annotations->size() + passage.size() +
+    //                    (passage.empty() ? 0 : 1) + (orig_full_name_.empty() ? 0 : orig_full_name_.size() + 9);
+    //         }
+    //         bool operator<(const SerumEntry& rhs) const { return compare(*this, rhs) < 0; }
 
-        //     SerumId serum_id;
-        //     acmacs::virus::Passage passage;
+    //         static inline int compare(const SerumEntry& lhs, const SerumEntry& rhs)
+    //         {
+    //             if (auto np_c = CoreEntry::compare(lhs, rhs); np_c != 0)
+    //                 return np_c;
+    //             return lhs.serum_id.compare(rhs.serum_id);
+    //         }
 
-        // }; // class SerumEntry
+    //         serum_index index;
+    //         SerumId serum_id;
+    //         virus::Passage passage;
 
-        // using antigen_selector_t = std::function<AntigenEntry(size_t, std::shared_ptr<Antigen>)>;
-        // using serum_selector_t = std::function<SerumEntry(size_t, std::shared_ptr<Serum>)>;
+    //     }; // class SerumEntry
 
-    } // namespace common
+    // using antigen_selector_t = std::function<AntigenEntry(size_t, std::shared_ptr<Antigen>)>;
+    // using serum_selector_t = std::function<SerumEntry(size_t, std::shared_ptr<Serum>)>;
+
+    // } // namespace common
 
     // ----------------------------------------------------------------------
 
-    class CommonAntigensSera
+    template <typename AgSrs> class common_data_t
+    {
+      public:
+        using common_t = std::pair<typename AgSrs::index_t, typename AgSrs::index_t>;
+
+        common_data_t(const AgSrs& primary, const AgSrs& secondary) : primary_{primary}, secondary_{secondary} {}
+
+        std::vector<common_t> common() const
+        {
+            std::vector<common_t> result;
+            // for (const auto& mm : match_) {
+            //     if (mm.use)
+            //         result.emplace_back(mm.primary_index, mm.secondary_index);
+            // }
+            return result;
+        }
+
+        typename AgSrs::index_t size_primary() const { return primary_.size(); }
+        typename AgSrs::index_t size_secondary() const { return secondary_.size(); }
+
+      private:
+        const AgSrs& primary_;
+        const AgSrs& secondary_;
+    };
+
+    // ----------------------------------------------------------------------
+
+    class common_antigens_sera_t
     {
       public:
         enum class match_level_t { strict, relaxed, ignored, automatic };
 
-      //   CommonAntigensSera(const Chart& primary, const Chart& secondary, match_level_t match_level);
-      //   CommonAntigensSera(const Chart& primary, const Chart& secondary, common::antigen_selector_t antigen_entry_extractor, common::serum_selector_t serum_entry_extractor, match_level_t match_level);
-      //   CommonAntigensSera(const Chart& primary); // for procrustes between projections of the same chart
-      //   CommonAntigensSera(const CommonAntigensSera&) = delete;
-      //   CommonAntigensSera(CommonAntigensSera&&);
-      //   ~CommonAntigensSera();
-      //   CommonAntigensSera& operator=(const CommonAntigensSera&) = delete;
-      //   CommonAntigensSera& operator=(CommonAntigensSera&&);
+        common_antigens_sera_t(const Chart& primary, const Chart& secondary, match_level_t match_level);
 
-      //   [[nodiscard]] std::string report(size_t indent = 0) const;
-      //   [[nodiscard]] std::string report_unique(size_t indent = 0) const;
-      //   operator bool() const;
-      //   size_t common_antigens() const;
-      //   size_t common_sera() const;
+        //   CommonAntigensSera(const Chart& primary, const Chart& secondary, common::antigen_selector_t antigen_entry_extractor, common::serum_selector_t serum_entry_extractor, match_level_t
+        //   match_level); CommonAntigensSera(const Chart& primary); // for procrustes between projections of the same chart CommonAntigensSera(const CommonAntigensSera&) = delete;
+        //   CommonAntigensSera(CommonAntigensSera&&);
+        //   ~CommonAntigensSera();
+        //   CommonAntigensSera& operator=(const CommonAntigensSera&) = delete;
+        //   CommonAntigensSera& operator=(CommonAntigensSera&&);
 
-      //   void keep_only(const PointIndexList& antigens, const PointIndexList& sera);
-      //   void antigens_only(); // remove sera from common lists
-      //   void sera_only();     // remove antigens from common lists
+        //   [[nodiscard]] std::string report(size_t indent = 0) const;
+        //   [[nodiscard]] std::string report_unique(size_t indent = 0) const;
+        //   operator bool() const;
+        //   size_t common_antigens() const;
+        //   size_t common_sera() const;
 
-      //   struct common_t
-      //   {
-      //       common_t(size_t p, size_t s) : primary(p), secondary(s) {}
-      //       size_t primary;
-      //       size_t secondary;
-      //   };
+        //   void keep_only(const PointIndexList& antigens, const PointIndexList& sera);
+        //   void antigens_only(); // remove sera from common lists
+        //   void sera_only();     // remove antigens from common lists
 
-      //   std::vector<common_t> antigens() const;
-      //   std::vector<common_t> sera() const; // returns serum indexes (NOT point indexes)!
-      //   std::vector<common_t> sera_as_point_indexes() const;
-      //   std::vector<common_t> points() const;
+        auto antigens() const { return antigens_.common(); }
+        auto sera() const { return sera_.common(); }
+        std::vector<std::pair<point_index, point_index>> points() const;
 
-      //   Indexes common_primary_antigens() const;
-      //   Indexes common_primary_sera() const; // returns serum indexes (NOT point indexes)!
 
-      //   // common antigen/serum mapping
-      //   std::optional<size_t> antigen_primary_by_secondary(size_t secondary_no) const;
-      //   std::optional<size_t> antigen_secondary_by_primary(size_t primary_no) const;
-      //   std::optional<size_t> serum_primary_by_secondary(size_t secondary_no) const;
-      //   std::optional<size_t> serum_secondary_by_primary(size_t primary_no) const;
+        //   Indexes common_primary_antigens() const;
+        //   Indexes common_primary_sera() const; // returns serum indexes (NOT point indexes)!
 
-      //   enum class subset { all, antigens, sera };
-      //   std::vector<common_t> points(subset a_subset) const;
-      //   std::vector<common_t> points_for_primary_antigens(const Indexes& antigen_indexes) const;
-      //   std::vector<common_t> points_for_primary_sera(const Indexes& serum_indexes) const;
+        //   // common antigen/serum mapping
+        //   std::optional<size_t> antigen_primary_by_secondary(size_t secondary_no) const;
+        //   std::optional<size_t> antigen_secondary_by_primary(size_t primary_no) const;
+        //   std::optional<size_t> serum_primary_by_secondary(size_t secondary_no) const;
+        //   std::optional<size_t> serum_secondary_by_primary(size_t primary_no) const;
 
-      //   static match_level_t match_level(std::string_view source);
+        //   enum class subset { all, antigens, sera };
+        //   std::vector<common_t> points(subset a_subset) const;
+        //   std::vector<common_t> points_for_primary_antigens(const Indexes& antigen_indexes) const;
+        //   std::vector<common_t> points_for_primary_sera(const Indexes& serum_indexes) const;
 
-      // private:
-      //   class Impl;
-      //   std::unique_ptr<Impl> impl_;
+        //   static match_level_t match_level(std::string_view source);
+
+      private:
+        common_data_t<Antigens> antigens_;
+        common_data_t<Sera> sera_;
 
     }; // class CommonAntigensSera
 
