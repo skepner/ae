@@ -191,8 +191,11 @@ void ae::chart::v3::Chart::relax_incremental(projection_index source_projection_
 
     if (options.precision == optimization_precision::fine) {
         const projection_index top_projections{std::min(5UL, *number_of_optimizations)};
-        for (const auto p_no : top_projections)
-            projections()[p_no].relax(*this, options); // do not omp parallel, occasionally fails
+#pragma omp parallel for default(shared) num_threads(num_threads) schedule(static, slot_size)
+        for (size_t p_no = 0; p_no < *top_projections; ++p_no) {
+            // for (const auto p_no : top_projections)
+            projections()[projection_index{p_no}].relax(*this, options); // do not omp parallel, occasionally fails
+        }
         projections().sort();
     }
 
