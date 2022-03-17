@@ -214,3 +214,12 @@ void ae::chart::v3::Chart::combine_projections(const Chart& merge_in)
 } // ae::chart::v3::Chart::combine_projections
 
 // ----------------------------------------------------------------------
+
+void ae::chart::v3::Chart::duplicates_distinct()
+{
+    antigens().duplicates_distinct(antigens().find_duplicates());
+    sera().duplicates_distinct(sera().find_duplicates());
+
+} // ae::chart::v3::Chart::duplicates_distinct
+
+// ----------------------------------------------------------------------

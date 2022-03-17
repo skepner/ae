@@ -71,6 +71,8 @@ namespace ae::chart::v3
 
         void combine_projections(const Chart& merge_in);
 
+        void duplicates_distinct();
+
       private:
         Info info_{};
         Antigens antigens_{};

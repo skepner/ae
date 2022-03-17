@@ -16,7 +16,7 @@ def main(args: argparse.Namespace):
             chart.duplicates_distinct()
         if merge is not None:
             print(merge, chart, sep="\n", end="\n\n")
-            merge, report = merge.ae_backend.chart_v3.merge(merge, chart, **merge_settings)
+            merge, report = ae_backend.chart_v3.merge(merge, chart, **merge_settings)
             print(report.common.report())
             print("-" * 70)
         else:
@@ -41,7 +41,7 @@ try:
     parser.add_argument("--match", default="auto", choices=["strict", "relaxed", "ignored", "auto"])
     parser.add_argument("--merge-type", default="simple", choices=["type1", "simple", "type2", "incremental", "type3", "overlay", "type4", "type5"])
     parser.add_argument("--combine-cheating-assays", action="store_true", default=False, help="combine tables if they have the same reference titers")
-    parser.add_argument("--duplicates-distinct", action="store_true", default=False, help="make duplicates distinct")
+    parser.add_argument("--duplicates-distinct", action="store_true", default=False, help="make duplicating antigens/sera distinct")
     parser.add_argument("--report", action="store_true", default=False, help="titer merge report")
     parser.add_argument("--common-only", action="store_true", default=False, help="titer merge report for common antigens and sera only")
 

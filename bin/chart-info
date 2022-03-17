@@ -70,6 +70,8 @@ def main(args: argparse.Namespace):
             number_of_antigens = chart.number_of_antigens()
             table = [["AG", ag_no, ag.name(), " ".join(ag.annotations()), ag.reassortant(), ag.passage(), "", *layout[ag_no]] for ag_no, ag in chart.select_all_antigens()]
             table += [["SR", sr_no, sr.name(), " ".join(sr.annotations()), sr.reassortant(), sr.passage(), sr.serum_id(), *layout[sr_no + number_of_antigens]] for sr_no, sr in chart.select_all_sera()]
+            # table = [["AG", ag_no, ag.designation(), "", *layout[ag_no]] for ag_no, ag in chart.select_all_antigens()]
+            # table += [["SR", sr_no, sr.designation(), sr.passage(), *layout[sr_no + number_of_antigens]] for sr_no, sr in chart.select_all_sera()]
             print(format_table(table))
 
         if args.print_transformation is not None:

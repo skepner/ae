@@ -1,6 +1,7 @@
 #pragma once
 
 #include <optional>
+#include <unordered_map>
 
 #include "virus/name.hh"
 #include "virus/name.hh"
@@ -117,6 +118,8 @@ namespace ae::chart::v3
         const auto& lab_ids() const { return lab_ids_; }
         LabIds& lab_ids() { return lab_ids_; }
 
+        std::string designation() const;
+
       private:
         Date date_{};
         LabIds lab_ids_{};
@@ -143,6 +146,8 @@ namespace ae::chart::v3
         std::optional<double> forced_column_basis() const { return forced_column_basis_; }
         void forced_column_basis(double forced) { forced_column_basis_ = forced; }
         void not_forced_column_basis() { forced_column_basis_ = std::nullopt; }
+
+        std::string designation() const;
 
       private:
         SerumSpecies serum_species_{};
@@ -177,6 +182,40 @@ namespace ae::chart::v3
         auto end() { return data_.end(); }
 
         Element& add() { return data_.emplace_back(); }
+
+        // ----------------------------------------------------------------------
+
+        using duplicates_t = named_vector_t<std::vector<index_t>, struct duplicates_tag>;
+
+        duplicates_t find_duplicates() const
+        {
+            using map_value_t = std::vector<index_t>;
+            std::unordered_map<std::string, map_value_t> designations_to_indexes;
+            for (const auto index : size()) {
+                const auto& ag{operator[](index)};
+                if (!ag.annotations().distinct()) {
+                    auto [pos, inserted] = designations_to_indexes.try_emplace(ag.designation(), map_value_t{});
+                    pos->second.push_back(index);
+                }
+            }
+
+            duplicates_t result;
+            for (auto [designation, indexes] : designations_to_indexes) {
+                if (indexes.size() > 1)
+                    result.push_back(std::move(indexes));
+            }
+            return result;
+        }
+
+        void duplicates_distinct(const duplicates_t& dups)
+        {
+            for (const auto& entry : dups) {
+                for (auto ip = std::next(entry.begin()); ip != entry.end(); ++ip)
+                    operator[](*ip).annotations().set_distinct();
+            }
+        }
+
+        // ----------------------------------------------------------------------
 
       private:
         std::vector<Element> data_{};

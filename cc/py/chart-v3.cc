@@ -102,6 +102,8 @@ void ae::py::chart_v3(pybind11::module_& mdl)
 
         .def("info", [](std::shared_ptr<Chart> chart) { return new InfoRef{chart}; }) //
 
+        // ----------------------------------------------------------------------
+
         .def(
             "projection",
             [](std::shared_ptr<Chart> chart, size_t projection_no) {
@@ -110,6 +112,10 @@ void ae::py::chart_v3(pybind11::module_& mdl)
                 return new ProjectionRef{chart, chart->projections()[projection_index{projection_no}]}; // owned by python program
             },
             "projection_no"_a = 0) //
+
+        .def("combine_projections", &Chart::combine_projections, "merge_in"_a) //
+
+        // ----------------------------------------------------------------------
 
         .def(
             "relax", //
@@ -197,9 +203,7 @@ void ae::py::chart_v3(pybind11::module_& mdl)
             },                                                                    //
             pybind11::doc(R"(Selects no sera and returns SelectedSera object.)")) //
 
-        // ----------------------------------------------------------------------
-
-        .def("combine_projections", &Chart::combine_projections, "merge_in"_a) //
+        .def("duplicates_distinct", &Chart::duplicates_distinct, pybind11::doc("make duplicating antigens/sera distinct")) //
 
         // ----------------------------------------------------------------------
 
@@ -498,6 +502,7 @@ void ae::py::chart_v3(pybind11::module_& mdl)
         .def("date", [](const Antigen& ag) { return *ag.date(); })                              //
         .def("date", [](Antigen& ag, const std::string& new_date) { ag.date(Date{new_date}); }) //
         .def("lab_ids", [](const Antigen& ag) { return *ag.lab_ids(); })                        //
+        .def("designation", &Antigen::designation)                                              //
         ;
 
     pybind11::class_<Serum, AntigenSerum>(chart_v3_submodule, "Serum")                                                               //
@@ -505,6 +510,7 @@ void ae::py::chart_v3(pybind11::module_& mdl)
         .def("serum_id", [](Serum& sr, const std::string& new_serum_id) { return sr.serum_id(SerumId{new_serum_id}); })              //
         .def("serum_species", [](const Serum& sr) { return *sr.serum_species(); })                                                   //
         .def("serum_species", [](Serum& sr, const std::string& new_species) { return sr.serum_species(SerumSpecies{new_species}); }) //
+        .def("designation", &Serum::designation)                                                                                   //
         ;
 
     // ----------------------------------------------------------------------
