@@ -32,6 +32,8 @@ std::vector<std::pair<ae::point_index, ae::point_index>> ae::chart::v3::common_a
 template <typename AgSrs>
 ae::chart::v3::common_data_t<AgSrs>::common_data_t(const AgSrs& primary, const AgSrs& secondary, antigens_sera_match_level_t match_level) : primary_{primary}, secondary_{secondary}
 {
+    auto primary_sorted{index_range(primary.size())};
+    std::sort(primary_sorted.begin(), primary_sorted.end(), [&primary](auto i1, auto i2) { return compare_basic_designations(primary[i1], primary[i2]) == std::strong_ordering::less; });
 }
 
 template ae::chart::v3::common_data_t<ae::chart::v3::Antigens>::common_data_t(const Antigens& primary, const Antigens& secondary, antigens_sera_match_level_t match_level);

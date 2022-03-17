@@ -137,6 +137,13 @@ namespace ae
     template <typename Tag> inline index_iterator_tt<Tag> index_tt<Tag>::begin() const { return index_iterator_tt<Tag>{index_tt<Tag>{0}}; }
     template <typename Tag> inline index_iterator_tt<Tag> index_tt<Tag>::end() const { return index_iterator_tt<Tag>{*this}; }
 
+    template <typename Tag> inline std::vector<index_tt<Tag>> index_range(index_tt<Tag> last)
+    {
+        std::vector<index_tt<Tag>> result(*last);
+        std::iota(result.begin(), result.end(), index_tt<Tag>{0});
+        return result;
+    }
+
     // ----------------------------------------------------------------------
 
     using antigen_index = index_tt<struct antigen_index_tag>;

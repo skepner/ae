@@ -79,3 +79,16 @@ namespace std
 #endif
 
 // ----------------------------------------------------------------------
+
+namespace std
+{
+    inline strong_ordering operator|(strong_ordering lhs, strong_ordering rhs)
+    {
+        if (lhs == strong_ordering::equal)
+            return rhs;
+        else
+            return lhs;
+    }
+}
+
+// ----------------------------------------------------------------------

@@ -3,6 +3,7 @@
 #include <optional>
 #include <unordered_map>
 
+#include "ext/compare.hh"
 #include "virus/name.hh"
 #include "virus/passage.hh"
 #include "virus/reassortant.hh"
@@ -100,6 +101,11 @@ namespace ae::chart::v3
         sequences::sequence_nuc_t nuc_{};
         SemanticAttributes semantic_{};
     };
+
+    inline auto compare_basic_designations(const AntigenSerum& a1, const AntigenSerum& a2)
+    {
+        return (a1.name() <=> a2.name()) | (a1.annotations() <=> a2.annotations()) | (a1.reassortant() <=> a2.reassortant());
+    }
 
     // ----------------------------------------------------------------------
 
