@@ -73,6 +73,9 @@ namespace ae
         }
 
         index_tt<Tag> operator+(index_tt<Tag> rhs) const { return index_tt<Tag>{get() + rhs.get()}; }
+        template <typename Number> index_tt<Tag> operator+(Number rhs) const { return index_tt<Tag>{get() + rhs}; }
+        index_tt<Tag> operator-(index_tt<Tag> rhs) const { return index_tt<Tag>{get() - rhs.get()}; }
+        template <typename Number> index_tt<Tag> operator-(Number rhs) const { return index_tt<Tag>{get() - rhs}; }
 
         // to iterate from 0 to this index
         index_iterator_tt<Tag> begin() const;

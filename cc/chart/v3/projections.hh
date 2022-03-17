@@ -39,7 +39,7 @@ namespace ae::chart::v3
 
         // std::optional<double> stored_stress() const { return stress_; }
         void stress(double str) { stress_ = str; }
-        // void no_stress() { stress_ = std::nullopt; }
+        void reset_stress() { stress_ = std::nullopt; }
         double stress(recalculate_stress recalculate = recalculate_stress::if_necessary) const;
         // double stress_with_moved_point(size_t point_no, const PointCoordinates& move_to) const;
         Transformation& transformation() { return transformation_; }

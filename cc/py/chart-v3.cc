@@ -17,12 +17,22 @@ namespace ae::py
         // const ae::chart::v3::Projection& p() const { return chart->projections()[projection_no]; }
 
         double stress() const { return projection.stress(); }
+        double recalculate_stress() const { projection.reset_stress(); return projection.stress(); }
         std::string_view comment() const { return projection.comment(); }
         std::string minimum_column_basis() const { return projection.minimum_column_basis().format("{}", ae::chart::v3::minimum_column_basis::use_none::yes); }
         const std::vector<double>& forced_column_bases() const { return projection.forced_column_bases().data(); }
         std::vector<size_t> disconnected() const { return to_vector_base_t(projection.disconnected()); }
         std::vector<size_t> unmovable() const { return to_vector_base_t(projection.unmovable()); }
         std::vector<size_t> unmovable_in_the_last_dimension() const { return to_vector_base_t(projection.unmovable_in_the_last_dimension()); }
+        ae::chart::v3::Transformation& transformation() { return projection.transformation(); }
+        ae::chart::v3::Layout& layout() { return projection.layout(); }
+        double relax(ae::chart::v3::optimization_precision precision)
+        {
+            // optimization_options opt;
+            // opt.precision = precision;
+            projection.relax(*chart, ae::chart::v3::optimization_options{.precision = precision});
+            return projection.stress();
+        }
     };
 
     struct InfoRef
@@ -399,15 +409,52 @@ void ae::py::chart_v3(pybind11::module_& mdl)
 
     // ----------------------------------------------------------------------
 
-    pybind11::class_<ProjectionRef>(chart_v3_submodule, "Projection")                            //
-        .def("stress", &ProjectionRef::stress)                                                   //
-        .def("comment", &ProjectionRef::comment)                                                 //
-        .def("minimum_column_basis", &ProjectionRef::minimum_column_basis)                       //
-        .def("forced_column_bases", &ProjectionRef::forced_column_bases)                         //
-        .def("disconnected", &ProjectionRef::disconnected)                                       //
-        .def("unmovable", &ProjectionRef::unmovable)                                             //
-        .def("unmovable_in_the_last_dimension", &ProjectionRef::unmovable_in_the_last_dimension) //
+    pybind11::class_<ProjectionRef>(chart_v3_submodule, "Projection")                                             //
+        .def("stress", &ProjectionRef::stress)                                                                    //
+        .def("recalculate_stress", &ProjectionRef::recalculate_stress)                                            //
+        .def("comment", &ProjectionRef::comment)                                                                  //
+        .def("minimum_column_basis", &ProjectionRef::minimum_column_basis)                                        //
+        .def("forced_column_bases", &ProjectionRef::forced_column_bases)                                          //
+        .def("disconnected", &ProjectionRef::disconnected)                                                        //
+        .def("unmovable", &ProjectionRef::unmovable)                                                              //
+        .def("unmovable_in_the_last_dimension", &ProjectionRef::unmovable_in_the_last_dimension)                  //
+        .def("layout", &ProjectionRef::layout, pybind11::return_value_policy::reference_internal)                 //
+        .def("transformation", &ProjectionRef::transformation, pybind11::return_value_policy::reference_internal) //
+        .def(
+            "relax", [](ProjectionRef& projection, bool rough) { return projection.relax(rough ? optimization_precision::rough : optimization_precision::fine); }, "rough"_a = false) //
         ;
+
+    pybind11::class_<Layout>(chart_v3_submodule, "Layout")                                                          //
+        .def("__len__", [](const Layout& layout) -> size_t { return *layout.number_of_points(); })                  //
+        .def("number_of_dimensions", [](const Layout& layout) -> size_t { return *layout.number_of_dimensions(); }) //
+        .def(
+            "__getitem__",
+            [](Layout& layout, ssize_t index) {
+                if (index >= 0 && point_index{index} < layout.number_of_points())
+                    return layout[point_index{index}];
+                else if (index < 0 && point_index{-index} <= layout.number_of_points())
+                    return layout[layout.number_of_points() + index];
+                else
+                    throw std::invalid_argument{fmt::format("wrong index: {}, number of points in layout: {}", index, layout.number_of_points())};
+            },
+            "index"_a, pybind11::doc("negative index counts from the layout end")) //
+        // .def("__str__", [](const Layout& layout) { return fmt::format("{}", transformation); }) //
+        ;
+
+    pybind11::class_<point_coordinates>(chart_v3_submodule, "PointCoordinates")                           //
+        .def("__len__", [](const point_coordinates& pc) -> size_t { return *pc.number_of_dimensions(); }) //
+        .def(
+            "__getitem__", [](point_coordinates& pc, size_t dim_no) -> double& { return pc[number_of_dimensions_t{dim_no}]; }, "dim"_a) //
+        .def(
+            "__iter__", [](const point_coordinates& pc) { return pybind11::make_iterator(pc.begin(), pc.end()); }, pybind11::keep_alive<0, 1>()) //
+        .def("__str__", [](const point_coordinates& pc) { return fmt::format("{}", pc); })                                                       //
+        ;
+
+    pybind11::class_<Transformation>(chart_v3_submodule, "Transformation")                                      //
+        .def("__str__", [](const Transformation& transformation) { return fmt::format("{}", transformation); }) //
+        ;
+
+    // ----------------------------------------------------------------------
 
     pybind11::class_<InfoRef>(chart_v3_submodule, "Info")      //
         .def("virus", &InfoRef::virus)                         //

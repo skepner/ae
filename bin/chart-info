@@ -63,6 +63,15 @@ def main(args: argparse.Namespace):
                     fcb = re.sub(r"\. ", "  ", fcb)
                     print(f"{no:3d}     {fcb}   {sr.name()} {sr.serum_id()} {sr.passage()}")
 
+        if args.print_layout is not None:
+            layout = chart.projection(args.print_layout).layout()
+            print(f"layout {layout.number_of_dimensions()}d {len(layout)} points")
+            print(layout[0])
+            print(layout[-2])
+
+        if args.print_transformation is not None:
+            print("transformation", chart.projection(args.print_transformation).transformation())
+
 # ----------------------------------------------------------------------
 
 try:
@@ -70,6 +79,8 @@ try:
     parser.add_argument("chart", nargs="+", type=Path)
     parser.add_argument("-a", "--all", dest="show_all", action="store_true", default=False, help="show all possible information")
     parser.add_argument("-p", dest="show_projections", action="store_true", default=False, help="show projections")
+    parser.add_argument("--layout", dest="print_layout", type=int, default=None, help="print layout of the specified projection")
+    parser.add_argument("--transformation", dest="print_transformation", type=int, default=None, help="print transformation of the specified projection")
     args = parser.parse_args()
     exit_code = main(args) or 0
 except Exception as err:

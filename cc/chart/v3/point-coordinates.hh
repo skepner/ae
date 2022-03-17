@@ -104,13 +104,13 @@ template <> struct fmt::formatter<ae::chart::v3::point_coordinates> : public fmt
 {
     template <typename FormatContext> auto format(const ae::chart::v3::point_coordinates& coord, FormatContext& ctx)
     {
-        format_to(ctx.out(), "{{");
+        format_to(ctx.out(), "[");
         for (auto dim : coord.number_of_dimensions()) {
             if (dim != ae::number_of_dimensions_t{0})
                 format_to(ctx.out(), ", ");
             format_val(coord[dim], ctx);
         }
-        return format_to(ctx.out(), "}}");
+        return format_to(ctx.out(), "]");
     }
 };
 
