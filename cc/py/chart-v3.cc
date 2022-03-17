@@ -653,6 +653,10 @@ void ae::py::chart_v3(pybind11::module_& mdl)
     // ----------------------------------------------------------------------
 
     chart_v3_submodule.def("merge", &ae::py::merge, "chart1"_a, "chart2"_a, "match"_a = "auto", "merge_type"_a = "simple", "combine_cheating_assays"_a = false);
+
+    pybind11::class_<merge_report_t>(chart_v3_submodule, "MergeReport") //
+        ;
+
 }
 
 // ----------------------------------------------------------------------

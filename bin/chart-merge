@@ -17,8 +17,8 @@ def main(args: argparse.Namespace):
         if merge is not None:
             print(merge, chart, sep="\n", end="\n\n")
             merge, report = ae_backend.chart_v3.merge(merge, chart, **merge_settings)
-            print(report.common.report())
-            print("-" * 70)
+            print(report) # .common.report())
+            print("-" * 70, end="\n\n")
         else:
             merge = chart
     print(merge, end="\n\n")
