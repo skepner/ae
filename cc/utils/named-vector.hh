@@ -1,7 +1,9 @@
 #pragma once
 
 #include <vector>
+#include <algorithm>
 
+#include "ext/compare.hh"
 #include "utils/named-type.hh"
 
 // ----------------------------------------------------------------------
@@ -17,6 +19,7 @@ namespace ae
         using const_iterator = typename std::vector<T>::const_iterator;
 
         explicit named_vector_t(size_t size, T val) : named_t<std::vector<T>, Tag>{std::vector<T>(size, val)} {}
+        auto operator<=>(const named_vector_t&) const = default;
 
         constexpr const_iterator begin() const { return this->get().begin(); }
         constexpr const_iterator end() const { return this->get().end(); }
@@ -65,7 +68,7 @@ namespace ae
         }
     };
 
-    template <typename Tag> constexpr bool operator<(const named_vector_t<std::string, Tag>& lhs, const named_vector_t<std::string, Tag>& rhs) noexcept
+    template <typename Tag> bool operator<(const named_vector_t<std::string, Tag>& lhs, const named_vector_t<std::string, Tag>& rhs) noexcept
     {
         const auto sz = std::min(lhs.size(), rhs.size());
         for (size_t i = 0; i < sz; ++i) {

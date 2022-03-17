@@ -1,6 +1,7 @@
 #include "py/module.hh"
 #include "chart/v3/chart.hh"
 #include "chart/v3/selected-antigens-sera.hh"
+#include "chart/v3/merge.hh"
 
 // ======================================================================
 
@@ -63,6 +64,13 @@ namespace ae::py
             return new InfoRef{chart, (*sources)[no]};
         }
     };
+
+
+    // ----------------------------------------------------------------------
+
+    std::pair<std::string, std::shared_ptr<ae::chart::v3::Chart>> merge(const ae::chart::v3::Chart& chart1, const ae::chart::v3::Chart& chart2, std::string_view match, std::string_view merge_type, bool combine_cheating_assays)
+    {
+    }
 
 } // namespace ae::py
 
@@ -614,6 +622,8 @@ void ae::py::chart_v3(pybind11::module_& mdl)
             "serum", [](const SelectionData<Serum>& sd) -> const Serum& { return sd.ag_sr; }, pybind11::return_value_policy::reference_internal);
 
     // ----------------------------------------------------------------------
+
+    chart_v3_submodule.def("merge", &ae::py::merge, "chart1"_a, "chart2"_a, "match"_a = "auto", "merge_type"_a = "simple", "combine_cheating_assays"_a = false);
 }
 
 // ----------------------------------------------------------------------

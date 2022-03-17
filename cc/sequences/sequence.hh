@@ -5,7 +5,7 @@
 #include <vector>
 #include <algorithm>
 
-#include "ext/string.hh"
+#include "ext/compare.hh"
 #include "utils/named-type.hh"
 #include "sequences/pos.hh"
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ext/fmt.hh"
-#include "ext/string.hh"
+#include "ext/compare.hh"
 #include "utils/string.hh"
 
 // ----------------------------------------------------------------------
@@ -21,7 +21,7 @@ namespace ae::virus::inline v2
         operator std::string_view() const { return value_; }
         std::string_view operator*() const { return value_; }
 
-        bool operator==(const Name& rhs) const = default;
+        // bool operator==(const Name& rhs) const = default;
         auto operator<=>(const Name& rhs) const = default;
 
         bool empty() const { return value_.empty(); }

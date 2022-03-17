@@ -158,6 +158,7 @@ sources_chart_v3 = [
   'cc/chart/v3/randomizer.cc',
   'cc/chart/v3/optimize.cc',
   'cc/chart/v3/alglib.cc',
+  'cc/chart/v3/common.cc',
 ]
 
 sources_chart_v2 = [

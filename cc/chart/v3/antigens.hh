@@ -4,7 +4,6 @@
 #include <unordered_map>
 
 #include "virus/name.hh"
-#include "virus/name.hh"
 #include "virus/passage.hh"
 #include "virus/reassortant.hh"
 #include "sequences/lineage.hh"

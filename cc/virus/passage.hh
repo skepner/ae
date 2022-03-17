@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "ext/fmt.hh"
-#include "ext/string.hh"
+#include "ext/compare.hh"
 #include "utils/string.hh"
 #include "utils/messages.hh"
 

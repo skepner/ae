@@ -3,7 +3,7 @@
 #include <iterator>
 #include <memory>
 
-#include "ext/string.hh"
+#include "ext/compare.hh"
 #include "utils/file.hh"
 
 #include "sequences/raw-sequence.hh"

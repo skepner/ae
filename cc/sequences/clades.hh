@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "ext/fmt.hh"
-#include "ext/string.hh"
+#include "ext/compare.hh"
 #include "virus/type-subtype.hh"
 #include "sequences/lineage.hh"
 #include "sequences/sequence.hh"

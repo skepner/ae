@@ -5,7 +5,7 @@
 #include <stdexcept>
 #include <memory>
 
-#include "ext/string.hh"
+#include "ext/compare.hh"
 #include "utils/log.hh"
 #include "utils/hash.hh"
 #include "utils/string-hash.hh"

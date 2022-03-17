@@ -28,7 +28,7 @@ namespace ae
 
         auto operator<=>(const named_t&) const = default;
         auto operator<=>(const T& rhs) const { return value_ <=> rhs; }
-        bool operator==(const named_t&) const = default;
+        // bool operator==(const named_t&) const = default;
 
 #pragma GCC diagnostic pop
 
