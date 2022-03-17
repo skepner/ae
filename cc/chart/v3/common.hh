@@ -1,6 +1,6 @@
 #pragma once
 
-#include "chart/v3/chart.hh"
+#include "chart/v3/antigens.hh"
 
 // ----------------------------------------------------------------------
 
@@ -128,12 +128,14 @@ namespace ae::chart::v3
 
     // ----------------------------------------------------------------------
 
+    enum class antigens_sera_match_level_t { strict, relaxed, ignored, automatic };
+
     template <typename AgSrs> class common_data_t
     {
       public:
         using common_t = std::pair<typename AgSrs::index_t, typename AgSrs::index_t>;
 
-        common_data_t(const AgSrs& primary, const AgSrs& secondary) : primary_{primary}, secondary_{secondary} {}
+        common_data_t(const AgSrs& primary, const AgSrs& secondary, antigens_sera_match_level_t match_level);
 
         std::vector<common_t> common() const
         {
@@ -153,14 +155,17 @@ namespace ae::chart::v3
         const AgSrs& secondary_;
     };
 
+    extern template common_data_t<Antigens>::common_data_t(const Antigens& primary, const Antigens& secondary, antigens_sera_match_level_t match_level);
+    extern template common_data_t<Sera>::common_data_t(const Sera& primary, const Sera& secondary, antigens_sera_match_level_t match_level);
+
     // ----------------------------------------------------------------------
+
+    class Chart;
 
     class common_antigens_sera_t
     {
       public:
-        enum class match_level_t { strict, relaxed, ignored, automatic };
-
-        common_antigens_sera_t(const Chart& primary, const Chart& secondary, match_level_t match_level);
+        common_antigens_sera_t(const Chart& primary, const Chart& secondary, antigens_sera_match_level_t match_level);
 
         //   CommonAntigensSera(const Chart& primary, const Chart& secondary, common::antigen_selector_t antigen_entry_extractor, common::serum_selector_t serum_entry_extractor, match_level_t
         //   match_level); CommonAntigensSera(const Chart& primary); // for procrustes between projections of the same chart CommonAntigensSera(const CommonAntigensSera&) = delete;
@@ -197,8 +202,6 @@ namespace ae::chart::v3
         //   std::vector<common_t> points(subset a_subset) const;
         //   std::vector<common_t> points_for_primary_antigens(const Indexes& antigen_indexes) const;
         //   std::vector<common_t> points_for_primary_sera(const Indexes& serum_indexes) const;
-
-        //   static match_level_t match_level(std::string_view source);
 
       private:
         common_data_t<Antigens> antigens_;

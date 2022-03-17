@@ -75,13 +75,13 @@ namespace ae::py
         merge_settings_t settings{.combine_cheating_assays_ = cca ? combine_cheating_assays::yes : combine_cheating_assays::no};
 
         if (match == "auto")
-            settings.match_level = common_antigens_sera_t::match_level_t::automatic;
+            settings.match_level = antigens_sera_match_level_t::automatic;
         else if (match == "strict")
-            settings.match_level = common_antigens_sera_t::match_level_t::strict;
+            settings.match_level = antigens_sera_match_level_t::strict;
         else if (match == "relaxed")
-            settings.match_level = common_antigens_sera_t::match_level_t::relaxed;
+            settings.match_level = antigens_sera_match_level_t::relaxed;
         else if (match == "ignored")
-            settings.match_level = common_antigens_sera_t::match_level_t::ignored;
+            settings.match_level = antigens_sera_match_level_t::ignored;
         else
             AD_WARNING("unrecognized merge match level \"{}\"", match);
 

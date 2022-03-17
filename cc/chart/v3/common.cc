@@ -2,11 +2,12 @@
 // #include "acmacs-base/range-v3.hh"
 // #include "acmacs-chart-2/log.hh"
 #include "chart/v3/common.hh"
+#include "chart/v3/chart.hh"
 
 // ----------------------------------------------------------------------
 
-ae::chart::v3::common_antigens_sera_t::common_antigens_sera_t(const Chart& primary, const Chart& secondary, match_level_t match_level)
-    : antigens_{primary.antigens(), secondary.antigens()}, sera_{primary.sera(), secondary.sera()}
+ae::chart::v3::common_antigens_sera_t::common_antigens_sera_t(const Chart& primary, const Chart& secondary, antigens_sera_match_level_t match_level)
+    : antigens_{primary.antigens(), secondary.antigens(), match_level}, sera_{primary.sera(), secondary.sera(), match_level}
 {
 
 } // ae::chart::v3::common_antigens_sera_t::common_antigens_sera_t
@@ -28,6 +29,13 @@ std::vector<std::pair<ae::point_index, ae::point_index>> ae::chart::v3::common_a
 
 // ----------------------------------------------------------------------
 
+template <typename AgSrs>
+ae::chart::v3::common_data_t<AgSrs>::common_data_t(const AgSrs& primary, const AgSrs& secondary, antigens_sera_match_level_t match_level) : primary_{primary}, secondary_{secondary}
+{
+}
+
+template ae::chart::v3::common_data_t<ae::chart::v3::Antigens>::common_data_t(const Antigens& primary, const Antigens& secondary, antigens_sera_match_level_t match_level);
+template ae::chart::v3::common_data_t<ae::chart::v3::Sera>::common_data_t(const Sera& primary, const Sera& secondary, antigens_sera_match_level_t match_level);
 
 // ======================================================================
 // ======================================================================
