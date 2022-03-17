@@ -478,7 +478,7 @@ void ae::py::chart_v3(pybind11::module_& mdl)
         .def("passage", [](AntigenSerum& ag, const ae::virus::Passage& new_passage) { ag.passage(new_passage); })                                //
         .def("reassortant", [](const AntigenSerum& ag) { return *ag.reassortant(); })                                                            //
         .def("reassortant", [](AntigenSerum& ag, std::string_view new_reassortant) { ag.reassortant(ae::virus::Reassortant{new_reassortant}); }) //
-        .def("annotations", pybind11::overload_cast<>(&AntigenSerum::annotations, pybind11::const_))                                             //
+        .def("annotations", [](const AntigenSerum& ag) { return *ag.annotations(); })                                                            //
         .def(
             "add_annotation", [](AntigenSerum& ag, std::string_view ann) { ag.annotations().add(ann); }, "annotation"_a) //
         .def(
