@@ -199,6 +199,10 @@ void ae::py::chart_v3(pybind11::module_& mdl)
 
         // ----------------------------------------------------------------------
 
+        .def("combine_projections", &Chart::combine_projections, "merge_in"_a) //
+
+        // ----------------------------------------------------------------------
+
         //         .def(
         //             "table_as_text", //
         //             [](const Chart& chart, int layer_no, bool sort, bool clades, bool org_mode_separators, bool show_aa) {

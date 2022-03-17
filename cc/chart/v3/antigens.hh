@@ -71,6 +71,7 @@ namespace ae::chart::v3
         AntigenSerum(AntigenSerum&&) = default;
         AntigenSerum& operator=(const AntigenSerum&) = default;
         AntigenSerum& operator=(AntigenSerum&&) = default;
+        bool operator==(const AntigenSerum&) const = default;
 
         const auto& name() const { return name_; }
         void name(const virus::Name& name) { name_ = name; }
@@ -109,6 +110,7 @@ namespace ae::chart::v3
         using indexes_t = antigen_indexes;
 
         using AntigenSerum::AntigenSerum;
+        bool operator==(const Antigen&) const = default;
 
         const auto& date() const { return date_; }
         void date(const Date& date) { date_ = date; }
@@ -129,6 +131,7 @@ namespace ae::chart::v3
         using indexes_t = serum_indexes;
 
         using AntigenSerum::AntigenSerum;
+        bool operator==(const Serum&) const = default;
 
         const auto& serum_species() const { return serum_species_; }
         void serum_species(const SerumSpecies& serum_species) { serum_species_ = serum_species; }
@@ -162,6 +165,7 @@ namespace ae::chart::v3
         AntigensSera(AntigensSera&&) = default;
         AntigensSera& operator=(const AntigensSera&) = default;
         AntigensSera& operator=(AntigensSera&&) = default;
+        bool operator==(const AntigensSera&) const = default;
 
         index_t size() const { return index_t{data_.size()}; }
         Element& operator[](index_t index) { return data_[*index]; }
@@ -184,6 +188,7 @@ namespace ae::chart::v3
     {
       public:
         using AntigensSera<Antigen>::AntigensSera;
+        bool operator==(const Antigens&) const = default;
     };
 
     // ----------------------------------------------------------------------
@@ -192,6 +197,7 @@ namespace ae::chart::v3
     {
       public:
         using AntigensSera<Serum>::AntigensSera;
+        bool operator==(const Sera&) const = default;
     };
 
 }

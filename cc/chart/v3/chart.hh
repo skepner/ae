@@ -69,6 +69,8 @@ namespace ae::chart::v3
         void relax_incremental(projection_index source_projection_no, number_of_optimizations_t number_of_optimizations, const optimization_options& options,
                                const disconnected_points& disconnected = disconnected_points{}, const unmovable_points& unmovable = unmovable_points{});
 
+        void combine_projections(const Chart& merge_in);
+
       private:
         Info info_{};
         Antigens antigens_{};

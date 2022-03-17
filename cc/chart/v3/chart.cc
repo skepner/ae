@@ -202,3 +202,15 @@ void ae::chart::v3::Chart::relax_incremental(projection_index source_projection_
 } // ae::chart::v3::Chart::relax_incremental
 
 // ----------------------------------------------------------------------
+
+void ae::chart::v3::Chart::combine_projections(const Chart& merge_in)
+{
+    if (antigens() != merge_in.antigens() || sera() != merge_in.sera() || titers() != merge_in.titers())
+        throw std::runtime_error{AD_FORMAT("cannot combine projections, tables are not the same")};
+    for (const auto& proj : projections())
+        projections().add(proj);
+    projections().sort();
+
+} // ae::chart::v3::Chart::combine_projections
+
+// ----------------------------------------------------------------------

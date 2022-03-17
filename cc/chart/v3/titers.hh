@@ -294,6 +294,7 @@ namespace ae::chart::v3
 
         Titers& operator=(const Titers&) = default;
         Titers& operator=(Titers&&) = default;
+        bool operator==(const Titers&) const = default;
 
         antigen_index number_of_antigens() const;
         serum_index number_of_sera() const { return number_of_sera_; }
