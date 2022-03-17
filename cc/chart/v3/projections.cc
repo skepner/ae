@@ -66,3 +66,15 @@ ae::point_indexes ae::chart::v3::Projection::non_nan_points() const
 } // ae::chart::v3::Projection::non_nan_points
 
 // ----------------------------------------------------------------------
+
+ae::chart::v3::optimization_status ae::chart::v3::Projection::relax(Chart& chart, const optimization_options& options)
+{
+    const auto status = optimize(chart, *this, options);
+    stress_ = status.final_stress;
+    if (transformation_.number_of_dimensions != layout_.number_of_dimensions())
+        transformation_.reset(layout_.number_of_dimensions());
+    return status;
+
+} // ae::chart::v3::Projection::relax
+
+// ----------------------------------------------------------------------

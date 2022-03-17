@@ -6,7 +6,7 @@
 #include "chart/v3/transformation.hh"
 #include "chart/v3/column-bases.hh"
 #include "chart/v3/avidity-adjusts.hh"
-#include "chart/v3/optimize-options.hh"
+#include "chart/v3/optimize.hh"
 
 // ----------------------------------------------------------------------
 
@@ -73,6 +73,8 @@ namespace ae::chart::v3
         }
 
         point_indexes non_nan_points() const; // for relax_incremental and enum unmovable_non_nan_points
+
+        optimization_status relax(Chart& chart, const optimization_options& options);
 
         // std::shared_ptr<Layout> transformed_layout() const { return layout()->transform(transformation()); }
         // double stress_diff_to_stop() const = 0;
