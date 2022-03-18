@@ -270,6 +270,8 @@ std::string ae::chart::v3::merge_data_t::titer_merge_report(const Chart& chart) 
 
 std::string ae::chart::v3::merge_data_t::titer_merge_report_common_only(const Chart& chart) const
 {
+    return "> ae::chart::v3::merge_data_t::titer_merge_report_common_only not implemented";
+
     const auto max_field = std::max(static_cast<int>(std::max(chart.antigens().max_designation(), chart.info().max_source_name())), 20);
 
     fmt::memory_buffer output;
@@ -302,6 +304,8 @@ std::string ae::chart::v3::merge_data_t::titer_merge_report_common_only(const Ch
 
 std::string ae::chart::v3::merge_data_t::titer_merge_diagnostics(const Chart& chart, const antigen_indexes& antigens, const serum_indexes& sera, int max_field_size) const
 {
+    return "> ae::chart::v3::merge_data_t::titer_merge_diagnostics not implemented";
+
     // // auto sr_label = [](size_t sr_no) -> char { return static_cast<char>('A' + sr_no); };
     // auto sr_label = [](size_t sr_no) -> size_t { return sr_no + 1; };
     // auto ags = chart.antigens();
@@ -350,7 +354,6 @@ std::string ae::chart::v3::merge_data_t::titer_merge_diagnostics(const Chart& ch
 
     // return fmt::to_string(output);
 
-    return {};
 
 } // ae::chart::v3::merge_data_t::titer_merge_diagnostics
 
