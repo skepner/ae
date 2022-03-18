@@ -140,15 +140,7 @@ namespace ae::chart::v3
 
         common_data_t(const AgSrs& primary, const AgSrs& secondary, antigens_sera_match_level_t match_level);
 
-        std::vector<common_t> common() const
-        {
-            std::vector<common_t> result;
-            // for (const auto& mm : match_) {
-            //     if (mm.use)
-            //         result.emplace_back(mm.primary_index, mm.secondary_index);
-            // }
-            return result;
-        }
+        std::vector<common_t> common() const;
 
         index_t size_primary() const { return primary_.size(); }
         index_t size_secondary() const { return secondary_.size(); }
@@ -178,6 +170,9 @@ namespace ae::chart::v3
 
     extern template common_data_t<Antigens>::common_data_t(const Antigens& primary, const Antigens& secondary, antigens_sera_match_level_t match_level);
     extern template common_data_t<Sera>::common_data_t(const Sera& primary, const Sera& secondary, antigens_sera_match_level_t match_level);
+
+    extern template std::vector<common_data_t<Antigens>::common_t> common_data_t<ae::chart::v3::Antigens>::common() const;
+    extern template std::vector<common_data_t<Sera>::common_t> common_data_t<ae::chart::v3::Sera>::common() const;
 
     // ----------------------------------------------------------------------
 

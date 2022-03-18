@@ -44,6 +44,22 @@ template ae::chart::v3::common_data_t<ae::chart::v3::Sera>::common_data_t(const 
 
 // ----------------------------------------------------------------------
 
+template <typename AgSrs> std::vector<typename ae::chart::v3::common_data_t<AgSrs>::common_t> ae::chart::v3::common_data_t<AgSrs>::common() const
+{
+    std::vector<common_t> result;
+    for (const auto& mm : match_) {
+        if (mm.use)
+            result.emplace_back(mm.primary, mm.secondary);
+    }
+    return result;
+
+} // ae::chart::v3::common_data_t<AgSrs>::common
+
+template std::vector<ae::chart::v3::common_data_t<ae::chart::v3::Antigens>::common_t> ae::chart::v3::common_data_t<ae::chart::v3::Antigens>::common() const;
+template std::vector<ae::chart::v3::common_data_t<ae::chart::v3::Sera>::common_t> ae::chart::v3::common_data_t<ae::chart::v3::Sera>::common() const;
+
+// ----------------------------------------------------------------------
+
 template <typename AgSrs> void ae::chart::v3::common_data_t<AgSrs>::build_match(antigens_sera_match_level_t match_level)
 {
     auto primary_sorted{index_range(primary_.size())};
