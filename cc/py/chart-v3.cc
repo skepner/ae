@@ -7,12 +7,14 @@
 
 namespace ae::py
 {
+    using Chart = ae::chart::v3::Chart;
+
     struct ProjectionRef
     {
-        std::shared_ptr<ae::chart::v3::Chart> chart;
+        std::shared_ptr<Chart> chart;
         ae::chart::v3::Projection& projection;
 
-        ProjectionRef(std::shared_ptr<ae::chart::v3::Chart> a_chart, ae::chart::v3::Projection& a_projection) : chart{a_chart}, projection{a_projection} {}
+        ProjectionRef(std::shared_ptr<Chart> a_chart, ae::chart::v3::Projection& a_projection) : chart{a_chart}, projection{a_projection} {}
 
         // ae::chart::v3::Projection& p() { return chart->projections()[projection_no]; }
         // const ae::chart::v3::Projection& p() const { return chart->projections()[projection_no]; }
@@ -38,12 +40,12 @@ namespace ae::py
 
     struct InfoRef
     {
-        std::shared_ptr<ae::chart::v3::Chart> chart;
+        std::shared_ptr<Chart> chart;
         ae::chart::v3::TableSource& table_source;
         std::vector<ae::chart::v3::TableSource>* sources;
 
-        InfoRef(std::shared_ptr<ae::chart::v3::Chart> a_chart) : chart{a_chart}, table_source{a_chart->info()}, sources{&a_chart->info().sources()} {}
-        InfoRef(std::shared_ptr<ae::chart::v3::Chart> a_chart, ae::chart::v3::TableSource& a_table_source) : chart{a_chart}, table_source{a_table_source}, sources{nullptr} {}
+        InfoRef(std::shared_ptr<Chart> a_chart) : chart{a_chart}, table_source{a_chart->info()}, sources{&a_chart->info().sources()} {}
+        InfoRef(std::shared_ptr<Chart> a_chart, ae::chart::v3::TableSource& a_table_source) : chart{a_chart}, table_source{a_table_source}, sources{nullptr} {}
         InfoRef(const InfoRef&) = delete;
         InfoRef& operator=(const InfoRef&) = delete;
 
@@ -68,8 +70,8 @@ namespace ae::py
 
     // ----------------------------------------------------------------------
 
-    static inline std::pair<std::shared_ptr<ae::chart::v3::Chart>, ae::chart::v3::merge_data_t> merge(const ae::chart::v3::Chart& chart1, const ae::chart::v3::Chart& chart2, std::string_view match,
-                                                                                                        std::string_view merge_type, bool cca)
+    static inline std::pair<std::shared_ptr<Chart>, ae::chart::v3::merge_data_t> merge(std::shared_ptr<Chart> chart1, std::shared_ptr<Chart> chart2, std::string_view match,
+                                                                                       std::string_view merge_type, bool cca)
     {
         using namespace ae::chart::v3;
         merge_settings_t settings{.combine_cheating_assays_ = cca ? combine_cheating_assays::yes : combine_cheating_assays::no};

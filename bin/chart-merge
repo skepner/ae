@@ -16,8 +16,7 @@ def main(args: argparse.Namespace):
             chart.duplicates_distinct()
         if merge is not None:
             print(merge, chart, sep="\n", end="\n\n")
-            primary = merge
-            merge, merge_data = ae_backend.chart_v3.merge(primary, chart, **merge_settings)
+            merge, merge_data = ae_backend.chart_v3.merge(merge, chart, **merge_settings)
             print(merge_data.common())
             # print(merge_data.report(merge))
             print("-" * 70, end="\n\n")

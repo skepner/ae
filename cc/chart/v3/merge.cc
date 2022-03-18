@@ -9,12 +9,12 @@ namespace ae::chart::v3
 
 // ----------------------------------------------------------------------
 
-std::pair<std::shared_ptr<ae::chart::v3::Chart>, ae::chart::v3::merge_data_t> ae::chart::v3::merge(const Chart& chart1, const Chart& chart2, const merge_settings_t& settings)
+std::pair<std::shared_ptr<ae::chart::v3::Chart>, ae::chart::v3::merge_data_t> ae::chart::v3::merge(std::shared_ptr<Chart> chart1, std::shared_ptr<Chart> chart2, const merge_settings_t& settings)
 {
-    chart1.throw_if_duplicates();
-    chart2.throw_if_duplicates();
+    chart1->throw_if_duplicates();
+    chart2->throw_if_duplicates();
 
-    merge_data_t merge_data{chart1, chart2, settings, common_antigens_sera_t{chart1, chart2, settings.match_level}};
+    merge_data_t merge_data{chart1, chart2, settings, common_antigens_sera_t{*chart1, *chart2, settings.match_level}};
 
     auto merged = std::make_shared<Chart>();
 
@@ -104,19 +104,19 @@ std::pair<std::shared_ptr<ae::chart::v3::Chart>, ae::chart::v3::merge_data_t> ae
 
 // ----------------------------------------------------------------------
 
-void ae::chart::v3::merge_data_t::build(const Chart& primary, const Chart& secondary, const merge_settings_t& settings)
+void ae::chart::v3::merge_data_t::build(const merge_settings_t& settings)
 {
-      // antigens
+    // antigens
     {
-        const auto& src1 = primary.antigens();
+        const auto& src1 = chart1_->antigens();
         for (const auto no1 : src1.size()) {
             if (settings.remove_distinct_ == remove_distinct::no || src1[no1].annotations().distinct()) {
                 antigens_primary_target_.insert_or_assign(no1, target_index_common_t<antigen_index>{target_antigens_, common_.antigen_secondary_by_primary(no1).has_value()});
                 ++target_antigens_;
             }
         }
-        auto src2 = secondary.antigens();
-        const auto secondary_antigen_indexes = secondary_antigens_to_merge(primary, secondary, settings);
+        auto src2 = chart2_->antigens();
+        const auto secondary_antigen_indexes = secondary_antigens_to_merge(settings);
         for (const auto no2 : secondary_antigen_indexes) {
             if (settings.remove_distinct_ == remove_distinct::no || !src2[no2].annotations().distinct()) {
                 if (const auto no1 = common_.antigen_primary_by_secondary(no2); no1)
@@ -129,14 +129,14 @@ void ae::chart::v3::merge_data_t::build(const Chart& primary, const Chart& secon
         }
     }
 
-      // sera
+    // sera
     {
-        auto src1 = primary.sera();
+        auto src1 = chart1_->sera();
         for (const auto no1 : src1.size()) {
             sera_primary_target_.insert_or_assign(no1, target_index_common_t<serum_index>{target_sera_, common_.serum_secondary_by_primary(no1).has_value()});
             ++target_sera_;
         }
-        auto src2 = secondary.sera();
+        auto src2 = chart2_->sera();
         for (const auto no2 : src2.size()) {
             if (const auto no1 = common_.serum_primary_by_secondary(no2); no1)
                 sera_secondary_target_.insert_or_assign(no2, sera_primary_target_.find(*no1)->second);
@@ -156,12 +156,12 @@ void ae::chart::v3::merge_data_t::build(const Chart& primary, const Chart& secon
 
 // ----------------------------------------------------------------------
 
-ae::antigen_indexes ae::chart::v3::merge_data_t::secondary_antigens_to_merge(const Chart& primary, const Chart& secondary, const merge_settings_t& settings) const
+ae::antigen_indexes ae::chart::v3::merge_data_t::secondary_antigens_to_merge(const merge_settings_t& settings) const
 {
-    auto indexes = index_range(secondary.antigens().size());
+    auto indexes = index_range(chart2_->antigens().size());
     if (settings.combine_cheating_assays_ == combine_cheating_assays::yes) {
         // expected: primary chart is single or multi layered, secondary chart is single layered
-        const auto& secondary_titers = secondary.titers();
+        const auto& secondary_titers = chart2_->titers();
         if (secondary_titers.number_of_layers() > layer_index{1})
             AD_WARNING("[chart merge and combine_cheating_assays]: secondary chart is multilayered, result can be unexpected");
 
@@ -183,8 +183,8 @@ ae::antigen_indexes ae::chart::v3::merge_data_t::secondary_antigens_to_merge(con
             return result;
         };
 
-        const auto antigens2_indexes = secondary.reference();
-        const auto sera2_indexes = index_range(secondary.sera().size());
+        const auto antigens2_indexes = chart2_->reference();
+        const auto sera2_indexes = index_range(chart2_->sera().size());
         const auto antigen_indexes1 = primary_by_secondary(antigens2_indexes, [this](auto no2) { return common_.antigen_primary_by_secondary(no2); });
         const auto serum_indexes1 = primary_by_secondary(sera2_indexes, [this](auto no2) { return common_.serum_primary_by_secondary(no2); });
         if (all_secondary_in_primary) {
@@ -200,7 +200,7 @@ ae::antigen_indexes ae::chart::v3::merge_data_t::secondary_antigens_to_merge(con
                 return true;
             };
 
-            const auto& primary_titers = primary.titers();
+            const auto& primary_titers = chart1_->titers();
             if (primary_titers.number_of_layers() == layer_index{0}) {
                 titers_same = are_titers_same([&primary_titers](antigen_index ag, serum_index sr) { return primary_titers.titer(ag, sr); });
             }
@@ -216,14 +216,14 @@ ae::antigen_indexes ae::chart::v3::merge_data_t::secondary_antigens_to_merge(con
         }
 
         if (all_secondary_in_primary && titers_same) {
-            if (secondary.antigens().size() == antigen_index{antigens2_indexes.size()}) {
-                AD_ERROR("cheating assay ({}) and chart has no test antigens, remove table or disable cheating assay handling", secondary.name());
+            if (chart2_->antigens().size() == antigen_index{antigens2_indexes.size()}) {
+                AD_ERROR("cheating assay ({}) and chart has no test antigens, remove table or disable cheating assay handling", chart2_->name());
                 throw merge_error{"cheating assay and chart has no test antigens"};
             }
-            auto test_indexes = index_range(secondary.antigens().size());
+            auto test_indexes = index_range(chart2_->antigens().size());
             for (const auto ind : antigens2_indexes)
                 test_indexes.remove(ind);
-            AD_INFO("cheating assay ({}) will be combined, no reference titers will be in the new layer, test antigens: {}", secondary.name(), test_indexes);
+            AD_INFO("cheating assay ({}) will be combined, no reference titers will be in the new layer, test antigens: {}", chart2_->name(), test_indexes);
             return test_indexes;
         }
         else {
@@ -234,7 +234,7 @@ ae::antigen_indexes ae::chart::v3::merge_data_t::secondary_antigens_to_merge(con
         }
     }
 
-    return index_range(secondary.antigens().size()); // no cheating assay or combining not requested
+    return index_range(chart2_->antigens().size()); // no cheating assay or combining not requested
 
 } // ae::chart::v3::merge_data_t::secondary_antigens_to_merge
 

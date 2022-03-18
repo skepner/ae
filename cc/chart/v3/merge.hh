@@ -28,7 +28,11 @@ namespace ae::chart::v3
     {
       public:
         merge_data_t(merge_data_t&&) = default;
-        merge_data_t(const Chart& chart1, const Chart& chart2, const merge_settings_t& settings, common_antigens_sera_t&& a_common) : common_{std::move(a_common)} { build(chart1, chart2, settings); }
+        merge_data_t(std::shared_ptr<Chart> chart1, std::shared_ptr<Chart> chart2, const merge_settings_t& settings, common_antigens_sera_t&& a_common)
+            : chart1_{chart1}, chart2_{chart2}, common_{std::move(a_common)}
+        {
+            build(settings);
+        }
 
         std::string titer_merge_report(const Chart& chart) const;
         std::string titer_merge_report_common_only(const Chart& chart) const;
@@ -45,8 +49,10 @@ namespace ae::chart::v3
             bool common{false};
         };
 
-        template <typename Index> using index_mapping_t = std::unordered_map<Index, target_index_common_t<Index>, index_hash_for_unordered_map, std::equal_to<>>; // primary/secondary index -> (target index, if common)
+        template <typename Index>
+        using index_mapping_t = std::unordered_map<Index, target_index_common_t<Index>, index_hash_for_unordered_map, std::equal_to<>>; // primary/secondary index -> (target index, if common)
 
+        std::shared_ptr<Chart> chart1_, chart2_; // keep charts because common_ uses Antigens& and Sera&
         common_antigens_sera_t common_;
         index_mapping_t<antigen_index> antigens_primary_target_, antigens_secondary_target_;
         index_mapping_t<serum_index> sera_primary_target_, sera_secondary_target_;
@@ -54,13 +60,13 @@ namespace ae::chart::v3
         serum_index target_sera_{0};
         // std::unique_ptr<Titers::titer_merge_report> titer_report_;
 
-        void build(const Chart& chart1, const Chart& chart2, const merge_settings_t& settings);
-        antigen_indexes secondary_antigens_to_merge(const Chart& primary, const Chart& secondary, const merge_settings_t& settings) const;
+        void build(const merge_settings_t& settings);
+        antigen_indexes secondary_antigens_to_merge(const merge_settings_t& settings) const;
     };
 
     // ----------------------------------------------------------------------
 
-    std::pair<std::shared_ptr<Chart>, merge_data_t> merge(const Chart& chart1, const Chart& chart2, const merge_settings_t& settings);
+    std::pair<std::shared_ptr<Chart>, merge_data_t> merge(std::shared_ptr<Chart> chart1, std::shared_ptr<Chart> chart2, const merge_settings_t& settings);
 
 } // namespace ae::chart::v3
 
