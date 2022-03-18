@@ -71,6 +71,7 @@ namespace ae::chart::v3
 
         void combine_projections(const Chart& merge_in);
 
+        antigen_indexes reference() const; // if antigen name+annotations is the same as serum name+annotations (ignoring reassortant, passage)
         void duplicates_distinct();
         void throw_if_duplicates() const;
 

@@ -240,3 +240,23 @@ void ae::chart::v3::Chart::throw_if_duplicates() const
 } // ae::chart::v3::Chart::throw_if_duplicates
 
 // ----------------------------------------------------------------------
+
+ae::antigen_indexes ae::chart::v3::Chart::reference() const
+{
+    antigen_indexes indexes;
+    for (const auto ag_no : antigens().size()) {
+        const auto& ag = antigens()[ag_no];
+        if (!ag.annotations().distinct()) {
+            for (const auto& sr : sera()) {
+                if (ag.name() == sr.name() && ag.annotations() == sr.annotations()) {
+                    indexes.push_back(ag_no);
+                    break;
+                }
+            }
+        }
+    }
+    return indexes;
+
+} // ae::chart::v3::Chart::reference
+
+// ----------------------------------------------------------------------

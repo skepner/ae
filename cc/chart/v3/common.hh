@@ -138,9 +138,13 @@ namespace ae::chart::v3
         using common_t = std::pair<index_t, index_t>;
         enum class score_t : size_t { no_match = 0, passage_serum_id_ignored = 1, egg = 2, without_date = 3, full_match = 4 };
 
+        common_data_t(common_data_t&&) = default;
         common_data_t(const AgSrs& primary, const AgSrs& secondary, antigens_sera_match_level_t match_level);
 
         std::vector<common_t> common() const;
+
+        std::optional<index_t> primary_by_secondary(index_t secondary_no) const;
+        std::optional<index_t> secondary_by_primary(index_t primary_no) const;
 
         index_t size_primary() const { return primary_.size(); }
         index_t size_secondary() const { return secondary_.size(); }
@@ -174,6 +178,12 @@ namespace ae::chart::v3
     extern template std::vector<common_data_t<Antigens>::common_t> common_data_t<ae::chart::v3::Antigens>::common() const;
     extern template std::vector<common_data_t<Sera>::common_t> common_data_t<ae::chart::v3::Sera>::common() const;
 
+    extern template std::optional<antigen_index> common_data_t<Antigens>::primary_by_secondary(ae::antigen_index secondary_no) const;
+    extern template std::optional<serum_index> common_data_t<Sera>::primary_by_secondary(ae::serum_index secondary_no) const;
+
+    extern template std::optional<antigen_index> common_data_t<Antigens>::secondary_by_primary(ae::antigen_index primary_no) const;
+    extern template std::optional<serum_index> common_data_t<Sera>::secondary_by_primary(ae::serum_index primary_no) const;
+
     // ----------------------------------------------------------------------
 
     class Chart;
@@ -181,6 +191,7 @@ namespace ae::chart::v3
     class common_antigens_sera_t
     {
       public:
+        common_antigens_sera_t(common_antigens_sera_t&&) = default;
         common_antigens_sera_t(const Chart& primary, const Chart& secondary, antigens_sera_match_level_t match_level);
 
         //   CommonAntigensSera(const Chart& primary, const Chart& secondary, common::antigen_selector_t antigen_entry_extractor, common::serum_selector_t serum_entry_extractor, match_level_t
@@ -209,10 +220,10 @@ namespace ae::chart::v3
         //   Indexes common_primary_sera() const; // returns serum indexes (NOT point indexes)!
 
         //   // common antigen/serum mapping
-        //   std::optional<size_t> antigen_primary_by_secondary(size_t secondary_no) const;
-        //   std::optional<size_t> antigen_secondary_by_primary(size_t primary_no) const;
-        //   std::optional<size_t> serum_primary_by_secondary(size_t secondary_no) const;
-        //   std::optional<size_t> serum_secondary_by_primary(size_t primary_no) const;
+        std::optional<antigen_index> antigen_primary_by_secondary(antigen_index secondary_no) const { return antigens_.primary_by_secondary(secondary_no); }
+        std::optional<antigen_index> antigen_secondary_by_primary(antigen_index primary_no) const { return antigens_.secondary_by_primary(primary_no); }
+        std::optional<serum_index> serum_primary_by_secondary(serum_index secondary_no) const { return sera_.primary_by_secondary(secondary_no); }
+        std::optional<serum_index> serum_secondary_by_primary(serum_index primary_no) const { return sera_.secondary_by_primary(primary_no); }
 
         //   enum class subset { all, antigens, sera };
         //   std::vector<common_t> points(subset a_subset) const;

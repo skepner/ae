@@ -12,12 +12,15 @@ namespace ae
 {
     template <typename Tag> class index_iterator_tt;
 
+    enum index_tt_invalid_ { invalid_index };
+
     template <typename Tag> class index_tt
     {
       public:
         using value_type = size_t;
 
         explicit index_tt() : value_{0} {}
+        index_tt(index_tt_invalid_) : value_{static_cast<value_type>(-1)} {}
         index_tt(const index_tt&) = default;
         index_tt(index_tt&&) = default;
         template <typename T2>
@@ -137,9 +140,9 @@ namespace ae
     template <typename Tag> inline index_iterator_tt<Tag> index_tt<Tag>::begin() const { return index_iterator_tt<Tag>{index_tt<Tag>{0}}; }
     template <typename Tag> inline index_iterator_tt<Tag> index_tt<Tag>::end() const { return index_iterator_tt<Tag>{*this}; }
 
-    template <typename Tag> inline std::vector<index_tt<Tag>> index_range(index_tt<Tag> last)
+    template <typename Tag> inline ae::named_vector_t<index_tt<Tag>, Tag> index_range(index_tt<Tag> last)
     {
-        std::vector<index_tt<Tag>> result(*last);
+        ae::named_vector_t<index_tt<Tag>, Tag> result(*last);
         std::iota(result.begin(), result.end(), index_tt<Tag>{0});
         return result;
     }
@@ -162,9 +165,9 @@ namespace ae
 
     // ----------------------------------------------------------------------
 
-    using antigen_indexes = ae::named_vector_t<antigen_index, struct antigen_indexes_tag>;
-    using serum_indexes = ae::named_vector_t<serum_index, struct serum_indexes_tag>;
-    using point_indexes = ae::named_vector_t<point_index, struct point_indexes_tag>;
+    using antigen_indexes = ae::named_vector_t<antigen_index, struct antigen_index_tag>;
+    using serum_indexes = ae::named_vector_t<serum_index, struct serum_index_tag>;
+    using point_indexes = ae::named_vector_t<point_index, struct point_index_tag>;
 
     inline point_indexes to_point_indexes(const antigen_indexes& agi, antigen_index = antigen_index{0})
     {

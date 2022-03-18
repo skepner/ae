@@ -111,12 +111,12 @@ template void ae::chart::v3::common_data_t<ae::chart::v3::Sera>::sort_match();
 
 template <typename AgSrs> void ae::chart::v3::common_data_t<AgSrs>::mark_match_use(antigens_sera_match_level_t match_level)
 {
-    std::unordered_set<size_t> primary_used, secondary_used;
+    std::unordered_set<index_t, index_hash_for_unordered_map, std::equal_to<>> primary_used, secondary_used;
     auto use_entry = [this, &primary_used, &secondary_used](auto& match_entry) {
-        if (primary_used.find(*match_entry.primary) == primary_used.end() && secondary_used.find(*match_entry.secondary) == secondary_used.end()) {
+        if (primary_used.find(match_entry.primary) == primary_used.end() && secondary_used.find(match_entry.secondary) == secondary_used.end()) {
             match_entry.use = true;
-            primary_used.insert(*match_entry.primary);
-            secondary_used.insert(*match_entry.secondary);
+            primary_used.insert(match_entry.primary);
+            secondary_used.insert(match_entry.secondary);
             ++this->number_of_common_;
         }
     };
@@ -229,6 +229,36 @@ template <typename AgSrs> typename ae::chart::v3::common_data_t<AgSrs>::score_t 
 
 template ae::chart::v3::common_data_t<ae::chart::v3::Antigens>::score_t ae::chart::v3::common_data_t<ae::chart::v3::Antigens>::match_not_ignored(const AgSr& prim, const AgSr& seco) const;
 template ae::chart::v3::common_data_t<ae::chart::v3::Sera>::score_t ae::chart::v3::common_data_t<ae::chart::v3::Sera>::match_not_ignored(const AgSr& prim, const AgSr& seco) const;
+
+// ----------------------------------------------------------------------
+
+template <typename AgSrs> std::optional<typename ae::chart::v3::common_data_t<AgSrs>::index_t> ae::chart::v3::common_data_t<AgSrs>::primary_by_secondary(index_t secondary_no) const
+{
+    if (const auto found = std::find_if(match_.begin(), match_.end(), [secondary_no](const auto& match) { return match.use && match.secondary == secondary_no; }); found != match_.end())
+        return found->primary;
+    else
+        return std::nullopt;
+
+} // ae::chart::v3::common_data_t<AgSrs>::primary_by_secondary
+
+template std::optional<ae::antigen_index> ae::chart::v3::common_data_t<ae::chart::v3::Antigens>::primary_by_secondary(ae::antigen_index secondary_no) const;
+template std::optional<ae::serum_index> ae::chart::v3::common_data_t<ae::chart::v3::Sera>::primary_by_secondary(ae::serum_index secondary_no) const;
+
+// ----------------------------------------------------------------------
+
+template <typename AgSrs> std::optional<typename ae::chart::v3::common_data_t<AgSrs>::index_t> ae::chart::v3::common_data_t<AgSrs>::secondary_by_primary(index_t primary_no) const
+{
+    if (const auto found = std::find_if(match_.begin(), match_.end(), [primary_no](const auto& match) { return match.use && match.primary == primary_no; }); found != match_.end())
+        return found->secondary;
+    else
+        return std::nullopt;
+
+} // ae::chart::v3::common_data_t<AgSrs>::secondary_by_primary
+
+template std::optional<ae::antigen_index> ae::chart::v3::common_data_t<ae::chart::v3::Antigens>::secondary_by_primary(ae::antigen_index primary_no) const;
+template std::optional<ae::serum_index> ae::chart::v3::common_data_t<ae::chart::v3::Sera>::secondary_by_primary(ae::serum_index primary_no) const;
+
+// ----------------------------------------------------------------------
 
 
 // ======================================================================
@@ -693,33 +723,33 @@ template <typename AgSrEntry> inline std::vector<CommonAntigensSera::common_t> C
 
 // ----------------------------------------------------------------------
 
-#pragma GCC diagnostic push
-#if __GNUC__ == 8
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-// g++-8.2 issues strange warning about return {} statement in two template functions below
-#endif
+// #pragma GCC diagnostic push
+// #if __GNUC__ == 8
+// #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+// // g++-8.2 issues strange warning about return {} statement in two template functions below
+// #endif
 
-template <typename AgSrEntry> inline std::optional<size_t> CommonAntigensSera::Impl::ChartData<AgSrEntry>::primary_by_secondary(size_t secondary_no) const
-{
-    if (const auto found = std::find_if(match_.begin(), match_.end(), [secondary_no](const auto& match) { return match.use && match.secondary_index == secondary_no; }); found != match_.end())
-        return found->primary_index;
-    else
-        return std::nullopt;
+// template <typename AgSrEntry> inline std::optional<size_t> CommonAntigensSera::Impl::ChartData<AgSrEntry>::primary_by_secondary(size_t secondary_no) const
+// {
+//     if (const auto found = std::find_if(match_.begin(), match_.end(), [secondary_no](const auto& match) { return match.use && match.secondary_index == secondary_no; }); found != match_.end())
+//         return found->primary_index;
+//     else
+//         return std::nullopt;
 
-} // CommonAntigensSera::Impl::ChartData<AgSrEntry>::primary_by_secondary
+// } // CommonAntigensSera::Impl::ChartData<AgSrEntry>::primary_by_secondary
 
-// ----------------------------------------------------------------------
+// // ----------------------------------------------------------------------
 
-template <typename AgSrEntry> inline std::optional<size_t> CommonAntigensSera::Impl::ChartData<AgSrEntry>::secondary_by_primary(size_t primary_no) const
-{
-    if (const auto found = std::find_if(match_.begin(), match_.end(), [primary_no](const auto& match) { return match.use && match.primary_index == primary_no; }); found != match_.end())
-        return found->secondary_index;
-    else
-        return std::nullopt;
+// template <typename AgSrEntry> inline std::optional<size_t> CommonAntigensSera::Impl::ChartData<AgSrEntry>::secondary_by_primary(size_t primary_no) const
+// {
+//     if (const auto found = std::find_if(match_.begin(), match_.end(), [primary_no](const auto& match) { return match.use && match.primary_index == primary_no; }); found != match_.end())
+//         return found->secondary_index;
+//     else
+//         return std::nullopt;
 
-} // CommonAntigensSera::Impl::ChartData<AgSrEntry>::secondary_by_primary
+// } // CommonAntigensSera::Impl::ChartData<AgSrEntry>::secondary_by_primary
 
-#pragma GCC diagnostic pop
+// #pragma GCC diagnostic pop
 
 // ----------------------------------------------------------------------
 
