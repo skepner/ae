@@ -1,3 +1,5 @@
+#include <unordered_set>
+
 // #include "acmacs-base/string.hh"
 // #include "acmacs-base/range-v3.hh"
 // #include "acmacs-chart-2/log.hh"
@@ -30,87 +32,119 @@ std::vector<std::pair<ae::point_index, ae::point_index>> ae::chart::v3::common_a
 // ----------------------------------------------------------------------
 
 template <typename AgSrs> ae::chart::v3::common_data_t<AgSrs>::common_data_t(const AgSrs& primary, const AgSrs& secondary, antigens_sera_match_level_t match_level)
-    : primary_{primary}, secondary_{secondary}
+    : primary_{primary}, secondary_{secondary}, min_number_{std::min(primary.size(), secondary.size())}
 {
-    auto primary_sorted{index_range(primary.size())};
-    std::sort(primary_sorted.begin(), primary_sorted.end(), [&primary](auto i1, auto i2) { return compare_basic_designations(primary[i1], primary[i2]) == std::strong_ordering::less; });
+    build_match(match_level);
+    sort_match();
+    mark_match_use(match_level);
+}
 
-    const auto primary_secondary_less = [&primary](index_t primary_index, const typename AgSrs::element_t& seco) -> bool {
-        const auto& prim = primary[primary_index];
+template ae::chart::v3::common_data_t<ae::chart::v3::Antigens>::common_data_t(const Antigens& primary, const Antigens& secondary, antigens_sera_match_level_t match_level);
+template ae::chart::v3::common_data_t<ae::chart::v3::Sera>::common_data_t(const Sera& primary, const Sera& secondary, antigens_sera_match_level_t match_level);
+
+// ----------------------------------------------------------------------
+
+template <typename AgSrs> void ae::chart::v3::common_data_t<AgSrs>::build_match(antigens_sera_match_level_t match_level)
+{
+    auto primary_sorted{index_range(primary_.size())};
+    std::sort(primary_sorted.begin(), primary_sorted.end(), [this](auto i1, auto i2) { return compare_basic_designations(primary_[i1], primary_[i2]) == std::strong_ordering::less; });
+
+    const auto primary_secondary_less = [this](index_t primary_index, const typename AgSrs::element_t& seco) -> bool {
+        const auto& prim = primary_[primary_index];
         return compare_basic_designations(prim, seco) == std::strong_ordering::less;
     };
-    const auto secondary_primary_less = [primary_secondary_less](const typename AgSrs::element_t& seco, index_t primary_index) -> bool {
-        return primary_secondary_less(primary_index, seco);
+    const auto secondary_primary_less = [this](const typename AgSrs::element_t& seco, index_t primary_index) -> bool {
+        const auto& prim = primary_[primary_index];
+        return compare_basic_designations(seco, prim) == std::strong_ordering::less;
     };
-    for (const auto secondary_index : secondary.size()) {
-        const auto& seco = secondary[secondary_index];
+    for (const auto secondary_index : secondary_.size()) {
+        const auto& seco = secondary_[secondary_index];
         const auto first = std::lower_bound(primary_sorted.begin(), primary_sorted.end(), seco, primary_secondary_less);
         const auto last = std::upper_bound(primary_sorted.begin(), primary_sorted.end(), seco, secondary_primary_less);
         for (auto p_e = first; p_e != last; ++p_e) {
-            if (const auto score = match(primary[*p_e], seco, match_level); score != score_t::no_match) {
+            if (const auto score = match(primary_[*p_e], seco, match_level); score != score_t::no_match) {
                 match_.push_back({.primary = *p_e, .secondary = secondary_index, .score = score});
             }
         }
     }
 
-    // auto order = [](const auto& a, const auto& b) {
-    //                  if (a.score != b.score)
-    //                      return a.score > b.score;
-    //                  else if (a.primary_index != b.primary_index)
-    //                      return a.primary_index < b.primary_index;
-    //                  return a.secondary_index < b.secondary_index;
-    //              };
-    // std::sort(match_.begin(), match_.end(), order);
+} // ae::chart::v3::common_data_t<AgSrs>::build_match
 
-    // std::set<size_t> primary_used, secondary_used;
-    // auto use_entry = [this,&primary_used,&secondary_used](auto& match_entry) {
-    //     if (primary_used.find(match_entry.primary_index) == primary_used.end() && secondary_used.find(match_entry.secondary_index) == secondary_used.end()) {
-    //         match_entry.use = true;
-    //         primary_used.insert(match_entry.primary_index);
-    //         secondary_used.insert(match_entry.secondary_index);
-    //         ++this->number_of_common_;
-    //     }
-    // };
+template void ae::chart::v3::common_data_t<ae::chart::v3::Antigens>::build_match(antigens_sera_match_level_t match_level);
+template void ae::chart::v3::common_data_t<ae::chart::v3::Sera>::build_match(antigens_sera_match_level_t match_level);
 
-    // const size_t automatic_level_threshold = std::max(3UL, min_number_ / 10);
-    // score_t previous_score{score_t::no_match};
-    // bool stop = false;
-    // for (auto& match_entry: match_) {
-    //     switch (match_level) {
-    //       case match_level_t::strict:
-    //           if (match_entry.score == score_t::full_match)
-    //               use_entry(match_entry);
-    //           else
-    //               stop = true;
-    //           break;
-    //       case match_level_t::relaxed:
-    //           if (match_entry.score >= score_t::egg)
-    //               use_entry(match_entry);
-    //           else
-    //               stop = true;
-    //           break;
-    //       case match_level_t::ignored:
-    //           if (match_entry.score >= score_t::passage_serum_id_ignored)
-    //               use_entry(match_entry);
-    //           else
-    //               stop = true;
-    //           break;
-    //       case match_level_t::automatic:
-    //           if (previous_score == match_entry.score || number_of_common_ < automatic_level_threshold) {
-    //               use_entry(match_entry);
-    //               previous_score = match_entry.score;
-    //           }
-    //           else
-    //               stop = true;
-    //           break;
-    //     }
-    //     if (stop)
-    //         break;
-    // }
-}
+// ----------------------------------------------------------------------
 
-template ae::chart::v3::common_data_t<ae::chart::v3::Antigens>::common_data_t(const Antigens& primary, const Antigens& secondary, antigens_sera_match_level_t match_level);
-template ae::chart::v3::common_data_t<ae::chart::v3::Sera>::common_data_t(const Sera& primary, const Sera& secondary, antigens_sera_match_level_t match_level);
+template <typename AgSrs> void ae::chart::v3::common_data_t<AgSrs>::sort_match()
+{
+    auto order = [](const auto& a, const auto& b) {
+                     if (a.score != b.score)
+                         return a.score > b.score;
+                     else if (a.primary != b.primary)
+                         return a.primary < b.primary;
+                     return a.secondary < b.secondary;
+                 };
+    std::sort(match_.begin(), match_.end(), order);
+
+} // ae::chart::v3::common_data_t<AgSrs>::sort_match
+
+template void ae::chart::v3::common_data_t<ae::chart::v3::Antigens>::sort_match();
+template void ae::chart::v3::common_data_t<ae::chart::v3::Sera>::sort_match();
+
+// ----------------------------------------------------------------------
+
+template <typename AgSrs> void ae::chart::v3::common_data_t<AgSrs>::mark_match_use(antigens_sera_match_level_t match_level)
+{
+    std::unordered_set<size_t> primary_used, secondary_used;
+    auto use_entry = [this, &primary_used, &secondary_used](auto& match_entry) {
+        if (primary_used.find(*match_entry.primary) == primary_used.end() && secondary_used.find(*match_entry.secondary) == secondary_used.end()) {
+            match_entry.use = true;
+            primary_used.insert(*match_entry.primary);
+            secondary_used.insert(*match_entry.secondary);
+            ++this->number_of_common_;
+        }
+    };
+
+    const size_t automatic_level_threshold = std::max(3UL, *min_number_ / 10);
+    score_t previous_score{score_t::no_match};
+    bool stop = false;
+    for (auto& match_entry : match_) {
+        switch (match_level) {
+            case antigens_sera_match_level_t::strict:
+                if (match_entry.score == score_t::full_match)
+                    use_entry(match_entry);
+                else
+                    stop = true;
+                break;
+            case antigens_sera_match_level_t::relaxed:
+                if (match_entry.score >= score_t::egg)
+                    use_entry(match_entry);
+                else
+                    stop = true;
+                break;
+            case antigens_sera_match_level_t::ignored:
+                if (match_entry.score >= score_t::passage_serum_id_ignored)
+                    use_entry(match_entry);
+                else
+                    stop = true;
+                break;
+            case antigens_sera_match_level_t::automatic:
+                if (previous_score == match_entry.score || number_of_common_ < automatic_level_threshold) {
+                    use_entry(match_entry);
+                    previous_score = match_entry.score;
+                }
+                else
+                    stop = true;
+                break;
+        }
+        if (stop)
+            break;
+    }
+
+} // ae::chart::v3::common_data_t<AgSrs>::mark_match_use
+
+template void ae::chart::v3::common_data_t<ae::chart::v3::Antigens>::mark_match_use(antigens_sera_match_level_t match_level);
+template void ae::chart::v3::common_data_t<ae::chart::v3::Sera>::mark_match_use(antigens_sera_match_level_t match_level);
 
 // ----------------------------------------------------------------------
 
@@ -144,7 +178,7 @@ typename ae::chart::v3::common_data_t<AgSrs>::score_t ae::chart::v3::common_data
         }
     }
 
-    AD_DEBUG("{} \"{}\" != \"{}\": {} {} {}", prim.ag_sr, prim.designation(), seco.designation(), name_neq, reassortant_neq, annotations_neq);
+    // AD_DEBUG("{} \"{}\" != \"{}\": {} {} {}", prim.ag_sr, prim.designation(), seco.designation(), name_neq, reassortant_neq, annotations_neq);
     return score_t::no_match;
 }
 

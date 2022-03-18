@@ -165,9 +165,14 @@ namespace ae::chart::v3
         const AgSrs& primary_;
         const AgSrs& secondary_;
         std::vector<match_t> match_;
+        size_t number_of_common_{0};
+        const index_t min_number_;
 
         score_t match(const AgSr& prim, const AgSr& seco, antigens_sera_match_level_t match_level) const;
         score_t match_not_ignored(const AgSr& prim, const AgSr& seco) const;
+        void build_match(antigens_sera_match_level_t match_level);
+        void sort_match();
+        void mark_match_use(antigens_sera_match_level_t match_level);
 
     };
 
