@@ -80,6 +80,8 @@ namespace ae::chart::v3
         const auto& name() const { return name_; }
         void name(const std::string& name) { name_ = name; }
 
+        std::string_view name_or_date() const { if (!name_.empty()) return name_; else return date_; }
+
       private:
         ae::virus::virus_t virus_{};
         ae::virus::type_subtype_t type_subtype_{};
@@ -110,6 +112,8 @@ namespace ae::chart::v3
         std::string make_rbc_species() const;
         std::string make_lab() const;
         std::string make_date(include_number_of_tables inc = include_number_of_tables::yes) const;
+
+        size_t max_source_name() const;
 
       private:
         std::vector<TableSource> sources_{};

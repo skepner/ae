@@ -153,3 +153,16 @@ std::string ae::chart::v3::Info::make_date(include_number_of_tables inc) const
 } // ae::chart::v3::Info::make_date
 
 // ----------------------------------------------------------------------
+
+size_t ae::chart::v3::Info::max_source_name() const
+{
+    if (sources().size() < 2)
+        return 0;
+    size_t msn = 0;
+    for (size_t s_no{0}; s_no < sources().size(); ++s_no)
+        msn = std::max(msn, sources()[s_no].name_or_date().size());
+    return msn;
+
+} // ae::chart::v3::Info::max_source_name
+
+// ----------------------------------------------------------------------

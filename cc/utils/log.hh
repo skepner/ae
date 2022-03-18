@@ -11,7 +11,7 @@ namespace ae
     enum class debug { no, yes };
     enum class verbose { no, yes };
 
-    template <typename Int> constexpr auto number_of_decimal_digits(Int max_value) { return static_cast<int>(std::log10(max_value)) + 1; }
+    template <typename Int> constexpr auto number_of_decimal_digits(Int max_value) { return static_cast<int>(std::log10(static_cast<double>(max_value))) + 1; }
 
     // constexpr inline debug debug_from(bool verb) { return verb ? debug::yes : debug::no; }
     constexpr inline verbose verbose_from(bool verb) { return verb ? verbose::yes : verbose::no; }

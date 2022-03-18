@@ -1,8 +1,6 @@
 #include <unordered_set>
 
-// #include "acmacs-base/string.hh"
-// #include "acmacs-base/range-v3.hh"
-// #include "acmacs-chart-2/log.hh"
+#include "utils/log.hh"
 #include "chart/v3/common.hh"
 #include "chart/v3/chart.hh"
 
@@ -57,6 +55,23 @@ template <typename AgSrs> std::vector<typename ae::chart::v3::common_data_t<AgSr
 
 template std::vector<ae::chart::v3::common_data_t<ae::chart::v3::Antigens>::common_t> ae::chart::v3::common_data_t<ae::chart::v3::Antigens>::common() const;
 template std::vector<ae::chart::v3::common_data_t<ae::chart::v3::Sera>::common_t> ae::chart::v3::common_data_t<ae::chart::v3::Sera>::common() const;
+
+// ----------------------------------------------------------------------
+
+template <typename AgSrs> typename ae::chart::v3::common_data_t<AgSrs>::indexes_t ae::chart::v3::common_data_t<AgSrs>::primary() const
+{
+    indexes_t result;
+    for (const auto& mm : match_) {
+        if (mm.use)
+            result.push_back(mm.primary);
+    }
+    std::sort(std::begin(result), std::end(result));
+    return result;
+
+} // ae::chart::v3::common_data_t<AgSrs>::primary
+
+template ae::antigen_indexes ae::chart::v3::common_data_t<ae::chart::v3::Antigens>::primary() const;
+template ae::serum_indexes ae::chart::v3::common_data_t<ae::chart::v3::Sera>::primary() const;
 
 // ----------------------------------------------------------------------
 
@@ -257,6 +272,72 @@ template <typename AgSrs> std::optional<typename ae::chart::v3::common_data_t<Ag
 
 template std::optional<ae::antigen_index> ae::chart::v3::common_data_t<ae::chart::v3::Antigens>::secondary_by_primary(ae::antigen_index primary_no) const;
 template std::optional<ae::serum_index> ae::chart::v3::common_data_t<ae::chart::v3::Sera>::secondary_by_primary(ae::serum_index primary_no) const;
+
+// ----------------------------------------------------------------------
+
+template <typename AgSrs> size_t ae::chart::v3::common_data_t<AgSrs>::primary_name_max_size() const
+{
+    return std::accumulate(primary_.begin(), primary_.end(), 0ul, [](size_t mx, const auto& ag_sr) { return std::max(mx, ag_sr.designation_size()); });
+
+} // ae::chart::v3::common_data_t<AgSrs>::primary_name_max_size
+
+template size_t ae::chart::v3::common_data_t<ae::chart::v3::Antigens>::primary_name_max_size() const;
+template size_t ae::chart::v3::common_data_t<ae::chart::v3::Sera>::primary_name_max_size() const;
+
+// ----------------------------------------------------------------------
+
+template <typename AgSrs> std::string ae::chart::v3::common_data_t<AgSrs>::report(size_t indent) const
+{
+    using namespace std::string_view_literals;
+    std::string_view prefix, ignored_key;
+    if constexpr (std::is_same_v<AgSrs, Antigens>) {
+        prefix = "antigens"sv;
+        ignored_key = "no-passage"sv;
+    }
+    else {
+        ignored_key = "no-serum-id"sv;
+        prefix = "sera"sv;
+    }
+    const std::array score_names{"no-match"sv, ignored_key, "egg"sv, "no-date"sv, "full"sv};
+    const auto score_names_max = std::accumulate(std::begin(score_names), std::end(score_names), 0ul, [](size_t mx, std::string_view nam) { return std::max(mx, nam.size()); });
+
+    fmt::memory_buffer output;
+    if (number_of_common_) {
+        const size_t primary_name_size = primary_name_max_size();
+        const auto num_dgt = number_of_decimal_digits(std::max(*primary_.size(), *secondary_.size()));
+        fmt::format_to(std::back_inserter(output), "{:{}s}common {}: {} (total primary: {} secondary: {})\n", "", indent, prefix, number_of_common_, primary_.size(), secondary_.size());
+        const auto common = used();
+        for (const auto& cmn : common) {
+            fmt::format_to(std::back_inserter(output), "{:{}c}{:<{}s} {:{}d} {:<{}s} | {:{}d} {}\n", ' ', indent, score_names[static_cast<size_t>(cmn.score)], score_names_max, cmn.primary, num_dgt,
+                           primary_[cmn.primary].designation(), primary_name_size, cmn.secondary, num_dgt, secondary_[cmn.secondary].designation());
+        }
+        // if (acmacs::log::is_enabled(acmacs::log::common)) {
+        //     fmt::format_to(std::back_inserter(output), ">>>> [common] {:{}}common in primary {}: {}\n", "", indent, prefix,
+        //                    ranges::views::transform(common, [](const auto& cmn) { return cmn.primary; }) | ranges::to_vector);
+        //     fmt::format_to(std::back_inserter(output), ">>>> [common] {:{}}common in secondary {}: {}\n", "", indent, prefix,
+        //                    ranges::views::transform(common, [](const auto& cmn) { return cmn.secondary; }) | ranges::to_vector);
+        //     const auto [unique_in_primary, unique_in_secondary] = find_unique(common);
+        //     fmt::format_to(std::back_inserter(output), ">>>> [common] {:{}}unique in primary {}: {}\n", "", indent, prefix, unique_in_primary);
+        //     fmt::format_to(std::back_inserter(output), ">>>> [common] {:{}}unique in secondary {}: {}\n", "", indent, prefix, unique_in_secondary);
+        // }
+    }
+    else {
+        fmt::format_to(std::back_inserter(output), "{:{}}no common {}\n", ' ', indent, prefix);
+    }
+    return fmt::to_string(output);
+
+} // ae::chart::v3::common_data_t<AgSrs>::report
+
+template std::string ae::chart::v3::common_data_t<ae::chart::v3::Antigens>::report(size_t indent) const;
+template std::string ae::chart::v3::common_data_t<ae::chart::v3::Sera>::report(size_t indent) const;
+
+// ----------------------------------------------------------------------
+
+std::string ae::chart::v3::common_antigens_sera_t::report(size_t indent) const
+{
+    return fmt::format("{}\n{}", antigens_.report(indent), sera_.report(indent));
+
+} // ae::chart::v3::common_antigens_sera_t::report
 
 // ----------------------------------------------------------------------
 
@@ -652,38 +733,38 @@ template <typename AgSrEntry> std::pair<std::vector<size_t>, std::vector<size_t>
 
 // ----------------------------------------------------------------------
 
-template <typename AgSrEntry> std::string CommonAntigensSera::Impl::ChartData<AgSrEntry>::report(size_t indent, std::string_view prefix, std::string_view ignored_key) const
-{
-    using namespace std::string_view_literals;
-    const std::array score_names{"no-match"sv, ignored_key, "egg"sv, "no-date"sv, "full"sv};
-    const auto score_names_max = std::accumulate(std::begin(score_names), std::end(score_names), 0ul, [](size_t mx, std::string_view nam) { return std::max(mx, nam.size()); });
+// template <typename AgSrEntry> std::string CommonAntigensSera::Impl::ChartData<AgSrEntry>::report(size_t indent, std::string_view prefix, std::string_view ignored_key) const
+// {
+//     using namespace std::string_view_literals;
+//     const std::array score_names{"no-match"sv, ignored_key, "egg"sv, "no-date"sv, "full"sv};
+//     const auto score_names_max = std::accumulate(std::begin(score_names), std::end(score_names), 0ul, [](size_t mx, std::string_view nam) { return std::max(mx, nam.size()); });
 
-    fmt::memory_buffer output;
-    if (number_of_common_) {
-        const size_t primary_name_size = primary_name_max_size();
-        const auto num_dgt = num_digits();
-        fmt::format_to_mb(output, "{:{}s}common {}: {} (total primary: {} secondary: {})\n", "", indent, prefix, number_of_common_, primary_.size(), secondary_.size());
-        const auto common = find_common();
-        for (const auto& cmn : common) {
-            fmt::format_to_mb(output, "{:{}c}{:<{}s} {:{}d} {:<{}s} | {:{}d} {}\n", ' ', indent, score_names[static_cast<size_t>(cmn.score)], score_names_max, cmn.primary_index, num_dgt,
-                           find_primary(cmn.primary_index).full_name(), primary_name_size, cmn.secondary_index, num_dgt, secondary_[cmn.secondary_index].full_name());
-        }
-        if (acmacs::log::is_enabled(acmacs::log::common)) {
-            fmt::format_to_mb(output, ">>>> [common] {:{}}common in primary {}: {}\n", "", indent, prefix,
-                           ranges::views::transform(common, [](const auto& cmn) { return cmn.primary_index; }) | ranges::to_vector);
-            fmt::format_to_mb(output, ">>>> [common] {:{}}common in secondary {}: {}\n", "", indent, prefix,
-                           ranges::views::transform(common, [](const auto& cmn) { return cmn.secondary_index; }) | ranges::to_vector);
-            const auto [unique_in_primary, unique_in_secondary] = find_unique(common);
-            fmt::format_to_mb(output, ">>>> [common] {:{}}unique in primary {}: {}\n", "", indent, prefix, unique_in_primary);
-            fmt::format_to_mb(output, ">>>> [common] {:{}}unique in secondary {}: {}\n", "", indent, prefix, unique_in_secondary);
-        }
-    }
-    else {
-        fmt::format_to_mb(output, "{:{}}no common {}\n", ' ', indent, prefix);
-    }
-    return fmt::to_string(output);
+//     fmt::memory_buffer output;
+//     if (number_of_common_) {
+//         const size_t primary_name_size = primary_name_max_size();
+//         const auto num_dgt = num_digits();
+//         fmt::format_to_mb(output, "{:{}s}common {}: {} (total primary: {} secondary: {})\n", "", indent, prefix, number_of_common_, primary_.size(), secondary_.size());
+//         const auto common = find_common();
+//         for (const auto& cmn : common) {
+//             fmt::format_to_mb(output, "{:{}c}{:<{}s} {:{}d} {:<{}s} | {:{}d} {}\n", ' ', indent, score_names[static_cast<size_t>(cmn.score)], score_names_max, cmn.primary_index, num_dgt,
+//                            find_primary(cmn.primary_index).full_name(), primary_name_size, cmn.secondary_index, num_dgt, secondary_[cmn.secondary_index].full_name());
+//         }
+//         if (acmacs::log::is_enabled(acmacs::log::common)) {
+//             fmt::format_to_mb(output, ">>>> [common] {:{}}common in primary {}: {}\n", "", indent, prefix,
+//                            ranges::views::transform(common, [](const auto& cmn) { return cmn.primary_index; }) | ranges::to_vector);
+//             fmt::format_to_mb(output, ">>>> [common] {:{}}common in secondary {}: {}\n", "", indent, prefix,
+//                            ranges::views::transform(common, [](const auto& cmn) { return cmn.secondary_index; }) | ranges::to_vector);
+//             const auto [unique_in_primary, unique_in_secondary] = find_unique(common);
+//             fmt::format_to_mb(output, ">>>> [common] {:{}}unique in primary {}: {}\n", "", indent, prefix, unique_in_primary);
+//             fmt::format_to_mb(output, ">>>> [common] {:{}}unique in secondary {}: {}\n", "", indent, prefix, unique_in_secondary);
+//         }
+//     }
+//     else {
+//         fmt::format_to_mb(output, "{:{}}no common {}\n", ' ', indent, prefix);
+//     }
+//     return fmt::to_string(output);
 
-} // CommonAntigensSera::Impl::ChartData<AgSrEntry>::report
+// } // CommonAntigensSera::Impl::ChartData<AgSrEntry>::report
 
 // ----------------------------------------------------------------------
 

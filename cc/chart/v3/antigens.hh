@@ -4,6 +4,7 @@
 #include <unordered_map>
 
 #include "ext/compare.hh"
+#include "utils/string.hh"
 #include "virus/name.hh"
 #include "virus/passage.hh"
 #include "virus/reassortant.hh"
@@ -123,7 +124,8 @@ namespace ae::chart::v3
         const auto& lab_ids() const { return lab_ids_; }
         LabIds& lab_ids() { return lab_ids_; }
 
-        std::string designation() const;
+        std::string designation() const { return string::join(" ", name(), string::join(" ", annotations()), reassortant(), passage()); }
+        size_t designation_size() const { return string::join_size(1, name().size(), annotations().join_size(1), reassortant().size(), passage().size()); }
 
         static inline const char* ag_sr = "AG";
 
@@ -154,7 +156,8 @@ namespace ae::chart::v3
         void forced_column_basis(double forced) { forced_column_basis_ = forced; }
         void not_forced_column_basis() { forced_column_basis_ = std::nullopt; }
 
-        std::string designation() const;
+        std::string designation() const { return string::join(" ", name(), string::join(" ", annotations()), reassortant(), serum_id()); }
+        size_t designation_size() const { return string::join_size(1, name().size(), annotations().join_size(1), reassortant().size(), serum_id().size()); }
 
         static inline const char* ag_sr = "SR";
 
@@ -191,6 +194,11 @@ namespace ae::chart::v3
         auto end() { return data_.end(); }
 
         Element& add() { return data_.emplace_back(); }
+
+        size_t max_designation() const
+            {
+                return std::accumulate(begin(), end(), 0ul, [](size_t mx, const Element& elt) { return std::max(mx, elt.designation_size()); });
+            }
 
         // ----------------------------------------------------------------------
 
@@ -248,7 +256,7 @@ namespace ae::chart::v3
         bool operator==(const Sera&) const = default;
     };
 
-}
+} // namespace ae::chart::v3
 
 // ----------------------------------------------------------------------
 

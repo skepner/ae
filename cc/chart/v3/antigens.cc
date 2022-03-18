@@ -1,6 +1,5 @@
 #include <regex>
 
-#include "utils/string.hh"
 #include "chart/v3/antigens.hh"
 
 // ----------------------------------------------------------------------
@@ -41,21 +40,5 @@ bool ae::chart::v3::Annotations::match(const Annotations& antigen, const Annotat
     return antigen_fixed == serum_fixed;
 
 } // ae::chart::v3::Annotations::match_antigen_serum
-
-// ----------------------------------------------------------------------
-
-std::string ae::chart::v3::Antigen::designation() const
-{
-    return string::join(" ", name(), string::join(" ", annotations()), reassortant(), passage());
-
-} // ae::chart::v3::Antigen::designation
-
-// ----------------------------------------------------------------------
-
-std::string ae::chart::v3::Serum::designation() const
-{
-    return string::join(" ", name(), string::join(" ", annotations()), reassortant(), serum_id());
-
-} // ae::chart::v3::Serum::designation
 
 // ----------------------------------------------------------------------

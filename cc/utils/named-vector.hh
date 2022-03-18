@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <algorithm>
+#include <numeric>
 
 #include "ext/compare.hh"
 #include "utils/named-type.hh"
@@ -35,6 +36,18 @@ namespace ae
         // for std::back_inserter
         constexpr void push_back(const T& val) { this->get().push_back(val); }
         constexpr void push_back(T&& val) { this->get().push_back(std::forward<T>(val)); }
+
+        // size of strings joined by separator
+        size_t join_size(size_t separator_size) const
+        {
+            if (empty())
+                return 0;
+            if constexpr (std::is_same_v<T, std::string>) {
+                return separator_size * (size() - 1) + std::accumulate(begin(), end(), 0ul, [](size_t acc, const std::string& add) { return acc + add.size(); });
+            }
+            else
+                static_assert(std::is_same_v<T, void>);
+        }
 
         void remove(const T& val)
         {

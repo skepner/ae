@@ -547,7 +547,7 @@ void ae::py::chart_v3(pybind11::module_& mdl)
         .def("serum_id", [](Serum& sr, const std::string& new_serum_id) { return sr.serum_id(SerumId{new_serum_id}); })              //
         .def("serum_species", [](const Serum& sr) { return *sr.serum_species(); })                                                   //
         .def("serum_species", [](Serum& sr, const std::string& new_species) { return sr.serum_species(SerumSpecies{new_species}); }) //
-        .def("designation", &Serum::designation)                                                                                   //
+        .def("designation", &Serum::designation)                                                                                     //
         ;
 
     // ----------------------------------------------------------------------
@@ -654,9 +654,10 @@ void ae::py::chart_v3(pybind11::module_& mdl)
 
     chart_v3_submodule.def("merge", &ae::py::merge, "chart1"_a, "chart2"_a, "match"_a = "auto", "merge_type"_a = "simple", "combine_cheating_assays"_a = false);
 
-    pybind11::class_<merge_data_t>(chart_v3_submodule, "MergeData") //
+    pybind11::class_<merge_data_t>(chart_v3_submodule, "MergeData")  //
+        .def("report", &merge_data_t::titer_merge_report, "chart"_a) //
+        .def("common", &merge_data_t::common_report, "indent"_a = 0)   //
         ;
-
 }
 
 // ----------------------------------------------------------------------

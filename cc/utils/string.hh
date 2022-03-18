@@ -421,6 +421,23 @@ namespace ae::string
         }
     }
 
+    template <typename Arg1, typename Arg2, typename... Args> inline size_t join_size(size_t separator_size, Arg1&& arg1, Arg2&& arg2, Args&&... rest)
+    {
+        if constexpr (sizeof...(rest) == 0) {
+            if (arg1) {
+                if (arg2)
+                    return arg1 + arg2 + separator_size;
+                else
+                    return arg1;
+            }
+            else
+                return arg2;
+        }
+        else {
+            return join_size(separator_size, join_size(separator_size, std::forward<Arg1>(arg1), std::forward<Arg2>(arg2)), std::forward<Args>(rest)...);
+        }
+    }
+
     // ----------------------------------------------------------------------
 
     inline std::string first_letter_of_words(std::string_view source)

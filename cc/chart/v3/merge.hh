@@ -30,9 +30,10 @@ namespace ae::chart::v3
         merge_data_t(merge_data_t&&) = default;
         merge_data_t(const Chart& chart1, const Chart& chart2, const merge_settings_t& settings, common_antigens_sera_t&& a_common) : common_{std::move(a_common)} { build(chart1, chart2, settings); }
 
-        // std::string titer_merge_report(const Chart& chart) const;
-        // std::string titer_merge_report_common_only(const Chart& chart) const;
-        // std::string titer_merge_diagnostics(const Chart& chart, const PointIndexList& antigens, const PointIndexList& sera, int max_field_size) const;
+        std::string titer_merge_report(const Chart& chart) const;
+        std::string titer_merge_report_common_only(const Chart& chart) const;
+        std::string titer_merge_diagnostics(const Chart& chart, const antigen_indexes& antigens, const serum_indexes& sera, int max_field_size) const;
+        std::string common_report(size_t indent) const { return common_.report(indent); }
 
       private:
         template <typename Index> struct target_index_common_t
