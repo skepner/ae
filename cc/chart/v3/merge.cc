@@ -350,6 +350,8 @@ std::string ae::chart::v3::merge_data_t::titer_merge_diagnostics(const Chart& ch
 
     // return fmt::to_string(output);
 
+    return {};
+
 } // ae::chart::v3::merge_data_t::titer_merge_diagnostics
 
 // ----------------------------------------------------------------------

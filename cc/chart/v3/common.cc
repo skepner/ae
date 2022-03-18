@@ -307,10 +307,11 @@ template <typename AgSrs> std::string ae::chart::v3::common_data_t<AgSrs>::repor
         const auto num_dgt = number_of_decimal_digits(std::max(*primary_.size(), *secondary_.size()));
         fmt::format_to(std::back_inserter(output), "{:{}s}common {}: {} (total primary: {} secondary: {})\n", "", indent, prefix, number_of_common_, primary_.size(), secondary_.size());
         const auto common = used();
-        for (const auto& cmn : common) {
-            fmt::format_to(std::back_inserter(output), "{:{}c}{:<{}s} {:{}d} {:<{}s} | {:{}d} {}\n", ' ', indent, score_names[static_cast<size_t>(cmn.score)], score_names_max, cmn.primary, num_dgt,
-                           primary_[cmn.primary].designation(), primary_name_size, cmn.secondary, num_dgt, secondary_[cmn.secondary].designation());
-        }
+        // for (const auto& cmn : common) {
+        //     fmt::format_to(std::back_inserter(output), "{:{}c}{:<{}s} {:{}d} {:<{}s} | {:{}d} {}\n", ' ', indent, score_names[static_cast<size_t>(cmn.score)], score_names_max, cmn.primary, num_dgt,
+        //                    primary_[cmn.primary].designation(), primary_name_size, cmn.secondary, num_dgt, secondary_[cmn.secondary].designation());
+        // }
+
         // if (acmacs::log::is_enabled(acmacs::log::common)) {
         //     fmt::format_to(std::back_inserter(output), ">>>> [common] {:{}}common in primary {}: {}\n", "", indent, prefix,
         //                    ranges::views::transform(common, [](const auto& cmn) { return cmn.primary; }) | ranges::to_vector);
