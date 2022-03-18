@@ -72,6 +72,7 @@ namespace ae::chart::v3
         void combine_projections(const Chart& merge_in);
 
         void duplicates_distinct();
+        void throw_if_duplicates() const;
 
       private:
         Info info_{};

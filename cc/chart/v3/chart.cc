@@ -223,3 +223,20 @@ void ae::chart::v3::Chart::duplicates_distinct()
 } // ae::chart::v3::Chart::duplicates_distinct
 
 // ----------------------------------------------------------------------
+
+void ae::chart::v3::Chart::throw_if_duplicates() const
+{
+    const auto dupa = antigens().find_duplicates();
+    const auto dups = sera().find_duplicates();
+    if (!dupa.empty()) {
+        if (!dups.empty())
+            throw Error{"{}: duplicating antigens: {}  duplicating sera: {}", name(), dupa, dups};
+        else
+            throw Error{"{}: duplicating antigens: {}", name(), dupa};
+    }
+    else if (!dups.empty())
+        throw Error{"{}: duplicating sera: {}", name(), dups};
+
+} // ae::chart::v3::Chart::throw_if_duplicates
+
+// ----------------------------------------------------------------------
