@@ -125,6 +125,8 @@ namespace ae::chart::v3
 
         std::string designation() const;
 
+        static inline const char* ag_sr = "AG";
+
       private:
         Date date_{};
         LabIds lab_ids_{};
@@ -153,6 +155,8 @@ namespace ae::chart::v3
         void not_forced_column_basis() { forced_column_basis_ = std::nullopt; }
 
         std::string designation() const;
+
+        static inline const char* ag_sr = "SR";
 
       private:
         SerumSpecies serum_species_{};

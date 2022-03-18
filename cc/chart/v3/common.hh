@@ -133,7 +133,10 @@ namespace ae::chart::v3
     template <typename AgSrs> class common_data_t
     {
       public:
-        using common_t = std::pair<typename AgSrs::index_t, typename AgSrs::index_t>;
+        using index_t = typename AgSrs::index_t;
+        using AgSr = typename AgSrs::element_t;
+        using common_t = std::pair<index_t, index_t>;
+        enum class score_t : size_t { no_match = 0, passage_serum_id_ignored = 1, egg = 2, without_date = 3, full_match = 4 };
 
         common_data_t(const AgSrs& primary, const AgSrs& secondary, antigens_sera_match_level_t match_level);
 
@@ -147,12 +150,25 @@ namespace ae::chart::v3
             return result;
         }
 
-        typename AgSrs::index_t size_primary() const { return primary_.size(); }
-        typename AgSrs::index_t size_secondary() const { return secondary_.size(); }
+        index_t size_primary() const { return primary_.size(); }
+        index_t size_secondary() const { return secondary_.size(); }
 
       private:
+        struct match_t
+        {
+            index_t primary;
+            index_t secondary;
+            score_t score;
+            bool use{false};
+        };
+
         const AgSrs& primary_;
         const AgSrs& secondary_;
+        std::vector<match_t> match_;
+
+        score_t match(const AgSr& prim, const AgSr& seco, antigens_sera_match_level_t match_level) const;
+        score_t match_not_ignored(const AgSr& prim, const AgSr& seco) const;
+
     };
 
     extern template common_data_t<Antigens>::common_data_t(const Antigens& primary, const Antigens& secondary, antigens_sera_match_level_t match_level);
