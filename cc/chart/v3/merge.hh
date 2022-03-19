@@ -27,6 +27,18 @@ namespace ae::chart::v3
     class merge_data_t
     {
       public:
+        template <typename Index> struct target_index_common_t
+        {
+            // target_index_common_t() = default;
+            // target_index_common_t& operator=(size_t a_index) { index = a_index; return *this; }
+            // target_index_common_t& operator=(const target_index_common_t& src) { index = src.index; common = true; return *this; }
+            Index index{invalid_index};
+            bool common{false};
+        };
+
+        // primary/secondary index -> (target index, if common)
+        template <typename Index> using index_mapping_t = std::unordered_map<Index, target_index_common_t<Index>, index_hash_for_unordered_map, std::equal_to<>>;
+
         merge_data_t(merge_data_t&&) = default;
         merge_data_t(std::shared_ptr<Chart> chart1, std::shared_ptr<Chart> chart2, const merge_settings_t& settings, common_antigens_sera_t&& a_common)
             : chart1_{chart1}, chart2_{chart2}, common_{std::move(a_common)}
@@ -39,19 +51,14 @@ namespace ae::chart::v3
         std::string titer_merge_diagnostics(const Chart& chart, const antigen_indexes& antigens, const serum_indexes& sera, int max_field_size) const;
         std::string common_report(size_t indent) const { return common_.report(indent); }
 
+        auto number_of_antigens_in_merge() const { return target_antigens_; }
+        auto number_of_sera_in_merge() const { return target_sera_; }
+        const auto& antigens_primary_target() const { return antigens_primary_target_; }
+        const auto& antigens_secondary_target() const { return antigens_secondary_target_; }
+        const auto& sera_primary_target() const { return sera_primary_target_; }
+        const auto& sera_secondary_target() const { return sera_secondary_target_; }
+
       private:
-        template <typename Index> struct target_index_common_t
-        {
-            // target_index_common_t() = default;
-            // target_index_common_t& operator=(size_t a_index) { index = a_index; return *this; }
-            // target_index_common_t& operator=(const target_index_common_t& src) { index = src.index; common = true; return *this; }
-            Index index{invalid_index};
-            bool common{false};
-        };
-
-        template <typename Index>
-        using index_mapping_t = std::unordered_map<Index, target_index_common_t<Index>, index_hash_for_unordered_map, std::equal_to<>>; // primary/secondary index -> (target index, if common)
-
         std::shared_ptr<Chart> chart1_, chart2_; // keep charts because common_ uses Antigens& and Sera&
         common_antigens_sera_t common_;
         index_mapping_t<antigen_index> antigens_primary_target_, antigens_secondary_target_;

@@ -92,6 +92,8 @@ namespace ae::chart::v3
         const auto& semantic() const { return semantic_; }
         SemanticAttributes& semantic() { return semantic_; }
 
+        void update_with(const AntigenSerum& src);
+
       private:
         virus::Name name_{};
         Annotations annotations_{};
@@ -129,6 +131,8 @@ namespace ae::chart::v3
 
         static inline const char* ag_sr = "AG";
 
+        void update_with(const Antigen& src);
+
       private:
         Date date_{};
         LabIds lab_ids_{};
@@ -161,6 +165,8 @@ namespace ae::chart::v3
 
         static inline const char* ag_sr = "SR";
 
+        void update_with(const Serum& src);
+
       private:
         SerumSpecies serum_species_{};
         SerumId serum_id_{};
@@ -187,6 +193,7 @@ namespace ae::chart::v3
         index_t size() const { return index_t{data_.size()}; }
         Element& operator[](index_t index) { return data_[*index]; }
         const Element& operator[](index_t index) const { return data_[*index]; }
+        void resize(index_t sz) { data_.resize(*sz); }
 
         auto begin() const { return data_.begin(); }
         auto begin() { return data_.begin(); }

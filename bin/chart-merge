@@ -18,7 +18,7 @@ def main(args: argparse.Namespace):
         if args.duplicates_distinct:
             chart.duplicates_distinct()
         if merge is not None:
-            print(merge, chart, sep="\n", end="\n\n")
+            print(report_chart(merge), report_chart(chart), sep="\n", end="\n\n")
             merge, merge_data = ae_backend.chart_v3.merge(merge, chart, **merge_settings)
             print(merge_data.common())
             # print(merge_data.report(merge))
@@ -36,6 +36,11 @@ def main(args: argparse.Namespace):
 
 # ----------------------------------------------------------------------
 
+def report_chart(chart: ae_backend.chart_v3.Chart):
+    return f"{chart.name()} {chart.number_of_antigens()}:{chart.number_of_sera()}"
+
+# ----------------------------------------------------------------------
+
 try:
     parser = argparse.ArgumentParser(description=__doc__)
 
@@ -46,8 +51,8 @@ try:
     parser.add_argument("--merge-type", default="simple", choices=["type1", "simple", "type2", "incremental", "type3", "overlay", "type4", "type5"])
     parser.add_argument("--combine-cheating-assays", action="store_true", default=False, help="combine tables if they have the same reference titers")
     parser.add_argument("--duplicates-distinct", action="store_true", default=False, help="make duplicating antigens/sera distinct")
-    parser.add_argument("--report", action="store_true", default=False, help="titer merge report")
-    parser.add_argument("--common-only", action="store_true", default=False, help="titer merge report for common antigens and sera only")
+    parser.add_argument("--report", action="store_true", default=False, help="Use chart-merge-titer-report")
+    parser.add_argument("--common-only", action="store_true", default=False, help="Use chart-merge-titer-report")
 
     args = parser.parse_args()
     exit_code = main(args) or 0

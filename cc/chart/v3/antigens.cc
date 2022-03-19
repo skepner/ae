@@ -1,5 +1,6 @@
 #include <regex>
 
+#include "utils/log.hh"
 #include "chart/v3/antigens.hh"
 
 // ----------------------------------------------------------------------
@@ -40,5 +41,43 @@ bool ae::chart::v3::Annotations::match(const Annotations& antigen, const Annotat
     return antigen_fixed == serum_fixed;
 
 } // ae::chart::v3::Annotations::match_antigen_serum
+
+// ----------------------------------------------------------------------
+
+void ae::chart::v3::AntigenSerum::update_with(const AntigenSerum& src)
+{
+    if (lineage_.empty())
+        lineage_ = src.lineage();
+    else if (!src.lineage().empty() && lineage_ != src.lineage())
+        AD_WARNING("merged antigen lineages {} vs. {}", lineage_, src.lineage());
+
+} // ae::chart::v3::AntigenSerum::update_with
+
+// ----------------------------------------------------------------------
+
+void ae::chart::v3::Antigen::update_with(const Antigen& src)
+{
+    AntigenSerum::update_with(src);
+    if (date_.empty())
+        date_ = src.date();
+    else if (!src.date().empty() && date_ != src.date())
+        AD_WARNING("merged antigen dates {} vs. {}", date_, src.date());
+
+    lab_ids_.insert_if_not_present(src.lab_ids());
+
+} // ae::chart::v3::Antigen::update_with
+
+// ----------------------------------------------------------------------
+
+void ae::chart::v3::Serum::update_with(const Serum& src)
+{
+    AntigenSerum::update_with(src);
+
+    if (serum_species_.empty())
+        serum_species_ = src.serum_species();
+    else if (!src.serum_species().empty() && serum_species_ != src.serum_species())
+        AD_WARNING("merged serum serum_speciess {} vs. {}", serum_species_, src.serum_species());
+
+} // ae::chart::v3::Serum::update_with
 
 // ----------------------------------------------------------------------

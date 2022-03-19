@@ -5,7 +5,24 @@
 
 namespace ae::chart::v3
 {
-}
+    static void merge_info(Chart& merge, const Chart& chart1, const Chart& chart2);
+
+    template <typename AgSrs> static void merge_antigens_sera(AgSrs& merge, const AgSrs& source, const merge_data_t::index_mapping_t<typename AgSrs::index_t>& to_target, bool always_replace)
+    {
+        for (const auto no : source.size()) {
+            if (const auto entry = to_target.find(no); entry != to_target.end()) {
+                if (!always_replace && entry->second.common)
+                    merge[entry->second.index].update_with(source[no]);
+                else
+                    merge[entry->second.index] = source[no];
+                // AD_DEBUG("merge_antigens_sera {} {} <- {} {}", entry->second.index, merge.at(entry->second.index).full_name(), no, source.at(no)->full_name());
+                if constexpr (std::is_same_v<AgSrs, Sera>)
+                    merge[entry->second.index].homologous_antigens().get().clear();
+            }
+        }
+    };
+
+} // namespace ae::chart::v3
 
 // ----------------------------------------------------------------------
 
@@ -16,18 +33,25 @@ std::pair<std::shared_ptr<ae::chart::v3::Chart>, ae::chart::v3::merge_data_t> ae
 
     merge_data_t merge_data{chart1, chart2, settings, common_antigens_sera_t{*chart1, *chart2, settings.match_level}};
 
-    auto merged = std::make_shared<Chart>();
+    auto merged = std::make_shared<Chart>(); // merge_data.number_of_antigens_in_merge(), merge_data.number_of_sera_in_merge());
+    merge_info(*merged, *chart1, *chart2);
+    merged->antigens().resize(merge_data.number_of_antigens_in_merge());
+    merged->sera().resize(merge_data.number_of_sera_in_merge());
+    merge_antigens_sera(merged->antigens(), chart1->antigens(), merge_data.antigens_primary_target(), true);
+    merge_antigens_sera(merged->antigens(), chart2->antigens(), merge_data.antigens_secondary_target(), false);
+    merge_antigens_sera(merged->sera(), chart1->sera(), merge_data.sera_primary_target(), true);
+    merge_antigens_sera(merged->sera(), chart2->sera(), merge_data.sera_secondary_target(), false);
 
     return {std::move(merged), std::move(merge_data)};
 
     // ----------------------------------------------------------------------
 
-    // const auto relax_type4_type5 = [](const MergeReport& report, ChartModify& chart) {
+    // const auto relax_type4_type5 = [](const MergeReport& merge_data, ChartModify& chart) {
     //     UnmovablePoints unmovable_points;
     //     // set unmovable for all points of chart1 including common ones
-    //     for (const auto& [index1, index_merge_common] : report.antigens_primary_target)
+    //     for (const auto& [index1, index_merge_common] : merge_data.antigens_primary_target)
     //         unmovable_points.insert(index_merge_common.index);
-    //     for (const auto& [index1, index_merge_common] : report.sera_primary_target)
+    //     for (const auto& [index1, index_merge_common] : merge_data.sera_primary_target)
     //         unmovable_points.insert(index_merge_common.index + chart.number_of_antigens());
     //     auto projection = chart.projection_modify(0);
     //     projection->set_unmovable(unmovable_points);
@@ -36,16 +60,11 @@ std::pair<std::shared_ptr<ae::chart::v3::Chart>, ae::chart::v3::merge_data_t> ae
 
     // // --------------------------------------------------
 
-    // MergeReport report(chart1, chart2, settings);
-
     // ChartModifyP result = std::make_shared<ChartNew>(report.target_antigens, report.target_sera);
-    // merge_info(*result, chart1, chart2);
+
     // auto& result_antigens = result->antigens_modify();
     // auto& result_sera = result->sera_modify();
-    // merge_antigens_sera(result_antigens, *chart1.antigens(), report.antigens_primary_target, true);
-    // merge_antigens_sera(result_antigens, *chart2.antigens(), report.antigens_secondary_target, false);
-    // merge_antigens_sera(result_sera, *chart1.sera(), report.sera_primary_target, true);
-    // merge_antigens_sera(result_sera, *chart2.sera(), report.sera_secondary_target, false);
+
     // if (const auto rda = result_antigens.find_duplicates(), rds = result_sera.find_duplicates(); !rda.empty() || !rds.empty()) {
     //     fmt::memory_buffer msg;
     //     fmt::format_to_mb(msg, "Merge \"{}\" has duplicates: AG:{} SR:{}\n", result->description(), rda, rds);
@@ -64,41 +83,41 @@ std::pair<std::shared_ptr<ae::chart::v3::Chart>, ae::chart::v3::merge_data_t> ae
     //     throw merge_error{err_message};
     // }
 
-    // merge_titers(*result, chart1, chart2, report);
-    // merge_plot_spec(*result, chart1, chart2, report);
+    // merge_titers(*result, chart1, chart2, merge_data);
+    // merge_plot_spec(*result, chart1, chart2, merge_data);
 
     // if (chart1.number_of_projections()) {
     //     switch (settings.projection_merge) {
     //         case projection_merge_t::type1:
     //             break; // no projections in the merge
     //         case projection_merge_t::type2:
-    //             merge_projections_type2(*result, chart1, chart2, report);
+    //             merge_projections_type2(*result, chart1, chart2, merge_data);
     //             break;
     //         case projection_merge_t::type3:
     //             if (chart2.number_of_projections() == 0)
     //                 throw merge_error{"cannot perform type3 merge: secondary chart has no projections"};
-    //             merge_projections_type3(*result, chart1, chart2, report);
+    //             merge_projections_type3(*result, chart1, chart2, merge_data);
     //             break;
     //         case projection_merge_t::type4:
     //             if (chart2.number_of_projections() == 0)
     //                 throw merge_error{"cannot perform type4 merge: secondary chart has no projections"};
-    //             merge_projections_type3(*result, chart1, chart2, report);
+    //             merge_projections_type3(*result, chart1, chart2, merge_data);
     //             // fmt::print(stderr, "DEBUG: merge type4 before relax stress {}\n", result->projection(0)->stress());
-    //             relax_type4_type5(report, *result);
+    //             relax_type4_type5(merge_data, *result);
     //             // fmt::print(stderr, "DEBUG: merge type4 after relax stress {}\n", result->projection(0)->stress());
     //             break;
     //         case projection_merge_t::type5:
     //             if (chart2.number_of_projections() == 0)
     //                 throw merge_error{"cannot perform type5 merge: secondary chart has no projections"};
-    //             merge_projections_type5(*result, chart1, chart2, report);
+    //             merge_projections_type5(*result, chart1, chart2, merge_data);
     //             // fmt::print(stderr, "DEBUG: merge type5 before relax stress {}\n", result->projection(0)->stress());
-    //             relax_type4_type5(report, *result);
+    //             relax_type4_type5(merge_data, *result);
     //             // fmt::print(stderr, "DEBUG: merge type5 after relax stress {}\n", result->projection(0)->stress());
     //             break;
     //     }
     // }
 
-    // return {std::move(result), std::move(report)};
+    // return {std::move(result), std::move(merge_data)};
 
 } // ae::chart::v3::merge
 
@@ -356,5 +375,21 @@ std::string ae::chart::v3::merge_data_t::titer_merge_diagnostics(const Chart& ch
 
 
 } // ae::chart::v3::merge_data_t::titer_merge_diagnostics
+
+// ----------------------------------------------------------------------
+
+void ae::chart::v3::merge_info(Chart& merge, const Chart& chart1, const Chart& chart2)
+{
+    merge.info().virus(chart1.info().virus());
+    if (chart1.info().sources().empty())
+        merge.info().sources().push_back(chart1.info());
+    else
+        std::copy(chart1.info().sources().begin(), chart1.info().sources().end(), std::back_inserter(merge.info().sources()));
+    if (chart2.info().sources().empty())
+        merge.info().sources().push_back(chart2.info());
+    else
+        std::copy(chart2.info().sources().begin(), chart2.info().sources().end(), std::back_inserter(merge.info().sources()));
+
+} // ae::chart::v3::merge_info
 
 // ----------------------------------------------------------------------
