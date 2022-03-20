@@ -301,26 +301,13 @@ namespace ae::chart::v3
 
         Titer titer(antigen_index aAntigenNo, serum_index aSerumNo) const;
 
-        layer_index number_of_layers() const { return layer_index{layers_.size()}; }
-        auto& layer(layer_index layer_no) { return layers_[layer_no.get()]; }
-        const auto& layer(layer_index layer_no) const { return layers_[layer_no.get()]; }
-        void check_layers(layer_index layer_no = layer_index{0}) const
-        {
-            if (number_of_layers() <= layer_no)
-                throw data_not_available{"invalid layer number or no layers present"};
-        }
-        Titer titer_of_layer(layer_index aLayerNo, antigen_index aAntigenNo, serum_index aSerumNo) const { return titer_in_sparse_t(layers_[aLayerNo.get()], aAntigenNo, aSerumNo); }
-        std::vector<Titer> titers_for_layers(antigen_index aAntigenNo, serum_index aSerumNo,
-                                             include_dotcare inc = include_dotcare::no) const; // returns list of non-dont-care titers in layers, may throw data_not_available
-        std::vector<layer_index> layers_with_antigen(antigen_index aAntigenNo) const; // returns list of layer indexes that have non-dont-care titers for the antigen, may throw data_not_available
-        std::vector<layer_index> layers_with_serum(serum_index aSerumNo) const;       // returns list of layer indexes that have non-dont-care titers for the serum, may throw data_not_available
         size_t number_of_non_dont_cares() const;
         size_t titrations_for_antigen(antigen_index antigen_no) const;
         size_t titrations_for_serum(serum_index serum_no) const;
         double percent_of_non_dont_cares() const { return static_cast<double>(number_of_non_dont_cares()) / static_cast<double>(number_of_antigens().get() * number_of_sera().get()); }
 
-        double column_basis(serum_index sr_no) const; // raw value, not adjusted by minimum column basis
-
+        double raw_column_basis(serum_index sr_no) const; // raw value, not adjusted by minimum column basis
+        column_bases raw_column_bases() const;            // raw values, not adjusted by minimum column basis
         double max_distance(const column_bases& cb) const;
 
         std::pair<antigen_indexes, serum_indexes> antigens_sera_of_layer(layer_index aLayerNo) const;
@@ -343,8 +330,27 @@ namespace ae::chart::v3
             titers_ = sparse_t{};
             return std::get<sparse_t>(titers_);
         }
-        layers_t& layers() { return layers_; }
 
+        // ----------------------------------------------------------------------
+
+        layer_index number_of_layers() const { return layer_index{layers_.size()}; }
+        layers_t& layers() { return layers_; }
+        auto& layer(layer_index layer_no) { return layers_[layer_no.get()]; }
+        const auto& layer(layer_index layer_no) const { return layers_[layer_no.get()]; }
+        void check_layers(layer_index layer_no = layer_index{0}) const
+        {
+            if (number_of_layers() <= layer_no)
+                throw data_not_available{"invalid layer number or no layers present"};
+        }
+        Titer titer_of_layer(layer_index aLayerNo, antigen_index aAntigenNo, serum_index aSerumNo) const { return titer_in_sparse_t(layers_[aLayerNo.get()], aAntigenNo, aSerumNo); }
+        void set_titer_of_layer(layer_index aLayerNo, antigen_index aAntigenNo, serum_index aSerumNo, const Titer& titer) { set_titer(layers_[aLayerNo.get()], aAntigenNo, aSerumNo, titer); }
+        std::vector<Titer> titers_for_layers(antigen_index aAntigenNo, serum_index aSerumNo, include_dotcare inc = include_dotcare::no) const; // returns list of non-dont-care titers in layers, may throw data_not_available
+        std::vector<layer_index> layers_with_antigen(antigen_index aAntigenNo) const; // returns list of layer indexes that have non-dont-care titers for the antigen, may throw data_not_available
+        std::vector<layer_index> layers_with_serum(serum_index aSerumNo) const;       // returns list of layer indexes that have non-dont-care titers for the serum, may throw data_not_available
+        void create_layers(layer_index num_layers, antigen_index num_antigens);
+        titer_merge_report set_from_layers(Chart& chart);
+
+        // ----------------------------------------------------------------------
         // exporting
         bool is_dense() const { return std::holds_alternative<dense_t>(titers_); }
         const dense_t& dense_titers() const { return std::get<dense_t>(titers_); }
@@ -394,7 +400,7 @@ namespace ae::chart::v3
         void set_titer(sparse_t& titers, antigen_index aAntigenNo, serum_index aSerumNo, const Titer& aTiter);
 
         std::pair<Titer, titer_merge> merge_titers(const std::vector<Titer>& titers, more_than_thresholded mtt, double standard_deviation_threshold);
-        std::unique_ptr<titer_merge_report> set_titers_from_layers(more_than_thresholded mtt);
+        titer_merge_report set_titers_from_layers(more_than_thresholded mtt);
         std::pair<Titer, titer_merge> titer_from_layers(antigen_index aAntigenNo, serum_index aSerumNo, more_than_thresholded mtt, double standard_deviation_threshold);
 
     }; // class Titers

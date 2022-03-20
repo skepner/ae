@@ -64,6 +64,7 @@ namespace ae::chart::v3
         point_index number_of_points() const { return point_index{antigens().size().get() + sera().size().get()}; }
         class column_bases column_bases(minimum_column_basis mcb) const;
         class column_bases forced_column_bases() const;
+        void forced_column_bases(class column_bases& cb);
 
         void relax(number_of_optimizations_t number_of_optimizations, minimum_column_basis mcb, number_of_dimensions_t number_of_dimensions, const optimization_options& options,
                    const disconnected_points& disconnected = disconnected_points{}, const unmovable_points& unmovable = unmovable_points{});

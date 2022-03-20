@@ -6,6 +6,7 @@
 namespace ae::chart::v3
 {
     static void merge_info(Chart& merge, const Chart& chart1, const Chart& chart2);
+    static Titers::titer_merge_report merge_titers(Chart& merge, const Chart& chart1, const Chart& chart2, const merge_data_t& merge_data);
 
     template <typename AgSrs> static void merge_antigens_sera(AgSrs& merge, const AgSrs& source, const merge_data_t::index_mapping_t<typename AgSrs::index_t>& to_target, bool always_replace)
     {
@@ -43,6 +44,7 @@ std::pair<std::shared_ptr<ae::chart::v3::Chart>, ae::chart::v3::merge_data_t> ae
         merge_antigens_sera(merged->sera(), chart1->sera(), merge_data.sera_primary_target(), true);
         merge_antigens_sera(merged->sera(), chart2->sera(), merge_data.sera_secondary_target(), false);
         merged->throw_if_duplicates();
+        merge_data.titer_report(merge_titers(*merged, *chart1, *chart2, merge_data));
 
         AD_WARNING("ae::chart::v3::merge is incomplete");
         return {std::move(merged), std::move(merge_data)};
@@ -70,7 +72,6 @@ std::pair<std::shared_ptr<ae::chart::v3::Chart>, ae::chart::v3::merge_data_t> ae
     // auto& result_antigens = result->antigens_modify();
     // auto& result_sera = result->sera_modify();
 
-    // merge_titers(*result, chart1, chart2, merge_data);
     // merge_plot_spec(*result, chart1, chart2, merge_data);
 
     // if (chart1.number_of_projections()) {
@@ -378,5 +379,42 @@ void ae::chart::v3::merge_info(Chart& merge, const Chart& chart1, const Chart& c
         std::copy(chart2.info().sources().begin(), chart2.info().sources().end(), std::back_inserter(merge.info().sources()));
 
 } // ae::chart::v3::merge_info
+
+// ----------------------------------------------------------------------
+
+ae::chart::v3::Titers::titer_merge_report ae::chart::v3::merge_titers(Chart& merge, const Chart& chart1, const Chart& chart2, const merge_data_t& merge_data)
+{
+    auto &titers = merge.titers(), titers1 = chart1.titers(), titers2 = chart2.titers();
+    auto layers1 = titers1.number_of_layers(), layers2 = titers2.number_of_layers();
+    titers.create_layers((layers1 > layer_index{1} ? layers1 : layer_index{1}) + (layers2 > layer_index{1} ? layers2 : layer_index{1}), merge.antigens().size());
+
+    layer_index target_layer_no{0};
+    const auto copy_layers = [&target_layer_no, &titers](layer_index source_layers, const Titers& source_titers, const auto& antigen_target, const auto& serum_target) {
+        const auto assign = [&target_layer_no, &titers](antigen_index ag_no, serum_index sr_no, const Titer& titer) { titers.set_titer_of_layer(target_layer_no, ag_no, sr_no, titer); };
+        auto copy_titer = [assign, &antigen_target, &serum_target](const auto& titer_iterator_gen) {
+            for (auto titer_ref : titer_iterator_gen) {
+                const auto ag_no = antigen_target.find(titer_ref.antigen);
+                const auto sr_no = serum_target.find(titer_ref.serum);
+                if (ag_no != antigen_target.end() && sr_no != serum_target.end())
+                    assign(ag_no->second.index, sr_no->second.index, titer_ref.titer);
+            }
+        };
+
+        if (source_layers > layer_index{1}) {
+            for (const auto source_layer_no : source_layers) {
+                copy_titer(source_titers.titers_existing_from_layer(source_layer_no));
+                ++target_layer_no;
+            }
+        }
+        else {
+            copy_titer(source_titers.titers_existing());
+            ++target_layer_no;
+        }
+    };
+    copy_layers(layers1, titers1, merge_data.antigens_primary_target(), merge_data.sera_primary_target());
+    copy_layers(layers2, titers2, merge_data.antigens_secondary_target(), merge_data.sera_secondary_target());
+    return titers.set_from_layers(merge);
+
+} // ae::chart::v3::merge_titers
 
 // ----------------------------------------------------------------------

@@ -3,6 +3,7 @@
 #include <unordered_map>
 
 #include "chart/v3/common.hh"
+#include "chart/v3/titers.hh"
 
 // ----------------------------------------------------------------------
 
@@ -58,6 +59,9 @@ namespace ae::chart::v3
         const auto& sera_primary_target() const { return sera_primary_target_; }
         const auto& sera_secondary_target() const { return sera_secondary_target_; }
 
+        void titer_report(Titers::titer_merge_report&& tr) { titer_report_ = std::move(tr); }
+        const auto& titer_report() const { return titer_report_; }
+
       private:
         std::shared_ptr<Chart> chart1_, chart2_; // keep charts because common_ uses Antigens& and Sera&
         common_antigens_sera_t common_;
@@ -65,7 +69,7 @@ namespace ae::chart::v3
         index_mapping_t<serum_index> sera_primary_target_, sera_secondary_target_;
         antigen_index target_antigens_{0};
         serum_index target_sera_{0};
-        // std::unique_ptr<Titers::titer_merge_report> titer_report_;
+        Titers::titer_merge_report titer_report_;
 
         void build(const merge_settings_t& settings);
         antigen_indexes secondary_antigens_to_merge(const merge_settings_t& settings) const;

@@ -86,7 +86,7 @@ namespace ae::chart::v3
         column_bases& operator=(column_bases&&) = default;
 
         bool empty() const { return data_.empty(); }
-        double column_basis(serum_index aSerumNo) const { return data_[aSerumNo.get()]; }
+        double operator[](serum_index aSerumNo) const { return data_[aSerumNo.get()]; }
         serum_index size() const { return serum_index{data_.size()}; }
 
         void set(serum_index aSerumNo, double column_basis) { data_[aSerumNo.get()] = column_basis; }
@@ -115,7 +115,7 @@ template <> struct fmt::formatter<ae::chart::v3::column_bases> : fmt::formatter<
         for (const auto sr_no : cb.size()) {
             if (sr_no != ae::serum_index{0})
                 fmt::format_to(ctx.out(), " ");
-            format_val(cb.column_basis(sr_no), ctx);
+            format_val(cb[sr_no], ctx);
         }
         return format_to(ctx.out(), "]");
     }

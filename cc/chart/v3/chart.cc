@@ -55,7 +55,7 @@ ae::chart::v3::column_bases ae::chart::v3::Chart::column_bases(minimum_column_ba
         if (const auto fcb = sera()[sr_no].forced_column_basis(); fcb.has_value())
             cb.add(mcb.apply(*fcb));
         else
-            cb.add(mcb.apply(titers().column_basis(sr_no)));
+            cb.add(mcb.apply(titers().raw_column_basis(sr_no)));
     }
     return cb;
 
@@ -77,6 +77,20 @@ ae::chart::v3::column_bases ae::chart::v3::Chart::forced_column_bases() const
         return ae::chart::v3::column_bases{};
     else
         return cb;
+
+} // ae::chart::v3::Chart::forced_column_bases
+
+// ----------------------------------------------------------------------
+
+void ae::chart::v3::Chart::forced_column_bases(class column_bases& cb)
+{
+    if (!cb.empty()) {
+        if (cb.size() != sera().size())
+            throw Error{fmt::format("invalid number of entries in column_bases: {}, number of sera in the chart: {}", cb.size(), sera().size())};
+        // forced column bases are stored with the sera
+        for (const auto sr_no : sera().size())
+            sera()[sr_no].forced_column_basis(cb[sr_no]);
+    }
 
 } // ae::chart::v3::Chart::forced_column_bases
 

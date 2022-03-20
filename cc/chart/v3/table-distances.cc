@@ -30,7 +30,7 @@ void ae::chart::v3::TableDistances::update(const Titers& titers, const column_ba
                 double adj{0.0};
                 if (!logged_adjusts.empty())
                     adj = logged_adjusts[*titer_ref.antigen] + logged_adjusts[*(titers.number_of_antigens() + titer_ref.serum)];
-                update(titer_ref.titer, point_index{*titer_ref.antigen}, titers.number_of_antigens() + titer_ref.serum, col_bases.column_basis(titer_ref.serum), adj, parameters.mult);
+                update(titer_ref.titer, point_index{*titer_ref.antigen}, titers.number_of_antigens() + titer_ref.serum, col_bases[titer_ref.serum], adj, parameters.mult);
             }
         }
     }

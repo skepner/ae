@@ -5,7 +5,7 @@
 #include "ext/from_chars.hh"
 // #include "ext/range-v3.hh"
 #include "utils/statistics.hh"
-#include "chart/v3/titers.hh"
+#include "chart/v3/chart.hh"
 
 // ----------------------------------------------------------------------
 
@@ -190,6 +190,14 @@ ae::chart::v3::Titer ae::chart::v3::Titers::titer(antigen_index aAntigenNo, seru
     return std::visit(get, titers_);
 
 } // ae::chart::v3::Titers::titer
+
+// ----------------------------------------------------------------------
+
+void ae::chart::v3::Titers::create_layers(layer_index num_layers, antigen_index num_antigens)
+{
+    layers_.resize(*num_layers, sparse_t(*num_antigens));
+
+} // ae::chart::v3::Titers::create_layers
 
 // ----------------------------------------------------------------------
 
@@ -453,33 +461,58 @@ void ae::chart::v3::Titers::set_titer(sparse_t& titers, antigen_index aAntigenNo
 // is 'dont-care', ignore them, if more_than_thresholded is
 // 'adjust-to-next', those titers are converted to the next value,
 // e.g. >5120 to 10240.
-std::unique_ptr<ae::chart::v3::Titers::titer_merge_report> ae::chart::v3::Titers::set_titers_from_layers(more_than_thresholded mtt)
+ae::chart::v3::Titers::titer_merge_report ae::chart::v3::Titers::set_titers_from_layers(more_than_thresholded mtt)
 {
     // core/antigenic_table.py:266
     // backend/antigenic-table.hh:892
 
     constexpr double standard_deviation_threshold = 1.0; // lispmds: average-multiples-unless-sd-gt-1-ignore-thresholded-unless-only-entries-then-min-threshold
     const antigen_index number_of_antigens{layers_[0].size()};
-    auto titers = std::make_unique<titer_merge_report>();
+    titer_merge_report merge_report;
     for (const auto ag_no : number_of_antigens) {
         for (const auto sr_no : number_of_sera_) {
             auto [titer, report] = titer_from_layers(ag_no, sr_no, mtt, standard_deviation_threshold);
-            titers->emplace_back(std::move(titer), ag_no, sr_no, report);
+            merge_report.emplace_back(std::move(titer), ag_no, sr_no, report);
         }
     }
 
-    if (titers->size() < (number_of_antigens.get() * number_of_sera_.get() / 2))
+    if (merge_report.size() < (number_of_antigens.get() * number_of_sera_.get() / 2))
         titers_ = sparse_t(number_of_antigens.get());
     else
         titers_ = dense_t(number_of_antigens.get() * number_of_sera_.get());
-    for (const auto& data : *titers) {
+    for (const auto& data : merge_report) {
         if (!data.titer.is_dont_care())
             std::visit([&data, this](auto& target) { this->set_titer(target, data.antigen, data.serum, data.titer); }, titers_);
     }
 
-    return titers;
+    return merge_report;
 
 } // ae::chart::v3::Titers::set_titers_from_layers
+
+// ----------------------------------------------------------------------
+
+ae::chart::v3::Titers::titer_merge_report ae::chart::v3::Titers::set_from_layers(Chart& chart)
+{
+    // merge titers from layers
+    // ~/ac/acmacs/acmacs/core/chart.py:1281
+
+    if (number_of_layers() < layer_index{2})
+        throw data_not_available{"table has no layers"};
+
+    column_bases cb;
+    if (has_morethan_in_layers()) {
+          // std::cerr << AD_FORMAT("DEBUG: has_morethan_in_layers");
+        set_titers_from_layers(more_than_thresholded::adjust_to_next);
+        cb = raw_column_bases();
+    }
+    auto merge_report = set_titers_from_layers(more_than_thresholded::to_dont_care);
+    if (!cb.empty()) {
+        chart.forced_column_bases(cb);
+        AD_INFO("forced column bases: {}", chart.forced_column_bases());
+    }
+    return merge_report;
+
+} // ae::chart::v3::Titers::set_from_layers
 
 // ----------------------------------------------------------------------
 
@@ -590,7 +623,7 @@ std::pair<ae::chart::v3::Titer, ae::chart::v3::Titers::titer_merge> ae::chart::v
 // ----------------------------------------------------------------------
 
 // raw value, not adjusted by minimum column basis
-double ae::chart::v3::Titers::column_basis(serum_index sr_no) const
+double ae::chart::v3::Titers::raw_column_basis(serum_index sr_no) const
 {
     double cb{0.0};
     for (const auto titer_ref : titers_existing()) {
@@ -599,7 +632,18 @@ double ae::chart::v3::Titers::column_basis(serum_index sr_no) const
     }
     return cb;
 
-} // ae::chart::v3::Titers::column_basis
+} // ae::chart::v3::Titers::raw_column_basis
+
+// ----------------------------------------------------------------------
+
+ae::chart::v3::column_bases ae::chart::v3::Titers::raw_column_bases() const            // raw values, not adjusted by minimum column basis
+{
+    column_bases cb;
+    for (const auto sr_no : number_of_sera())
+        cb.add(raw_column_basis(sr_no));
+    return cb;
+
+} // ae::chart::v3::Titers::raw_column_bases
 
 // ----------------------------------------------------------------------
 
@@ -608,7 +652,7 @@ double ae::chart::v3::Titers::max_distance(const column_bases& cb) const
     double max_distance{0.0};
     if (number_of_sera() > serum_index{0}) {
         for (const auto titer_ref : titers_existing()) {
-            max_distance = std::max(max_distance, cb.column_basis(titer_ref.serum) - titer_ref.titer.logged_with_thresholded());
+            max_distance = std::max(max_distance, cb[titer_ref.serum] - titer_ref.titer.logged_with_thresholded());
             if (std::isnan(max_distance) || std::isinf(max_distance))
                 throw std::runtime_error{fmt::format("Titers::max_distance invalid: {} after titer [{}] column_bases:{} @@ {}:{}: {}", max_distance, titer_ref, cb, __builtin_FILE(), __builtin_LINE(),
                                                      __builtin_FUNCTION())};
