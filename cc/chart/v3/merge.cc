@@ -28,21 +28,28 @@ namespace ae::chart::v3
 
 std::pair<std::shared_ptr<ae::chart::v3::Chart>, ae::chart::v3::merge_data_t> ae::chart::v3::merge(std::shared_ptr<Chart> chart1, std::shared_ptr<Chart> chart2, const merge_settings_t& settings)
 {
-    chart1->throw_if_duplicates();
-    chart2->throw_if_duplicates();
+    try {
+        chart1->throw_if_duplicates();
+        chart2->throw_if_duplicates();
 
-    merge_data_t merge_data{chart1, chart2, settings, common_antigens_sera_t{*chart1, *chart2, settings.match_level}};
+        merge_data_t merge_data{chart1, chart2, settings, common_antigens_sera_t{*chart1, *chart2, settings.match_level}};
 
-    auto merged = std::make_shared<Chart>(); // merge_data.number_of_antigens_in_merge(), merge_data.number_of_sera_in_merge());
-    merge_info(*merged, *chart1, *chart2);
-    merged->antigens().resize(merge_data.number_of_antigens_in_merge());
-    merged->sera().resize(merge_data.number_of_sera_in_merge());
-    merge_antigens_sera(merged->antigens(), chart1->antigens(), merge_data.antigens_primary_target(), true);
-    merge_antigens_sera(merged->antigens(), chart2->antigens(), merge_data.antigens_secondary_target(), false);
-    merge_antigens_sera(merged->sera(), chart1->sera(), merge_data.sera_primary_target(), true);
-    merge_antigens_sera(merged->sera(), chart2->sera(), merge_data.sera_secondary_target(), false);
+        auto merged = std::make_shared<Chart>(); // merge_data.number_of_antigens_in_merge(), merge_data.number_of_sera_in_merge());
+        merge_info(*merged, *chart1, *chart2);
+        merged->antigens().resize(merge_data.number_of_antigens_in_merge());
+        merged->sera().resize(merge_data.number_of_sera_in_merge());
+        merge_antigens_sera(merged->antigens(), chart1->antigens(), merge_data.antigens_primary_target(), true);
+        merge_antigens_sera(merged->antigens(), chart2->antigens(), merge_data.antigens_secondary_target(), false);
+        merge_antigens_sera(merged->sera(), chart1->sera(), merge_data.sera_primary_target(), true);
+        merge_antigens_sera(merged->sera(), chart2->sera(), merge_data.sera_secondary_target(), false);
+        merged->throw_if_duplicates();
 
-    return {std::move(merged), std::move(merge_data)};
+        AD_WARNING("ae::chart::v3::merge is incomplete");
+        return {std::move(merged), std::move(merge_data)};
+    }
+    catch (std::exception& err) {
+        throw merge_error{err.what()};
+    }
 
     // ----------------------------------------------------------------------
 
@@ -60,28 +67,8 @@ std::pair<std::shared_ptr<ae::chart::v3::Chart>, ae::chart::v3::merge_data_t> ae
 
     // // --------------------------------------------------
 
-    // ChartModifyP result = std::make_shared<ChartNew>(report.target_antigens, report.target_sera);
-
     // auto& result_antigens = result->antigens_modify();
     // auto& result_sera = result->sera_modify();
-
-    // if (const auto rda = result_antigens.find_duplicates(), rds = result_sera.find_duplicates(); !rda.empty() || !rds.empty()) {
-    //     fmt::memory_buffer msg;
-    //     fmt::format_to_mb(msg, "Merge \"{}\" has duplicates: AG:{} SR:{}\n", result->description(), rda, rds);
-    //     for (const auto& dups : rda) {
-    //         for (const auto ag_no : dups)
-    //             fmt::format_to_mb(msg, "  AG {:5d} {}\n", ag_no, result_antigens.at(ag_no).name_full());
-    //         fmt::format_to_mb(msg, "\n");
-    //     }
-    //     for (const auto& dups : rds) {
-    //         for (const auto sr_no : dups)
-    //             fmt::format_to_mb(msg, "  SR {:5d} {}\n", sr_no, result_sera.at(sr_no).name_full());
-    //         fmt::format_to_mb(msg, "\n");
-    //     }
-    //     const auto err_message = fmt::to_string(msg);
-    //     // AD_ERROR("{}", err_message);
-    //     throw merge_error{err_message};
-    // }
 
     // merge_titers(*result, chart1, chart2, merge_data);
     // merge_plot_spec(*result, chart1, chart2, merge_data);

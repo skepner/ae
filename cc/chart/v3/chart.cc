@@ -228,14 +228,31 @@ void ae::chart::v3::Chart::throw_if_duplicates() const
 {
     const auto dupa = antigens().find_duplicates();
     const auto dups = sera().find_duplicates();
-    if (!dupa.empty()) {
-        if (!dups.empty())
-            throw Error{"{}: duplicating antigens: {}  duplicating sera: {}", name(), dupa, dups};
-        else
-            throw Error{"{}: duplicating antigens: {}", name(), dupa};
+
+    if (!dupa.empty() || !dups.empty()) {
+        fmt::memory_buffer output;
+        fmt::format_to(std::back_inserter(output), "\"{}\" has duplicates: AG:{} SR:{}\n", name(), dupa.size(), dups.size());
+        for (const auto& ags : dupa) {
+            for (const auto ag_no : ags)
+                fmt::format_to(std::back_inserter(output), "  AG {:5d} {}\n", ag_no, antigens()[ag_no].designation());
+            fmt::format_to(std::back_inserter(output), "\n");
+        }
+        for (const auto& srs : dups) {
+            for (const auto sr_no : srs)
+                fmt::format_to(std::back_inserter(output), "  SR {:5d} {}\n", sr_no, sera()[sr_no].designation());
+            fmt::format_to(std::back_inserter(output), "\n");
+        }
+        throw Error{fmt::to_string(output)};
     }
-    else if (!dups.empty())
-        throw Error{"{}: duplicating sera: {}", name(), dups};
+
+    // if (!dupa.empty()) {
+    //     if (!dups.empty())
+    //         throw Error{"{}: duplicating antigens: {}  duplicating sera: {}", name(), dupa, dups};
+    //     else
+    //         throw Error{"{}: duplicating antigens: {}", name(), dupa};
+    // }
+    // else if (!dups.empty())
+    //     throw Error{"{}: duplicating sera: {}", name(), dups};
 
 } // ae::chart::v3::Chart::throw_if_duplicates
 
