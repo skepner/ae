@@ -70,22 +70,30 @@ namespace ae::py
 
     // ----------------------------------------------------------------------
 
+    static inline ae::chart::v3::antigens_sera_match_level_t antigens_sera_match_level(std::string_view match)
+    {
+        using namespace ae::chart::v3;
+        if (match == "auto")
+            return antigens_sera_match_level_t::automatic;
+        else if (match == "strict")
+            return antigens_sera_match_level_t::strict;
+        else if (match == "relaxed")
+            return antigens_sera_match_level_t::relaxed;
+        else if (match == "ignored")
+            return antigens_sera_match_level_t::ignored;
+        else
+            AD_WARNING("unrecognized merge match level \"{}\"", match);
+        return antigens_sera_match_level_t::automatic;
+    }
+
     static inline std::pair<std::shared_ptr<Chart>, ae::chart::v3::merge_data_t> merge(std::shared_ptr<Chart> chart1, std::shared_ptr<Chart> chart2, std::string_view match,
                                                                                        std::string_view merge_type, bool cca)
     {
         using namespace ae::chart::v3;
-        merge_settings_t settings{.combine_cheating_assays_ = cca ? combine_cheating_assays::yes : combine_cheating_assays::no};
-
-        if (match == "auto")
-            settings.match_level = antigens_sera_match_level_t::automatic;
-        else if (match == "strict")
-            settings.match_level = antigens_sera_match_level_t::strict;
-        else if (match == "relaxed")
-            settings.match_level = antigens_sera_match_level_t::relaxed;
-        else if (match == "ignored")
-            settings.match_level = antigens_sera_match_level_t::ignored;
-        else
-            AD_WARNING("unrecognized merge match level \"{}\"", match);
+        merge_settings_t settings{
+            .match_level = antigens_sera_match_level(match),
+            .combine_cheating_assays_ = cca ? combine_cheating_assays::yes : combine_cheating_assays::no,
+        };
 
         if (merge_type == "simple" || merge_type == "type1")
             settings.projection_merge = projection_merge_t::type1;
@@ -101,6 +109,23 @@ namespace ae::py
             AD_WARNING("unrecognized merge type1 \"{}\"", merge_type);
 
         return ae::chart::v3::merge(chart1, chart2, settings);
+    }
+
+    template <typename Index> static inline std::vector<std::vector<size_t>> convert_common(const std::vector<std::pair<Index, Index>>& source)
+    {
+        std::vector<std::vector<size_t>> converted(source.size());
+        std::transform(source.begin(), source.end(), converted.begin(), [](const auto& src) { return std::vector<size_t>{*src.first, *src.second}; });
+        return converted;
+    }
+
+    static inline std::vector<std::vector<size_t>> common_antigens(const ae::chart::v3::common_antigens_sera_t& common)
+    {
+        return convert_common(common.antigens());
+    }
+
+    static inline std::vector<std::vector<size_t>> common_sera(const ae::chart::v3::common_antigens_sera_t& common)
+    {
+        return convert_common(common.sera());
     }
 
 } // namespace ae::py
@@ -651,6 +676,15 @@ void ae::py::chart_v3(pybind11::module_& mdl)
         .def_property_readonly("point_no", [](const SelectionData<Serum>& sd) -> size_t { return *(sd.chart->antigens().size() + sd.index); })
         .def_property_readonly(
             "serum", [](const SelectionData<Serum>& sd) -> const Serum& { return sd.ag_sr; }, pybind11::return_value_policy::reference_internal);
+
+    // ----------------------------------------------------------------------
+
+    pybind11::class_<common_antigens_sera_t>(chart_v3_submodule, "CommonAntigensSera")  //
+        .def(pybind11::init([](const Chart& chart1, const Chart& chart2, std::string_view match) { return new common_antigens_sera_t{chart1, chart2, antigens_sera_match_level(match)}; }), "chart1"_a, "chart2"_a, "match"_a = "auto", pybind11::doc(R"(match: "strict", "relaxed", "ignored", "auto")")) //
+        .def("antigens", &common_antigens) //
+        .def("sera", &common_sera) //
+        .def("report", &common_antigens_sera_t::report, "indent"_a = 0) //
+        ;
 
     // ----------------------------------------------------------------------
 

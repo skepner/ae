@@ -9,23 +9,23 @@ def main(args: argparse.Namespace):
     chart1 = ae_backend.chart_v3.Chart(args.chart1)
     chart2 = ae_backend.chart_v3.Chart(args.chart2)
 
-        acmacs::chart::CommonAntigensSera common(*chart1, *chart2, match_level);
-        if (args.subset == "antigens")
-            common.antigens_only();
-        else if (args.subset == "sera")
-            common.sera_only();
-        else if (args.subset != "all")
-            fmt::print(stderr, "WARNING: unrecognized --subset argument, \"all\" assumed\n");
-        if (common) {
-            const auto procrustes_data = acmacs::chart::procrustes(*chart1->projection(args.p1), *chart2->projection(args.p2), common.points(),
-                                                             args.scaling ? acmacs::chart::procrustes_scaling_t::yes : acmacs::chart::procrustes_scaling_t::no);
-            fmt::print("common antigens: {} sera: {}\n", common.common_antigens(), common.common_sera());
-            fmt::print("transformation: {}\nrms: {}\n", procrustes_data.transformation, procrustes_data.rms);
-            // common.report();
-        }
-        else {
-            fmt::print(stderr, "ERROR no common antigens/sera\n");
-        }
+    common = ae_backend.chart_v3.CommonAntigensSera(chart1, chart2, args.match)
+    if args.subset == "antigens":
+        common.antigens_only();
+    elif args.subset == "sera":
+        common.sera_only();
+    elif args.subset != "all":
+        print(f">> unrecognized --subset argument \"{args.subset}\"", file=sys.stderr)
+    print(f"Common antigens: {len(common.antigens()):5d}\nCommon sera:     {len(common.sera()):5d}")
+    if args.report_common:
+        print(common.report())
+    if not common.empty():
+        procrustes_data = ae_backend.chart_v3.procrustes(chart1.projection(args.p1), chart2.projection(args.p2), common=common, scaling=args.scaling);
+        print(procrustes_data)
+        # fmt::print("common antigens: {} sera: {}\n", common.common_antigens(), common.common_sera());
+        # fmt::print("transformation: {}\nrms: {}\n", procrustes_data.transformation, procrustes_data.rms);
+    else:
+        print(f"> no common antigens/sera", file=sys.stderr)
 
     # if args.report or args.common_only:
     #     print(f">> Use chart-merge-titer-report to report titer merging", file=sys.stderr)
@@ -65,7 +65,8 @@ try:
     parser.add_argument("--match", default="auto", choices=["strict", "relaxed", "ignored", "auto"])
     parser.add_argument("--scaling", action="store_true", default=False)
     parser.add_argument("--subset", default="all", choices=["all", "antigens", "sera"])
-    parser.add_argument("--duplicates-distinct", action="store_true", default=False, help="make duplicating antigens/sera distinct")
+    # parser.add_argument("--duplicates-distinct", action="store_true", default=False, help="make duplicating antigens/sera distinct")
+    parser.add_argument("--report-common", action="store_true", default=False)
 
     args = parser.parse_args()
     exit_code = main(args) or 0
