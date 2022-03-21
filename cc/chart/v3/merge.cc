@@ -381,6 +381,7 @@ ae::chart::v3::Titers::titer_merge_report ae::chart::v3::merge_titers(Chart& mer
 void ae::chart::v3::merge_projections(Chart& merge, const Chart& chart1, const Chart& chart2, projection_merge_t projection_merge, const merge_data_t& merge_data)
 {
     if (chart1.projections().size() > projection_index{0}) {
+        AD_WARNING("merge_projections types 3-5 not implemented");
         switch (projection_merge) {
             case projection_merge_t::type1: // simple
                 break; // no projections in the merge
@@ -437,7 +438,7 @@ void ae::chart::v3::merge_projections_type2(Chart& merge, const Chart& chart1, c
 
 // ----------------------------------------------------------------------
 
-// The best projection of the second chart orieneted to the best
+// The best projection of the second chart oriented to the best
 // projection of the first chart using procrustes. Coordinates of the
 // non-common points are copied to the resulting layout from their
 // source layouts. Coordinates of each common point are set to the
@@ -449,7 +450,7 @@ void ae::chart::v3::merge_projections_type3(Chart& merge, const Chart& chart1, c
     // const auto& projection2 = chart2.projections().best();
     // check_projections_before_merging(projection1, projection2);
 
-    // // re-orinet layout2 to layout1 using procrustes
+    // // re-orient layout2 to layout1 using procrustes
     // const auto procrustes_data = procrustes(projection1, projection2, merge_data.common.points(acmacs::chart::CommonAntigensSera::subset::all), acmacs::chart::procrustes_scaling_t::no);
     // auto layout1 = projection1->transformed_layout();
     // const auto transformation2 = procrustes_data.transformation;
@@ -490,7 +491,7 @@ void ae::chart::v3::merge_projections_type5(Chart& merge, const Chart& chart1, c
     // const auto& projection2 = chart2.projections().best();
     // check_projections_before_merging(projection1, projection2);
 
-    // // re-orinet layout2 to layout1 using procrustes
+    // // re-orient layout2 to layout1 using procrustes
     // const auto procrustes_data = procrustes(projection1, projection2, merge_data.common.points(acmacs::chart::CommonAntigensSera::subset::all), acmacs::chart::procrustes_scaling_t::no);
     // auto layout1 = projection1->transformed_layout();
     // const auto transformation2 = procrustes_data.transformation;
