@@ -15,20 +15,33 @@ ae::chart::v3::Titers::iterator::data_sparse& ae::chart::v3::Titers::iterator::d
         ++current_titer;
         if (current_titer == end_titers) {
             ++current_row;
-            skip_dont_care();
-            if (current_row != end_rows) {
-                current_titer = current_row->begin();
-                end_titers = current_row->end();
-            }
-            else {
-                current_titer = std::prev(current_row)->end();
-                end_titers = current_titer;
-            }
+            // fmt::print(stderr, ">>>> ++ end-rows:{} empty-row:{}\n", current_row == end_rows, current_row->empty());
+            skip_empty_rows();
         }
     }
     return *this;
 
 } // ae::chart::v3::Titers::data_sparse::operator++
+
+// ----------------------------------------------------------------------
+
+void ae::chart::v3::Titers::iterator::data_sparse::skip_empty_rows()
+{
+    // iterator is at the begiining of the row, but row can be empty, skip to the next row
+    while (current_row != end_rows && current_row->empty())
+        ++current_row;
+    if (current_row != end_rows) {
+        current_titer = current_row->begin();
+        end_titers = current_row->end();
+        // fmt::print(stderr, ">>>> ++ end-rows:{} empty-row:{} end_titer:{}\n", current_row == end_rows, current_row == end_rows || current_row->empty(), fmt::ptr(&*current_titer));
+    }
+    else {
+        current_titer = std::prev(current_row)->end();
+        end_titers = current_titer;
+        // fmt::print(stderr, ">>>> ++ end-rows:{} empty-row:{} end_titer:{}\n", current_row == end_rows, current_row == end_rows || current_row->empty(), fmt::ptr(&*current_titer));
+    }
+
+} // ae::chart::v3::Titers::iterator::data_sparse::skip_empty_rows
 
 // ----------------------------------------------------------------------
 
