@@ -111,6 +111,8 @@ namespace ae::py
         return ae::chart::v3::merge(chart1, chart2, settings);
     }
 
+    // ----------------------------------------------------------------------
+
     template <typename Index> static inline std::vector<std::vector<size_t>> convert_common(const std::vector<std::pair<Index, Index>>& source)
     {
         std::vector<std::vector<size_t>> converted(source.size());
@@ -126,6 +128,16 @@ namespace ae::py
     static inline std::vector<std::vector<size_t>> common_sera(const ae::chart::v3::common_antigens_sera_t& common)
     {
         return convert_common(common.sera());
+    }
+
+    static inline void common_antigens_sera_only(ae::chart::v3::common_antigens_sera_t& common, std::string_view only)
+    {
+        if (only == "antigens")
+            common.antigens_only();
+        else if (only == "sera")
+            common.sera_only();
+        else
+            throw std::invalid_argument{R"(use "antigens" or "sera")"};
     }
 
 } // namespace ae::py
@@ -679,11 +691,20 @@ void ae::py::chart_v3(pybind11::module_& mdl)
 
     // ----------------------------------------------------------------------
 
-    pybind11::class_<common_antigens_sera_t>(chart_v3_submodule, "CommonAntigensSera")  //
-        .def(pybind11::init([](const Chart& chart1, const Chart& chart2, std::string_view match) { return new common_antigens_sera_t{chart1, chart2, antigens_sera_match_level(match)}; }), "chart1"_a, "chart2"_a, "match"_a = "auto", pybind11::doc(R"(match: "strict", "relaxed", "ignored", "auto")")) //
-        .def("antigens", &common_antigens) //
-        .def("sera", &common_sera) //
-        .def("report", &common_antigens_sera_t::report, "indent"_a = 0) //
+    pybind11::class_<common_antigens_sera_t>(chart_v3_submodule, "CommonAntigensSera") //
+        .def(pybind11::init([](const Chart& chart1, const Chart& chart2, std::string_view match) {
+                 return new common_antigens_sera_t{chart1, chart2, antigens_sera_match_level(match)};
+             }),
+             "chart1"_a, "chart2"_a, "match"_a = "auto", pybind11::doc(R"(match: "strict", "relaxed", "ignored", "auto")")) //
+        .def("antigens_only", &common_antigens_sera_t::antigens_only)                                                       //
+        .def("sera_only", &common_antigens_sera_t::sera_only)                                                               //
+        .def("only", &common_antigens_sera_only, "only"_a, pybind11::doc(R"(only: "antigens", "sera")"))                    //
+        .def("empty", &common_antigens_sera_t::empty)                                                                       //
+        .def("number_of_antigens", &common_antigens_sera_t::common_antigens)                                                //
+        .def("number_of_sera", &common_antigens_sera_t::common_sera)                                                        //
+        .def("antigens", &common_antigens)                                                                                  //
+        .def("sera", &common_sera)                                                                                          //
+        .def("report", &common_antigens_sera_t::report, "indent"_a = 0)                                                     //
         ;
 
     // ----------------------------------------------------------------------
@@ -692,7 +713,7 @@ void ae::py::chart_v3(pybind11::module_& mdl)
 
     pybind11::class_<merge_data_t>(chart_v3_submodule, "MergeData")  //
         .def("report", &merge_data_t::titer_merge_report, "chart"_a) //
-        .def("common", &merge_data_t::common_report, "indent"_a = 0)   //
+        .def("common", &merge_data_t::common_report, "indent"_a = 0) //
         ;
 }
 

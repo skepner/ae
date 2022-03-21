@@ -24,6 +24,15 @@ namespace ae::chart::v3
         indexes_t primary() const;
         std::string report(size_t indent) const;
 
+        void clear()
+            {
+                match_.clear();
+                number_of_common_ = 0;
+            }
+
+        bool empty() const { return number_of_common_ == 0; }
+        size_t number_of_common() const { return number_of_common_; }
+
         std::optional<index_t> primary_by_secondary(index_t secondary_no) const;
         std::optional<index_t> secondary_by_primary(index_t primary_no) const;
 
@@ -94,27 +103,18 @@ namespace ae::chart::v3
         common_antigens_sera_t(common_antigens_sera_t&&) = default;
         common_antigens_sera_t(const Chart& primary, const Chart& secondary, antigens_sera_match_level_t match_level);
 
-        //   CommonAntigensSera(const Chart& primary, const Chart& secondary, common::antigen_selector_t antigen_entry_extractor, common::serum_selector_t serum_entry_extractor, match_level_t
-        //   match_level); CommonAntigensSera(const Chart& primary); // for procrustes between projections of the same chart CommonAntigensSera(const CommonAntigensSera&) = delete;
-        //   CommonAntigensSera(CommonAntigensSera&&);
-        //   ~CommonAntigensSera();
-        //   CommonAntigensSera& operator=(const CommonAntigensSera&) = delete;
-        //   CommonAntigensSera& operator=(CommonAntigensSera&&);
-
-        //   [[nodiscard]] std::string report(size_t indent = 0) const;
-        //   [[nodiscard]] std::string report_unique(size_t indent = 0) const;
-        //   operator bool() const;
-        //   size_t common_antigens() const;
-        //   size_t common_sera() const;
+        bool empty() const { return antigens_.empty() && sera_.empty(); }
+        size_t common_antigens() const { return antigens_.number_of_common(); }
+        size_t common_sera() const { return sera_.number_of_common(); }
 
         //   void keep_only(const PointIndexList& antigens, const PointIndexList& sera);
-        //   void antigens_only(); // remove sera from common lists
-        //   void sera_only();     // remove antigens from common lists
+
+        void antigens_only() { sera_.clear(); }
+        void sera_only() { antigens_.clear(); }
 
         auto antigens() const { return antigens_.common(); }
         auto sera() const { return sera_.common(); }
         std::vector<std::pair<point_index, point_index>> points() const;
-
 
         auto primary_antigens() const { return antigens_.primary(); }
         auto primary_sera() const { return sera_.primary(); }
@@ -130,7 +130,8 @@ namespace ae::chart::v3
         //   std::vector<common_t> points_for_primary_antigens(const Indexes& antigen_indexes) const;
         //   std::vector<common_t> points_for_primary_sera(const Indexes& serum_indexes) const;
 
-        std::string report(size_t indent) const;
+        [[nodiscard]] std::string report(size_t indent) const;
+        //   [[nodiscard]] std::string report_unique(size_t indent = 0) const;
 
       private:
         common_data_t<Antigens> antigens_;
