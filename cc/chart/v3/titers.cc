@@ -9,6 +9,29 @@
 
 // ----------------------------------------------------------------------
 
+ae::chart::v3::Titers::iterator::data_sparse& ae::chart::v3::Titers::iterator::data_sparse::operator++()
+{
+    if (current_row != end_rows) {
+        ++current_titer;
+        if (current_titer == end_titers) {
+            ++current_row;
+            skip_dont_care();
+            if (current_row != end_rows) {
+                current_titer = current_row->begin();
+                end_titers = current_row->end();
+            }
+            else {
+                current_titer = std::prev(current_row)->end();
+                end_titers = current_titer;
+            }
+        }
+    }
+    return *this;
+
+} // ae::chart::v3::Titers::data_sparse::operator++
+
+// ----------------------------------------------------------------------
+
 std::string_view ae::chart::v3::Titer::validate(std::string_view titer)
 {
     if (titer.empty())

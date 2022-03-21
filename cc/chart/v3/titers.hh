@@ -216,29 +216,17 @@ namespace ae::chart::v3
                 sparse_row_t::const_iterator end_titers;
 
                 bool operator==(const data_sparse&) const = default;
-
-                data_sparse& operator++()
-                {
-                    if (current_row != end_rows) {
-                        ++current_titer;
-                        if (current_titer == end_titers) {
-                            ++current_row;
-                            if (current_row != end_rows) {
-                                current_titer = current_row->begin();
-                                end_titers = current_row->end();
-                            }
-                            else {
-                                current_titer = std::prev(current_row)->end();
-                                end_titers = current_titer;
-                            }
-                        }
-                    }
-                    return *this;
-                }
-
+                data_sparse& operator++();
                 antigen_index antigen() const { return antigen_index{current_row - begin_rows}; }
                 serum_index serum() const { return current_titer->first; }
                 ref operator*() const { return ref{antigen(), serum(), current_titer->second}; }
+
+                void skip_dont_care()
+                {
+                    // iterator is at the begiining of the row, but row can be empty, skip to the next row
+                    while (current_row != end_rows && current_row->empty())
+                        ++current_row;
+                }
             };
 
           public:
@@ -272,6 +260,7 @@ namespace ae::chart::v3
             iterator(const sparse_t& titers, serum_index)
                 : data_{data_sparse{.current_row = titers.begin(), .begin_rows = titers.begin(), .end_rows = titers.end(), .current_titer = titers.front().begin(), .end_titers = titers.front().end()}}
             {
+                std::visit([](auto& dat) { return dat.skip_dont_care(); }, data_);
             }
             iterator(const sparse_t& titers, serum_index, _scroll_to_end)
                 : data_{data_sparse{.current_row = titers.end(), .begin_rows = titers.begin(), .end_rows = titers.end(), .current_titer = titers.back().end(), .end_titers = titers.back().end()}}
