@@ -1,0 +1,77 @@
+#! /usr/bin/env python3
+import os, sys, re, json, pprint, argparse, traceback
+from pathlib import Path
+import ae_backend
+
+# ----------------------------------------------------------------------
+
+def main(args: argparse.Namespace):
+    chart1 = ae_backend.chart_v3.Chart(args.chart1)
+    chart2 = ae_backend.chart_v3.Chart(args.chart2)
+
+        acmacs::chart::CommonAntigensSera common(*chart1, *chart2, match_level);
+        if (args.subset == "antigens")
+            common.antigens_only();
+        else if (args.subset == "sera")
+            common.sera_only();
+        else if (args.subset != "all")
+            fmt::print(stderr, "WARNING: unrecognized --subset argument, \"all\" assumed\n");
+        if (common) {
+            const auto procrustes_data = acmacs::chart::procrustes(*chart1->projection(args.p1), *chart2->projection(args.p2), common.points(),
+                                                             args.scaling ? acmacs::chart::procrustes_scaling_t::yes : acmacs::chart::procrustes_scaling_t::no);
+            fmt::print("common antigens: {} sera: {}\n", common.common_antigens(), common.common_sera());
+            fmt::print("transformation: {}\nrms: {}\n", procrustes_data.transformation, procrustes_data.rms);
+            // common.report();
+        }
+        else {
+            fmt::print(stderr, "ERROR no common antigens/sera\n");
+        }
+
+    # if args.report or args.common_only:
+    #     print(f">> Use chart-merge-titer-report to report titer merging", file=sys.stderr)
+    #     exit(1)
+    # merge_settings = {"match": args.match, "merge_type": args.merge_type, "combine_cheating_assays": args.combine_cheating_assays}
+    # if len(args.chart) < 2:
+    #     raise ValueError("too few source charts")
+    # merge = None
+    # for chart_file in args.chart:
+    #     chart = ae_backend.chart_v3.Chart(chart_file)
+    #     if args.duplicates_distinct:
+    #         chart.duplicates_distinct()
+    #     if merge is not None:
+    #         print(report_chart(merge), report_chart(chart), sep="\n", end="\n\n")
+    #         merge, merge_data = ae_backend.chart_v3.merge(merge, chart, **merge_settings)
+    #         print(merge_data.common())
+    #         # print(merge_data.report(merge))
+    #         print("-" * 70, end="\n\n")
+    #     else:
+    #         merge = chart
+
+# ----------------------------------------------------------------------
+
+def report_chart(chart: ae_backend.chart_v3.Chart):
+    return f"{chart.name()} {chart.number_of_antigens()}:{chart.number_of_sera()}"
+
+# ----------------------------------------------------------------------
+
+try:
+    parser = argparse.ArgumentParser(description=__doc__)
+
+    parser.add_argument("chart1", type=Path)
+    parser.add_argument("chart2", type=Path)
+
+    parser.add_argument("-p", "--p1", type=int, default=0, help="projection number of the first chart")
+    parser.add_argument("-r", "--p2", type=int, default=0, help="projection number of the second chart")
+    parser.add_argument("--match", default="auto", choices=["strict", "relaxed", "ignored", "auto"])
+    parser.add_argument("--scaling", action="store_true", default=False)
+    parser.add_argument("--subset", default="all", choices=["all", "antigens", "sera"])
+    parser.add_argument("--duplicates-distinct", action="store_true", default=False, help="make duplicating antigens/sera distinct")
+
+    args = parser.parse_args()
+    exit_code = main(args) or 0
+except Exception as err:
+    print(f"> {err}\n{traceback.format_exc()}", file=sys.stderr)
+    exit_code = 1
+exit(exit_code)
+
+# ======================================================================
