@@ -54,6 +54,7 @@ namespace ae::chart::v3
 
         auto number_of_antigens_in_merge() const { return target_antigens_; }
         auto number_of_sera_in_merge() const { return target_sera_; }
+        auto number_of_points_in_merge() const { return target_antigens_ + target_sera_; }
         const auto& antigens_primary_target() const { return antigens_primary_target_; }
         const auto& antigens_secondary_target() const { return antigens_secondary_target_; }
         const auto& sera_primary_target() const { return sera_primary_target_; }

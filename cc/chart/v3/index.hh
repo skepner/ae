@@ -162,6 +162,8 @@ namespace ae
     // inline serum_index operator+(serum_index sr1, serum_index sr2) { return serum_index{sr1.get() + sr2.get()}; }
     inline point_index operator+(antigen_index ag_no, serum_index sr_no) { return point_index{ag_no.get() + sr_no.get()}; }
     inline size_t operator*(point_index point_no, number_of_dimensions_t num_dim) { return point_no.get() * num_dim.get(); }
+    inline point_index to_point_index(const antigen_index& agi) { return point_index{*agi}; }
+    inline antigen_index to_antigen_index(const point_index& pi) { return antigen_index{*pi}; }
 
     // ----------------------------------------------------------------------
 
