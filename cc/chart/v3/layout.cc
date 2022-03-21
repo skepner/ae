@@ -1,4 +1,5 @@
 #include "chart/v3/layout.hh"
+#include "chart/v3/transformation.hh"
 
 // ----------------------------------------------------------------------
 
@@ -62,5 +63,16 @@ std::pair<std::vector<ae::point_index>, std::vector<ae::point_index>> ae::chart:
 
 
 } // ae::chart::v3::Layout::min_max_point_indexes
+
+// ----------------------------------------------------------------------
+
+ae::chart::v3::Layout ae::chart::v3::Layout::transform(const Transformation& aTransformation) const
+{
+    Layout result{number_of_points(), number_of_dimensions()};
+    for (const auto p_no : number_of_points())
+        result.update(p_no, aTransformation.transform(at(p_no)));
+    return result;
+
+} // ae::chart::v3::Layout::transform
 
 // ----------------------------------------------------------------------

@@ -9,6 +9,8 @@
 
 namespace ae::chart::v3
 {
+    class Transformation;
+
     class Layout
     {
       public:
@@ -91,7 +93,8 @@ namespace ae::chart::v3
         // returns indexes for min points for each dimension and max points for each dimension
         std::pair<std::vector<ae::point_index>, std::vector<ae::point_index>> min_max_point_indexes() const;
         // returns boundary coordinates (min and max)
-        // std::shared_ptr<Layout> transform(const ae::draw::v1::Transformation& aTransformation) const;
+
+        Layout transform(const Transformation& aTransformation) const;
         // point_coordinates centroid() const;
 
         // LayoutConstIterator begin() const { return {*this, 0}; }

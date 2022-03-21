@@ -55,10 +55,10 @@ namespace ae::chart::v3
 ae::chart::v3::procrustes_data_t ae::chart::v3::procrustes(const Projection& primary, const Projection& secondary, const common_antigens_sera_t& common, procrustes_scaling_t scaling)
 {
     const auto number_of_dimensions = primary.number_of_dimensions();
-    // auto& primary_layout = primary.number_of_dimensions() == number_of_dimensions_t{2} ? primary.transformed_layout() : primary.layout();
-    // const auto& secondary_layout = secondary.layout();
-    // if (number_of_dimensions != secondary_layout.number_of_dimensions())
-    //     throw Error{fmt::format("[procrustes] projections have different number of dimensions: {} and {}", number_of_dimensions, secondary_layout.number_of_dimensions())};
+    const Layout primary_layout = primary.number_of_dimensions() == number_of_dimensions_t{2} ? primary.transformed_layout() : primary.layout();
+    const Layout& secondary_layout = secondary.layout();
+    if (number_of_dimensions != secondary_layout.number_of_dimensions())
+        throw Error{fmt::format("[procrustes] projections have different number of dimensions: {} and {}", number_of_dimensions, secondary_layout.number_of_dimensions())};
 
     // auto common_without_disconnected = common;
     // common_without_disconnected.erase(std::remove_if(std::begin(common_without_disconnected), std::end(common_without_disconnected),

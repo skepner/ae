@@ -76,7 +76,7 @@ namespace ae::chart::v3
 
         optimization_status relax(Chart& chart, const optimization_options& options);
 
-        // std::shared_ptr<Layout> transformed_layout() const { return layout()->transform(transformation()); }
+        Layout transformed_layout() const { return layout().transform(transformation()); }
         // double stress_diff_to_stop() const = 0;
 
         // double calculate_stress(const Stress& stress) const { return stress.value(*layout()); }
