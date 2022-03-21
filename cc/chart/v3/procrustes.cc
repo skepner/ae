@@ -81,13 +81,13 @@ ae::chart::v3::procrustes_data_t ae::chart::v3::procrustes(const Projection& pri
 
     procrustes_data_t procrustes_data(number_of_dimensions);
 
-    // auto set_transformation = [&procrustes_data, number_of_dimensions = cint(number_of_dimensions)](const auto& source) {
-    //     for (aint_t row = 0; row < number_of_dimensions; ++row)
-    //         for (aint_t col = 0; col < number_of_dimensions; ++col)
-    //             procrustes_data.transformation(row, col) = source(row, col);
-    //     if (!procrustes_data.transformation.valid())
-    //         std::cerr << "WARNING: procrustes: invalid transformation\n";
-    // };
+    auto set_transformation = [&procrustes_data, number_of_dimensions](const auto& source) {
+        for (const auto row : number_of_dimensions)
+            for (const auto col : number_of_dimensions)
+                procrustes_data.transformation(*row, *col) = source(*row, *col);
+        if (!procrustes_data.transformation.valid())
+            std::cerr << "WARNING: procrustes: invalid transformation\n";
+    };
 
     // real_2d_array transformation;
     // if (scaling == procrustes_scaling_t::no) {
