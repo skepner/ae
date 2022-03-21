@@ -2,6 +2,7 @@
 #include "chart/v3/chart.hh"
 #include "chart/v3/selected-antigens-sera.hh"
 #include "chart/v3/merge.hh"
+#include "chart/v3/procrustes.hh"
 
 // ======================================================================
 
@@ -70,6 +71,35 @@ namespace ae::py
 
     // ----------------------------------------------------------------------
 
+    template <typename Index> static inline std::vector<std::vector<size_t>> convert_common(const std::vector<std::pair<Index, Index>>& source)
+    {
+        std::vector<std::vector<size_t>> converted(source.size());
+        std::transform(source.begin(), source.end(), converted.begin(), [](const auto& src) { return std::vector<size_t>{*src.first, *src.second}; });
+        return converted;
+    }
+
+    static inline std::vector<std::vector<size_t>> common_antigens(const ae::chart::v3::common_antigens_sera_t& common)
+    {
+        return convert_common(common.antigens());
+    }
+
+    static inline std::vector<std::vector<size_t>> common_sera(const ae::chart::v3::common_antigens_sera_t& common)
+    {
+        return convert_common(common.sera());
+    }
+
+    static inline void common_antigens_sera_only(ae::chart::v3::common_antigens_sera_t& common, std::string_view only)
+    {
+        if (only == "antigens")
+            common.antigens_only();
+        else if (only == "sera")
+            common.sera_only();
+        else
+            throw std::invalid_argument{R"(use "antigens" or "sera")"};
+    }
+
+    // ----------------------------------------------------------------------
+
     static inline ae::chart::v3::antigens_sera_match_level_t antigens_sera_match_level(std::string_view match)
     {
         using namespace ae::chart::v3;
@@ -113,31 +143,9 @@ namespace ae::py
 
     // ----------------------------------------------------------------------
 
-    template <typename Index> static inline std::vector<std::vector<size_t>> convert_common(const std::vector<std::pair<Index, Index>>& source)
+    static inline ae::chart::v3::procrustes_data_t procrustes(const ProjectionRef& proj1, const ProjectionRef& proj2, const ae::chart::v3::common_antigens_sera_t& common, bool scaling)
     {
-        std::vector<std::vector<size_t>> converted(source.size());
-        std::transform(source.begin(), source.end(), converted.begin(), [](const auto& src) { return std::vector<size_t>{*src.first, *src.second}; });
-        return converted;
-    }
-
-    static inline std::vector<std::vector<size_t>> common_antigens(const ae::chart::v3::common_antigens_sera_t& common)
-    {
-        return convert_common(common.antigens());
-    }
-
-    static inline std::vector<std::vector<size_t>> common_sera(const ae::chart::v3::common_antigens_sera_t& common)
-    {
-        return convert_common(common.sera());
-    }
-
-    static inline void common_antigens_sera_only(ae::chart::v3::common_antigens_sera_t& common, std::string_view only)
-    {
-        if (only == "antigens")
-            common.antigens_only();
-        else if (only == "sera")
-            common.sera_only();
-        else
-            throw std::invalid_argument{R"(use "antigens" or "sera")"};
+        return ae::chart::v3::procrustes(proj1.projection, proj2.projection, common, scaling ? ae::chart::v3::procrustes_scaling_t::yes : ae::chart::v3::procrustes_scaling_t::no);
     }
 
 } // namespace ae::py
@@ -706,6 +714,10 @@ void ae::py::chart_v3(pybind11::module_& mdl)
         .def("sera", &common_sera)                                                                                          //
         .def("report", &common_antigens_sera_t::report, "indent"_a = 0)                                                     //
         ;
+
+    // ----------------------------------------------------------------------
+
+    chart_v3_submodule.def("procrustes", &ae::py::procrustes, "chart1"_a, "chart2"_a, "common"_a, "scaling"_a = false);
 
     // ----------------------------------------------------------------------
 
