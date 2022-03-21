@@ -535,6 +535,8 @@ ae::chart::v3::Titers::titer_merge_report ae::chart::v3::Titers::set_from_layers
     if (number_of_layers() < layer_index{2})
         throw data_not_available{"table has no layers"};
 
+    number_of_sera(chart.sera().size());
+
     column_bases cb;
     if (has_morethan_in_layers()) {
           // std::cerr << AD_FORMAT("DEBUG: has_morethan_in_layers");

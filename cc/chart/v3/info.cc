@@ -1,4 +1,5 @@
 #include "utils/string.hh"
+#include "utils/log.hh"
 #include "chart/v3/info.hh"
 
 // ----------------------------------------------------------------------
@@ -69,8 +70,9 @@ std::string ae::chart::v3::Assay::short_name() const
 
 template <typename Field> static inline std::string info_make_field(const ae::chart::v3::Info& info, const Field& (ae::chart::v3::TableSource::*func)() const)
 {
-    if (const auto& field = std::invoke(func, info); !field.empty() || info.sources().empty())
+    if (const auto& field = std::invoke(func, info); !field.empty() || info.sources().empty()) {
         return std::string{field.get()};
+    }
 
     std::vector<std::string> composition(info.sources().size());
     std::transform(info.sources().begin(), info.sources().end(), composition.begin(), [&func](const auto& source) { return std::string{std::invoke(func, source).get()}; });
@@ -115,7 +117,14 @@ std::string ae::chart::v3::Info::make_virus_subtype() const
 
 std::string ae::chart::v3::Info::make_assay(Assay::assay_name_t tassay) const
 {
-    return assay().name(tassay);
+    if (const auto ass = assay().name(tassay); !ass.empty())
+        return ass;
+
+    std::vector<std::string> composition(sources().size());
+    std::transform(sources().begin(), sources().end(), composition.begin(), [tassay](const auto& source) { return source.assay().name(tassay); });
+    std::sort(composition.begin(), composition.end());
+    composition.erase(std::unique(composition.begin(), composition.end()), composition.end());
+    return ae::string::join("+", composition);
 
 } // ae::chart::v3::Info::make_assay
 

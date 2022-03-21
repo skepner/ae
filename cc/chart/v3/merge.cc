@@ -337,6 +337,11 @@ void ae::chart::v3::merge_info(Chart& merge, const Chart& chart1, const Chart& c
     else
         std::copy(chart2.info().sources().begin(), chart2.info().sources().end(), std::back_inserter(merge.info().sources()));
 
+    merge.info().type_subtype(ae::virus::type_subtype_t{merge.info().make_virus_type()});
+    merge.info().assay(Assay{merge.info().make_assay(Assay::assay_name_t::brief)});
+    merge.info().rbc_species(RbcSpecies{merge.info().make_rbc_species()});
+    merge.info().lab(Lab{merge.info().make_lab()});
+
 } // ae::chart::v3::merge_info
 
 // ----------------------------------------------------------------------
