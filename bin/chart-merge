@@ -25,7 +25,7 @@ def main(args: argparse.Namespace):
             print("-" * 70, end="\n\n")
         else:
             merge = chart
-    print(merge, end="\n\n")
+    print(report_chart(merge), end="\n\n")
     if args.output:
         merge.write(args.output)
     # if args.report:

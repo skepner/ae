@@ -7,6 +7,7 @@ namespace ae::chart::v3
 {
     static void merge_info(Chart& merge, const Chart& chart1, const Chart& chart2);
     static Titers::titer_merge_report merge_titers(Chart& merge, const Chart& chart1, const Chart& chart2, const merge_data_t& merge_data);
+    static void merge_legacy_plot_spec(Chart& merge, const Chart& chart1, const Chart& chart2, const merge_data_t& merge_data);
 
     template <typename AgSrs> static void merge_antigens_sera(AgSrs& merge, const AgSrs& source, const merge_data_t::index_mapping_t<typename AgSrs::index_t>& to_target, bool always_replace)
     {
@@ -45,6 +46,9 @@ std::pair<std::shared_ptr<ae::chart::v3::Chart>, ae::chart::v3::merge_data_t> ae
         merge_antigens_sera(merged->sera(), chart2->sera(), merge_data.sera_secondary_target(), false);
         merged->throw_if_duplicates();
         merge_data.titer_report(merge_titers(*merged, *chart1, *chart2, merge_data));
+    // merge_projections(*result, chart1, chart2, merge_data);
+        // merge_semantic_plot_spec(*merged, *chart1, *chart2, merge_data);
+        merge_legacy_plot_spec(*merged, *chart1, *chart2, merge_data);
 
         AD_WARNING("ae::chart::v3::merge is incomplete");
         return {std::move(merged), std::move(merge_data)};
@@ -416,5 +420,44 @@ ae::chart::v3::Titers::titer_merge_report ae::chart::v3::merge_titers(Chart& mer
     return titers.set_from_layers(merge);
 
 } // ae::chart::v3::merge_titers
+
+// ----------------------------------------------------------------------
+
+void ae::chart::v3::merge_legacy_plot_spec(Chart& merge, const Chart& chart1, const Chart& /*chart2*/, const merge_data_t& merge_data)
+{
+    // copy chart1 plot spec, ignore chart2 plot spec
+
+    auto& merge_plot_spec = merge.legacy_plot_spec();
+    merge_plot_spec = chart1.legacy_plot_spec();
+
+    // adjust serum indexes in the merged plot style index
+    const point_index index_adjust{*merge.antigens().size() - *chart1.antigens().size()};
+    for (auto& p_no : merge_plot_spec.style_for_point()) {
+        if (*p_no >= *chart1.antigens().size())
+            p_no = p_no + index_adjust;
+    }
+
+    // reset drawing order
+    merge_plot_spec.drawing_order().get().clear();
+
+
+    // const auto& plot_spec2 = chart2.legacy_plot_spec();
+    // for (const auto ag_no : chart1.antigens().size())
+    //     merge_plot_spec.modify(ag_no, plot_spec1->style(ag_no));
+    // for (const auto sr_no : chart1.sera().size())
+    //     merge_plot_spec.modify_serum(sr_no, plot_spec1->style(sr_no + chart1.number_of_antigens()));
+    // for (const auto ag_no : chart2.antigens().size())
+    //     if (auto found = report.antigens_secondary_target.find(ag_no); found != report.antigens_secondary_target.end() && !found->second.common)
+    //         merge_plot_spec.modify(found->second.index, plot_spec2->style(ag_no));
+    // }
+    // for (const auto sr_no : chart2.sera().size())
+    //     if (auto found = report.sera_secondary_target.find(sr_no); found != report.sera_secondary_target.end() && !found->second.common)
+    //         merge_plot_spec.modify_serum(found->second.index, plot_spec2->style(sr_no + chart2.number_of_antigens()));
+    // }
+
+      // drawing order
+      // auto& drawing_order = merge_plot_spec.drawing_order_modify();
+
+} // ae::chart::v3::merge_plot_spec
 
 // ----------------------------------------------------------------------

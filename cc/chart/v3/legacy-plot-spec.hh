@@ -30,8 +30,8 @@ namespace ae::chart::v3::legacy
 
         const DrawingOrder& drawing_order() const { return drawing_order_; }
         DrawingOrder& drawing_order() { return drawing_order_; }
-        const std::vector<size_t>& style_for_point() const { return style_for_point_; }
-        std::vector<size_t>& style_for_point() { return style_for_point_; }
+        const point_indexes& style_for_point() const { return style_for_point_; }
+        point_indexes& style_for_point() { return style_for_point_; }
         const std::vector<PointStyle>& styles() const { return styles_; }
         std::vector<PointStyle>& styles() { return styles_; }
 
@@ -49,7 +49,7 @@ namespace ae::chart::v3::legacy
       private:
         // antigen_index number_of_antigens_{};
         std::vector<PointStyle> styles_{};
-        std::vector<size_t> style_for_point_{};
+        point_indexes style_for_point_{};
         DrawingOrder drawing_order_{};
         Color error_line_positive_color_{"blue"};
         Color error_line_negative_color_{"red"};
