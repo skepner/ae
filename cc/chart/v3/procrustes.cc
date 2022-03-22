@@ -161,12 +161,12 @@ ae::chart::v3::procrustes_data_t ae::chart::v3::procrustes(const Projection& pri
         real_2d_array u, vt;
         singular_value_decomposition(m4, u, vt);
         if (has_nan(u))
-            std::cerr << "WARNING: procrustes: invalid u after svd (no scaling)\n";
+            AD_WARNING("[procrustes] invalid u after svd (no scaling)");
         if (has_nan(vt))
-            std::cerr << "WARNING: procrustes: invalid vt after svd (no scaling)\n";
+            AD_WARNING("[procrustes] invalid vt after svd (no scaling)");
         transformation = multiply_both_transposed(vt, u);
         if (has_nan(transformation))
-            std::cerr << "WARNING: procrustes: invalid transformation after svd (no scaling)\n";
+            AD_WARNING("[procrustes] invalid transformation after svd (no scaling)");
     }
     else {
         const MatrixJProcrustesScaling j(common_without_disconnected.size());
@@ -176,7 +176,7 @@ ae::chart::v3::procrustes_data_t ae::chart::v3::procrustes(const Projection& pri
         singular_value_decomposition(m2, u, vt);
         transformation = multiply_both_transposed(vt, u);
         if (has_nan(transformation))
-            std::cerr << "WARNING: procrustes: invalid transformation after svd (with scaling)\n";
+            AD_WARNING("[procrustes] invalid transformation after svd (with scaling)");
         // std::cerr << "transformation0: " << transformation.tostring(8) << '\n';
 
         // calculate optimal scale parameter
