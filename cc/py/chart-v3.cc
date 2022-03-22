@@ -530,7 +530,7 @@ void ae::py::chart_v3(pybind11::module_& mdl)
                     throw std::invalid_argument{fmt::format("wrong index: {}, number of points in layout: {}", index, layout.number_of_points())};
             },
             "index"_a, pybind11::doc("negative index counts from the layout end")) //
-        // .def("__str__", [](const Layout& layout) { return fmt::format("{}", transformation); }) //
+        // .def("__str__", [](const Layout& layout) { return fmt::format("{}", layout); }) //
         ;
 
     pybind11::class_<point_coordinates>(chart_v3_submodule, "PointCoordinates")                           //
@@ -718,6 +718,14 @@ void ae::py::chart_v3(pybind11::module_& mdl)
     // ----------------------------------------------------------------------
 
     chart_v3_submodule.def("procrustes", &ae::py::procrustes, "chart1"_a, "chart2"_a, "common"_a, "scaling"_a = false);
+
+    pybind11::class_<procrustes_data_t>(chart_v3_submodule, "ProcrustesData")                                             //
+        .def("transformation", [](const procrustes_data_t& data) -> Transformation { return data.transformation; })       //
+        .def("rms", [](const procrustes_data_t& data) { return data.rms; })                                               //
+        .def("apply", &procrustes_data_t::apply, "layout"_a)                                                              //
+        .def("scale", [](const procrustes_data_t& data) { return data.scale; })                                           //
+        .def("secondary_transformed", [](const procrustes_data_t& data) -> Layout { return data.secondary_transformed; }) //
+        ;
 
     // ----------------------------------------------------------------------
 
