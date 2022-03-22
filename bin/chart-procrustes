@@ -21,7 +21,7 @@ def main(args: argparse.Namespace):
     if not common.empty():
         procrustes_data = ae_backend.chart_v3.procrustes(chart1.projection(args.p1), chart2.projection(args.p2), common=common, scaling=args.scaling);
         print(f"Common antigens: {len(common.antigens()):5d}\nCommon sera:     {len(common.sera()):5d}\nTransformation:  {procrustes_data.transformation()}\nrms:             {procrustes_data.rms()}")
-        print(procrustes_data.secondary_transformed())
+        # print(procrustes_data.secondary_transformed().minmax())
     else:
         print(f"> no common antigens/sera", file=sys.stderr)
 

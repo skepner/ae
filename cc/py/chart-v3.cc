@@ -530,6 +530,7 @@ void ae::py::chart_v3(pybind11::module_& mdl)
                     throw std::invalid_argument{fmt::format("wrong index: {}, number of points in layout: {}", index, layout.number_of_points())};
             },
             "index"_a, pybind11::doc("negative index counts from the layout end")) //
+        .def("minmax", &Layout::minmax) //
         // .def("__str__", [](const Layout& layout) { return fmt::format("{}", layout); }) //
         ;
 
