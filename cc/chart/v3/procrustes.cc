@@ -200,6 +200,8 @@ ae::chart::v3::procrustes_data_t ae::chart::v3::procrustes(const Projection& pri
         procrustes_data.transformation.translation(dim) = t_i / static_cast<double>(common_without_disconnected.size());
     }
 
+    AD_DEBUG("procrustes");
+
     // rms
     procrustes_data.secondary_transformed = procrustes_data.apply(secondary_layout);
     procrustes_data.rms = 0.0;
@@ -234,6 +236,13 @@ ae::chart::v3::Layout ae::chart::v3::procrustes_data_t::apply(const Layout& sour
 
 alglib::real_2d_array ae::chart::v3::multiply(const MatrixJ& left, const real_2d_array& right)
 {
+    alglib::real_2d_array result;
+    result.setlength(left.rows(), right.cols());
+    for (aint_t row = 0; row < left.rows(); ++row) {
+        for (aint_t column = 0; column < right.cols(); ++column)
+            result(row, column) = accumulate(left.cols(), [&left,&right,row,column](aint_t i) { return left(row, i) * right(i, column); });
+    }
+    return result;
 
 } // ae::chart::v3::multiply
 
@@ -241,6 +250,14 @@ alglib::real_2d_array ae::chart::v3::multiply(const MatrixJ& left, const real_2d
 
 alglib::real_2d_array ae::chart::v3::multiply(const real_2d_array& left, const real_2d_array& right)
 {
+    alglib::real_2d_array result;
+    result.setlength(left.rows(), right.cols());
+    // std::cerr << "multiply left " << left.rows() << 'x' << left.cols() << "  right " << right.rows() << 'x' << right.cols() << "  result " << result.rows() << 'x' << result.cols() << '\n';
+    alglib::rmatrixgemm(left.rows(), right.cols(), right.rows(),
+                        1.0 /*alpha*/, left, 0 /*i-left*/, 0 /*j-left*/, 0 /*left-no-transform*/,
+                        right, 0 /*i-right*/, 0 /*j-right*/, 0 /*right-no-transform*/,
+                        0.0 /*beta*/, result, 0 /*i-result*/, 0 /*j-result*/);
+    return result;
 
 } // ae::chart::v3::multiply
 
@@ -248,6 +265,8 @@ alglib::real_2d_array ae::chart::v3::multiply(const real_2d_array& left, const r
 
 void ae::chart::v3::multiply(real_2d_array& matrix, double scale)
 {
+    for (aint_t row = 0; row < matrix.rows(); ++row)
+        alglib::vmul(&matrix[row][0], 1, matrix.cols(), scale);
 
 } // ae::chart::v3::multiply
 
@@ -255,6 +274,10 @@ void ae::chart::v3::multiply(real_2d_array& matrix, double scale)
 
 void ae::chart::v3::multiply_add(real_2d_array& matrix, double scale, const real_2d_array& to_add)
 {
+    for (aint_t row = 0; row < matrix.rows(); ++row) {
+        alglib::vmul(&matrix[row][0], 1, matrix.cols(), scale);
+        alglib::vadd(&matrix[row][0], 1, &to_add[row][0], 1, matrix.cols());
+    }
 
 } // ae::chart::v3::multiply_add
 
@@ -262,6 +285,13 @@ void ae::chart::v3::multiply_add(real_2d_array& matrix, double scale, const real
 
 alglib::real_2d_array ae::chart::v3::multiply_left_transposed(const real_2d_array& left, const real_2d_array& right)
 {
+    alglib::real_2d_array result;
+    result.setlength(left.cols(), right.cols());
+    alglib::rmatrixgemm(left.cols(), right.cols(), right.rows(),
+                        1.0 /*alpha*/, left, 0 /*i-left*/, 0 /*j-left*/, 1 /*left-transpose*/,
+                        right, 0 /*i-right*/, 0 /*j-right*/, 0 /*right-no-transform*/,
+                        0.0 /*beta*/, result, 0 /*i-result*/, 0 /*j-result*/);
+    return result;
 
 } // ae::chart::v3::multiply_left_transposed
 
@@ -269,13 +299,25 @@ alglib::real_2d_array ae::chart::v3::multiply_left_transposed(const real_2d_arra
 
 alglib::real_2d_array ae::chart::v3::multiply_both_transposed(const real_2d_array& left, const real_2d_array& right)
 {
+    alglib::real_2d_array result;
+    result.setlength(left.cols(), right.rows());
+    alglib::rmatrixgemm(left.cols(), right.rows(), left.rows(),
+                        1.0 /*alpha*/, left, 0 /*i-left*/, 0 /*j-left*/, 1 /*left-transpose*/,
+                        right, 0 /*i-right*/, 0 /*j-right*/, 1 /*right-transpose*/,
+                        0.0 /*beta*/, result, 0 /*i-result*/, 0 /*j-result*/);
+    return result;
 
 } // ae::chart::v3::multiply_both_transposed
 
 // ----------------------------------------------------------------------
 
-alglib::real_2d_array ae::chart::v3::transpose(const real_2d_array& matrix)
+alglib::real_2d_array ae::chart::v3::transpose(const real_2d_array& source)
 {
+    alglib::real_2d_array result;
+    result.setlength(source.cols(), source.rows());
+    alglib::rmatrixtranspose(source.rows(), source.cols(), source, 0/*i-source*/, 0/*j-source*/, result, 0/*i-result*/, 0/*j-result*/);
+      // std::cerr << "transposed: " << source.rows() << 'x' << source.cols() << " --> " << source.cols() << 'x' << source.rows() << '\n';
+    return result;
 
 } // ae::chart::v3::transpose
 
@@ -283,6 +325,11 @@ alglib::real_2d_array ae::chart::v3::transpose(const real_2d_array& matrix)
 
 void ae::chart::v3::singular_value_decomposition(const real_2d_array& matrix, real_2d_array& u, real_2d_array& vt)
 {
+    vt.setlength(matrix.cols(), matrix.cols());
+    u.setlength(matrix.rows(), matrix.rows());
+    alglib::real_1d_array w;
+    w.setlength(matrix.cols());
+    alglib::rmatrixsvd(matrix, matrix.rows(), matrix.cols(), 2/*u-needed*/, 2/*vt-needed*/, 2 /*additionalmemory -> max performance*/, w, u, vt);
 
 } // ae::chart::v3::singular_value_decomposition
 
