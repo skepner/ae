@@ -1,5 +1,6 @@
 #include "chart/v3/merge.hh"
 #include "chart/v3/chart.hh"
+#include "chart/v3/procrustes.hh"
 
 // ----------------------------------------------------------------------
 
@@ -451,32 +452,32 @@ void ae::chart::v3::merge_projections_type2(Chart& merge, const Chart& chart1, c
 
 void ae::chart::v3::merge_projections_type3(Chart& merge, const Chart& chart1, const Chart& chart2, const merge_data_t& merge_data)
 {
-    // const auto& projection1 = chart1.projections().best();
-    // const auto& projection2 = chart2.projections().best();
-    // check_projections_before_merging(projection1, projection2);
+    const auto& projection1 = chart1.projections().best();
+    const auto& projection2 = chart2.projections().best();
+    check_projections_before_merging(projection1, projection2);
 
-    // // re-orient layout2 to layout1 using procrustes
-    // const auto procrustes_data = procrustes(projection1, projection2, merge_data.common.points(acmacs::chart::CommonAntigensSera::subset::all), acmacs::chart::procrustes_scaling_t::no);
-    // auto layout1 = projection1->transformed_layout();
+    // re-orient layout2 to layout1 using procrustes
+    const auto procrustes_data = procrustes(projection1, projection2, merge_data.common(), procrustes_scaling_t::no);
+    const auto layout1 = projection1.transformed_layout();
     // const auto transformation2 = procrustes_data.transformation;
-    // // std::cout << "INFO: transformation for the secondary layout: " << transformation2 << '\n';
-    // auto layout2 = projection2->layout()->transform(transformation2);
+    // AD_INFO("transformation for the secondary layout: {}", transformation2);
+    const auto layout2 = procrustes_data.apply(projection2.layout());
 
-    // auto merge_projection = merge.projections_modify().new_from_scratch(projection1->number_of_dimensions(), projection1->minimum_column_basis());
-    // auto merge_layout = merge_projection->layout_modified();
+    // auto& merge_projection = merge.projections().add(projection1.number_of_dimensions(), projection1.minimum_column_basis());
+    // auto& merge_layout = merge_projection.layout();
     // copy_layout(layout1, merge_layout, chart1.antigens().size(), merge.antigens().size());
 
-    // for (const auto& [index2, merge] : merge_data.antigens_secondary_target) {
-    //     if (merge.common)
-    //         merge_layout->update(merge.index, acmacs::middle(layout2->at(index2), merge_layout->at(merge.index)));
+    // for (const auto& [index2, index_merge] : merge_data.antigens_secondary_target()) {
+    //     if (index_merge.common)
+    //         merge_layout->update(index_merge.index, acmacs::middle(layout2->at(index2), merge_layout->at(index_merge.index)));
     //     else
-    //         merge_layout->update(merge.index, layout2->at(index2));
+    //         merge_layout->update(index_merge.index, layout2->at(index2));
     // }
-    // for (const auto& [index2, merge] : merge_data.sera_secondary_target) {
-    //     if (merge.common)
-    //         merge_layout->update(merge.index + merge.antigens().size(), acmacs::middle(layout2->at(index2 + chart2.antigens().size()), merge_layout->at(merge.index + merge.antigens().size())));
+    // for (const auto& [index2, index_merge] : merge_data.sera_secondary_target) {
+    //     if (index_merge.common)
+    //         merge_layout->update(index_merge.index + index_merge.antigens().size(), acmacs::middle(layout2->at(index2 + chart2.antigens().size()), merge_layout->at(index_merge.index + index_merge.antigens().size())));
     //     else
-    //         merge_layout->update(merge.index + merge.antigens().size(), layout2->at(index2 + chart2.antigens().size()));
+    //         merge_layout->update(index_merge.index + index_merge.antigens().size(), layout2->at(index2 + chart2.antigens().size()));
     // }
 
     // if (auto merge_disconnected1 = map_disconnected(projection1->disconnected(), chart1.antigens().size(), merge.antigens().size(), merge_data.antigens_primary_target, merge_data.sera_primary_target),
@@ -492,9 +493,9 @@ void ae::chart::v3::merge_projections_type3(Chart& merge, const Chart& chart1, c
 
 void ae::chart::v3::merge_projections_type5(Chart& merge, const Chart& chart1, const Chart& chart2, const merge_data_t& merge_data)
 {
-    // const auto& projection1 = chart1.projections().best();
-    // const auto& projection2 = chart2.projections().best();
-    // check_projections_before_merging(projection1, projection2);
+    const auto& projection1 = chart1.projections().best();
+    const auto& projection2 = chart2.projections().best();
+    check_projections_before_merging(projection1, projection2);
 
     // // re-orient layout2 to layout1 using procrustes
     // const auto procrustes_data = procrustes(projection1, projection2, merge_data.common.points(acmacs::chart::CommonAntigensSera::subset::all), acmacs::chart::procrustes_scaling_t::no);

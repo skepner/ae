@@ -47,6 +47,8 @@ namespace ae::chart::v3
             build(settings);
         }
 
+        const auto& common() const { return common_; }
+
         std::string titer_merge_report(const Chart& chart) const;
         std::string titer_merge_report_common_only(const Chart& chart) const;
         std::string titer_merge_diagnostics(const Chart& chart, const antigen_indexes& antigens, const serum_indexes& sera, int max_field_size) const;
