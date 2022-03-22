@@ -100,6 +100,8 @@ namespace ae::chart::v3
     class common_antigens_sera_t
     {
       public:
+        using common_t = std::pair<point_index, point_index>;
+
         common_antigens_sera_t(common_antigens_sera_t&&) = default;
         common_antigens_sera_t(const Chart& primary, const Chart& secondary, antigens_sera_match_level_t match_level);
 
@@ -114,7 +116,7 @@ namespace ae::chart::v3
 
         auto antigens() const { return antigens_.common(); }
         auto sera() const { return sera_.common(); }
-        std::vector<std::pair<point_index, point_index>> points() const;
+        std::vector<common_t> points() const;
 
         auto primary_antigens() const { return antigens_.primary(); }
         auto primary_sera() const { return sera_.primary(); }

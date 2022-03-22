@@ -1,5 +1,6 @@
 #include "chart/v3/procrustes.hh"
 #include "chart/v3/chart.hh"
+#include "chart/v3/common.hh"
 // #include "chart/v3/alglib.hh"
 
 #pragma GCC diagnostic push
@@ -48,6 +49,71 @@ namespace ae::chart::v3
     static real_2d_array transpose(const real_2d_array& matrix);
     static void singular_value_decomposition(const real_2d_array& matrix, real_2d_array& u, real_2d_array& vt);
 
+    // ----------------------------------------------------------------------
+
+    inline bool has_nan(const alglib::real_2d_array& data)
+    {
+        for (int row = 0; row < data.rows(); ++row)
+            for (int col = 0; col < data.cols(); ++col)
+                if (std::isnan(data(row, col)))
+                    return true;
+        return false;
+    }
+
+    template <typename T, typename Func> inline double accumulate(T range, Func func)
+    {
+        double sum{0.0};
+        const aint_t range_i = cint(range);
+        for (aint_t ind{0}; ind < range_i; ++ind)
+            sum += func(ind);
+        return sum;
+    }
+
+    // ----------------------------------------------------------------------
+
+    class MatrixJ
+    {
+      public:
+        template <typename S> MatrixJ(S size) : size_(cint(size)) {}
+        virtual ~MatrixJ() {}
+
+        constexpr aint_t rows() const { return size_; }
+        constexpr aint_t cols() const { return size_; }
+        virtual double operator()(aint_t row, aint_t col) const = 0;
+
+      private:
+        const aint_t size_;
+    };
+
+    class MatrixJProcrustes : public MatrixJ
+    {
+      public:
+        template <typename S> MatrixJProcrustes(S size) : MatrixJ(size), diagonal_(1.0 - 1.0 / static_cast<double>(size)), non_diagonal_(-1.0 / static_cast<double>(size)) {}
+        double operator()(aint_t row, aint_t column) const override { return row == column ? diagonal_ : non_diagonal_; }
+
+      private:
+        const double diagonal_, non_diagonal_;
+
+    }; // class MatrixJProcrustes
+
+    class MatrixJProcrustesScaling : public MatrixJ
+    {
+      public:
+        template <typename S>
+        MatrixJProcrustesScaling(S size)
+            : MatrixJ(size), diagonal_0_(1.0 - 1.0 / static_cast<double>(size)), non_diagonal_0_(-1.0 / static_cast<double>(size)),
+              diagonal_(non_diagonal_0_ * non_diagonal_0_ * static_cast<double>(size - 1) + diagonal_0_ * diagonal_0_),
+              non_diagonal_(non_diagonal_0_ * non_diagonal_0_ * static_cast<double>(size - 2) + non_diagonal_0_ * diagonal_0_ * 2)
+        {
+        }
+        double operator()(aint_t row, aint_t column) const override { return row == column ? diagonal_ : non_diagonal_; }
+
+      private:
+        const double diagonal_0_, non_diagonal_0_;
+        const double diagonal_, non_diagonal_;
+
+    }; // class MatrixJProcrustesScaling
+
 } // namespace ae::chart::v3
 
 // ----------------------------------------------------------------------
@@ -60,24 +126,23 @@ ae::chart::v3::procrustes_data_t ae::chart::v3::procrustes(const Projection& pri
     if (number_of_dimensions != secondary_layout.number_of_dimensions())
         throw Error{fmt::format("[procrustes] projections have different number of dimensions: {} and {}", number_of_dimensions, secondary_layout.number_of_dimensions())};
 
-    // auto common_without_disconnected = common;
-    // common_without_disconnected.erase(std::remove_if(std::begin(common_without_disconnected), std::end(common_without_disconnected),
-    //                                                  [&primary_layout, &secondary_layout](const auto& en) {
-    //                                                      return std::isnan(primary_layout.coordinate(en.primary, number_of_dimensions_t{0})) ||
-    //                                                             std::isnan(secondary_layout.coordinate(en.secondary, number_of_dimensions_t{0}));
-    //                                                  }),
-    //                                   std::end(common_without_disconnected));
-    // // std::cerr << "common: " << common.size() << " common_without_disconnected: " << common_without_disconnected.size() << '\n';
+    auto common_without_disconnected = common.points();
+    // const auto common_size = common_without_disconnected.size();
+    common_without_disconnected.erase(
+        std::remove_if(std::begin(common_without_disconnected), std::end(common_without_disconnected),
+                       [&primary_layout, &secondary_layout](const auto& en) { return !primary_layout.point_has_coordinates(en.first) || !secondary_layout.point_has_coordinates(en.second); }),
+        std::end(common_without_disconnected));
+    // AD_DEBUG("common: {} common_without_disconnected: {}", common_size, common_without_disconnected.size());
 
-    // real_2d_array x, y;
-    // x.setlength(cint(common_without_disconnected.size()), cint(number_of_dimensions));
-    // y.setlength(cint(common_without_disconnected.size()), cint(number_of_dimensions));
-    // for (size_t point_no = 0; point_no < common_without_disconnected.size(); ++point_no) {
-    //     for (const auto dim : number_of_dimensions) {
-    //         x(cint(point_no), cint(dim)) = primary_layout.coordinate(common_without_disconnected[point_no].primary, dim);
-    //         y(cint(point_no), cint(dim)) = secondary_layout.coordinate(common_without_disconnected[point_no].secondary, dim);
-    //     }
-    // }
+    real_2d_array x, y;
+    x.setlength(cint(common_without_disconnected.size()), cint(number_of_dimensions));
+    y.setlength(cint(common_without_disconnected.size()), cint(number_of_dimensions));
+    for (size_t point_no = 0; point_no < common_without_disconnected.size(); ++point_no) {
+        for (const auto dim : number_of_dimensions) {
+            x(cint(point_no), cint(dim)) = primary_layout(common_without_disconnected[point_no].first, dim);
+            y(cint(point_no), cint(dim)) = secondary_layout(common_without_disconnected[point_no].second, dim);
+        }
+    }
 
     procrustes_data_t procrustes_data(number_of_dimensions);
 
@@ -89,68 +154,64 @@ ae::chart::v3::procrustes_data_t ae::chart::v3::procrustes(const Projection& pri
             std::cerr << "WARNING: procrustes: invalid transformation\n";
     };
 
-    // real_2d_array transformation;
-    // if (scaling == procrustes_scaling_t::no) {
-    //     const MatrixJProcrustes j(common_without_disconnected.size());
-    //     auto m4 = transpose(multiply_left_transposed(multiply(j, y), multiply(j, x)));
-    //     real_2d_array u, vt;
-    //     singular_value_decomposition(m4, u, vt);
-    //     if (has_nan(u))
-    //         std::cerr << "WARNING: procrustes: invalid u after svd (no scaling)\n";
-    //     if (has_nan(vt))
-    //         std::cerr << "WARNING: procrustes: invalid vt after svd (no scaling)\n";
-    //     transformation = multiply_both_transposed(vt, u);
-    //     if (has_nan(transformation))
-    //         std::cerr << "WARNING: procrustes: invalid transformation after svd (no scaling)\n";
-    // }
-    // else {
-    //     const MatrixJProcrustesScaling j(common_without_disconnected.size());
-    //     const auto m1 = multiply(j, y);
-    //     const auto m2 = multiply_left_transposed(x, m1);
-    //     real_2d_array u, vt;
-    //     singular_value_decomposition(m2, u, vt);
-    //     transformation = multiply_both_transposed(vt, u);
-    //     if (has_nan(transformation))
-    //         std::cerr << "WARNING: procrustes: invalid transformation after svd (with scaling)\n";
-    //     // std::cerr << "transformation0: " << transformation.tostring(8) << '\n';
+    real_2d_array transformation;
+    if (scaling == procrustes_scaling_t::no) {
+        const MatrixJProcrustes j(common_without_disconnected.size());
+        auto m4 = transpose(multiply_left_transposed(multiply(j, y), multiply(j, x)));
+        real_2d_array u, vt;
+        singular_value_decomposition(m4, u, vt);
+        if (has_nan(u))
+            std::cerr << "WARNING: procrustes: invalid u after svd (no scaling)\n";
+        if (has_nan(vt))
+            std::cerr << "WARNING: procrustes: invalid vt after svd (no scaling)\n";
+        transformation = multiply_both_transposed(vt, u);
+        if (has_nan(transformation))
+            std::cerr << "WARNING: procrustes: invalid transformation after svd (no scaling)\n";
+    }
+    else {
+        const MatrixJProcrustesScaling j(common_without_disconnected.size());
+        const auto m1 = multiply(j, y);
+        const auto m2 = multiply_left_transposed(x, m1);
+        real_2d_array u, vt;
+        singular_value_decomposition(m2, u, vt);
+        transformation = multiply_both_transposed(vt, u);
+        if (has_nan(transformation))
+            std::cerr << "WARNING: procrustes: invalid transformation after svd (with scaling)\n";
+        // std::cerr << "transformation0: " << transformation.tostring(8) << '\n';
 
-    //     // calculate optimal scale parameter
-    //     const auto denominator = multiply_left_transposed(y, m1);
-    //     const auto trace_denominator =
-    //         std::accumulate(acmacs::index_iterator<aint_t>(0), acmacs::index_iterator(cint(number_of_dimensions)), 0.0, [&denominator](double sum, auto i) { return sum + denominator(i, i); });
-    //     const auto m3 = multiply(y, transformation);
-    //     const auto m4 = multiply(j, m3);
-    //     const auto numerator = multiply_left_transposed(x, m4);
-    //     const auto trace_numerator =
-    //         std::accumulate(acmacs::index_iterator<aint_t>(0), acmacs::index_iterator(cint(number_of_dimensions)), 0.0, [&numerator](double sum, auto i) { return sum + numerator(i, i); });
-    //     const auto scale = trace_numerator / trace_denominator;
-    //     multiply(transformation, scale);
-    //     procrustes_data.scale = scale;
-    // }
-    // set_transformation(transformation);
+        // calculate optimal scale parameter
+        const auto denominator = multiply_left_transposed(y, m1);
+        const auto trace_denominator = accumulate(number_of_dimensions, [&denominator](aint_t i) { return denominator(i, i); });
+        const auto m3 = multiply(y, transformation);
+        const auto m4 = multiply(j, m3);
+        const auto numerator = multiply_left_transposed(x, m4);
+        const auto trace_numerator = accumulate(number_of_dimensions, [&numerator](aint_t i) { return numerator(i, i); });
+        const auto scale = trace_numerator / trace_denominator;
+        multiply(transformation, scale);
+        procrustes_data.scale = scale;
+    }
+    set_transformation(transformation);
 
-    // // translation
-    // auto m5 = multiply(y, transformation);
-    // multiply_add(m5, -1, x);
-    // for (auto dim : acmacs::range(number_of_dimensions)) {
-    //     const auto t_i = std::accumulate(acmacs::index_iterator<aint_t>(0), acmacs::index_iterator(cint(common_without_disconnected.size())), 0.0,
-    //                                      [&m5, dim = cint(dim)](auto sum, auto row) { return sum + m5(row, dim); });
-    //     procrustes_data.transformation.translation(dim) = t_i / static_cast<double>(common_without_disconnected.size());
-    // }
+    // translation
+    auto m5 = multiply(y, transformation);
+    multiply_add(m5, -1, x);
+    for (const auto dim : number_of_dimensions) {
+        const auto t_i = accumulate(common_without_disconnected.size(), [&m5, dim = cint(dim)](aint_t row) { return m5(row, dim); });
+        procrustes_data.transformation.translation(dim) = t_i / static_cast<double>(common_without_disconnected.size());
+    }
 
-    // // rms
-    // procrustes_data.secondary_transformed = procrustes_data.apply(*secondary_layout);
-    // procrustes_data.rms = 0.0;
-    // size_t num_rows = 0;
-    // for (const auto& cp : common_without_disconnected) {
-    //     if (const auto pc = primary_layout.at(cp.primary), sc = procrustes_data.secondary_transformed->at(cp.secondary); pc.exists() && sc.exists()) {
-    //         ++num_rows;
-    //         const auto make_rms_inc = [&pc, &sc](auto sum, auto dim) { return sum + square(pc[dim] - sc[dim]); };
-    //         procrustes_data.rms = std::accumulate(acmacs::index_iterator<number_of_dimensions_t>(0UL), acmacs::index_iterator(number_of_dimensions), procrustes_data.rms, make_rms_inc);
-    //         // std::cerr << cp.primary << ' ' << cp.secondary << ' ' << procrustes_data.rms << '\n';
-    //     }
-    // }
-    // procrustes_data.rms = std::sqrt(procrustes_data.rms / static_cast<double>(num_rows));
+    // rms
+    procrustes_data.secondary_transformed = procrustes_data.apply(secondary_layout);
+    procrustes_data.rms = 0.0;
+    size_t num_rows = 0;
+    for (const auto& cp : common_without_disconnected) {
+        if (const auto pc = primary_layout.at(cp.first), sc = procrustes_data.secondary_transformed.at(cp.second); pc.exists() && sc.exists()) {
+            ++num_rows;
+            procrustes_data.rms += accumulate(number_of_dimensions, [&pc, &sc](aint_t dim) { return square(pc[number_of_dimensions_t{dim}] - sc[number_of_dimensions_t{dim}]); });
+            // std::cerr << cp.primary << ' ' << cp.secondary << ' ' << procrustes_data.rms << '\n';
+        }
+    }
+    procrustes_data.rms = std::sqrt(procrustes_data.rms / static_cast<double>(num_rows));
 
     return procrustes_data;
 
