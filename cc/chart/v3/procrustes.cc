@@ -200,8 +200,6 @@ ae::chart::v3::procrustes_data_t ae::chart::v3::procrustes(const Projection& pri
         procrustes_data.transformation.translation(dim) = t_i / static_cast<double>(common_without_disconnected.size());
     }
 
-    AD_DEBUG("procrustes");
-
     // rms
     procrustes_data.secondary_transformed = procrustes_data.apply(secondary_layout);
     procrustes_data.rms = 0.0;
@@ -221,14 +219,25 @@ ae::chart::v3::procrustes_data_t ae::chart::v3::procrustes(const Projection& pri
 
 // ----------------------------------------------------------------------
 
-namespace ae::chart::v3
-{
-}
-
-// ----------------------------------------------------------------------
-
 ae::chart::v3::Layout ae::chart::v3::procrustes_data_t::apply(const Layout& source) const
 {
+    assert(source.number_of_dimensions() == transformation.number_of_dimensions);
+    auto result = Layout(source.number_of_points(), source.number_of_dimensions());
+
+    // multiply source by transformation
+    for (const auto row_no : source.number_of_points()) {
+        if (const auto row = source.at(row_no); row.exists()) {
+            for (const auto dim : transformation.number_of_dimensions) {
+                auto sum_squares = [&source, this, row_no, dim](aint_t index) { return source(row_no, number_of_dimensions_t{index}) * this->transformation(index, cint(dim)); };
+                result(row_no, dim) = accumulate(source.number_of_dimensions(), sum_squares) + transformation.translation(dim);
+            }
+        }
+        else {
+            result.set_nan(row_no);
+        }
+    }
+
+    return result;
 
 } // ae::chart::v3::procrustes_data_t::apply
 
