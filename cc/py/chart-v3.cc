@@ -3,6 +3,7 @@
 #include "chart/v3/selected-antigens-sera.hh"
 #include "chart/v3/merge.hh"
 #include "chart/v3/procrustes.hh"
+#include "pybind11/detail/common.h"
 
 // ======================================================================
 
@@ -57,6 +58,7 @@ namespace ae::py
         std::string_view lab() const { return *table_source.lab(); }
         std::string_view date() const { return *table_source.date(); }
         std::string_view name() const { return table_source.name(); }
+        std::string_view name_or_date() const { return table_source.name_or_date(); }
 
         size_t number_of_sources() const { return sources ? sources->size() : 0ul; }
         InfoRef* source(size_t no) {
@@ -198,6 +200,10 @@ void ae::py::chart_v3(pybind11::module_& mdl)
             "projection_no"_a = 0) //
 
         .def("combine_projections", &Chart::combine_projections, "merge_in"_a) //
+
+        // ----------------------------------------------------------------------
+
+        .def("titers", pybind11::overload_cast<>(&Chart::titers), pybind11::return_value_policy::reference_internal) //
 
         // ----------------------------------------------------------------------
 
@@ -501,6 +507,29 @@ void ae::py::chart_v3(pybind11::module_& mdl)
 
     // ----------------------------------------------------------------------
 
+    pybind11::class_<Titers>(chart_v3_submodule, "Titers")                                        //
+        .def("number_of_layers", [](const Titers& titers) { return *titers.number_of_layers(); }) //
+        .def(
+            "titer", [](const Titers& titers, size_t ag_no, size_t sr_no) { return titers.titer(antigen_index{ag_no}, serum_index{sr_no}); }, "antigen_no"_a, "serum_no"_a) //
+        .def(
+            "titer_of_layer", [](const Titers& titers, size_t layer_no, size_t ag_no, size_t sr_no) { return titers.titer_of_layer(layer_index{layer_no}, antigen_index{ag_no}, serum_index{sr_no}); },
+            "layer_no"_a, "antigen_no"_a, "serum_no"_a) //
+        ;
+
+    pybind11::class_<Titer>(chart_v3_submodule, "Titer")                                                                      //
+        .def("__str__", pybind11::overload_cast<>(&Titer::get, pybind11::const_))                                             //
+        .def("logged", &Titer::logged)                                                                                        //
+        .def("logged_with_thresholded", &Titer::logged_with_thresholded)                                                      //
+        .def("value", &Titer::value)                                                                                          //
+        .def("value_with_thresholded", &Titer::value_with_thresholded, pybind11::doc("returns 20 for <40, 20480 for >10240")) //
+        .def("is_dont_care", &Titer::is_dont_care)                                                                            //
+        .def("is_regular", &Titer::is_regular)                                                                                //
+        .def("is_less_than", &Titer::is_less_than)                                                                            //
+        .def("is_more_than", &Titer::is_more_than)                                                                            //
+        ;
+
+    // ----------------------------------------------------------------------
+
     pybind11::class_<ProjectionRef>(chart_v3_submodule, "Projection")                                             //
         .def("stress", &ProjectionRef::stress)                                                                    //
         .def("recalculate_stress", &ProjectionRef::recalculate_stress)                                            //
@@ -530,7 +559,7 @@ void ae::py::chart_v3(pybind11::module_& mdl)
                     throw std::invalid_argument{fmt::format("wrong index: {}, number of points in layout: {}", index, layout.number_of_points())};
             },
             "index"_a, pybind11::doc("negative index counts from the layout end")) //
-        .def("minmax", &Layout::minmax) //
+        .def("minmax", &Layout::minmax)                                            //
         // .def("__str__", [](const Layout& layout) { return fmt::format("{}", layout); }) //
         ;
 
@@ -557,6 +586,7 @@ void ae::py::chart_v3(pybind11::module_& mdl)
         .def("lab", &InfoRef::lab)                             //
         .def("date", &InfoRef::date)                           //
         .def("name", &InfoRef::name)                           //
+        .def("name_or_date", &InfoRef::name_or_date)           //
         .def("number_of_sources", &InfoRef::number_of_sources) //
         .def("source", &InfoRef::source, "source_no"_a)        //
         ;
@@ -690,7 +720,7 @@ void ae::py::chart_v3(pybind11::module_& mdl)
         .def_property_readonly("no", [](const SelectionData<Antigen>& sd) -> size_t { return *sd.index; })
         .def_property_readonly("point_no", [](const SelectionData<Antigen>& sd) -> size_t { return *sd.index; })
         .def_property_readonly(
-            "antigen", [](const SelectionData<Antigen>& sd) -> const Antigen& { return sd.ag_sr; }, pybind11::return_value_policy::reference_internal) //
+            "antigen", [](const SelectionData<Antigen>& sd) -> const Antigen& { return sd.ag_sr; }, pybind11::return_value_policy::reference_internal)             //
         .def("layers", [](const SelectionData<Antigen>& sd) -> std::vector<size_t> { return to_vector_base_t(sd.chart->titers().layers_with_antigen(sd.index)); }) //
         ;
 
@@ -698,7 +728,7 @@ void ae::py::chart_v3(pybind11::module_& mdl)
         .def_property_readonly("no", [](const SelectionData<Serum>& sd) -> size_t { return *sd.index; })
         .def_property_readonly("point_no", [](const SelectionData<Serum>& sd) -> size_t { return *(sd.chart->antigens().size() + sd.index); })
         .def_property_readonly(
-            "serum", [](const SelectionData<Serum>& sd) -> const Serum& { return sd.ag_sr; }, pybind11::return_value_policy::reference_internal) //
+            "serum", [](const SelectionData<Serum>& sd) -> const Serum& { return sd.ag_sr; }, pybind11::return_value_policy::reference_internal)               //
         .def("layers", [](const SelectionData<Serum>& sd) -> std::vector<size_t> { return to_vector_base_t(sd.chart->titers().layers_with_serum(sd.index)); }) //
         ;
 

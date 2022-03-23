@@ -2,7 +2,7 @@
 import os, sys, pprint, argparse, traceback
 from pathlib import Path
 import ae_backend
-import ae.virus.name_format
+import ae.virus.name_format, ae.utils.format_table
 
 # ----------------------------------------------------------------------
 
@@ -28,16 +28,36 @@ def main(args: argparse.Namespace):
 def titer_merge_report(chart: ae_backend.chart_v3.Chart, antigens: ae_backend.chart_v3.SelectedAntigens, sera: ae_backend.chart_v3.SelectedSera):
     if not antigens or not sera:
         raise ValueError("empty antigen or serum list")
-    print("antigens", type(antigens), len(antigens))
-    print(ae.virus.name_format.name_format(antigens[0][1], "{?}"))
+    # print("antigens", type(antigens), len(antigens))
+    # print(ae.virus.name_format.name_format(antigens[0][1], "{?}"))
     # print(ae.virus.name_format.name_format(antigens[0][1], "{continent} : {country} : {extra} : {host} : {host_location_isolation_year} : {name} : {reassortant} : {year} : {designation} : {passage} : {passage_without_date} : {reassortant} : {annotations} : {date} : {lab_id} : {aa} : {aa-163} : {laa-163} : {nuc} : {nuc-163} : {lnuc-163}"))
-    print("sera", len(sera))
+    # print("sera", len(sera))
     # print(ae.virus.name_format.name_format(sera[0][1], "{?}"))
     # print(ae.virus.name_format.name_format(sera[0][1], "{aa} : {aa-1} : {annotations} : {continent} : {country} : {designation} : {extra} : {host} : {host_location_isolation_year} : {laa-1} : {lnuc-1} : {name} : {nuc} : {nuc-1} : {passage} : {passage_without_date} : {reassortant} : {serum_id} : {serum_species} : {year}"))
+    titers = chart.titers()
     table = []
-    table.append([""] + [sr[0] + 1 for sr in sera])            # serum indexes
-    table.append([""] + [ae.virus.name_format.name_format(sr[1], "{location_year_abbreviated}") for sr in sera])            # serum abbreviated names
-    pprint.pprint(table, width=200)
+    table.append([""] + [sr_no + 1 for sr_no, sr in sera])            # serum indexes
+    table.append([""] + [ae.virus.name_format.name_format(sr, "{location_year_abbreviated}") for sr_no, sr in sera])            # serum abbreviated names
+    for ag_no, ag in antigens:
+        table.append([ag.designation()])
+        for layer_no in range(titers.number_of_layers()):
+            table.append([chart.info().source(layer_no).name_or_date()] + [titers.titer_of_layer(layer_no=layer_no, antigen_no=ag_no, serum_no=sr_no) for sr_no, sr in sera])
+        table.append(["Merge"] + [titers.titer(antigen_no=ag_no, serum_no=sr_no) for sr_no, sr in sera])
+        table.append(["Report"])
+        table.append([])
+    # pprint.pprint(table, width=200)
+    print(ae.utils.format_table.format_table(table, field_sep="  ", format_field=format_table_field))
+
+# ----------------------------------------------------------------------
+
+def format_table_field(field, width: int):
+    if isinstance(field, ae_backend.chart_v3.Titer):
+        if field.is_dont_care():
+            return " " * width
+        else:
+            return f"{str(field):>{width}s}"
+    else:
+        return ae.utils.format_table.format_field_default(field=field, width=width)
 
 # ----------------------------------------------------------------------
 

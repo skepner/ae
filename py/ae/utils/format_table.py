@@ -2,17 +2,21 @@ import math
 
 # ----------------------------------------------------------------------
 
-def format_table(table: list, field_sep: str =" "):
+def format_table(table: list, field_sep: str =" ", format_field: callable = None):
+    """format_field is a function of two arguments (field, width: int) to format the field and properly align it, returns str
+    """
     if not table:
         return ""
     if isinstance(table[0], list):
-        return format_list_of_lists(table, field_sep=field_sep)
+        return format_list_of_lists(table, field_sep=field_sep, format_field=format_field)
     else:
-        return format_list_of_dicts(table, field_sep=field_sep)
+        return format_list_of_dicts(table, field_sep=field_sep, format_field=format_field)
 
 # ----------------------------------------------------------------------
 
-def format_list_of_lists(table: list, field_sep: str =" "):
+def format_list_of_lists(table: list, field_sep: str =" ", format_field: callable = None):
+    if format_field is None:
+        format_field = format_field_default
     widths = [0] * len(table[0])
     for row in table:
         for col_no, col in enumerate(row):
@@ -24,7 +28,7 @@ def format_list_of_lists(table: list, field_sep: str =" "):
 
 # ----------------------------------------------------------------------
 
-def format_field(field, width: int):
+def format_field_default(field, width: int):
     if isinstance(field, int):
         return f"{field:{width}d}"
     elif isinstance(field, float):
