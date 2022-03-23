@@ -23,12 +23,6 @@ def main(args: argparse.Namespace):
 def titer_merge_report(chart: ae_backend.chart_v3.Chart, antigens: ae_backend.chart_v3.SelectedAntigens, sera: ae_backend.chart_v3.SelectedSera):
     if not antigens or not sera:
         raise ValueError("empty antigen or serum list")
-    # print("antigens", type(antigens), len(antigens))
-    # print(name_format.name_format(antigens[0][1], "{?}"))
-    # print(name_format.name_format(antigens[0][1], "{continent} : {country} : {extra} : {host} : {host_location_isolation_year} : {name} : {reassortant} : {year} : {designation} : {passage} : {passage_without_date} : {reassortant} : {annotations} : {date} : {lab_id} : {aa} : {aa-163} : {laa-163} : {nuc} : {nuc-163} : {lnuc-163}"))
-    # print("sera", len(sera))
-    # print(name_format.name_format(sera[0][1], "{?}"))
-    # print(name_format.name_format(sera[0][1], "{aa} : {aa-1} : {annotations} : {continent} : {country} : {designation} : {extra} : {host} : {host_location_isolation_year} : {laa-1} : {lnuc-1} : {name} : {nuc} : {nuc-1} : {passage} : {passage_without_date} : {reassortant} : {serum_id} : {serum_species} : {year}"))
     titers = chart.titers()
     report = titers.set_from_layers_report()
     table = []
