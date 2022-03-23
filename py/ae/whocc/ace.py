@@ -101,7 +101,7 @@ class DataFixer:
     # ----------------------------------------------------------------------
 
     def _name(self, entry: dict, ag_sr: str, no: int):
-        parsing_result = ae_backend.virus_name_parse(entry["N"], type_subtype=self.type_subtype)
+        parsing_result = ae_backend.virus.name_parse(entry["N"], type_subtype=self.type_subtype)
         # print(f">>>> parsing \"{entry['N']}\": {parsing_result.good()}", file=sys.stderr)
         if parsing_result.good():
             name_parts = parsing_result.parts
@@ -141,7 +141,7 @@ class DataFixer:
 
     def _passage(self, entry: dict, ag_sr: str, no: int):
         if orig_passage := entry["P"]:
-            parsing_result = ae_backend.passage_parse(orig_passage)
+            parsing_result = ae_backend.virus.passage_parse(orig_passage)
             if parsing_result.good():
                 entry["P"] = parsing_result.passage()
                 if entry["P"] != orig_passage:

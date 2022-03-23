@@ -11,7 +11,7 @@ import ae_backend
 
 def main(args: argparse.Namespace):
     for passage in args.passages:
-        parsing_result = ae_backend.passage_parse(passage, trace=args.tracing)
+        parsing_result = ae_backend.virus.passage_parse(passage, trace=args.tracing)
         if parsing_result.good():
             print(f">>> \"{parsing_result.passage()}\" <- \"{passage}\"", file=sys.stderr)
         else:

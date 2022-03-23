@@ -1,7 +1,8 @@
 #! /usr/bin/env python3
-import os, sys, re, json, pprint, argparse, traceback
+import os, sys, pprint, argparse, traceback
 from pathlib import Path
 import ae_backend
+import ae.virus.name_format
 
 # ----------------------------------------------------------------------
 
@@ -20,9 +21,14 @@ def main(args: argparse.Namespace):
 
 def titer_merge_report(chart: ae_backend.chart_v3.Chart, antigens: list, sera: list):
     print("antigens", len(antigens))
+    print(ae.virus.name_format.name_format(antigens[0][1], "{?}"))
+    print(ae.virus.name_format.name_format(antigens[0][1], "{continent} : {country} : {extra} : {host} : {host_location_isolation_year} : {name} : {reassortant} : {year} : {designation} : {passage} : {passage_without_date} : {reassortant} : {annotations} : {date} : {lab_id} : {aa} : {aa-163} : {laa-163} : {nuc} : {nuc-163} : {lnuc-163}"))
     print("sera", len(sera))
+    print(ae.virus.name_format.name_format(sera[0][1], "{?}"))
     table = []
-
+    # table.append([""] + [sr[0] + 1 for sr in sera])            # serum indexes
+    # table.append([""] + [ae.virus.name_format.name_format(sr[1], "") for sr in sera])            # serum abbreviated names
+    # pprint.pprint(table, width=200)
 
 # ----------------------------------------------------------------------
 
