@@ -35,6 +35,7 @@ def titer_merge_report(chart: ae_backend.chart_v3.Chart, antigens: ae_backend.ch
     # print(ae.virus.name_format.name_format(sera[0][1], "{?}"))
     # print(ae.virus.name_format.name_format(sera[0][1], "{aa} : {aa-1} : {annotations} : {continent} : {country} : {designation} : {extra} : {host} : {host_location_isolation_year} : {laa-1} : {lnuc-1} : {name} : {nuc} : {nuc-1} : {passage} : {passage_without_date} : {reassortant} : {serum_id} : {serum_species} : {year}"))
     titers = chart.titers()
+    report = titers.set_from_layers_report()
     table = []
     table.append([""] + [sr_no + 1 for sr_no, sr in sera])            # serum indexes
     table.append([""] + [ae.virus.name_format.name_format(sr, "{location_year_abbreviated}") for sr_no, sr in sera])            # serum abbreviated names
@@ -43,12 +44,25 @@ def titer_merge_report(chart: ae_backend.chart_v3.Chart, antigens: ae_backend.ch
         for layer_no in range(titers.number_of_layers()):
             table.append([chart.info().source(layer_no).name_or_date()] + [titers.titer_of_layer(layer_no=layer_no, antigen_no=ag_no, serum_no=sr_no) for sr_no, sr in sera])
         table.append(["Merge"] + [titers.titer(antigen_no=ag_no, serum_no=sr_no) for sr_no, sr in sera])
-        table.append(["Report"])
+        table.append(["Report"] + [report_value(report.brief(antigen_no=ag_no, serum_no=sr_no)) for sr_no, sr in sera])
         table.append([])
     # pprint.pprint(table, width=200)
-    print(ae.utils.format_table.format_table(table, field_sep="  ", format_field=format_table_field))
+    print(ae.utils.format_table.format_table(table, field_sep="  ", format_field=format_table_field), end="\n\n")
+
+    table_sera = [[sr_no + 1, ae.virus.name_format.name_format(sr, "{location_year_abbreviated}"), sr.designation()] for sr_no, sr in sera]
+    print(ae.utils.format_table.format_table(table_sera, field_sep="  "), end="\n\n")
+
+    print(report.brief_description())
 
 # ----------------------------------------------------------------------
+
+class report_value:
+
+    def __init__(self, val):
+        self.val = val
+
+    def __str__(self):
+        return self.val
 
 def format_table_field(field, width: int):
     if isinstance(field, ae_backend.chart_v3.Titer):
@@ -56,6 +70,8 @@ def format_table_field(field, width: int):
             return " " * width
         else:
             return f"{str(field):>{width}s}"
+    elif isinstance(field, report_value):
+        return f"{field.val:^{width}s}"
     else:
         return ae.utils.format_table.format_field_default(field=field, width=width)
 

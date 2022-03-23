@@ -145,6 +145,97 @@ namespace ae::py
 
     // ----------------------------------------------------------------------
 
+    struct TiterMergeReport
+    {
+        ae::chart::v3::Titers::titer_merge_report report;
+
+        TiterMergeReport(ae::chart::v3::Titers::titer_merge_report&& a_report) : report{std::move(a_report)} {}
+
+        std::string brief(size_t ag_no, size_t sr_no) const
+        {
+            if (const auto found = std::find_if(report.begin(), report.end(),
+                                                [ag_no = antigen_index{ag_no}, sr_no = serum_index{sr_no}](const auto& entry) { return entry.antigen == ag_no && entry.serum == sr_no; });
+                found != report.end())
+                return value_brief(found->report);
+            else
+                return {};
+        }
+
+        static inline std::string value_brief(ae::chart::v3::Titers::titer_merge data)
+        {
+            using titer_merge = ae::chart::v3::Titers::titer_merge;
+            switch (data) {
+                case titer_merge::all_dontcare:
+                    return "*";
+                case titer_merge::less_and_more_than:
+                    return "<>";
+                case titer_merge::less_than_only:
+                    return "<";
+                case titer_merge::more_than_only_adjust_to_next:
+                    return ">+1";
+                case titer_merge::more_than_only_to_dontcare:
+                    return ">*";
+                case titer_merge::sd_too_big:
+                    return "sd>";
+                case titer_merge::regular_only:
+                    return "+";
+                case titer_merge::max_less_than_bigger_than_max_regular:
+                    return "<<+";
+                case titer_merge::less_than_and_regular:
+                    return "<+";
+                case titer_merge::min_more_than_less_than_min_regular:
+                    return ">>+";
+                case titer_merge::more_than_and_regular:
+                    return ">+";
+            }
+            return "???";
+        }
+
+        static inline std::string value_long(ae::chart::v3::Titers::titer_merge data)
+        {
+            using titer_merge = ae::chart::v3::Titers::titer_merge;
+            switch (data) {
+                case titer_merge::all_dontcare:
+                    return "all source titers are dont-care";
+                case titer_merge::less_and_more_than:
+                    return "both less-than and more-than present";
+                case titer_merge::less_than_only:
+                    return "less-than only";
+                case titer_merge::more_than_only_adjust_to_next:
+                    return "more-than only, adjust to next";
+                case titer_merge::more_than_only_to_dontcare:
+                    return "more-than only, convert to dont-care";
+                case titer_merge::sd_too_big:
+                    return "standard deviation is too big";
+                case titer_merge::regular_only:
+                    return "regular only";
+                case titer_merge::max_less_than_bigger_than_max_regular:
+                    return "max of less than is bigger than max of regulars";
+                case titer_merge::less_than_and_regular:
+                    return "less than and regular";
+                case titer_merge::min_more_than_less_than_min_regular:
+                    return "min of more-than is less than min of regular";
+                case titer_merge::more_than_and_regular:
+                    return "more than and regular";
+            }
+            return "(internal error)";
+        }
+
+        static inline std::string brief_description()
+        {
+            using titer_merge = ae::chart::v3::Titers::titer_merge;
+            fmt::memory_buffer out;
+            for (auto tm : {titer_merge::all_dontcare, titer_merge::less_and_more_than, titer_merge::less_than_only, titer_merge::more_than_only_adjust_to_next,
+                            titer_merge::more_than_only_to_dontcare, titer_merge::sd_too_big, titer_merge::regular_only, titer_merge::max_less_than_bigger_than_max_regular,
+                            titer_merge::less_than_and_regular, titer_merge::min_more_than_less_than_min_regular, titer_merge::more_than_and_regular}) {
+                fmt::format_to(std::back_inserter(out), "{:>3s}  {}\n", value_brief(tm), value_long(tm));
+            }
+            return fmt::to_string(out);
+        }
+    };
+
+    // ----------------------------------------------------------------------
+
     static inline ae::chart::v3::procrustes_data_t procrustes(const ProjectionRef& proj1, const ProjectionRef& proj2, const ae::chart::v3::common_antigens_sera_t& common, bool scaling)
     {
         return ae::chart::v3::procrustes(proj1.projection, proj2.projection, common, scaling ? ae::chart::v3::procrustes_scaling_t::yes : ae::chart::v3::procrustes_scaling_t::no);
@@ -513,7 +604,8 @@ void ae::py::chart_v3(pybind11::module_& mdl)
             "titer", [](const Titers& titers, size_t ag_no, size_t sr_no) { return titers.titer(antigen_index{ag_no}, serum_index{sr_no}); }, "antigen_no"_a, "serum_no"_a) //
         .def(
             "titer_of_layer", [](const Titers& titers, size_t layer_no, size_t ag_no, size_t sr_no) { return titers.titer_of_layer(layer_index{layer_no}, antigen_index{ag_no}, serum_index{sr_no}); },
-            "layer_no"_a, "antigen_no"_a, "serum_no"_a) //
+            "layer_no"_a, "antigen_no"_a, "serum_no"_a)                                                                            //
+        .def("set_from_layers_report", [](const Titers& titers) { return new TiterMergeReport{titers.set_from_layers_report()}; }) //
         ;
 
     pybind11::class_<Titer>(chart_v3_submodule, "Titer")                                                                      //
@@ -526,6 +618,11 @@ void ae::py::chart_v3(pybind11::module_& mdl)
         .def("is_regular", &Titer::is_regular)                                                                                //
         .def("is_less_than", &Titer::is_less_than)                                                                            //
         .def("is_more_than", &Titer::is_more_than)                                                                            //
+        ;
+
+    pybind11::class_<TiterMergeReport>(chart_v3_submodule, "TiterMergeReport") //
+        .def("brief", &TiterMergeReport::brief, "antigen_no"_a, "serum_no"_a)  //
+        .def_static("brief_description", &TiterMergeReport::brief_description) //
         ;
 
     // ----------------------------------------------------------------------

@@ -503,15 +503,8 @@ ae::chart::v3::Titers::titer_merge_report ae::chart::v3::Titers::set_titers_from
     // core/antigenic_table.py:266
     // backend/antigenic-table.hh:892
 
-    constexpr double standard_deviation_threshold = 1.0; // lispmds: average-multiples-unless-sd-gt-1-ignore-thresholded-unless-only-entries-then-min-threshold
+    const titer_merge_report merge_report = set_from_layers_report(mtt);
     const antigen_index number_of_antigens{layers_[0].size()};
-    titer_merge_report merge_report;
-    for (const auto ag_no : number_of_antigens) {
-        for (const auto sr_no : number_of_sera_) {
-            auto [titer, report] = titer_from_layers(ag_no, sr_no, mtt, standard_deviation_threshold);
-            merge_report.emplace_back(std::move(titer), ag_no, sr_no, report);
-        }
-    }
 
     if (merge_report.size() < (number_of_antigens.get() * number_of_sera_.get() / 2))
         titers_ = sparse_t(number_of_antigens.get());
@@ -525,6 +518,24 @@ ae::chart::v3::Titers::titer_merge_report ae::chart::v3::Titers::set_titers_from
     return merge_report;
 
 } // ae::chart::v3::Titers::set_titers_from_layers
+
+// ----------------------------------------------------------------------
+
+ae::chart::v3::Titers::titer_merge_report ae::chart::v3::Titers::set_from_layers_report(more_than_thresholded mtt) const
+{
+    constexpr double standard_deviation_threshold = 1.0; // lispmds: average-multiples-unless-sd-gt-1-ignore-thresholded-unless-only-entries-then-min-threshold
+    const antigen_index number_of_antigens{layers_[0].size()};
+    titer_merge_report merge_report;
+    for (const auto ag_no : number_of_antigens) {
+        for (const auto sr_no : number_of_sera_) {
+            auto [titer, report] = titer_from_layers(ag_no, sr_no, mtt, standard_deviation_threshold);
+            merge_report.emplace_back(std::move(titer), ag_no, sr_no, report);
+        }
+    }
+
+    return merge_report;
+
+} // ae::chart::v3::Titers::set_from_layers_report
 
 // ----------------------------------------------------------------------
 
@@ -555,7 +566,7 @@ ae::chart::v3::Titers::titer_merge_report ae::chart::v3::Titers::set_from_layers
 
 // ----------------------------------------------------------------------
 
-std::pair<ae::chart::v3::Titer, ae::chart::v3::Titers::titer_merge> ae::chart::v3::Titers::titer_from_layers(antigen_index aAntigenNo, serum_index aSerumNo, more_than_thresholded mtt, double standard_deviation_threshold)
+std::pair<ae::chart::v3::Titer, ae::chart::v3::Titers::titer_merge> ae::chart::v3::Titers::titer_from_layers(antigen_index aAntigenNo, serum_index aSerumNo, more_than_thresholded mtt, double standard_deviation_threshold) const
 {
     std::vector<Titer> titers;
     for (const auto layer_no : number_of_layers()) {
@@ -584,7 +595,7 @@ std::pair<ae::chart::v3::Titer, ae::chart::v3::Titers::titer_merge> ae::chart::v
 
 // backend/antigenic-table.hh:1087
 
-std::pair<ae::chart::v3::Titer, ae::chart::v3::Titers::titer_merge> ae::chart::v3::Titers::merge_titers(const std::vector<Titer>& titers, more_than_thresholded mtt, double standard_deviation_threshold)
+std::pair<ae::chart::v3::Titer, ae::chart::v3::Titers::titer_merge> ae::chart::v3::Titers::merge_titers(const std::vector<Titer>& titers, more_than_thresholded mtt, double standard_deviation_threshold) const
 {
     constexpr auto max_limit = std::numeric_limits<decltype(std::declval<Titer>().value())>::max();
     size_t min_less_than = max_limit, min_more_than = max_limit, min_regular = max_limit;
