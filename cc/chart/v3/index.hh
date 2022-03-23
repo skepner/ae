@@ -170,6 +170,7 @@ namespace ae
     using antigen_indexes = ae::named_vector_t<antigen_index, struct antigen_index_tag>;
     using serum_indexes = ae::named_vector_t<serum_index, struct serum_index_tag>;
     using point_indexes = ae::named_vector_t<point_index, struct point_index_tag>;
+    using layer_indexes = ae::named_vector_t<layer_index, struct layer_index_tag>;
 
     inline point_indexes to_point_indexes(const antigen_indexes& agi, antigen_index = antigen_index{0})
     {

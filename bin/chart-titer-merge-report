@@ -1,0 +1,43 @@
+#! /usr/bin/env python3
+import os, sys, re, json, pprint, argparse, traceback
+from pathlib import Path
+import ae_backend
+
+# ----------------------------------------------------------------------
+
+def main(args: argparse.Namespace):
+    for chart_file in args.chart:
+        chart = ae_backend.chart_v3.Chart(chart_file)
+        if args.common_only:
+            antigens = chart.select_antigens(lambda ag: len(ag.layers()) > 1)
+            sera = chart.select_sera(lambda sr: len(sr.layers()) > 1)
+        else:
+            antigens = chart.select_all_antigens()
+            sera = chart.select_all_sera()
+        titer_merge_report(chart, antigens=antigens, sera=sera)
+
+# ----------------------------------------------------------------------
+
+def titer_merge_report(chart: ae_backend.chart_v3.Chart, antigens: list, sera: list):
+    print("antigens", len(antigens))
+    print("sera", len(sera))
+    table = []
+
+
+# ----------------------------------------------------------------------
+
+try:
+    parser = argparse.ArgumentParser(description=__doc__)
+
+    parser.add_argument("chart", nargs="+", type=Path)
+
+    parser.add_argument("-a", "--all", dest="common_only", action="store_false", default=True, help="titer merge report for all antigens and sera")
+
+    args = parser.parse_args()
+    exit_code = main(args) or 0
+except Exception as err:
+    print(f"> {err}\n{traceback.format_exc()}", file=sys.stderr)
+    exit_code = 1
+exit(exit_code)
+
+# ======================================================================

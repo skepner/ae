@@ -296,7 +296,7 @@ namespace ae::chart::v3
             double max_distance(const column_bases& cb) const;
 
             std::pair<antigen_indexes, serum_indexes> antigens_sera_of_layer(layer_index aLayerNo) const;
-            std::pair<antigen_indexes, serum_indexes> antigens_sera_in_multiple_layers() const;
+            // std::pair<antigen_indexes, serum_indexes> antigens_sera_in_multiple_layers() const;
             bool has_morethan_in_layers() const;
 
             point_indexes having_titers_with(point_index point_no, bool return_point_no = true) const;
@@ -331,8 +331,8 @@ namespace ae::chart::v3
             void set_titer_of_layer(layer_index aLayerNo, antigen_index aAntigenNo, serum_index aSerumNo, const Titer& titer) { set_titer(layers_[aLayerNo.get()], aAntigenNo, aSerumNo, titer); }
             std::vector<Titer> titers_for_layers(antigen_index aAntigenNo, serum_index aSerumNo,
                                                  include_dotcare inc = include_dotcare::no) const; // returns list of non-dont-care titers in layers, may throw data_not_available
-            std::vector<layer_index> layers_with_antigen(antigen_index aAntigenNo) const; // returns list of layer indexes that have non-dont-care titers for the antigen, may throw data_not_available
-            std::vector<layer_index> layers_with_serum(serum_index aSerumNo) const;       // returns list of layer indexes that have non-dont-care titers for the serum, may throw data_not_available
+            layer_indexes layers_with_antigen(antigen_index aAntigenNo) const; // returns list of layer indexes that have non-dont-care titers for the antigen, may throw data_not_available
+            layer_indexes layers_with_serum(serum_index aSerumNo) const;       // returns list of layer indexes that have non-dont-care titers for the serum, may throw data_not_available
             void create_layers(layer_index num_layers, antigen_index num_antigens);
             titer_merge_report set_from_layers(Chart& chart);
 

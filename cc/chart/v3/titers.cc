@@ -253,10 +253,10 @@ std::vector<ae::chart::v3::Titer> ae::chart::v3::Titers::titers_for_layers(antig
 
 // ----------------------------------------------------------------------
 
-std::vector<ae::layer_index> ae::chart::v3::Titers::layers_with_antigen(antigen_index aAntigenNo) const // returns list of layer indexes that have non-dont-care titers for the antigen, may throw data_not_available
+ae::layer_indexes ae::chart::v3::Titers::layers_with_antigen(antigen_index aAntigenNo) const // returns list of layer indexes that have non-dont-care titers for the antigen, may throw data_not_available
 {
     check_layers();
-    std::vector<layer_index> result;
+    layer_indexes result;
     for (const auto no : number_of_layers()) {
         const auto& layer = this->layer(no);
         for (const auto serum_no : number_of_sera()) {
@@ -272,10 +272,10 @@ std::vector<ae::layer_index> ae::chart::v3::Titers::layers_with_antigen(antigen_
 
 // ----------------------------------------------------------------------
 
-std::vector<ae::layer_index> ae::chart::v3::Titers::layers_with_serum(serum_index aSerumNo) const // returns list of layer indexes that have non-dont-care titers for the serum, may throw data_not_available
+ae::layer_indexes ae::chart::v3::Titers::layers_with_serum(serum_index aSerumNo) const // returns list of layer indexes that have non-dont-care titers for the serum, may throw data_not_available
 {
     check_layers();
-    std::vector<layer_index> result;
+    layer_indexes result;
     for (const auto no : number_of_layers()) {
         const auto& layer = this->layer(no);
         for (auto antigen_no : number_of_antigens()) {
@@ -379,31 +379,31 @@ std::pair<ae::antigen_indexes, ae::serum_indexes> ae::chart::v3::Titers::antigen
 
 // ----------------------------------------------------------------------
 
-std::pair<ae::antigen_indexes, ae::serum_indexes> ae::chart::v3::Titers::antigens_sera_in_multiple_layers() const
-{
-    using layer_set = std::unordered_set<layer_index, index_hash_for_unordered_map, std::equal_to<>>;
-    std::unordered_map<antigen_index, layer_set, index_hash_for_unordered_map, std::equal_to<>> antigen_to_layers;
-    std::unordered_map<serum_index, layer_set, index_hash_for_unordered_map, std::equal_to<>> serum_to_layers;
+// std::pair<ae::antigen_indexes, ae::serum_indexes> ae::chart::v3::Titers::antigens_sera_in_multiple_layers() const
+// {
+//     using layer_set = std::unordered_set<layer_index, index_hash_for_unordered_map, std::equal_to<>>;
+//     std::unordered_map<antigen_index, layer_set, index_hash_for_unordered_map, std::equal_to<>> antigen_to_layers;
+//     std::unordered_map<serum_index, layer_set, index_hash_for_unordered_map, std::equal_to<>> serum_to_layers;
 
-    for (const auto layer_no :number_of_layers()) {
-        for (const auto titer_ref : titers_existing_from_layer(layer_no)) {
-            antigen_to_layers[titer_ref.antigen].insert(layer_no);
-            serum_to_layers[titer_ref.serum].insert(layer_no);
-        }
-    }
-    ae::antigen_indexes antigens;
-    ae::serum_indexes sera;
-    for (const auto& ag : antigen_to_layers) {
-        if (ag.second.size() > 1)
-            antigens.insert_if_not_present(ag.first);
-    }
-    for (const auto& sr : serum_to_layers) {
-        if (sr.second.size() > 1)
-            sera.insert_if_not_present(sr.first);
-    }
-    return {antigens, sera};
+//     for (const auto layer_no :number_of_layers()) {
+//         for (const auto titer_ref : titers_existing_from_layer(layer_no)) {
+//             antigen_to_layers[titer_ref.antigen].insert(layer_no);
+//             serum_to_layers[titer_ref.serum].insert(layer_no);
+//         }
+//     }
+//     ae::antigen_indexes antigens;
+//     ae::serum_indexes sera;
+//     for (const auto& ag : antigen_to_layers) {
+//         if (ag.second.size() > 1)
+//             antigens.insert_if_not_present(ag.first);
+//     }
+//     for (const auto& sr : serum_to_layers) {
+//         if (sr.second.size() > 1)
+//             sera.insert_if_not_present(sr.first);
+//     }
+//     return {antigens, sera};
 
-} // ae::chart::v3::Titers::antigens_sera_in_multiple_layers
+// } // ae::chart::v3::Titers::antigens_sera_in_multiple_layers
 
 // ----------------------------------------------------------------------
 
