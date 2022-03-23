@@ -29,7 +29,9 @@ class MappingName (dict):
 
     def _raw(self, key):
         if key == "?":
-            return [en for en in dir(self.parsed_name.parts) if en[0] != "_"]
+            return [en for en in dir(self.parsed_name.parts) if en[0] != "_"] + [en for en in dir(self) if en[0] != "_" and en not in dir(dict())]
+        elif (attr := getattr(self, key, None)) is not None:
+            return attr()
         elif (attr := getattr(self.parsed_name.parts, key, None)) is not None:
             if callable(attr):
                 return attr()
@@ -40,6 +42,76 @@ class MappingName (dict):
 
     def _format_keys(self, keys):
         return "{" + "} {".join(sorted(keys)) + "}"
+
+    def location_year_abbreviated(self):
+        "A(H3N2)/TASMANIA/503/2020 -> Ta/20"
+        if self.parsed_name:
+            location = self.parsed_name.parts.location
+            if (abbr := sUSStatesAbbreviations.get(location)) is None:
+                if len(words := location.split()) > 1:
+                    abbr = f"{words[0][0]}{words[1][0]}"
+                else:
+                    abbr = location[:2].capitalize()
+            return f"{abbr}/{self.parsed_name.parts.year[2:]}"
+        else:
+            return self.parsed_name.parts.name()
+
+sUSStatesAbbreviations = {
+    "ALABAMA": "AL",
+    "ALASKA": "AK",
+    "AMERICAN SAMOA": "AS",
+    "ARIZONA": "AZ",
+    "ARKANSAS": "AR",
+    "CALIFORNIA": "CA",
+    "COLORADO": "CO",
+    "CONNECTICUT": "CT",
+    "DELAWARE": "DE",
+    "FLORIDA": "FL",
+    "GEORGIA": "GA",
+    "HAWAII": "HI",
+    "IDAHO": "ID",
+    "ILLINOIS": "IL",
+    "INDIANA": "IN",
+    "IOWA": "IA",
+    "KANSAS": "KS",
+    "KENTUCKY": "KY",
+    "LOUISIANA": "LA",
+    "MAINE": "ME",
+    "MARYLAND": "MD",
+    "MASSACHUSETTS": "MA",
+    "MICHIGAN": "MI",
+    "MINNESOTA": "MN",
+    "MISSISSIPPI": "MS",
+    "MISSOURI": "MO",
+    "MONTANA": "MT",
+    "NEBRASKA": "NE",
+    "NEVADA": "NV",
+    "NEW HAMPSHIRE": "NH",
+    "NEW JERSEY": "NJ",
+    "NEW MEXICO": "NM",
+    "NEW YORK": "NY",
+    "NORTH CAROLINA": "NC",
+    "NORTH DAKOTA": "ND",
+    "OHIO": "OH",
+    "OKLAHOMA": "OK",
+    "OREGON": "OR",
+    "PALAU": "PW",
+    "PENNSYLVANIA": "PA",
+    "PUERTO RICO": "PR",
+    "RHODE ISLAND": "RI",
+    "SOUTH CAROLINA": "SC",
+    "SOUTH DAKOTA": "SD",
+    "TENNESSEE": "TN",
+    "TEXAS": "TX",
+    "UTAH": "UT",
+    "VERMONT": "VT",
+    "VIRGIN ISLANDS": "VI",
+    "VIRGINIA": "VA",
+    "WASHINGTON": "WA",
+    "WEST VIRGINIA": "WV",
+    "WISCONSIN": "WI",
+    "WYOMING": "WY",
+}
 
 # ----------------------------------------------------------------------
 

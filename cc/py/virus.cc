@@ -47,6 +47,7 @@ void ae::py::virus(pybind11::module_& mdl)
         "source"_a, "type_subtype"_a = "", "trace"_a = false, "filename"_a = "", "line_no"_a = 0);
 
     pybind11::class_<VirusNameParsingResult>(virus_submodule, "VirusNameParsingResult") //
+        .def("__bool__", &VirusNameParsingResult::good)                                 //
         .def("good", &VirusNameParsingResult::good)                                     //
         .def_readonly("parts", &VirusNameParsingResult::parts)                          //
         .def_readonly("messages", &VirusNameParsingResult::messages)                    //
@@ -58,6 +59,8 @@ void ae::py::virus(pybind11::module_& mdl)
             "mark_extra"_a = false)                                                                 //
         .def("host_location_isolation_year", &ae::virus::name::Parts::host_location_isolation_year) //
         .def_readonly("host", &ae::virus::name::Parts::host)                                        //
+        .def_readonly("location", &ae::virus::name::Parts::location)                                //
+        .def_readonly("isolation", &ae::virus::name::Parts::isolation)                              //
         .def_readonly("year", &ae::virus::name::Parts::year)                                        //
         .def_readonly("reassortant", &ae::virus::name::Parts::reassortant)                          //
         .def_readonly("extra", &ae::virus::name::Parts::extra)                                      //
@@ -78,6 +81,7 @@ void ae::py::virus(pybind11::module_& mdl)
         "source"_a, "trace"_a = false, "filename"_a = "", "line_no"_a = 0);
 
     pybind11::class_<PassageParsingResult>(virus_submodule, "PassageParsingResult")                          //
+        .def("__bool__", &PassageParsingResult::good)                                                        //
         .def("good", &PassageParsingResult::good)                                                            //
         .def("passage", [](const PassageParsingResult& result) { return result.deconstructed.construct(); }) //
         .def_readonly("messages", &PassageParsingResult::messages)                                           //
@@ -92,7 +96,6 @@ void ae::py::virus(pybind11::module_& mdl)
         .def("is_cell", &ae::virus::Passage::is_cell)                       //
         .def("without_date", &ae::virus::Passage::without_date)             //
         ;
-
 }
 
 // ======================================================================
