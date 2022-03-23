@@ -279,6 +279,7 @@ ae::layer_indexes ae::chart::v3::Titers::layers_with_serum(serum_index aSerumNo)
     for (const auto no : number_of_layers()) {
         const auto& layer = this->layer(no);
         for (auto antigen_no : number_of_antigens()) {
+            // AD_DEBUG("{} {:3d} {}", no, antigen_no, layer[antigen_no.get()]);
             if (const auto titer = find_titer_for_serum(layer[antigen_no.get()], aSerumNo); !titer.is_dont_care()) {
                 result.push_back(no);
                 break;

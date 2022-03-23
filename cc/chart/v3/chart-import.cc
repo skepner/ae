@@ -184,6 +184,8 @@ inline ae::serum_index read_sparse(ae::chart::v3::Titers::sparse_t& target, ::si
             target_row.emplace_back(sr_no, ae::chart::v3::Titer{static_cast<std::string_view>(source_entry.value())});
             number_of_sera = std::max(number_of_sera, sr_no + ae::serum_index{1});
         }
+        // row is perhaps not sorted by sr_no (produced by ae.chart_v2), sort it
+        std::sort(target_row.begin(), target_row.end(), [](const auto& e1, const auto& e2) { return e1.first < e2.first; });
     }
     return number_of_sera;
 }
