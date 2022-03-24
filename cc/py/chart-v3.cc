@@ -21,8 +21,8 @@ namespace ae::py
         // ae::chart::v3::Projection& p() { return chart->projections()[projection_no]; }
         // const ae::chart::v3::Projection& p() const { return chart->projections()[projection_no]; }
 
-        double stress() const { return projection.stress(); }
-        double recalculate_stress() const { projection.reset_stress(); return projection.stress(); }
+        double stress() const { return projection.stress(*chart); }
+        double recalculate_stress() const { projection.reset_stress(); return projection.stress(*chart); }
         std::string_view comment() const { return projection.comment(); }
         std::string minimum_column_basis() const { return projection.minimum_column_basis().format("{}", ae::chart::v3::minimum_column_basis::use_none::yes); }
         const std::vector<double>& forced_column_bases() const { return projection.forced_column_bases().data(); }
@@ -36,7 +36,7 @@ namespace ae::py
             // optimization_options opt;
             // opt.precision = precision;
             projection.relax(*chart, ae::chart::v3::optimization_options{.precision = precision});
-            return projection.stress();
+            return projection.stress(*chart);
         }
     };
 
@@ -313,7 +313,7 @@ void ae::py::chart_v3(pybind11::module_& mdl)
                 if (sera_to_disconnect && !sera_to_disconnect->empty())
                     disconnect.insert_if_not_present(sera_to_disconnect->points());
                 chart.relax(number_of_optimizations_t{number_of_optimizations}, minimum_column_basis{mcb}, number_of_dimensions_t{number_of_dimensions}, opt, disconnect);
-                chart.projections().sort();
+                chart.projections().sort(chart);
             },                                                                                                                                                    //
             "number_of_dimensions"_a = 2, "number_of_optimizations"_a = 0, "minimum_column_basis"_a = "none", "dimension_annealing"_a = false, "rough"_a = false, //
             "unused_number_of_best_distinct_projections_to_keep"_a = 5, "disconnect_antigens"_a = nullptr, "disconnect_sera"_a = nullptr,                         //
@@ -330,7 +330,7 @@ void ae::py::chart_v3(pybind11::module_& mdl)
                 opt.rsp = remove_source_projection ? ae::chart::v3::remove_source_projection::yes : ae::chart::v3::remove_source_projection::no;
                 opt.unnp = unmovable_non_nan_points ? ae::chart::v3::unmovable_non_nan_points::yes : ae::chart::v3::unmovable_non_nan_points::no;
                 chart.relax_incremental(projection_index{projection_no}, number_of_optimizations_t{number_of_optimizations}, opt);
-                chart.projections().sort();
+                chart.projections().sort(chart);
             }, //
             "projection_no"_a = 0, "number_of_optimizations"_a = 0, "rough"_a = false, "number_of_best_distinct_projections_to_keep"_a = 5, "remove_source_projection"_a = true,
             "unmovable_non_nan_points"_a = false) //

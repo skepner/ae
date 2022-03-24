@@ -7,7 +7,7 @@
 
 void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
 {
-    Timeit ti{fmt::format("exporting chart to {}", filename), std::chrono::milliseconds{100}};
+    Timeit ti{fmt::format("exporting chart to {}", filename), std::chrono::milliseconds{1000}};
 
     fmt::memory_buffer out;
 
@@ -306,7 +306,7 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
         for (const auto& projection : projections()) {
             comma7 = put_comma(comma7);
             fmt::format_to(std::back_inserter(out), "\n   {{");
-            auto comma8 = put_double(projection.stress(), always, "s", false);
+            auto comma8 = put_double(projection.stress(), [](double stress) { return !std::isnan(stress) && stress >= 0.0; }, "s", false);
             comma8 = put_str(projection.minimum_column_basis(), [](const auto& mcb) { return !mcb.is_none(); }, "m", comma8);
             comma8 = put_str(projection.comment(), not_empty, "c", comma8);
             comma8 = put_bool(projection.dodgy_titer_is_regular() == dodgy_titer_is_regular_e::yes, false, "d", comma8);

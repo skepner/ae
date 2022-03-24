@@ -1,0 +1,55 @@
+#! /usr/bin/env python3
+import os, sys, datetime, pprint, argparse, traceback
+from pathlib import Path
+import ae_backend
+
+# ----------------------------------------------------------------------
+
+def main(args: argparse.Namespace):
+    mrg = ae_backend.chart_v3.Chart(args.chart[0])
+    relax(mrg, 's', 0, args)
+    for step, c1_name in enumerate(args.chart[1:], start=1):
+        mrg_incremental, mrg_data = ae_backend.chart_v3.merge(mrg, ae_backend.chart_v3.Chart(c1_name), merge_type="incremental")
+        mrg_scratch = ae_backend.chart_v3.Chart(mrg_incremental)
+        relax(mrg_incremental, 'i', step, args)
+        relax(mrg_scratch, 's', step, args)
+        if mrg_incremental.projection().stress() < mrg_scratch.projection().stress():
+            mrg = mrg_incremental
+            print(f">>> {step:3d}: --> incremental {mrg.projection().stress():9.4f}", file=sys.stderr)
+        else:
+            mrg = mrg_scratch
+            print(f">>> {step:3d}: --> scratch {mrg.projection().stress():9.4f}", file=sys.stderr)
+
+# ----------------------------------------------------------------------
+
+def relax(chart: ae_backend.chart_v3.Chart, type: str, step: int, args: argparse.Namespace):
+    start = datetime.datetime.now()
+    if type == 's':
+        chart.relax(number_of_dimensions=args.number_of_dimensions, number_of_optimizations=args.number_of_optimizations, minimum_column_basis=args.minimum_column_basis)
+    else:
+        chart.relax_incremental(number_of_optimizations=args.number_of_optimizations)
+    chart.keep_projections(args.keep_projections)
+    print(f">>> {step:3d}:{type}: {chart.projection().stress():9.4f}  {chart.name():70s} [{datetime.datetime.now() - start}]", file=sys.stderr)
+    chart.write(args.output_dir.joinpath(f"{step:03d}.{type}.{chart.name_for_file()}.ace"))
+
+# ----------------------------------------------------------------------
+
+try:
+    parser = argparse.ArgumentParser(description=__doc__)
+
+    parser.add_argument("chart", nargs="+", type=Path)
+
+    parser.add_argument('-n', dest="number_of_optimizations", type=int, default=1000)
+    parser.add_argument('-d', dest="number_of_dimensions", type=int, default=2)
+    parser.add_argument('-m', dest="minimum_column_basis", default="none")
+    parser.add_argument("-k", "--keep-projections", default=10, type=int, help="number of projections to keep, 0 - keep all")
+    parser.add_argument('-o', dest="output_dir", default=Path("."), type=Path)
+
+    args = parser.parse_args()
+    exit_code = main(args) or 0
+except Exception as err:
+    print(f"> {err}\n{traceback.format_exc()}", file=sys.stderr)
+    exit_code = 1
+exit(exit_code)
+
+# ======================================================================

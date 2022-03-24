@@ -40,7 +40,8 @@ namespace ae::chart::v3
         // std::optional<double> stored_stress() const { return stress_; }
         void stress(double str) { stress_ = str; }
         void reset_stress() { stress_ = std::nullopt; }
-        double stress(recalculate_stress recalculate = recalculate_stress::if_necessary) const;
+        double stress() const { return stress_.has_value() ? *stress_ : InvalidStress; }
+        double stress(const Chart& chart, recalculate_stress recalculate = recalculate_stress::if_necessary) const;
         // double stress_with_moved_point(size_t point_no, const PointCoordinates& move_to) const;
         Transformation& transformation() { return transformation_; }
         const Transformation& transformation() const { return transformation_; }
@@ -106,7 +107,7 @@ namespace ae::chart::v3
         avidity_adjusts avidity_adjusts_{};
         dodgy_titer_is_regular_e dodgy_titer_is_regular_{dodgy_titer_is_regular_e::no};
 
-        double stress_recalculate() const;
+        double stress_recalculate(const Chart& chart) const;
     };
 
     // ----------------------------------------------------------------------
@@ -131,11 +132,7 @@ namespace ae::chart::v3
         // void reserve(size_t size) { data_.reserve(size); }
         // std::string make_info(size_t max_number_of_projections_to_show = 20) const;
 
-        void sort()
-        {
-            std::sort(data_.begin(), data_.end(), [](const auto& p1, const auto& p2) { return p1.stress() < p2.stress(); });
-            // set_projection_no();
-        }
+        void sort(const Chart& chart);
 
         void keep(projection_index number_of_projections_to_keep)
         {

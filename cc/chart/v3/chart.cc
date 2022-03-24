@@ -201,7 +201,7 @@ void ae::chart::v3::Chart::relax_incremental(projection_index source_projection_
 
     if (options.rsp == remove_source_projection::yes)
         projections().remove(source_projection_no);
-    projections().sort();
+    projections().sort(*this);
 
     if (options.precision == optimization_precision::fine) {
         const projection_index top_projections{std::min(5UL, *number_of_optimizations)};
@@ -210,7 +210,7 @@ void ae::chart::v3::Chart::relax_incremental(projection_index source_projection_
             // for (const auto p_no : top_projections)
             projections()[projection_index{p_no}].relax(*this, options); // do not omp parallel, occasionally fails
         }
-        projections().sort();
+        projections().sort(*this);
     }
 
 } // ae::chart::v3::Chart::relax_incremental
@@ -223,7 +223,7 @@ void ae::chart::v3::Chart::combine_projections(const Chart& merge_in)
         throw std::runtime_error{AD_FORMAT("cannot combine projections, tables are not the same")};
     for (const auto& proj : projections())
         projections().add(proj);
-    projections().sort();
+    projections().sort(*this);
 
 } // ae::chart::v3::Chart::combine_projections
 

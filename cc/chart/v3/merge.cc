@@ -273,7 +273,6 @@ ae::chart::v3::Titers::titer_merge_report ae::chart::v3::merge_titers(Chart& mer
 void ae::chart::v3::merge_projections(Chart& merge, const Chart& chart1, const Chart& chart2, projection_merge_t projection_merge, const merge_data_t& merge_data)
 {
     if (chart1.projections().size() > projection_index{0}) {
-        AD_WARNING("merge_projections types 3-5 not implemented");
         switch (projection_merge) {
             case projection_merge_t::type1: // simple
                 break; // no projections in the merge

@@ -1,19 +1,20 @@
 #include "utils/log.hh"
 #include "chart/v3/projections.hh"
 #include "chart/v3/randomizer.hh"
+#include "chart/v3/stress.hh"
 
 // ----------------------------------------------------------------------
 
-double ae::chart::v3::Projection::stress(recalculate_stress recalculate) const
+double ae::chart::v3::Projection::stress(const Chart& chart, recalculate_stress recalculate) const
 {
     switch (recalculate) {
       case recalculate_stress::yes:
-          return stress_recalculate();
+          return stress_recalculate(chart);
       case recalculate_stress::if_necessary:
           if (stress_.has_value())
               return *stress_;
           else
-              return stress_recalculate();
+              return stress_recalculate(chart);
       // case recalculate_stress::no:
       //     if (stress_.has_value())
       //         return *stress_;
@@ -26,10 +27,10 @@ double ae::chart::v3::Projection::stress(recalculate_stress recalculate) const
 
 // ----------------------------------------------------------------------
 
-double ae::chart::v3::Projection::stress_recalculate() const
+double ae::chart::v3::Projection::stress_recalculate(const Chart& chart) const
 {
-    AD_WARNING("ae::chart::v3::Projection::stress_recalculate: not imeplemented");
-    return InvalidStress;
+    stress_ = stress_factory(chart, *this, optimization_options{}.mult).value(layout());
+    return *stress_;
 
 } // ae::chart::v3::Projection::stress_recalculate
 
@@ -76,5 +77,22 @@ ae::chart::v3::optimization_status ae::chart::v3::Projection::relax(Chart& chart
     return status;
 
 } // ae::chart::v3::Projection::relax
+
+// ----------------------------------------------------------------------
+
+void ae::chart::v3::Projections::sort(const Chart& chart)
+{
+    // projections with NaN stress are at the end
+    std::sort(data_.begin(), data_.end(), [&chart](const auto& p1, const auto& p2) {
+        const auto s1 = p1.stress(chart), s2 = p2.stress(chart);
+        if (std::isnan(s1))
+            return false;
+        else if (std::isnan(s2))
+            return true;
+        else
+            return s1 < s2;
+    });
+
+} // ae::chart::v3::Projections::sort
 
 // ----------------------------------------------------------------------
