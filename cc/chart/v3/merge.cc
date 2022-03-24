@@ -492,12 +492,13 @@ void ae::chart::v3::check_projections_before_merging(const Projection& projectio
 
 // ----------------------------------------------------------------------
 
-void ae::chart::v3::merge_legacy_plot_spec(Chart& merge, const Chart& chart1, const Chart& /*chart2*/, const merge_data_t& merge_data)
+void ae::chart::v3::merge_legacy_plot_spec(Chart& merge, const Chart& /*chart1*/, const Chart& /*chart2*/, const merge_data_t& /*merge_data*/)
 {
     auto& merge_plot_spec = merge.legacy_plot_spec();
     merge_plot_spec.initialize(merge.antigens().size(), merge.reference(), merge.sera().size());
 
-    // add chart1 plot spec, ignore chart2 plot spec
+    // add chart1 plot spec
+
     // merge_plot_spec = chart1.legacy_plot_spec();
 
     // // adjust serum indexes in the merged plot style index
