@@ -393,7 +393,7 @@ inline void read_legacy_plot_specification(ae::chart::v3::legacy::PlotSpec& targ
         }
         else if (key == "p") {  // index in "P" for each point, antigens followed by sera
             for (const uint64_t val : field.value().get_array())
-                target.style_for_point().push_back(ae::point_index{val});
+                target.style_for_point().push_back(val);
         }
         else if (key == "L") {  // list of procrustes lines styles
             unhandled_key({"c", "p", key});

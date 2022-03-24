@@ -23,33 +23,44 @@ namespace ae::chart::v3::legacy
 
         bool empty() const { return drawing_order_.empty() && styles_.empty(); }
 
-        // virtual size_t number_of_points() const = 0;
-        // virtual bool empty() const = 0;
-        // virtual PointStyle style(size_t aPointNo) const = 0;
-        // virtual PointStyle& style_ref(size_t /*aPointNo*/) { throw std::runtime_error{"PointStyles::style_ref not supported for this style collection"}; }
-
-        const DrawingOrder& drawing_order() const { return drawing_order_; }
-        DrawingOrder& drawing_order() { return drawing_order_; }
-        const point_indexes& style_for_point() const { return style_for_point_; }
-        point_indexes& style_for_point() { return style_for_point_; }
-        const std::vector<PointStyle>& styles() const { return styles_; }
-        std::vector<PointStyle>& styles() { return styles_; }
+        const auto& drawing_order() const { return drawing_order_; }
+        auto& drawing_order() { return drawing_order_; }
+        const auto& style_for_point() const { return style_for_point_; }
+        auto& style_for_point() { return style_for_point_; }
+        const auto& styles() const { return styles_; }
+        auto& styles() { return styles_; }
 
         Color error_line_positive_color() const { return error_line_positive_color_; }
         void error_line_positive_color(Color color) { error_line_positive_color_ = color; }
         Color error_line_negative_color() const { return error_line_negative_color_; }
         void error_line_negative_color(Color color) { error_line_negative_color_ = color; }
 
-        // virtual std::vector<acmacs::PointStyle> all_styles() const = 0;
+        void initialize(antigen_index number_of_antigens, const antigen_indexes& reference, serum_index number_of_sera)
+            {
+                drawing_order_.get().clear();
+                styles_.clear();
+                style_for_point_.clear();
 
-        //   acmacs::PointStyle style(size_t aPointNo) const { return modified() ? style_modified(aPointNo) : main_->style(aPointNo); }
-        //   std::vector<acmacs::PointStyle> all_styles() const { return modified() ? styles_ : main_->all_styles(); }
-        //   size_t number_of_points() const { return modified() ? styles_.size() : main_->number_of_points(); }
+                auto& test_antigen = styles_.emplace_back();
+                test_antigen.fill(Color{"green"});
+                auto& reference_antigen = styles_.emplace_back();
+                reference_antigen.size(8.0);
+                auto& serum = styles_.emplace_back();
+                serum.size(8.0);
+                serum.shape(point_shape::Box);
+
+                for ([[maybe_unused]] const auto ag_no : number_of_antigens)
+                    style_for_point_.push_back(0);
+                for ([[maybe_unused]] const auto sr_no : number_of_sera)
+                    style_for_point_.push_back(2);
+                for (const auto ag_no : reference)
+                    style_for_point_[*ag_no] = 1;
+            }
 
       private:
         // antigen_index number_of_antigens_{};
         std::vector<PointStyle> styles_{};
-        point_indexes style_for_point_{};
+        std::vector<size_t> style_for_point_{};
         DrawingOrder drawing_order_{};
         Color error_line_positive_color_{"blue"};
         Color error_line_negative_color_{"red"};

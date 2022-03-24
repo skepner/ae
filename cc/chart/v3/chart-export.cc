@@ -102,7 +102,7 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
 
 
     const auto not_empty = [](const auto& val) { return !val.empty(); };
-    const auto always = [](const auto&) { return true; };
+    // const auto always = [](const auto&) { return true; };
 
     fmt::format_to(std::back_inserter(out), R"({{"_": "-*- js-indent-level: 1 -*-",
  "  version": "acmacs-ace-v1",
@@ -424,10 +424,10 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
 //  "x" |     |     |     | key-value pairs                  | extensions not used by acmacs
 // -----+-----+-----+-----+----------------------------------+---------------------------------------------------------------------------------------------------------------------
 
-    // fmt::format_to(std::back_inserter(out), ",\n  \"x\": {{\n");
-    // fmt::format_to(std::back_inserter(out), "  }}\n");
+    // fmt::format_to(std::back_inserter(out), ",\n  \"x\": {{");
+    // fmt::format_to(std::back_inserter(out), "\n  }}");
 
-    fmt::format_to(std::back_inserter(out), " }}\n}}\n");
+    fmt::format_to(std::back_inserter(out), "\n }}\n}}\n");
 
     ae::file::write(filename, fmt::to_string(out), ae::file::force_compression::yes);
 

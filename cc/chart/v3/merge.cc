@@ -308,7 +308,7 @@ void ae::chart::v3::merge_projections(Chart& merge, const Chart& chart1, const C
 // ----------------------------------------------------------------------
 
 // incremental
-void ae::chart::v3::merge_projections_type2(Chart& merge, const Chart& chart1, const Chart& chart2, const merge_data_t& merge_data)
+void ae::chart::v3::merge_projections_type2(Chart& merge, const Chart& chart1, const Chart& /*chart2*/, const merge_data_t& merge_data)
 {
     // copy best projection of chart1, set coords of non-common points of chart2 to NaN
     const auto& projection1 = chart1.projections().best();
@@ -494,20 +494,18 @@ void ae::chart::v3::check_projections_before_merging(const Projection& projectio
 
 void ae::chart::v3::merge_legacy_plot_spec(Chart& merge, const Chart& chart1, const Chart& /*chart2*/, const merge_data_t& merge_data)
 {
-    // copy chart1 plot spec, ignore chart2 plot spec
-
     auto& merge_plot_spec = merge.legacy_plot_spec();
-    merge_plot_spec = chart1.legacy_plot_spec();
+    merge_plot_spec.initialize(merge.antigens().size(), merge.reference(), merge.sera().size());
 
-    // adjust serum indexes in the merged plot style index
-    const point_index index_adjust{*merge.antigens().size() - *chart1.antigens().size()};
-    for (auto& p_no : merge_plot_spec.style_for_point()) {
-        if (*p_no >= *chart1.antigens().size())
-            p_no = p_no + index_adjust;
-    }
+    // add chart1 plot spec, ignore chart2 plot spec
+    // merge_plot_spec = chart1.legacy_plot_spec();
 
-    // reset drawing order
-    merge_plot_spec.drawing_order().get().clear();
+    // // adjust serum indexes in the merged plot style index
+    // const point_index index_adjust{*merge.antigens().size() - *chart1.antigens().size()};
+    // for (auto& p_no : merge_plot_spec.style_for_point()) {
+    //     if (*p_no >= *chart1.antigens().size())
+    //         p_no = p_no + index_adjust;
+    // }
 
 } // ae::chart::v3::merge_plot_spec
 
