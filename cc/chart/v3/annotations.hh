@@ -18,8 +18,8 @@ namespace ae::chart::v3
         auto operator<=>(const Annotations&) const = default;
 
         void add(std::string_view value) { insert_if_not_present(value); }
-        bool distinct() const { return contains(std::string{distinct_label}); }
-        void set_distinct() { insert_if_not_present(std::string{distinct_label}); }
+        bool distinct() const { return contains(distinct_label); }
+        void set_distinct() { insert_if_not_present(distinct_label); }
 
         size_t total_length() const
         {

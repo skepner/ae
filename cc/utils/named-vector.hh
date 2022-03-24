@@ -6,6 +6,7 @@
 
 #include "ext/compare.hh"
 #include "utils/named-type.hh"
+#include "utils/log.hh"
 
 // ----------------------------------------------------------------------
 
@@ -49,9 +50,9 @@ namespace ae
                 static_assert(std::is_same_v<T, void>);
         }
 
-        void remove(const T& val)
+        template <constructible_from<T> T2> void remove(T2&& val)
         {
-            if (const auto found = std::find(begin(), end(), val); found != end())
+            if (const auto found = std::find(begin(), end(), std::forward<T2>(val)); found != end())
                 this->get().erase(found);
         }
 

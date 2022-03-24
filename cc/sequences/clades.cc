@@ -2,6 +2,7 @@
 
 #include "ext/simdjson.hh"
 #include "utils/timeit.hh"
+#include "utils/log.hh"
 #include "sequences/clades.hh"
 
 // ======================================================================
@@ -27,10 +28,13 @@ void ae::sequences::Clades::load(const std::filesystem::path& clades_file)
                         for (auto clade_entry : field.value().get_array()) {
                             if (clade_entry.type() == ondemand::json_type::object) {
                                 entry_t entry;
+                                bool has_name{false};
                                 for (auto entry_field : clade_entry.get_object()) {
                                     const std::string_view entry_key = entry_field.unescaped_key();
-                                    if (entry_key == "N"sv)
+                                    if (entry_key == "N"sv) {
                                         entry.name = static_cast<std::string_view>(entry_field.value());
+                                        has_name = true;
+                                    }
                                     else if (entry_key == "aa"sv)
                                         entry.aa = extract_aa_nuc_at_pos1_eq_list(entry_field.value()); // static_cast<std::string_view>(entry_field.value());
                                     else if (entry_key == "nuc"sv)
@@ -40,7 +44,8 @@ void ae::sequences::Clades::load(const std::filesystem::path& clades_file)
                                     else if (!entry_key.empty() && entry_key[0] != '?') // not a comment
                                         fmt::print(">> [clades] unrecognized key \"{}\" for entry for \"{}\"\n", entry_key, subtype_key);
                                 }
-                                entries.push_back(std::move(entry));
+                                if (has_name) // ignore entries without name, e.g. commented out
+                                    entries.push_back(std::move(entry));
                             }
                             else if (clade_entry.type() != ondemand::json_type::string) // strings (separators, comments) are silently ignored
                                 fmt::print(">> [clades] invalid entry in \"{}\" for \"{}\": {}\n", clades_file, subtype_key, clade_entry);
@@ -107,8 +112,10 @@ std::vector<std::string> ae::sequences::Clades::clades(const sequence_aa_t& aa, 
     std::vector<std::string> clades;
     if (const auto full_set = data_.find(subtype_key(subtype, lineage)); full_set != data_.end()) {
         for (const auto& en : full_set->second) {
-            if ((set.empty() || set == en.set) && (aa.empty() || en.aa.empty() || matches_all(aa, en.aa)) && (nuc.empty() || en.nuc.empty() || matches_all(nuc, en.nuc)))
+            if ((set.empty() || set == en.set) && (aa.empty() || en.aa.empty() || matches_all(aa, en.aa)) && (nuc.empty() || en.nuc.empty() || matches_all(nuc, en.nuc))) {
+                // AD_DEBUG("Clades::clades \"{}\"", en.name);
                 clades.push_back(en.name);
+            }
         }
     }
     std::sort(std::begin(clades), std::end(clades));

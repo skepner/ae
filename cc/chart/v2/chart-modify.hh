@@ -220,9 +220,9 @@ namespace ae::chart::v2
         void lineage(std::string_view value) { lineage_ = value; }
         void reassortant(const ae::virus::Reassortant& value) { reassortant_ = value; }
         void reference(bool value) { reference_ = value; }
-        void add_annotation(std::string_view annotation) { annotations_.insert_if_not_present(std::string{annotation}); }
+        void add_annotation(std::string_view annotation) { annotations_.insert_if_not_present(annotation); }
         void set_distinct() { annotations_.set_distinct(); }
-        void add_clade(std::string_view clade) { clades_.insert_if_not_present(std::string{clade}); }
+        void add_clade(std::string_view clade) { clades_.insert_if_not_present(clade); }
         void remove_all_clades() { clades_.get().clear(); }
         void remove_annotation(std::string_view annotation) { annotations_.remove(std::string{annotation}); }
         template <typename S> void continent(S&& value) { continent_ = Continent{std::forward<S>(value)}; }
@@ -277,8 +277,8 @@ namespace ae::chart::v2
         void reassortant(const ae::virus::Reassortant& value) { reassortant_ = value; }
         void serum_id(const SerumId& value) { serum_id_ = value; }
         void serum_species(const SerumSpecies& value) { serum_species_ = value; }
-        void add_annotation(std::string_view annotation) { annotations_.insert_if_not_present(std::string{annotation}); }
-        void add_clade(std::string_view clade) { clades_.insert_if_not_present(std::string{clade}); }
+        void add_annotation(std::string_view annotation) { annotations_.insert_if_not_present(annotation); }
+        void add_clade(std::string_view clade) { clades_.insert_if_not_present(clade); }
         void remove_all_clades() { clades_.get().clear(); }
         void remove_annotation(std::string_view annotation) { annotations_.remove(std::string{annotation}); }
         void set_continent() {}
