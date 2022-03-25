@@ -10,14 +10,14 @@ namespace ae::chart::v3
     {
         point_coordinates min, max;
 
-        Area(const point_coordinates& a_min, const point_coordinates& a_max) : min(a_min), max(a_max) {}
-        Area(const point_coordinates& a_min) : min(a_min), max(a_min) {}
+        Area(const point_coordinates& a_min, const point_coordinates& a_max) : min{a_min.copy()}, max{a_max.copy()} {}
+        Area(const point_coordinates& a_min) : min{a_min.copy()}, max{a_min.copy()} {}
 
         number_of_dimensions_t num_dim() const { return min.number_of_dimensions(); }
 
         void extend(const point_coordinates& point)
         {
-            for (number_of_dimensions_t dim{0}; dim < num_dim(); ++dim) {
+            for (const auto dim : num_dim()) {
                 min[dim] = std::min(point[dim], min[dim]);
                 max[dim] = std::max(point[dim], max[dim]);
             }
@@ -85,5 +85,15 @@ namespace ae::chart::v3
     Area area(const Layout& layout, const std::vector<size_t>& points); // just for the specified point indexes
 
 } // namespace ae::chart::v3
+
+// ----------------------------------------------------------------------
+
+template <> struct fmt::formatter<ae::chart::v3::Area> : public fmt::formatter<ae::fmt_helper::float_formatter>
+{
+    template <typename FormatContext> auto format(const ae::chart::v3::Area& area, FormatContext& ctx)
+    {
+        return format_to(ctx.out(), "Area{{area: {}, min: {}, max: {}}}", area.area(), area.min, area.max);
+    }
+};
 
 // ----------------------------------------------------------------------

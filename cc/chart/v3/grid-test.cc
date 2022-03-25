@@ -53,9 +53,8 @@ void ae::chart::v3::grid_test::test(result_t& result, const Projection& projecti
         const auto hemisphering_stress_thresholdrough = hemisphering_stress_threshold * 2;
         auto hemisphering_contribution = target_contribution + hemisphering_stress_thresholdrough;
         const auto area = area_for(table_distances_for_point, projection.layout());
-        AD_DEBUG("grid_test area {} <- {} {}", area.area(), area.min, area.max);
         for (auto it = area.begin(settings.step), last = area.end(); it != last; ++it) {
-            AD_DEBUG("grid_test iter {}", *it);
+            // AD_DEBUG("grid_test iter {}", *it);
             layout.update(result.point_no, *it);
             const auto contribution = stress.contribution(result.point_no, table_distances_for_point, layout);
             if (contribution < best_contribution) {
@@ -164,5 +163,18 @@ ae::chart::v3::grid_test::result_t* ae::chart::v3::grid_test::results_t::find(po
         return nullptr;
 
 } // ae::chart::v3::grid_test::results_t::find
+
+// ----------------------------------------------------------------------
+
+std::vector<ae::chart::v3::grid_test::result_t> ae::chart::v3::grid_test::results_t::trapped_hemisphering() const
+{
+    std::vector<result_t> th;
+    for (const auto& en : data_) {
+        if (en.diagnosis == result_t::trapped || en.diagnosis == result_t::hemisphering)
+            th.push_back(en);
+    }
+    return th;
+
+} // ae::chart::v3::grid_test::trapped_hemisphering
 
 // ----------------------------------------------------------------------

@@ -242,6 +242,31 @@ namespace ae::py
         return ae::chart::v3::procrustes(proj1.projection, proj2.projection, common, scaling ? ae::chart::v3::procrustes_scaling_t::yes : ae::chart::v3::procrustes_scaling_t::no);
     }
 
+    // ----------------------------------------------------------------------
+
+    static inline const char* grid_test_diagnosis(const ae::chart::v3::grid_test::result_t& res)
+    {
+        using namespace ae::chart::v3::grid_test;
+        switch (res.diagnosis) {
+            case result_t::excluded:
+                return "excluded";
+            case result_t::not_tested:
+                return "not_tested";
+            case result_t::normal:
+                return "normal";
+            case result_t::trapped:
+                return "trapped";
+            case result_t::hemisphering:
+                return "hemisphering";
+        }
+        return "not_tested";
+    }
+
+    static inline std::string grid_test_result_str(const ae::chart::v3::grid_test::result_t& res)
+    {
+        return fmt::format("{}: {:4d} dist:{:7.4f} diff:{:7.4f}", grid_test_diagnosis(res), *res.point_no, res.distance, res.contribution_diff);
+    }
+
 } // namespace ae::py
 
 // ======================================================================
@@ -338,7 +363,8 @@ void ae::py::chart_v3(pybind11::module_& mdl)
 
         // ----------------------------------------------------------------------
 
-        .def("grid_test", [](Chart& chart, size_t projection_no) { return grid_test::test(chart, projection_index{projection_no}); }, "projection_no"_a = 0) //
+        .def(
+            "grid_test", [](Chart& chart, size_t projection_no) { return grid_test::test(chart, projection_index{projection_no}); }, "projection_no"_a = 0) //
 
         // ----------------------------------------------------------------------
 
@@ -872,9 +898,18 @@ void ae::py::chart_v3(pybind11::module_& mdl)
 
     // ----------------------------------------------------------------------
 
-    pybind11::class_<grid_test::results_t>(chart_v3_submodule, "GridTestResults")                                        //
+    pybind11::class_<grid_test::results_t>(chart_v3_submodule, "GridTestResults") //
+        .def("trapped_hemisphering", &grid_test::results_t::trapped_hemisphering) //
         ;
 
+    pybind11::class_<grid_test::result_t>(chart_v3_submodule, "GridTestResult")                          //
+        .def_property_readonly("point_no", [](const grid_test::result_t& res) { return *res.point_no; }) //
+        .def_readonly("pos", &grid_test::result_t::pos)                                                  //
+        .def_readonly("distance", &grid_test::result_t::distance)                                        //
+        .def_readonly("contribution_diff", &grid_test::result_t::contribution_diff)                      //
+        .def_property_readonly("diagnosis", &grid_test_diagnosis)                                        //
+        .def("__str__", &grid_test_result_str)                                                           //
+        ;
 }
 
 // ----------------------------------------------------------------------

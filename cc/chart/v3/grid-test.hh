@@ -13,7 +13,7 @@ namespace ae::chart::v3
         struct settings_t
         {
             double step{0.1};
-            size_t threads{1};
+            size_t threads{0};
         };
 
         struct result_t
@@ -36,6 +36,7 @@ namespace ae::chart::v3
 
             size_t size() const { return data_.size(); }
             result_t& operator[](size_t index) { return data_[index]; }
+            std::vector<result_t> trapped_hemisphering() const;
 
           private:
             std::vector<result_t> data_;
