@@ -33,52 +33,46 @@ namespace ae::chart::v3
 
         class Iterator
         {
+          public:
+            const point_coordinates& operator*() const { return current_; }
+            const point_coordinates* operator->() const { return &current_; }
+
+            bool operator==(const Iterator& rhs) const
+            {
+                if (std::isnan(rhs.step_))
+                    return std::isnan(current_.x());
+                else if (std::isnan(step_))
+                    return std::isnan(rhs.current_.x());
+                else
+                    throw std::runtime_error("cannot compare Area::Iterators");
+            }
+
+            const Iterator& operator++()
+            {
+                if (!std::isnan(current_.x())) {
+                    for (const auto dim : current_.number_of_dimensions()) {
+                        current_[dim] += step_;
+                        if (current_[dim] > max_[dim] && (dim + number_of_dimensions_t{1}) < current_.number_of_dimensions())
+                            current_[dim] = min_[dim];
+                        else
+                            break;
+                    }
+                    if (current_.back() > max_.back())
+                        current_.x(point_coordinates::nan); // end
+                }
+                return *this;
+            }
+
           private:
             double step_;
             point_coordinates min_, max_, current_;
 
             friend struct Area;
-            Iterator(double step, const point_coordinates& a_min, const point_coordinates& a_max) : step_(step), min_(a_min), max_(a_min), current_(a_min) { set_max(a_max); }
-            Iterator() : step_(std::numeric_limits<double>::quiet_NaN()), min_{number_of_dimensions_t{2}}, max_{number_of_dimensions_t{2}}, current_{number_of_dimensions_t{2}} {}
-
-            void set_max(const point_coordinates& a_max)
-            {
-                for (number_of_dimensions_t dim{0}; dim < a_max.number_of_dimensions(); ++dim)
-                    max_[dim] = min_[dim] + std::ceil((a_max[dim] - min_[dim]) / step_) * step_;
-            }
-
-          public:
-            bool operator==(const Iterator& rhs) const
-            {
-                if (std::isnan(rhs.step_))
-                    return current_.x() > max_.x();
-                else if (std::isnan(step_))
-                    return rhs.current_.x() > rhs.max_.x();
-                else
-                    throw std::runtime_error("cannot compare Area::Iterators");
-            }
-
-            bool operator!=(const Iterator& rhs) const { return !operator==(rhs); }
-            const point_coordinates& operator*() const { return current_; }
-            const point_coordinates* operator->() const { return &current_; }
-
-            const Iterator& operator++()
-            {
-                if (current_.x() <= max_.x()) {
-                    for (number_of_dimensions_t dim{0}; dim < current_.number_of_dimensions(); ++dim) {
-                        current_[dim] += step_;
-                        if (current_[dim] <= max_[dim]) {
-                            std::copy(min_.begin(), min_.begin() + static_cast<size_t>(dim), current_.begin());
-                            break;
-                        }
-                    }
-                }
-                return *this;
-            }
+            Iterator(double step, const point_coordinates& a_min, const point_coordinates& a_max) : step_{step}, min_{a_min}, max_{a_max}, current_{a_min.copy()} {}
         };
 
-        Iterator begin(double step) const { return Iterator(step, min, max); }
-        Iterator end() const { return Iterator{}; }
+        Iterator begin(double step) const { return Iterator{step, min, max}; }
+        Iterator end() const { return Iterator{point_coordinates::nan, point_coordinates{number_of_dimensions_t{2}}, point_coordinates{number_of_dimensions_t{2}}}; }
 
     }; // struct Area
 

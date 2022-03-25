@@ -13,6 +13,7 @@ namespace ae::chart::v3
         struct settings_t
         {
             double step{0.1};
+            size_t threads{1};
         };
 
         struct result_t

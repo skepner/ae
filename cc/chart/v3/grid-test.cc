@@ -16,12 +16,11 @@ namespace ae::chart::v3::grid_test
 
 ae::chart::v3::grid_test::results_t ae::chart::v3::grid_test::test(const Chart& chart, projection_index projection_no, const settings_t& settings)
 {
-    const int threads{0};
     const auto& projection = chart.projections()[projection_no];
     results_t results(projection);
     auto stress = stress_factory(chart, projection, optimization_options{}.mult);
 
-#pragma omp parallel for default(none) shared(results, chart, stress, projection, settings) num_threads(threads <= 0 ? omp_get_max_threads() : threads) schedule(static, chart.antigens().size() < antigen_index{1000} ? 4 : 1)
+#pragma omp parallel for default(none) shared(results, chart, stress, projection, settings) num_threads(settings.threads == 0 ? omp_get_max_threads() : settings.threads) schedule(static, chart.antigens().size() < antigen_index{1000} ? 4 : 1)
     for (size_t entry_no = 0; entry_no < results.size(); ++entry_no)
         test(results[entry_no], projection, stress, settings);
 
@@ -54,7 +53,9 @@ void ae::chart::v3::grid_test::test(result_t& result, const Projection& projecti
         const auto hemisphering_stress_thresholdrough = hemisphering_stress_threshold * 2;
         auto hemisphering_contribution = target_contribution + hemisphering_stress_thresholdrough;
         const auto area = area_for(table_distances_for_point, projection.layout());
+        AD_DEBUG("grid_test area {} <- {} {}", area.area(), area.min, area.max);
         for (auto it = area.begin(settings.step), last = area.end(); it != last; ++it) {
+            AD_DEBUG("grid_test iter {}", *it);
             layout.update(result.point_no, *it);
             const auto contribution = stress.contribution(result.point_no, table_distances_for_point, layout);
             if (contribution < best_contribution) {

@@ -49,6 +49,7 @@ namespace ae::chart::v3
         const double* end() const { return std::visit([](const auto& content) -> const double* { return &*content.end(); }, data_); }
         double* begin() { return std::visit([](auto& content) -> double* { return &*content.begin(); }, data_); }
         double* end() { return std::visit([](auto& content) -> double* { return &*content.end(); }, data_); }
+        double back() const { return operator[](number_of_dimensions() - number_of_dimensions_t{1}); }
 
         double x() const { return operator[](number_of_dimensions_t{0}); }
         double y() const { return operator[](number_of_dimensions_t{1}); }
