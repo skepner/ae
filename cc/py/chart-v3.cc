@@ -898,10 +898,12 @@ void ae::py::chart_v3(pybind11::module_& mdl)
 
     // ----------------------------------------------------------------------
 
-    pybind11::class_<grid_test::results_t>(chart_v3_submodule, "GridTestResults")                                                                                                   //
-        .def("trapped_hemisphering", &grid_test::results_t::trapped_hemisphering)                                                                                                   //
-        .def("count_trapped_hemisphering", &grid_test::results_t::count_trapped_hemisphering)                                                                                       //
-        .def("apply", pybind11::overload_cast<Projection&>(&grid_test::results_t::apply, pybind11::const_), "projection"_a, pybind11::doc("move points to their better locations")) //
+    pybind11::class_<grid_test::results_t>(chart_v3_submodule, "GridTestResults")             //
+        .def("trapped_hemisphering", &grid_test::results_t::trapped_hemisphering)             //
+        .def("count_trapped_hemisphering", &grid_test::results_t::count_trapped_hemisphering) //
+        .def(
+            "apply", [](const grid_test::results_t& results, ProjectionRef& projection_ref) { results.apply(projection_ref.projection); }, "projection"_a,
+            pybind11::doc("move points to their better locations")) //
         ;
 
     pybind11::class_<grid_test::result_t>(chart_v3_submodule, "GridTestResult")                          //

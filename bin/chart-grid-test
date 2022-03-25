@@ -7,20 +7,16 @@ import ae_backend
 
 def main(args: argparse.Namespace):
     chart = ae_backend.chart_v3.Chart(args.chart)
-    # projection = chart.projection()
+    projection = chart.projection()
     while True:
-        print(f"Stress: {chart.projection().stress():.6f}")
+        print(f"Stress: {projection.stress():.6f}")
         result = chart.grid_test()
-        for en in result.trapped_hemisphering():
-            print(en)
         if cnt := result.count_trapped_hemisphering():
             print(f"cnt {cnt}")
             for en in result.trapped_hemisphering():
                 print(en)
-            # result.apply(chart.projection())
-            # projection.relax()
-            # print(f"Stress: {chart.projection().stress():.6f}")
-            break
+            result.apply(projection)
+            projection.relax()
         else:
             break
 
