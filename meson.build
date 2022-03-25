@@ -254,6 +254,14 @@ test_date = executable(
   link_with : [libae],
   install : true)
 
+test_named_vector = executable(
+  'test-named-vector',
+  sources : ['cc/test/test-named-vector.cc'],
+  include_directories : include_cc,
+  dependencies : [fmt],
+  link_with : [libae],
+  install : true)
+
 test_pos = executable(
   'test-pos',
   sources : ['cc/test/test-pos.cc'],
