@@ -3,6 +3,7 @@
 #include "chart/v3/selected-antigens-sera.hh"
 #include "chart/v3/merge.hh"
 #include "chart/v3/procrustes.hh"
+#include "chart/v3/grid-test.hh"
 #include "pybind11/detail/common.h"
 
 // ======================================================================
@@ -335,7 +336,9 @@ void ae::py::chart_v3(pybind11::module_& mdl)
             "projection_no"_a = 0, "number_of_optimizations"_a = 0, "rough"_a = false, "number_of_best_distinct_projections_to_keep"_a = 5, "remove_source_projection"_a = true,
             "unmovable_non_nan_points"_a = false) //
 
-        //         .def("grid_test", &grid_test, "antigens"_a = nullptr, "sera"_a = nullptr, "projection_no"_a = 0, "grid_step"_a = 0.1, "threads"_a = 0) //
+        // ----------------------------------------------------------------------
+
+        .def("grid_test", [](Chart& chart, size_t projection_no) { return grid_test::test(chart, projection_index{projection_no}); }, "projection_no"_a = 0) //
 
         // ----------------------------------------------------------------------
 
@@ -866,6 +869,12 @@ void ae::py::chart_v3(pybind11::module_& mdl)
     pybind11::class_<merge_data_t>(chart_v3_submodule, "MergeData")  //
         .def("common", &merge_data_t::common_report, "indent"_a = 0) //
         ;
+
+    // ----------------------------------------------------------------------
+
+    pybind11::class_<grid_test::result_t>(chart_v3_submodule, "GridTestResult")                                        //
+        ;
+
 }
 
 // ----------------------------------------------------------------------
