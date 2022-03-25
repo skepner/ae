@@ -872,7 +872,7 @@ void ae::py::chart_v3(pybind11::module_& mdl)
 
     // ----------------------------------------------------------------------
 
-    pybind11::class_<grid_test::result_t>(chart_v3_submodule, "GridTestResult")                                        //
+    pybind11::class_<grid_test::results_t>(chart_v3_submodule, "GridTestResults")                                        //
         ;
 
 }
