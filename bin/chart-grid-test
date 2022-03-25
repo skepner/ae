@@ -11,8 +11,7 @@ def main(args: argparse.Namespace):
     while True:
         print(f"Stress: {projection.stress():.6f}")
         result = chart.grid_test()
-        if cnt := result.count_trapped_hemisphering():
-            print(f"cnt {cnt}")
+        if cnt := result.count_trapped():
             for en in result.trapped_hemisphering():
                 print(en)
             result.apply(projection)

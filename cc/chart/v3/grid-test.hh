@@ -43,6 +43,10 @@ namespace ae::chart::v3
             {
                 return std::count_if(data_.begin(), data_.end(), [](const auto& r) { return r.diagnosis == result_t::trapped || r.diagnosis == result_t::hemisphering; });
             }
+            size_t count_trapped() const
+            {
+                return std::count_if(data_.begin(), data_.end(), [](const auto& r) { return r.diagnosis == result_t::trapped; });
+            }
 
             void apply(Layout& layout) const; // move points to their better locations
             void apply(Projection& projection) const; // move points to their better locations
