@@ -18,9 +18,13 @@ ae::chart::v3::grid_test::results_t ae::chart::v3::grid_test::test(const Chart& 
 {
     const auto& projection = chart.projections()[projection_no];
     results_t results(projection);
-    auto stress = stress_factory(chart, projection, optimization_options{}.mult);
+    const auto stress = stress_factory(chart, projection, optimization_options{}.mult);
 
-#pragma omp parallel for default(none) shared(results, chart, stress, projection, settings) num_threads(settings.threads == 0 ? omp_get_max_threads() : settings.threads) schedule(static, chart.antigens().size() < antigen_index{1000} ? 4 : 1)
+#ifdef _OPENMP
+    const int num_threads = settings.threads <= 0 ? omp_get_max_threads() : settings.threads;
+    const int slot_size = chart.antigens().size() < antigen_index{1000} ? 4 : 1;
+#endif
+#pragma omp parallel for default(shared) num_threads(num_threads) schedule(static, slot_size)
     for (size_t entry_no = 0; entry_no < results.size(); ++entry_no)
         test(results[entry_no], projection, stress, settings);
 
@@ -45,14 +49,14 @@ void ae::chart::v3::grid_test::test(result_t& result, const Projection& projecti
 
         result.diagnosis = result_t::normal;
 
-        Layout layout(projection.layout());
+        Layout layout{projection.layout()};
         const auto target_contribution = stress.contribution(result.point_no, table_distances_for_point, layout);
-        const auto original_pos = projection.layout().at(result.point_no);
+        const auto original_pos = layout.at(result.point_no).copy();
         auto best_contribution = target_contribution;
-        point_coordinates best_coord(original_pos.number_of_dimensions()), hemisphering_coord(original_pos.number_of_dimensions());
+        point_coordinates best_coord, hemisphering_coord;
         const auto hemisphering_stress_thresholdrough = hemisphering_stress_threshold * 2;
         auto hemisphering_contribution = target_contribution + hemisphering_stress_thresholdrough;
-        const auto area = area_for(table_distances_for_point, projection.layout());
+        const auto area = area_for(table_distances_for_point, layout);
         for (auto it = area.begin(settings.step), last = area.end(); it != last; ++it) {
             // AD_DEBUG("grid_test iter {}", *it);
             layout.update(result.point_no, *it);
@@ -69,7 +73,7 @@ void ae::chart::v3::grid_test::test(result_t& result, const Projection& projecti
         if (best_coord.exists()) {
             layout.update(result.point_no, best_coord);
             const auto status = optimize(options.method, stress, layout.span(), optimization_precision::rough);
-            result.pos = layout.at(result.point_no);
+            result.pos = layout.at(result.point_no).copy();
             result.distance = distance(original_pos, result.pos);
             result.contribution_diff = status.final_stress - projection.stress();
             result.diagnosis = std::abs(result.contribution_diff) > hemisphering_stress_threshold ? result_t::trapped : result_t::hemisphering;
@@ -78,11 +82,11 @@ void ae::chart::v3::grid_test::test(result_t& result, const Projection& projecti
             // relax to find real contribution
             layout.update(result.point_no, hemisphering_coord);
             auto status = optimize(options.method, stress, layout.span(), optimization_precision::rough);
-            result.pos = layout.at(result.point_no);
+            result.pos = layout.at(result.point_no).copy();
             result.distance = distance(original_pos, result.pos);
             if (result.distance > hemisphering_distance_threshold && result.distance < (hemisphering_distance_threshold * 1.2)) {
                 status = optimize(options.method, stress, layout.span(), optimization_precision::fine);
-                result.pos = layout.at(result.point_no);
+                result.pos = layout.at(result.point_no).copy();
                 result.distance = distance(original_pos, result.pos);
             }
             result.contribution_diff = status.final_stress - projection.stress();
@@ -176,5 +180,24 @@ std::vector<ae::chart::v3::grid_test::result_t> ae::chart::v3::grid_test::result
     return th;
 
 } // ae::chart::v3::grid_test::trapped_hemisphering
+
+// ----------------------------------------------------------------------
+
+void ae::chart::v3::grid_test::results_t::apply(Layout& layout) const
+{
+    for (const auto& result : data_) {
+        if (result.pos.exists() && result.contribution_diff < 0.0)
+            layout.update(result.point_no, result.pos);
+    }
+
+} // ae::chart::v3::grid_test::results_t::apply
+
+// ----------------------------------------------------------------------
+
+void ae::chart::v3::grid_test::results_t::apply(Projection& projection) const // move points to their better locations
+{
+    apply(projection.layout());
+
+} // ae::chart::v3::grid_test::results_t::apply
 
 // ----------------------------------------------------------------------

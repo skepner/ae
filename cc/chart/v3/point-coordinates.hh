@@ -40,7 +40,7 @@ namespace ae::chart::v3
                 return point_coordinates{std::visit([](const auto& content) { return store_t(content.begin(), content.end()); }, data_)};
             }
 
-        number_of_dimensions_t number_of_dimensions() const { return std::visit([](const auto& content) { return number_of_dimensions_t{content.size()}; }, data_); }
+        number_of_dimensions_t number_of_dimensions() const { return number_of_dimensions_t{size()}; }
 
         double operator[](number_of_dimensions_t dim) const { return std::visit([dim](const auto& content) { return content[*dim]; }, data_); }
         double& operator[](number_of_dimensions_t dim) { return std::visit([dim](auto& content) -> double& { return content[*dim]; }, data_); }
@@ -65,13 +65,15 @@ namespace ae::chart::v3
         point_coordinates& operator*=(double val) { std::transform(begin(), end(), begin(), [val](double v1) { return v1 * val; }); return *this; }
         point_coordinates& operator/=(double val) { std::transform(begin(), end(), begin(), [val](double v1) { return v1 / val; }); return *this; }
 
-        bool empty() const { return std::any_of(begin(), end(), [](auto val) { return std::isnan(val); }); }
+        bool empty() const { return size() == 0 || std::any_of(begin(), end(), [](auto val) { return std::isnan(val); }); }
         bool exists() const { return !empty(); }
 
         std::vector<double> as_vector() const { return {begin(), end()}; }
 
       private:
         std::variant<store_t, ref_t> data_;
+
+        size_t size() const { return std::visit([](const auto& content) { return content.size(); }, data_); }
     };
 
     inline double distance2(const point_coordinates& p1, const point_coordinates& p2)
