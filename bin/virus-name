@@ -10,7 +10,7 @@ def main(args: argparse.Namespace):
     failures = 0
     for name in args.names:
         print(name)
-        res = ae_backend.virus_name_parse(name, trace=args.trace)
+        res = ae_backend.virus.name_parse(name, trace=args.trace)
         if res.good():
             print(res.parts.name())
             if res.messages:

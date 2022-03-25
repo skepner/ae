@@ -664,6 +664,7 @@ static const std::array sHosts{
     "CHICKEN"sv,
     "DUCK"sv,
     "EGRET"sv,
+    "FOX"sv,
     "ROOK"sv,
     "SWINE"sv,
     "TURKEY"sv,
