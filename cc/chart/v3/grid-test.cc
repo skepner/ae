@@ -59,11 +59,11 @@ void ae::chart::v3::grid_test::test(result_t& result, const Projection& projecti
             const auto contribution = stress.contribution(result.point_no, table_distances_for_point, layout);
             if (contribution < best_contribution) {
                 best_contribution = contribution;
-                best_coord = *it;
+                best_coord = it->copy();
             }
             else if (!best_coord.exists() && contribution < hemisphering_contribution && distance(original_pos, *it) > hemisphering_distance_threshold) {
                 hemisphering_contribution = contribution;
-                hemisphering_coord = *it;
+                hemisphering_coord = it->copy();
             }
         }
         if (best_coord.exists()) {

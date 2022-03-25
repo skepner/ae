@@ -264,7 +264,7 @@ namespace ae::py
 
     static inline std::string grid_test_result_str(const ae::chart::v3::grid_test::result_t& res)
     {
-        return fmt::format("{}: {:4d} dist:{:7.4f} diff:{:7.4f}", grid_test_diagnosis(res), *res.point_no, res.distance, res.contribution_diff);
+        return fmt::format("{:>12s}: {:4d} dist:{:7.4f} diff:{:7.4f}", grid_test_diagnosis(res), *res.point_no, res.distance, res.contribution_diff);
     }
 
 } // namespace ae::py
