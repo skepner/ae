@@ -51,7 +51,7 @@ void ae::chart::v3::grid_test::test(result_t& result, const Projection& projecti
 
         Layout layout{projection.layout()};
         const auto target_contribution = stress.contribution(result.point_no, table_distances_for_point, layout);
-        const auto original_pos = layout.at(result.point_no).copy();
+        const point_coordinates original_pos{layout[result.point_no]};
         auto best_contribution = target_contribution;
         point_coordinates best_coord, hemisphering_coord;
         const auto hemisphering_stress_thresholdrough = hemisphering_stress_threshold * 2;
@@ -63,17 +63,17 @@ void ae::chart::v3::grid_test::test(result_t& result, const Projection& projecti
             const auto contribution = stress.contribution(result.point_no, table_distances_for_point, layout);
             if (contribution < best_contribution) {
                 best_contribution = contribution;
-                best_coord = it->copy();
+                best_coord = *it;
             }
             else if (!best_coord.exists() && contribution < hemisphering_contribution && distance(original_pos, *it) > hemisphering_distance_threshold) {
                 hemisphering_contribution = contribution;
-                hemisphering_coord = it->copy();
+                hemisphering_coord = *it;
             }
         }
         if (best_coord.exists()) {
             layout.update(result.point_no, best_coord);
             const auto status = optimize(options.method, stress, layout.span(), optimization_precision::rough);
-            result.pos = layout.at(result.point_no).copy();
+            result.pos = layout[result.point_no];
             result.distance = distance(original_pos, result.pos);
             result.contribution_diff = status.final_stress - projection.stress();
             result.diagnosis = std::abs(result.contribution_diff) > hemisphering_stress_threshold ? result_t::trapped : result_t::hemisphering;
@@ -82,11 +82,11 @@ void ae::chart::v3::grid_test::test(result_t& result, const Projection& projecti
             // relax to find real contribution
             layout.update(result.point_no, hemisphering_coord);
             auto status = optimize(options.method, stress, layout.span(), optimization_precision::rough);
-            result.pos = layout.at(result.point_no).copy();
+            result.pos = layout[result.point_no];
             result.distance = distance(original_pos, result.pos);
             if (result.distance > hemisphering_distance_threshold && result.distance < (hemisphering_distance_threshold * 1.2)) {
                 status = optimize(options.method, stress, layout.span(), optimization_precision::fine);
-                result.pos = layout.at(result.point_no).copy();
+                result.pos = layout[result.point_no];
                 result.distance = distance(original_pos, result.pos);
             }
             result.contribution_diff = status.final_stress - projection.stress();
@@ -115,9 +115,9 @@ ae::chart::v3::Area ae::chart::v3::grid_test::area_for(const Stress::TableDistan
         another_point = table_distances_for_point.less_than.front().another_point;
     else
         throw std::runtime_error("ae::chart::v3::grid_test::::area_for: table_distances_for_point has neither regulr nor less_than entries");
-    Area area(layout.at(another_point));
+    Area area(layout[another_point]);
     auto extend = [&area, &layout](const auto& entry) {
-        const auto coord = layout.at(entry.another_point);
+        const auto coord = layout[entry.another_point];
         const auto radius = entry.distance; // + 1;
         area.extend(coord - radius);
         area.extend(coord + radius);

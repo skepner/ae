@@ -37,18 +37,19 @@ namespace ae::chart::v3
             number_of_dimensions_ = num_dim;
         }
 
-        auto iterator(point_index point_no) { return std::next(data_.begin(), static_cast<point_coordinates::ref_t::difference_type>(point_no.get() * number_of_dimensions_.get())); }
-        auto iterator(point_index point_no) const { return std::next(data_.begin(), static_cast<point_coordinates::ref_t::difference_type>(point_no.get() * number_of_dimensions_.get())); }
+        auto iterator(point_index point_no) { return std::next(data_.begin(), static_cast<point_coordinates_ref::diff_t>(point_no.get() * number_of_dimensions_.get())); }
+        auto iterator(point_index point_no) const { return std::next(data_.begin(), static_cast<point_coordinates_ref::diff_t>(point_no.get() * number_of_dimensions_.get())); }
 
-        point_coordinates operator[](point_index point_no) { return point_coordinates::ref_t(&*iterator(point_no), number_of_dimensions_.get()); }
-        point_coordinates at(point_index point_no) const { return const_cast<Layout*>(this)->operator[](point_no); }
+        point_coordinates_ref operator[](point_index point_no) { return point_coordinates_ref(iterator(point_no), number_of_dimensions_); }
+        point_coordinates_ref_const operator[](point_index point_no) const { return point_coordinates_ref_const(iterator(point_no), number_of_dimensions_); }
+        // point_coordinates_ref_const at(point_index point_no) const { return operator[](point_no); }
 
         double operator()(point_index point_no, number_of_dimensions_t aDimensionNo) const { return data_[point_no.get() * number_of_dimensions_.get() + aDimensionNo.get()]; }
         double& operator()(point_index point_no, number_of_dimensions_t aDimensionNo) { return data_[point_no.get() * number_of_dimensions_.get() + aDimensionNo.get()]; }
 
-        bool point_has_coordinates(point_index point_no) const { return at(point_no).exists(); }
+        bool point_has_coordinates(point_index point_no) const { return operator[](point_no).exists(); }
 
-        void update(point_index point_no, const point_coordinates& point)
+        template <typename Storage> void update(point_index point_no, const point_coordinates_with_storage<Storage>& point)
         {
             assert(point_no < number_of_points());
             assert(point.number_of_dimensions() == number_of_dimensions());
@@ -61,55 +62,22 @@ namespace ae::chart::v3
             std::for_each(iterator(point_no), iterator(point_no + point_index{1}), [](auto& target) { target = point_coordinates::nan; });
         }
 
-        // void remove_points(const ReverseSortedIndexes& indexes, size_t base)
-        // {
-        //     for (const auto index : indexes) {
-        //         const auto first = Vec::begin() + static_cast<difference_type>((index + base) * static_cast<size_t>(number_of_dimensions_));
-        //         erase(first, first + static_cast<difference_type>(*number_of_dimensions_));
-        //     }
-        // }
-
-        // void insert_point(size_t before, size_t base)
-        // {
-        //     insert(Vec::begin() + static_cast<difference_type>((before + base) * static_cast<size_t>(number_of_dimensions_)), *number_of_dimensions_, std::numeric_limits<double>::quiet_NaN());
-        // }
-
-        // size_t append_point()
-        // {
-        //     insert(Vec::end(), *number_of_dimensions_, std::numeric_limits<double>::quiet_NaN());
-        //     return number_of_points() - 1;
-        // }
-
         std::vector<std::pair<double, double>> minmax() const;
 
         double distance(point_index p1, point_index p2, double no_distance = point_coordinates::nan) const
         {
-            if (const auto c1 = at(p1), c2 = at(p2); c1.exists() && c2.exists())
+            if (const auto c1 = operator[](p1), c2 = operator[](p2); c1.exists() && c2.exists())
                 return ae::chart::v3::distance(c1, c2);
             else
                 return no_distance;
         }
 
         // returns indexes for min points for each dimension and max points for each dimension
-        std::pair<std::vector<ae::point_index>, std::vector<ae::point_index>> min_max_point_indexes() const;
+        // std::pair<std::vector<ae::point_index>, std::vector<ae::point_index>> min_max_point_indexes() const;
         // returns boundary coordinates (min and max)
 
         Layout transform(const Transformation& aTransformation) const;
         // point_coordinates centroid() const;
-
-        // LayoutConstIterator begin() const { return {*this, 0}; }
-        // LayoutConstIterator end() const { return {*this, number_of_points()}; }
-        // LayoutConstIterator begin_antigens(size_t /*number_of_antigens*/) const { return {*this, 0}; }
-        // LayoutConstIterator end_antigens(size_t number_of_antigens) const { return {*this, number_of_antigens}; }
-        // LayoutConstIterator begin_sera(size_t number_of_antigens) const { return {*this, number_of_antigens}; }
-        // LayoutConstIterator end_sera(size_t /*number_of_antigens*/) const { return {*this, number_of_points()}; }
-
-        // LayoutDimensionConstIterator begin_dimension(number_of_dimensions_t dimension_no) const { return {*this, 0, dimension_no}; }
-        // LayoutDimensionConstIterator end_dimension(number_of_dimensions_t dimension_no) const { return {*this, number_of_points(), dimension_no}; }
-        // LayoutDimensionConstIterator begin_antigens_dimension(size_t /*number_of_antigens*/, number_of_dimensions_t dimension_no) const { return {*this, 0, dimension_no}; }
-        // LayoutDimensionConstIterator end_antigens_dimension(size_t number_of_antigens, number_of_dimensions_t dimension_no) const { return {*this, number_of_antigens, dimension_no}; }
-        // LayoutDimensionConstIterator begin_sera_dimension(size_t number_of_antigens, number_of_dimensions_t dimension_no) const { return {*this, number_of_antigens, dimension_no}; }
-        // LayoutDimensionConstIterator end_sera_dimension(size_t /*number_of_antigens*/, number_of_dimensions_t dimension_no) const { return {*this, number_of_points(), dimension_no}; }
 
         // import from ace
         void number_of_dimensions(number_of_dimensions_t num_dim) { number_of_dimensions_ = num_dim; }

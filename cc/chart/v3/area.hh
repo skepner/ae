@@ -10,8 +10,8 @@ namespace ae::chart::v3
     {
         point_coordinates min, max;
 
-        Area(const point_coordinates& a_min, const point_coordinates& a_max) : min{a_min.copy()}, max{a_max.copy()} {}
-        Area(const point_coordinates& a_min) : min{a_min.copy()}, max{a_min.copy()} {}
+        template <typename Storage> Area(const point_coordinates_with_storage<Storage>& a_min, const point_coordinates_with_storage<Storage>& a_max) : min{a_min}, max{a_max} {}
+        template <typename Storage> Area(const point_coordinates_with_storage<Storage>& a_min) : min{a_min}, max{a_min} {}
 
         number_of_dimensions_t num_dim() const { return min.number_of_dimensions(); }
 
@@ -40,16 +40,16 @@ namespace ae::chart::v3
             bool operator==(const Iterator& rhs) const
             {
                 if (std::isnan(rhs.step_))
-                    return std::isnan(current_.x());
+                    return std::isnan(current_[DIMX]);
                 else if (std::isnan(step_))
-                    return std::isnan(rhs.current_.x());
+                    return std::isnan(rhs.current_[DIMX]);
                 else
                     throw std::runtime_error("cannot compare Area::Iterators");
             }
 
             const Iterator& operator++()
             {
-                if (!std::isnan(current_.x())) {
+                if (!std::isnan(current_[DIMX])) {
                     for (const auto dim : current_.number_of_dimensions()) {
                         current_[dim] += step_;
                         if (current_[dim] > max_[dim] && (dim + number_of_dimensions_t{1}) < current_.number_of_dimensions())
@@ -58,7 +58,7 @@ namespace ae::chart::v3
                             break;
                     }
                     if (current_.back() > max_.back())
-                        current_.x(point_coordinates::nan); // end
+                        current_.set_nan(); // end
                 }
                 return *this;
             }
@@ -68,7 +68,7 @@ namespace ae::chart::v3
             point_coordinates min_, max_, current_;
 
             friend struct Area;
-            Iterator(double step, const point_coordinates& a_min, const point_coordinates& a_max) : step_{step}, min_{a_min}, max_{a_max}, current_{a_min.copy()} {}
+            Iterator(double step, const point_coordinates& a_min, const point_coordinates& a_max) : step_{step}, min_{a_min}, max_{a_max}, current_{a_min} {}
         };
 
         Iterator begin(double step) const { return Iterator{step, min, max}; }
@@ -81,7 +81,7 @@ namespace ae::chart::v3
 
     class Layout;
 
-    Area area(const Layout& layout);                                  // for all points
+    Area area(const Layout& layout);                                    // for all points
     Area area(const Layout& layout, const std::vector<size_t>& points); // just for the specified point indexes
 
 } // namespace ae::chart::v3

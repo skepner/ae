@@ -186,16 +186,16 @@ namespace ae::chart::v3
 
         // 2D and 3D --------------------------------------------------
 
-        point_coordinates transform(const point_coordinates& source) const
+        template <typename Storage> point_coordinates transform(const point_coordinates_with_storage<Storage>& source) const
         {
             switch (*source.number_of_dimensions()) {
                 case 2:
-                    return point_coordinates{source.x() * a() + source.y() * c(), source.x() * b() + source.y() * d()};
+                    return point_coordinates{source[DIMX] * a() + source[DIMY] * c(), source[DIMX] * b() + source[DIMY] * d()};
                 case 3:
                     return point_coordinates{
-                        source.x() * _x(0, 0) + source.y() * _x(1, 0) + source.z() * _x(2, 0),
-                        source.x() * _x(0, 1) + source.y() * _x(1, 1) + source.z() * _x(2, 1),
-                        source.x() * _x(0, 2) + source.y() * _x(1, 2) + source.z() * _x(2, 2)
+                        source[DIMX] * _x(0, 0) + source[DIMY] * _x(1, 0) + source[DIMZ] * _x(2, 0),
+                        source[DIMX] * _x(0, 1) + source[DIMY] * _x(1, 1) + source[DIMZ] * _x(2, 1),
+                        source[DIMX] * _x(0, 2) + source[DIMY] * _x(1, 2) + source[DIMZ] * _x(2, 2)
                     };
             }
             throw std::runtime_error{AD_FORMAT("invalid number_of_dimensions in point_coordinates")};
@@ -207,7 +207,9 @@ namespace ae::chart::v3
                 *first = transform(*first);
         }
 
-        // 3D --------------------------------------------------
+        // 3D only --------------------------------------------------
+
+        // ----------------------------------------------------------------------
 
         number_of_dimensions_t number_of_dimensions{2};
 

@@ -19,38 +19,36 @@ namespace ae
       public:
         using value_type = size_t;
 
-        explicit index_tt() : value_{0} {}
-        index_tt(index_tt_invalid_) : value_{static_cast<value_type>(-1)} {}
-        index_tt(const index_tt&) = default;
-        index_tt(index_tt&&) = default;
-        template <typename T2>
-        requires std::constructible_from<value_type, T2>
-        explicit index_tt(T2&& value) : value_(std::forward<T2>(value)) {}
+        explicit constexpr index_tt() : value_{0} {}
+        constexpr index_tt(index_tt_invalid_) : value_{static_cast<value_type>(-1)} {}
+        constexpr index_tt(const index_tt&) = default;
+        constexpr index_tt(index_tt&&) = default;
+        template <typename T2> requires std::constructible_from<value_type, T2> constexpr explicit index_tt(T2&& value) : value_(std::forward<T2>(value)) {}
 
-        index_tt& operator=(const index_tt&) = default;
-        index_tt& operator=(index_tt&&) = default;
-        template <typename T2>
-        requires std::assignable_from<value_type&, T2> index_tt& operator=(const T2& value)
+        constexpr index_tt& operator=(const index_tt&) = default;
+        constexpr index_tt& operator=(index_tt&&) = default;
+
+        template <typename T2> requires std::assignable_from<value_type&, T2> index_tt& operator=(const T2& value)
         {
             value_ = value;
             return *this;
         }
-        template <typename T2>
-        requires std::assignable_from<value_type&, T2> index_tt& operator=(T2&& value)
+
+        template <typename T2> requires std::assignable_from<value_type&, T2> index_tt& operator=(T2&& value)
         {
             value_ = std::move(value);
             return *this;
         }
 
-        auto operator<=>(const index_tt&) const = default;
+        constexpr auto operator<=>(const index_tt&) const = default;
 
-        value_type& get() noexcept { return value_; }
-        const value_type& get() const noexcept { return value_; }
-        value_type& operator*() noexcept { return value_; }
-        const value_type& operator*() const noexcept { return value_; }
-        const value_type* operator->() const noexcept { return &value_; }
-        explicit operator value_type&() noexcept { return value_; }
-        explicit operator const value_type&() const noexcept { return value_; }
+        constexpr value_type& get() noexcept { return value_; }
+        constexpr const value_type& get() const noexcept { return value_; }
+        constexpr value_type& operator*() noexcept { return value_; }
+        constexpr const value_type& operator*() const noexcept { return value_; }
+        constexpr const value_type* operator->() const noexcept { return &value_; }
+        explicit constexpr operator value_type&() noexcept { return value_; }
+        explicit constexpr operator const value_type&() const noexcept { return value_; }
 
         index_tt<Tag>& operator++()
         {
@@ -156,7 +154,12 @@ namespace ae
     using layer_index = index_tt<struct layer_index_tag>;
 
     using number_of_dimensions_t = index_tt<struct number_of_dimensions_tag>;
-    inline bool valid(number_of_dimensions_t nd) { return nd.get() > 0; }
+    inline constexpr bool valid(number_of_dimensions_t nd) { return nd.get() > 0; }
+    inline constexpr const number_of_dimensions_t DIMX{0};
+    inline constexpr const number_of_dimensions_t DIMY{1};
+    inline constexpr const number_of_dimensions_t DIMZ{2};
+    inline constexpr const number_of_dimensions_t DIM2{2};
+    inline constexpr const number_of_dimensions_t DIM3{3};
 
     // inline antigen_index operator+(antigen_index ag1, antigen_index ag2) { return antigen_index{ag1.get() + ag2.get()}; }
     // inline serum_index operator+(serum_index sr1, serum_index sr2) { return serum_index{sr1.get() + sr2.get()}; }

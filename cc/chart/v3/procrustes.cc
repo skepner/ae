@@ -205,7 +205,7 @@ ae::chart::v3::procrustes_data_t ae::chart::v3::procrustes(const Projection& pri
     procrustes_data.rms = 0.0;
     size_t num_rows = 0;
     for (const auto& cp : common_without_disconnected) {
-        if (const auto pc = primary_layout.at(cp.first), sc = procrustes_data.secondary_transformed.at(cp.second); pc.exists() && sc.exists()) {
+        if (const point_coordinates_ref_const pc{primary_layout[cp.first]}, sc{procrustes_data.secondary_transformed[cp.second]}; pc.exists() && sc.exists()) {
             ++num_rows;
             procrustes_data.rms += accumulate(number_of_dimensions, [&pc, &sc](aint_t dim) { return square(pc[number_of_dimensions_t{dim}] - sc[number_of_dimensions_t{dim}]); });
             // std::cerr << cp.primary << ' ' << cp.secondary << ' ' << procrustes_data.rms << '\n';
@@ -226,7 +226,7 @@ ae::chart::v3::Layout ae::chart::v3::procrustes_data_t::apply(const Layout& sour
 
     // multiply source by transformation
     for (const auto row_no : source.number_of_points()) {
-        if (const auto row = source.at(row_no); row.exists()) {
+        if (const auto row = source[row_no]; row.exists()) {
             for (const auto dim : transformation.number_of_dimensions) {
                 auto sum_squares = [&source, this, row_no, dim](aint_t index) { return source(row_no, number_of_dimensions_t{index}) * this->transformation(index, cint(dim)); };
                 result(row_no, dim) = accumulate(source.number_of_dimensions(), sum_squares) + transformation.translation(dim);

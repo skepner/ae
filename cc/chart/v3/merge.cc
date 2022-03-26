@@ -343,15 +343,15 @@ void ae::chart::v3::merge_projections_type3(Chart& merge, const Chart& chart1, c
 
     for (const auto& [index2, merge_index_common] : merge_data.antigens_secondary_target()) {
         if (merge_index_common.common)
-            merge_layout.update(to_point_index(merge_index_common.index), middle(layout2.at(to_point_index(index2)), merge_layout.at(to_point_index(merge_index_common.index))));
+            merge_layout.update(to_point_index(merge_index_common.index), middle(layout2[to_point_index(index2)], merge_layout[to_point_index(merge_index_common.index)]));
         else
-            merge_layout.update(to_point_index(merge_index_common.index), layout2.at(to_point_index(index2)));
+            merge_layout.update(to_point_index(merge_index_common.index), layout2[to_point_index(index2)]);
     }
     for (const auto& [index2, merge_index_common] : merge_data.sera_secondary_target()) {
         if (merge_index_common.common)
-            merge_layout.update(merge.antigens().size() + merge_index_common.index, middle(layout2.at(chart2.antigens().size() + index2), merge_layout.at(merge.antigens().size() + merge_index_common.index)));
+            merge_layout.update(merge.antigens().size() + merge_index_common.index, middle(layout2[chart2.antigens().size() + index2], merge_layout[merge.antigens().size() + merge_index_common.index]));
         else
-            merge_layout.update(merge.antigens().size() + merge_index_common.index, layout2.at(chart2.antigens().size() + index2));
+            merge_layout.update(merge.antigens().size() + merge_index_common.index, layout2[chart2.antigens().size() + index2]);
     }
 
     merge_set_disconnected(merge, merge_projection, chart1, chart2, merge_data);
@@ -368,11 +368,11 @@ void ae::chart::v3::merge_projections_type5(Chart& merge, const Chart& chart1, c
 
     for (const auto& [index2, merge_index_common] : merge_data.antigens_secondary_target()) {
         if (!merge_index_common.common)
-            merge_layout.update(to_point_index(merge_index_common.index), layout2.at(to_point_index(index2)));
+            merge_layout.update(to_point_index(merge_index_common.index), layout2[to_point_index(index2)]);
     }
     for (const auto& [index2, merge_index_common] : merge_data.sera_secondary_target()) {
         if (!merge_index_common.common)
-            merge_layout.update(merge.antigens().size() + merge_index_common.index, layout2.at(chart2.antigens().size() + index2));
+            merge_layout.update(merge.antigens().size() + merge_index_common.index, layout2[chart2.antigens().size() + index2]);
     }
 
     merge_set_disconnected(merge, merge_projection, chart1, chart2, merge_data);
@@ -439,9 +439,9 @@ void ae::chart::v3::relax_type4_type5(const merge_data_t& merge_data, Chart& cha
 void ae::chart::v3::copy_layout(const Layout& source, Layout& target, antigen_index source_number_of_antigens, antigen_index target_number_of_antigens)
 {
     for (const auto ag_no : source_number_of_antigens)
-        target.update(to_point_index(ag_no), source.at(to_point_index(ag_no)));
+        target.update(to_point_index(ag_no), source[to_point_index(ag_no)]);
     for (const auto sr_no : serum_index{*source.number_of_points() - *source_number_of_antigens})
-        target.update(target_number_of_antigens + sr_no, source.at(source_number_of_antigens + sr_no));
+        target.update(target_number_of_antigens + sr_no, source[source_number_of_antigens + sr_no]);
 
 } // ae::chart::v3::copy_layout
 

@@ -18,20 +18,20 @@ namespace ae::draw::v2
         LineDefinedByEquation() = default;
         LineDefinedByEquation(const LineDefinedByEquation&) = default;
         LineDefinedByEquation(double slope, double intercept) : slope_{slope}, intercept_{intercept} {}
-        LineDefinedByEquation(const point_coordinates& p1, const point_coordinates& p2) : slope_{(p1.y() - p2.y()) / (p1.x() - p2.x())}, intercept_{p1.y() - slope_ * p1.x()} {}
+        LineDefinedByEquation(const point_coordinates& p1, const point_coordinates& p2) : slope_{(p1[DIMY] - p2[DIMY]) / (p1[DIMX] - p2[DIMX])}, intercept_{p1[DIMY] - slope_ * p1[DIMX]} {}
         LineDefinedByEquation& operator=(const LineDefinedByEquation&) = default;
 
         double slope() const { return slope_; }
         double intercept() const { return intercept_; }
 
         // https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
-        double distance_with_direction(const point_coordinates& point) const { return (slope() * point.x() - point.y() + intercept()) / std::sqrt(a2b2()); }
+        double distance_with_direction(const point_coordinates& point) const { return (slope() * point[DIMX] - point[DIMY] + intercept()) / std::sqrt(a2b2()); }
 
         double distance_to(const point_coordinates& point) const { return std::abs(distance_with_direction(point)); }
 
         point_coordinates project_on(const point_coordinates& source) const
         {
-            return {(source.x() + slope() * source.y() - slope() * intercept()) / a2b2(), (slope() * (source.x() + slope() * source.y()) + intercept()) / a2b2()};
+            return {(source[DIMX] + slope() * source[DIMY] - slope() * intercept()) / a2b2(), (slope() * (source[DIMX] + slope() * source[DIMY]) + intercept()) / a2b2()};
         }
 
         point_coordinates flip_over(const point_coordinates& source, double scale = 1.0) const { return source + (project_on(source) - source) * (1.0 + scale); }

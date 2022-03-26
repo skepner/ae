@@ -176,7 +176,7 @@ inline void read_sera(ae::chart::v3::Sera& target, ::simdjson::ondemand::array s
 inline ae::serum_index read_sparse(ae::chart::v3::Titers::sparse_t& target, ::simdjson::ondemand::array source)
 {
     ae::serum_index number_of_sera{0};
-    ae::antigen_index ag_no{0};
+    // ae::antigen_index ag_no{0};
     for (auto row : source) {
         auto& target_row = target.emplace_back();
         for (auto source_entry : row.get_object()) {

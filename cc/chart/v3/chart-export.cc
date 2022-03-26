@@ -323,7 +323,7 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
                 if (point_no != point_index{0})
                     fmt::format_to(std::back_inserter(out), ",");
                 fmt::format_to(std::back_inserter(out), "\n     [");
-                if (const auto point = layout.at(point_no); point.exists()) {
+                if (const auto point = layout[point_no]; point.exists()) {
                     bool comma9 = false;
                     for (const auto coord : point) {
                         comma9 = put_comma(comma9);
