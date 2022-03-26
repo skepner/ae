@@ -39,6 +39,8 @@ namespace ae::py
             projection.relax(*chart, ae::chart::v3::optimization_options{.precision = precision});
             return projection.stress(*chart);
         }
+
+        auto avidity_test(double adjust_step, double min_adjust, double max_adjust, bool rough) { return 0; }
     };
 
     struct InfoRef
@@ -310,8 +312,12 @@ void ae::py::chart_v3(pybind11::module_& mdl)
         .def(
             "projection",
             [](std::shared_ptr<Chart> chart, size_t projection_no) {
-                if (projection_index{projection_no} >= chart->projections().size())
-                    throw std::invalid_argument{fmt::format("invalid projection_no {}, number of projections in chart: {}", projection_no, chart->projections().size())};
+                if (projection_index{projection_no} >= chart->projections().size()) {
+                    if (chart->projections().empty())
+                        throw std::invalid_argument{"chart has no projections"};
+                    else
+                        throw std::invalid_argument{fmt::format("invalid projection no: {}, number of projections in chart: {}", projection_no, chart->projections().size())};
+                }
                 return new ProjectionRef{chart, chart->projections()[projection_index{projection_no}]}; // owned by python program
             },
             "projection_no"_a = 0) //
@@ -669,6 +675,7 @@ void ae::py::chart_v3(pybind11::module_& mdl)
         .def("transformation", &ProjectionRef::transformation, pybind11::return_value_policy::reference_internal) //
         .def(
             "relax", [](ProjectionRef& projection, bool rough) { return projection.relax(rough ? optimization_precision::rough : optimization_precision::fine); }, "rough"_a = false) //
+        .def("avidity_test", &ProjectionRef::avidity_test, "adjust_step"_a, "min_adjust"_a, "max_adjust"_a, "rough"_a)                                                                //
         ;
 
     pybind11::class_<Layout>(chart_v3_submodule, "Layout")                                                          //
