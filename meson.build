@@ -80,6 +80,8 @@ sources_py = [
   'cc/py/tree.cc',
   'cc/py/whocc.cc',
   'cc/py/chart-v3.cc',
+  'cc/py/chart-v3-antigens.cc',
+  'cc/py/chart-v3-tests.cc',
   'cc/py/chart-v2.cc',
   'cc/py/utils.cc',
 ]
