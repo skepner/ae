@@ -162,6 +162,7 @@ sources_chart_v3 = [
   'cc/chart/v3/merge.cc',
   'cc/chart/v3/procrustes.cc',
   'cc/chart/v3/grid-test.cc',
+  'cc/chart/v3/avidity-test.cc',
 ]
 
 sources_chart_v2 = [

@@ -4,6 +4,7 @@
 #include "chart/v3/merge.hh"
 #include "chart/v3/procrustes.hh"
 #include "chart/v3/grid-test.hh"
+#include "chart/v3/avidity-test.hh"
 #include "pybind11/detail/common.h"
 
 // ======================================================================
@@ -40,7 +41,11 @@ namespace ae::py
             return projection.stress(*chart);
         }
 
-        auto avidity_test(double adjust_step, double min_adjust, double max_adjust, bool rough) { return 0; }
+        ae::chart::v3::avidity_test::results_t avidity_test(double adjust_step, double min_adjust, double max_adjust, bool rough)
+        {
+            return ae::chart::v3::avidity_test::test(*chart, projection,
+                                                     ae::chart::v3::avidity_test::settings_t{.adjust_step = adjust_step, .min_adjust = min_adjust, .max_adjust = max_adjust, .rough = rough});
+        }
     };
 
     struct InfoRef
