@@ -51,6 +51,7 @@ namespace ae::chart::v3
         double& operator()(antigen_index antigen_no, number_of_dimensions_t aDimensionNo) { return operator()(to_point_index(antigen_no), aDimensionNo); }
 
         bool point_has_coordinates(point_index point_no) const { return operator[](point_no).exists(); }
+        bool point_has_coordinates(antigen_index antigen_no) const { return point_has_coordinates(to_point_index(antigen_no)); }
 
         template <typename Storage> void update(point_index point_no, const point_coordinates_with_storage<Storage>& point)
         {

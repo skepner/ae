@@ -8,7 +8,7 @@
 namespace ae::chart::v3
 {
     using serum_circle_fold = named_double_t<struct serum_circle_fold_tag>;
-    enum class serum_circle_failure_reason { not_calculated, good, non_regular_homologous_titer, titer_too_low, serum_disconnected, antigen_disconnected };
+    enum class serum_circle_status { not_calculated, good, non_regular_homologous_titer, titer_too_low, serum_disconnected, antigen_disconnected };
 
     struct serum_circle_antigen_t
     {
@@ -16,7 +16,7 @@ namespace ae::chart::v3
         Titer titer;
         std::optional<double> theoretical{};
         std::optional<double> empirical{};
-        serum_circle_failure_reason reason{serum_circle_failure_reason::not_calculated};
+        serum_circle_status status{serum_circle_status::not_calculated};
         double min_radius{2.0}; // Derek 2020-09-16 13:16 (Influenza B report and sig pages)
 
         bool valid_theoretical() const { return theoretical.has_value(); }
