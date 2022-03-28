@@ -49,6 +49,9 @@ namespace ae::chart::v3
             const per_adjust_t* best_adjust() const;
             void post_process();
 
+            auto begin() const { return adjusts.begin(); }
+            auto end() const { return adjusts.end(); }
+
             antigen_index antigen_no{};
             double best_logged_adjust{0.0};
             point_coordinates_ref_const original{};

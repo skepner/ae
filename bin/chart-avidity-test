@@ -9,7 +9,14 @@ def main(args: argparse.Namespace):
     chart = ae_backend.chart_v3.Chart(args.chart)
     results = chart.projection(args.projection).avidity_test(adjust_step=args.adjust_step, min_adjust=args.min_adjust, max_adjust=args.max_adjust, rough=args.rough)
     for res in results:
-        print(f"AG {res.antigen_no:4d}\n   {res.best_adjust()}")
+        print(f"AG {res.antigen_no:4d}")
+        if ba := res.best_adjust():
+            print(f"    {ba.logged_adjust:4.1f}  diff: {ba.stress_diff:7.4f}  dist: {ba.distance_test_antigen:7.4f}  angle: {ba.angle_test_antigen:7.4f}  aver_pc_dist: {ba.average_procrustes_distances_except_test_antigen:7.4f}")
+        else:
+            print("    no adjust")
+        for adj in res:
+            print(f"        {adj.logged_adjust:4.1f}  diff: {adj.stress_diff:7.4f}  dist: {adj.distance_test_antigen:7.4f}  angle: {adj.angle_test_antigen:7.4f}  aver_pc_dist: {adj.average_procrustes_distances_except_test_antigen:7.4f}")
+        print()
 
 # ----------------------------------------------------------------------
 
