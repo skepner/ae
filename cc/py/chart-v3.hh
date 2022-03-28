@@ -1,5 +1,6 @@
 #include "chart/v3/chart.hh"
 #include "chart/v3/avidity-test.hh"
+#include "chart/v3/serum-circles.hh"
 
 // ----------------------------------------------------------------------
 
@@ -40,8 +41,9 @@ namespace ae::py
             return ae::chart::v3::avidity_test::test(*chart, projection,
                                                      ae::chart::v3::avidity_test::settings_t{.adjust_step = adjust_step, .min_adjust = min_adjust, .max_adjust = max_adjust, .rough = rough});
         }
-    };
 
+        ae::chart::v3::serum_circles_t serum_circles(double fold) { return ae::chart::v3::serum_circles(*chart, projection, ae::chart::v3::serum_circle_fold{fold}); }
+    };
 }
 
 // ----------------------------------------------------------------------

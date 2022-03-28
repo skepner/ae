@@ -3,6 +3,7 @@
 #include "chart/v3/chart.hh"
 #include "chart/v3/common.hh"
 #include "chart/v3/procrustes.hh"
+#include "chart/v3/serum-circles.hh"
 
 // ----------------------------------------------------------------------
 

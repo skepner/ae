@@ -1,0 +1,32 @@
+#! /usr/bin/env python3
+import os, sys, pprint, argparse, traceback
+from pathlib import Path
+import ae_backend
+
+# ----------------------------------------------------------------------
+
+def main(args: argparse.Namespace):
+    chart = ae_backend.chart_v3.Chart(args.chart)
+    results = chart.projection(args.projection).serum_circles(fold=args.fold)
+    print(results)
+    # for res in results:
+    #     print(f"AG {res.antigen_no:4d}")
+
+# ----------------------------------------------------------------------
+
+try:
+    parser = argparse.ArgumentParser(description=__doc__)
+
+    parser.add_argument("chart", type=Path)
+
+    parser.add_argument("--fold", type=float, default=2.0)
+    parser.add_argument("--projection", type=int, default=0)
+
+    args = parser.parse_args()
+    exit_code = main(args) or 0
+except Exception as err:
+    print(f"> {err}\n{traceback.format_exc()}", file=sys.stderr)
+    exit_code = 1
+exit(exit_code)
+
+# ======================================================================

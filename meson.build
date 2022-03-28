@@ -165,6 +165,7 @@ sources_chart_v3 = [
   'cc/chart/v3/procrustes.cc',
   'cc/chart/v3/grid-test.cc',
   'cc/chart/v3/avidity-test.cc',
+  'cc/chart/v3/serum-circles.cc',
 ]
 
 sources_chart_v2 = [

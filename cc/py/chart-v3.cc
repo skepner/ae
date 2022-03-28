@@ -461,6 +461,7 @@ void ae::py::chart_v3(pybind11::module_& mdl)
         .def(
             "relax", [](ProjectionRef& projection, bool rough) { return projection.relax(rough ? optimization_precision::rough : optimization_precision::fine); }, "rough"_a = false) //
         .def("avidity_test", &ProjectionRef::avidity_test, "adjust_step"_a, "min_adjust"_a, "max_adjust"_a, "rough"_a)                                                                //
+        .def("serum_circles", &ProjectionRef::serum_circles, "fold"_a = 2.0)                                                                                                          //
         ;
 
     pybind11::class_<Layout>(chart_v3_submodule, "Layout")                                                          //
@@ -516,7 +517,6 @@ void ae::py::chart_v3(pybind11::module_& mdl)
     chart_v3_submodule.def("procrustes", &ae::py::procrustes, "chart1"_a, "chart2"_a, "common"_a, "scaling"_a = false);
 
     // ----------------------------------------------------------------------
-
 }
 
 // ----------------------------------------------------------------------
