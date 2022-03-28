@@ -14,6 +14,14 @@ ae::chart::v3::common_antigens_sera_t::common_antigens_sera_t(const Chart& prima
 
 // ----------------------------------------------------------------------
 
+ae::chart::v3::common_antigens_sera_t::common_antigens_sera_t(const Chart& primary)
+    : antigens_{primary.antigens()}, sera_{primary.sera()}
+{
+
+} // ae::chart::v3::common_antigens_sera_t::common_antigens_sera_t
+
+// ----------------------------------------------------------------------
+
 std::vector<ae::chart::v3::common_antigens_sera_t::common_t> ae::chart::v3::common_antigens_sera_t::points() const
 {
     const auto ags = antigens();
@@ -39,6 +47,18 @@ template <typename AgSrs> ae::chart::v3::common_data_t<AgSrs>::common_data_t(con
 
 template ae::chart::v3::common_data_t<ae::chart::v3::Antigens>::common_data_t(const Antigens& primary, const Antigens& secondary, antigens_sera_match_level_t match_level);
 template ae::chart::v3::common_data_t<ae::chart::v3::Sera>::common_data_t(const Sera& primary, const Sera& secondary, antigens_sera_match_level_t match_level);
+
+// ----------------------------------------------------------------------
+
+template <typename AgSrs> ae::chart::v3::common_data_t<AgSrs>::common_data_t(const AgSrs& primary)
+    : primary_{primary}, secondary_{primary}, min_number_{primary.size()}
+{
+    for (const auto index : primary_.size())
+        match_.push_back({.primary = index, .secondary = index, .score = score_t::full_match, .use = true});
+}
+
+template ae::chart::v3::common_data_t<ae::chart::v3::Antigens>::common_data_t(const Antigens& primary);
+template ae::chart::v3::common_data_t<ae::chart::v3::Sera>::common_data_t(const Sera& primary);
 
 // ----------------------------------------------------------------------
 

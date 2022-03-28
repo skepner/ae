@@ -42,10 +42,13 @@ namespace ae::chart::v3
 
         point_coordinates_ref operator[](point_index point_no) { return point_coordinates_ref(iterator(point_no), number_of_dimensions_); }
         point_coordinates_ref_const operator[](point_index point_no) const { return point_coordinates_ref_const(iterator(point_no), number_of_dimensions_); }
-        // point_coordinates_ref_const at(point_index point_no) const { return operator[](point_no); }
+        point_coordinates_ref operator[](antigen_index antigen_no) { return operator[](to_point_index(antigen_no)); }
+        point_coordinates_ref_const operator[](antigen_index antigen_no) const { return operator[](to_point_index(antigen_no)); }
 
         double operator()(point_index point_no, number_of_dimensions_t aDimensionNo) const { return data_[point_no.get() * number_of_dimensions_.get() + aDimensionNo.get()]; }
         double& operator()(point_index point_no, number_of_dimensions_t aDimensionNo) { return data_[point_no.get() * number_of_dimensions_.get() + aDimensionNo.get()]; }
+        double operator()(antigen_index antigen_no, number_of_dimensions_t aDimensionNo) const { return operator()(to_point_index(antigen_no), aDimensionNo); }
+        double& operator()(antigen_index antigen_no, number_of_dimensions_t aDimensionNo) { return operator()(to_point_index(antigen_no), aDimensionNo); }
 
         bool point_has_coordinates(point_index point_no) const { return operator[](point_no).exists(); }
 

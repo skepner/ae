@@ -1,5 +1,7 @@
 #include "chart/v3/avidity-test.hh"
 #include "chart/v3/chart.hh"
+#include "chart/v3/common.hh"
+#include "chart/v3/procrustes.hh"
 // #include "chart/v3/stress.hh"
 
 // ----------------------------------------------------------------------
@@ -27,7 +29,7 @@ ae::chart::v3::avidity_test::results_t ae::chart::v3::avidity_test::test(const C
 
 ae::chart::v3::avidity_test::result_t ae::chart::v3::avidity_test::test(const Chart& chart, const Projection& projection, antigen_index antigen_no, const settings_t& settings)
 {
-    result_t result{.antigen_no = antigen_no, .best_logged_adjust = 0.0, .original = projection.layout()[to_point_index(antigen_no)]};
+    result_t result{.antigen_no = antigen_no, .best_logged_adjust = 0.0, .original = projection.layout()[antigen_no]};
     const optimization_options options{.num_threads = settings.threads};
     // low avidity
     for (double adjust = settings.adjust_step; adjust <= settings.max_adjust; adjust += settings.adjust_step)
@@ -53,18 +55,18 @@ ae::chart::v3::avidity_test::per_adjust_t ae::chart::v3::avidity_test::test(cons
     set_logged(avidity_adjusts, antigen_no, logged_adjust);
     projection.comment(fmt::format("avidity {:+.1f} AG {}", logged_adjust, antigen_no));
     const auto status = projection.relax(chart, options);
-    AD_DEBUG("avidity relax AG {} adjust:{:4.1f} stress: {:10.4f} diff: {:8.4f}", antigen_no, logged_adjust, status.final_stress, status.final_stress - original_stress);
+    // AD_DEBUG("avidity relax AG {} adjust:{:4.1f} stress: {:10.4f} diff: {:8.4f}", antigen_no, logged_adjust, status.final_stress, status.final_stress - original_stress);
 
-    // const auto pc_data = procrustes(original_projection, *projection, CommonAntigensSera{chart}.points(), procrustes_scaling_t::no);
-    // // AD_DEBUG("AG {} pc-rms:{}", antigen_no, pc_data.rms);
-    // const auto summary = procrustes_summary(*original_projection.layout(), *pc_data.secondary_transformed,
-    //                                         ProcrustesSummaryParameters{.number_of_antigens = chart.number_of_antigens(), .antigen_being_tested = antigen_no});
+    const auto pc_data = procrustes(original_projection, projection, common_antigens_sera_t{chart}, procrustes_scaling_t::no);
+    // AD_DEBUG("AG {} pc-rms:{}", antigen_no, pc_data.rms);
+    const auto summary = procrustes_summary(original_projection.layout(), pc_data.secondary_transformed,
+                                            procrustes_summary_parameters{.number_of_antigens = chart.antigens().size(), .number_of_sera = chart.sera().size(), .antigen_being_tested = antigen_no});
 
     per_adjust_t result{.logged_adjust = logged_adjust,
-        .distance_test_antigen = -1, // summary.antigen_distances[antigen_no],
-        .angle_test_antigen = -1, //summary.test_antigen_angle,
-        .average_procrustes_distances_except_test_antigen = -1, //summary.average_distance,
-        .final_coordinates{projection.layout()[to_point_index(antigen_no)]},
+        .distance_test_antigen = summary.antigen_distances[*antigen_no],
+        .angle_test_antigen = summary.test_antigen_angle,
+        .average_procrustes_distances_except_test_antigen = summary.average_distance,
+        .final_coordinates{projection.layout()[antigen_no]},
         .stress_diff = status.final_stress - original_stress};
     // size_t most_moved_no{0};
     // for (const auto ag_no : summary.antigens_by_distance) {

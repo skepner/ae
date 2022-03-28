@@ -343,3 +343,57 @@ void ae::chart::v3::singular_value_decomposition(const real_2d_array& matrix, re
 } // ae::chart::v3::singular_value_decomposition
 
 // ----------------------------------------------------------------------
+
+ae::chart::v3::procrustes_summary_t ae::chart::v3::procrustes_summary(const Layout& primary, const Layout& transformed_secondary, const procrustes_summary_parameters& parameters)
+{
+    procrustes_summary_t results{parameters.number_of_antigens, parameters.number_of_sera};
+    double sum_distance = 0;
+    for (const auto ag_no : parameters.number_of_antigens) {
+        const double dist = distance(primary[ag_no], transformed_secondary[ag_no]);
+        // AD_DEBUG("    distance AG {:2d}: {:7.4f}", ag_no, dist);
+        results.antigen_distances[*ag_no] = dist;
+        sum_distance += dist;
+        results.longest_distance = std::max(results.longest_distance, dist);
+    }
+    if (parameters.number_of_antigens > antigen_index{1})
+        results.average_distance = (sum_distance - results.antigen_distances[*parameters.antigen_being_tested]) / static_cast<double>(*parameters.number_of_antigens - 1);
+    else
+        results.average_distance = 0;
+    // AD_DEBUG("average_distance (without AG {}): {:7.4f}", parameters.antigen_being_tested, results.average_distance);
+
+    for (const auto sr_no : range_from_0_to(results.serum_distances.size())) {
+        const double dist = distance(primary[parameters.number_of_antigens + sr_no], transformed_secondary[parameters.number_of_antigens + sr_no]);
+        results.serum_distances[sr_no] = dist;
+        results.longest_distance = std::max(results.longest_distance, dist);
+    }
+
+    if (parameters.number_of_antigens > antigen_index{0}) {
+        for (const auto ag_no : parameters.number_of_antigens)
+            results.antigens_by_distance[*ag_no] = ag_no;
+        std::sort(results.antigens_by_distance.begin(), results.antigens_by_distance.end(), [&results](auto ag1, auto ag2) { return results.antigen_distances[*ag2] < results.antigen_distances[*ag1]; });
+
+        if (const double x_diff = transformed_secondary(parameters.antigen_being_tested, number_of_dimensions_t{0}) - primary(parameters.antigen_being_tested, number_of_dimensions_t{0});
+            !float_zero(x_diff)) {
+            results.test_antigen_angle =
+                std::atan((transformed_secondary(parameters.antigen_being_tested, number_of_dimensions_t{1}) - primary(parameters.antigen_being_tested, number_of_dimensions_t{1})) / x_diff);
+        }
+
+        // if (parameters.vaccine_antigen.has_value()) { // compute only if vaccine antigen is valid
+        //     for (const auto dim : primary.number_of_dimensions())
+        //         results.distance_vaccine_to_test_antigen += square(transformed_secondary(parameters.antigen_being_tested, dim) - transformed_secondary(*parameters.vaccine_antigen, dim));
+        //     results.distance_vaccine_to_test_antigen = std::sqrt(results.distance_vaccine_to_test_antigen);
+
+        //     if (const double xv_diff =
+        //             transformed_secondary(parameters.antigen_being_tested, number_of_dimensions_t{0}) - transformed_secondary(*parameters.vaccine_antigen, number_of_dimensions_t{0});
+        //         !float_zero(xv_diff)) {
+        //         results.angle_vaccine_to_test_antigen = std::atan(
+        //             (transformed_secondary(parameters.antigen_being_tested, number_of_dimensions_t{1}) - transformed_secondary(*parameters.vaccine_antigen, number_of_dimensions_t{1})) / xv_diff);
+        //     }
+        // }
+    }
+
+    return results;
+
+} // ae::chart::v3::procrustes_summary
+
+// ----------------------------------------------------------------------

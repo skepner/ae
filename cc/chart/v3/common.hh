@@ -19,6 +19,7 @@ namespace ae::chart::v3
 
         common_data_t(common_data_t&&) = default;
         common_data_t(const AgSrs& primary, const AgSrs& secondary, antigens_sera_match_level_t match_level);
+        common_data_t(const AgSrs& primary);
 
         std::vector<common_t> common() const;
         indexes_t primary() const;
@@ -74,6 +75,8 @@ namespace ae::chart::v3
 
     extern template common_data_t<Antigens>::common_data_t(const Antigens& primary, const Antigens& secondary, antigens_sera_match_level_t match_level);
     extern template common_data_t<Sera>::common_data_t(const Sera& primary, const Sera& secondary, antigens_sera_match_level_t match_level);
+    extern template common_data_t<Antigens>::common_data_t(const Antigens& primary);
+    extern template common_data_t<Sera>::common_data_t(const Sera& primary);
 
     extern template std::vector<common_data_t<Antigens>::common_t> common_data_t<ae::chart::v3::Antigens>::common() const;
     extern template std::vector<common_data_t<Sera>::common_t> common_data_t<ae::chart::v3::Sera>::common() const;
@@ -104,6 +107,7 @@ namespace ae::chart::v3
 
         common_antigens_sera_t(common_antigens_sera_t&&) = default;
         common_antigens_sera_t(const Chart& primary, const Chart& secondary, antigens_sera_match_level_t match_level);
+        common_antigens_sera_t(const Chart& primary); // procrustes between projections of the same chart
 
         bool empty() const { return antigens_.empty() && sera_.empty(); }
         size_t common_antigens() const { return antigens_.number_of_common(); }
