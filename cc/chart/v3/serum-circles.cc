@@ -138,46 +138,48 @@ void ae::chart::v3::set_empirical(serum_circle_serum_t& serum_data, const Layout
                     else
                         return false;
                 };
+                antigen_indexes antigens_by_distances(*titers.number_of_antigens());
+                std::iota(antigens_by_distances.begin(), antigens_by_distances.end(), antigen_index{0});
                 // antigen_indexes antigens_by_distances(titers.number_of_antigens().begin(), titers.number_of_antigens().end());
-                // std::sort(antigens_by_distances.begin(), antigens_by_distances.end(), antigens_by_distances_sorting);
+                std::sort(antigens_by_distances.begin(), antigens_by_distances.end(), antigens_by_distances_sorting);
 
-                // constexpr const size_t None = static_cast<size_t>(-1);
-                // size_t best_sum = None;
-                // size_t previous = None;
-                // double sum_radii = 0;
-                // size_t num_radii = 0;
-                // for (const auto ag_no : antigens_by_distances) {
-                //     if (!titers_and_distances[*ag_no])
-                //         break;
-                //     const double radius = previous == None ? titers_and_distances[*ag_no].distance : (titers_and_distances[*ag_no].distance + titers_and_distances[previous].distance) / 2.0;
-                //     size_t protected_outside = 0, not_protected_inside = 0; // , protected_inside = 0, not_protected_outside = 0;
-                //     for (const auto& protection_data : titers_and_distances) {
-                //         if (protection_data) {
-                //             const bool inside = protection_data.distance <= radius;
-                //             const bool protectd =
-                //                 protection_data.titer.is_regular() ? protection_data.final_similarity >= protection_boundary_titer : protection_data.final_similarity > protection_boundary_titer;
-                //             if (protectd && !inside)
-                //                 ++protected_outside;
-                //             else if (!protectd && inside)
-                //                 ++not_protected_inside;
-                //         }
-                //     }
-                //     const size_t summa = protected_outside + not_protected_inside;
-                //     if (best_sum == None || best_sum >= summa) { // if sums are the same, choose the smaller radius (found earlier)
-                //         if (best_sum == summa) {
-                //             sum_radii += radius;
-                //             ++num_radii;
-                //         }
-                //         else {
-                //             sum_radii = radius;
-                //             num_radii = 1;
-                //             best_sum = summa;
-                //         }
-                //     }
-                //     previous = ag_no;
-                // }
-                // antigen_data.empirical = sum_radii / static_cast<double>(num_radii);
-                // antigen_data.status = serum_circle_status::good;
+                constexpr const size_t None = static_cast<size_t>(-1);
+                size_t best_sum = None;
+                antigen_index previous{invalid_index};
+                double sum_radii = 0;
+                size_t num_radii = 0;
+                for (const auto ag_no : antigens_by_distances) {
+                    if (!titers_and_distances[*ag_no])
+                        break;
+                    const double radius = previous == antigen_index{invalid_index} ? titers_and_distances[*ag_no].distance : (titers_and_distances[*ag_no].distance + titers_and_distances[*previous].distance) / 2.0;
+                    size_t protected_outside = 0, not_protected_inside = 0; // , protected_inside = 0, not_protected_outside = 0;
+                    for (const auto& protection_data : titers_and_distances) {
+                        if (protection_data) {
+                            const bool inside = protection_data.distance <= radius;
+                            const bool protectd =
+                                protection_data.titer.is_regular() ? protection_data.final_similarity >= protection_boundary_titer : protection_data.final_similarity > protection_boundary_titer;
+                            if (protectd && !inside)
+                                ++protected_outside;
+                            else if (!protectd && inside)
+                                ++not_protected_inside;
+                        }
+                    }
+                    const size_t summa = protected_outside + not_protected_inside;
+                    if (best_sum == None || best_sum >= summa) { // if sums are the same, choose the smaller radius (found earlier)
+                        if (best_sum == summa) {
+                            sum_radii += radius;
+                            ++num_radii;
+                        }
+                        else {
+                            sum_radii = radius;
+                            num_radii = 1;
+                            best_sum = summa;
+                        }
+                    }
+                    previous = ag_no;
+                }
+                antigen_data.empirical = sum_radii / static_cast<double>(num_radii);
+                antigen_data.status = serum_circle_status::good;
             }
         }
     }
