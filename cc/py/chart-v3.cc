@@ -927,6 +927,35 @@ void ae::py::chart_v3(pybind11::module_& mdl)
         .def_property_readonly("diagnosis", &grid_test_diagnosis)                                        //
         .def("__str__", &grid_test_result_str)                                                           //
         ;
+
+    // ----------------------------------------------------------------------
+
+    pybind11::class_<avidity_test::results_t>(chart_v3_submodule, "AvidityTestResults") //
+        .def(
+            "__getitem__", [](const avidity_test::results_t& results, size_t antigen_no) { return results.get(antigen_index{antigen_no}); }, "antigen_no"_a,
+            pybind11::return_value_policy::reference_internal) //
+        ;
+
+    pybind11::class_<avidity_test::result_t>(chart_v3_submodule, "AvidityTestResult")    //
+        .def_readonly("best_logged_adjust", &avidity_test::result_t::best_logged_adjust) //
+        .def(
+            "__getitem__", [](const avidity_test::result_t& result, size_t index) { return result.adjusts[index]; }, "index"_a, pybind11::return_value_policy::reference_internal) //
+        ;
+
+    pybind11::class_<avidity_test::per_adjust_t>(chart_v3_submodule, "AvidityTestResult_PerAdjust")                                                      //
+        .def_readonly("logged_adjust", &avidity_test::per_adjust_t::logged_adjust)                                                                       //
+        .def_readonly("distance_test_antigen", &avidity_test::per_adjust_t::distance_test_antigen)                                                       //
+        .def_readonly("angle_test_antigen", &avidity_test::per_adjust_t::angle_test_antigen)                                                             //
+        .def_readonly("average_procrustes_distances_except_test_antigen", &avidity_test::per_adjust_t::average_procrustes_distances_except_test_antigen) //
+        .def_readonly("stress_diff", &avidity_test::per_adjust_t::stress_diff)                                                                           //
+        .def_readonly("final_coordinates", &avidity_test::per_adjust_t::final_coordinates)                                                               //
+        .def(
+            "__getitem__",
+            [](const avidity_test::per_adjust_t& result, size_t index) -> std::pair<size_t, double> {
+                return {*result.most_moved[index].antigen_no, result.most_moved[index].distance};
+            },
+            "most_moved_index"_a, pybind11::return_value_policy::reference_internal) //
+        ;
 }
 
 // ----------------------------------------------------------------------

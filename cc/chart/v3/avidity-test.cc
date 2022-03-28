@@ -68,19 +68,19 @@ ae::chart::v3::avidity_test::per_adjust_t ae::chart::v3::avidity_test::test(cons
         .average_procrustes_distances_except_test_antigen = summary.average_distance,
         .final_coordinates{projection.layout()[antigen_no]},
         .stress_diff = status.final_stress - original_stress};
-    // size_t most_moved_no{0};
-    // for (const auto ag_no : summary.antigens_by_distance) {
-    //     if (ag_no != antigen_no) { // do not put antigen being tested into the most moved list
-    //         result.most_moved[most_moved_no] = MostMoved{ag_no, summary.antigen_distances[ag_no]};
-    //         ++most_moved_no;
-    //         if (most_moved_no >= result.most_moved.size())
-    //             break;
-    //     }
+    size_t most_moved_no{0};
+    for (const auto ag_no : summary.antigens_by_distance) {
+        if (ag_no != antigen_no) { // do not put antigen being tested into the most moved list
+            result.most_moved[most_moved_no] = most_moved_t{ag_no, summary.antigen_distances[*ag_no]};
+            ++most_moved_no;
+            if (most_moved_no >= result.most_moved.size())
+                break;
+        }
+    }
+    // if (parameters().validVaccineAntigen()) {
+    //     result.distance_vaccine_to_test_antigen = summary.distance_vaccine_to_test_antigen;
+    //     result.angle_vaccine_to_test_antigen = summary.angle_vaccine_to_test_antigen;
     // }
-    // // if (parameters().validVaccineAntigen()) {
-    // //     result.distance_vaccine_to_test_antigen = summary.distance_vaccine_to_test_antigen;
-    // //     result.angle_vaccine_to_test_antigen = summary.angle_vaccine_to_test_antigen;
-    // // }
     return result;
 
 } // ae::chart::v3::avidity_test::test
