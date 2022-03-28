@@ -35,12 +35,12 @@ namespace ae::chart::v3
 
         struct per_adjust_t
         {
-            double logged_adjust;
-            double distance_test_antigen;
-            double angle_test_antigen;
-            double average_procrustes_distances_except_test_antigen;
-            point_coordinates final_coordinates;
-            double stress_diff;
+            double logged_adjust{0.0};
+            double distance_test_antigen{-1.0};
+            double angle_test_antigen{0.0};
+            double average_procrustes_distances_except_test_antigen{-1.0};
+            point_coordinates final_coordinates{};
+            double stress_diff{0.0};
             std::array<most_moved_t, number_of_most_moved_antigens> most_moved{};
         };
 
@@ -49,16 +49,16 @@ namespace ae::chart::v3
             const per_adjust_t* best_adjust() const;
             void post_process();
 
-            antigen_index antigen_no;
-            double best_logged_adjust;
-            point_coordinates_ref_const original;
-            std::vector<per_adjust_t> adjusts;
+            antigen_index antigen_no{};
+            double best_logged_adjust{0.0};
+            point_coordinates_ref_const original{};
+            std::vector<per_adjust_t> adjusts{};
         };
 
         class results_t
         {
           public:
-            results_t(double original_stress) : original_stress_{original_stress} {}
+            results_t(double original_stress, antigen_index number_of_antigens) : data_(*number_of_antigens), original_stress_{original_stress} {}
 
             const result_t& get(antigen_index antigen_no) const
             {

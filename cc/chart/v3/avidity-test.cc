@@ -1,8 +1,8 @@
+#include "ext/omp.hh"
 #include "chart/v3/avidity-test.hh"
 #include "chart/v3/chart.hh"
 #include "chart/v3/common.hh"
 #include "chart/v3/procrustes.hh"
-// #include "chart/v3/stress.hh"
 
 // ----------------------------------------------------------------------
 
@@ -16,10 +16,14 @@ namespace ae::chart::v3::avidity_test
 
 ae::chart::v3::avidity_test::results_t ae::chart::v3::avidity_test::test(const Chart& chart, const Projection& projection, const settings_t& settings)
 {
-    results_t results{projection.stress()};
-    // omp?
-    for (const auto ag_no : chart.antigens().size())
-        results.data_.push_back(test(chart, projection, ag_no, settings));
+    results_t results{projection.stress(), chart.antigens().size()};
+#ifdef _OPENMP
+    const int num_threads = settings.threads <= 0 ? omp_get_max_threads() : settings.threads;
+    const int slot_size = chart.antigens().size() < antigen_index{1000} ? 4 : 1;
+#endif
+#pragma omp parallel for default(shared) num_threads(num_threads) schedule(static, slot_size)
+    for (size_t ag_no = 0; ag_no < *chart.antigens().size(); ++ag_no)
+        results.data_[ag_no] = test(chart, projection, antigen_index{ag_no}, settings);
     results.post_process();
     return results;
 
