@@ -28,8 +28,8 @@ namespace ae::chart::v3
 
         struct most_moved_t
         {
-            antigen_index antigen_no;
-            double distance;
+            antigen_index antigen_no{invalid_index};
+            double distance{-1.0};
         };
 
 
@@ -41,7 +41,7 @@ namespace ae::chart::v3
             double average_procrustes_distances_except_test_antigen;
             point_coordinates final_coordinates;
             double stress_diff;
-            std::array<most_moved_t, number_of_most_moved_antigens> most_moved;
+            std::array<most_moved_t, number_of_most_moved_antigens> most_moved{};
         };
 
         struct result_t

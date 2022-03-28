@@ -75,7 +75,7 @@ namespace ae::chart::v3
 
         point_indexes non_nan_points() const; // for relax_incremental and enum unmovable_non_nan_points
 
-        optimization_status relax(Chart& chart, const optimization_options& options);
+        optimization_status relax(const Chart& chart, const optimization_options& options);
 
         Layout transformed_layout() const { return layout().transform(transformation()); }
         // double stress_diff_to_stop() const = 0;

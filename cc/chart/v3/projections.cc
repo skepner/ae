@@ -68,7 +68,7 @@ ae::point_indexes ae::chart::v3::Projection::non_nan_points() const
 
 // ----------------------------------------------------------------------
 
-ae::chart::v3::optimization_status ae::chart::v3::Projection::relax(Chart& chart, const optimization_options& options)
+ae::chart::v3::optimization_status ae::chart::v3::Projection::relax(const Chart& chart, const optimization_options& options)
 {
     const auto status = optimize(chart, *this, options);
     stress_ = status.final_stress;

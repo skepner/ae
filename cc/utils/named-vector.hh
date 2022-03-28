@@ -33,6 +33,7 @@ namespace ae
         constexpr auto size() const { return this->get().size(); }
         constexpr auto operator[](size_t index) const { return this->get()[index]; }
         constexpr auto& operator[](size_t index) { return this->get()[index]; }
+        constexpr void resize(size_t size) { this->get().resize(size); }
 
         // for std::back_inserter
         constexpr void push_back(const T& val) { this->get().push_back(val); }

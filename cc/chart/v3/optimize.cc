@@ -36,7 +36,7 @@ ae::chart::v3::optimization_method ae::chart::v3::optimization_method_from_strin
 
 // ----------------------------------------------------------------------
 
-ae::chart::v3::optimization_status ae::chart::v3::optimize(Chart& chart, Projection& projection, optimization_options options)
+ae::chart::v3::optimization_status ae::chart::v3::optimize(const Chart& chart, Projection& projection, optimization_options options)
 {
     auto& layout = projection.layout();
     auto stress = stress_factory(chart, projection, options.mult);
@@ -47,7 +47,7 @@ ae::chart::v3::optimization_status ae::chart::v3::optimize(Chart& chart, Project
 
 // ----------------------------------------------------------------------
 
-ae::chart::v3::optimization_status ae::chart::v3::optimize(Chart& chart, Projection& projection, IntermediateLayouts& intermediate_layouts, optimization_options options)
+ae::chart::v3::optimization_status ae::chart::v3::optimize(const Chart& chart, Projection& projection, IntermediateLayouts& intermediate_layouts, optimization_options options)
 {
     auto& layout = projection.layout();
     auto stress = stress_factory(chart, projection, options.mult);
@@ -58,7 +58,7 @@ ae::chart::v3::optimization_status ae::chart::v3::optimize(Chart& chart, Project
 
 // ----------------------------------------------------------------------
 
-ae::chart::v3::optimization_status ae::chart::v3::optimize(Chart& chart, Projection& projection, const dimension_schedule& schedule, optimization_options options)
+ae::chart::v3::optimization_status ae::chart::v3::optimize(const Chart& chart, Projection& projection, const dimension_schedule& schedule, optimization_options options)
 {
     if (schedule.initial() != projection.number_of_dimensions())
         throw std::runtime_error("ae::chart::v3::optimize existing with dimension_schedule: invalid number_of_dimensions in schedule");

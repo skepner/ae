@@ -65,11 +65,11 @@ namespace ae::chart::v3
     // ----------------------------------------------------------------------
 
     // optimizes existing projection without dimension annealing
-    optimization_status optimize(Chart& chart, Projection& projection, optimization_options options = optimization_options{});
+    optimization_status optimize(const Chart& chart, Projection& projection, optimization_options options = optimization_options{});
     // optimizes existing projection without dimension annealing and saves intermediate layouts
-    optimization_status optimize(Chart& chart, Projection& projection, IntermediateLayouts& intermediate_layouts, optimization_options options = optimization_options{});
+    optimization_status optimize(const Chart& chart, Projection& projection, IntermediateLayouts& intermediate_layouts, optimization_options options = optimization_options{});
     // optimizes existing projection with dimension annealing
-    optimization_status optimize(Chart& chart, Projection& projection, const dimension_schedule& schedule, optimization_options options = optimization_options{});
+    optimization_status optimize(const Chart& chart, Projection& projection, const dimension_schedule& schedule, optimization_options options = optimization_options{});
     // creates new projection and optimizes it with or without dimension annealing
     optimization_status optimize(Chart& chart, minimum_column_basis mcb, const dimension_schedule& schedule, optimization_options options = optimization_options{});
 
