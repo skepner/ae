@@ -47,6 +47,7 @@ ae::chart::v3::avidity_test::per_adjust_t ae::chart::v3::avidity_test::test(cons
 {
     const auto original_stress = original_projection.stress();
     Projection projection{original_projection};
+    AD_DEBUG("{}", projection.layout());
     auto& avidity_adjusts = projection.avidity_adjusts_access();
     avidity_adjusts.resize(*chart.antigens().size() + *chart.sera().size());
     set_logged(avidity_adjusts, antigen_no, logged_adjust);
