@@ -153,8 +153,8 @@ namespace ae::chart::v3
         void serum_species(const SerumSpecies& serum_species) { serum_species_ = serum_species; }
         const auto& serum_id() const { return serum_id_; }
         void serum_id(const SerumId& serum_id) { serum_id_ = serum_id; }
-        const auto& homologous_antigens() const { return homologous_antigens_; }
-        antigen_indexes& homologous_antigens() { return homologous_antigens_; }
+        // const auto& homologous_antigens() const { return homologous_antigens_; }
+        // antigen_indexes& homologous_antigens() { return homologous_antigens_; }
 
         std::optional<double> forced_column_basis() const { return forced_column_basis_; }
         void forced_column_basis(double forced) { forced_column_basis_ = forced; }
@@ -170,7 +170,7 @@ namespace ae::chart::v3
       private:
         SerumSpecies serum_species_{};
         SerumId serum_id_{};
-        antigen_indexes homologous_antigens_{};
+        // antigen_indexes homologous_antigens_{};
         std::optional<double> forced_column_basis_{};
     };
 
@@ -252,6 +252,8 @@ namespace ae::chart::v3
       public:
         using AntigensSera<Antigen>::AntigensSera;
         bool operator==(const Antigens&) const = default;
+
+        antigen_indexes homologous(const Serum& serum) const;
     };
 
     // ----------------------------------------------------------------------
@@ -261,6 +263,7 @@ namespace ae::chart::v3
       public:
         using AntigensSera<Serum>::AntigensSera;
         bool operator==(const Sera&) const = default;
+
     };
 
 } // namespace ae::chart::v3

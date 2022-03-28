@@ -211,7 +211,7 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
         comma6 = put_str(serum.passage(), not_empty, "P", comma6);
         comma6 = put_str(serum.serum_id(), not_empty, "I", comma6);
         comma6 = put_str(serum.serum_species(), not_empty, "s", comma6);
-        comma6 = put_array_int(serum.homologous_antigens(), not_empty, "h", comma6);
+        // comma6 = put_array_int(serum.homologous_antigens(), not_empty, "h", comma6);
         comma6 = put_str(serum.aa(), not_empty, "A", comma6); // , "\n    ");
         comma6 = put_str(serum.nuc(), not_empty, "B", comma6); // , "\n    ");
         // "s": {} -- semantic

@@ -81,3 +81,34 @@ void ae::chart::v3::Serum::update_with(const Serum& src)
 } // ae::chart::v3::Serum::update_with
 
 // ----------------------------------------------------------------------
+
+ae::antigen_indexes ae::chart::v3::Antigens::homologous(const Serum& serum) const
+{
+    const auto match_passage = [&serum](virus::Passage antigen_passage, virus::Passage serum_passage) -> bool {
+        if (serum_passage.empty()) // NIID has passage type data in serum_id
+            return antigen_passage.is_egg() == (serum.serum_id().find("EGG") != std::string::npos);
+        else
+            return antigen_passage.is_egg() == serum_passage.is_egg();
+    };
+
+    antigen_indexes homologous_canditates;
+
+    const auto check_antigens = [&homologous_canditates, this, &serum, match_passage](bool respect_annotations) -> bool {
+        bool matched = false;
+        for (const auto ag_no : size()) {
+            const auto& antigen = operator[](ag_no);
+            if (antigen.name() == serum.name() && antigen.reassortant() == serum.reassortant() && (!respect_annotations || antigen.annotations() == serum.annotations()) && match_passage(antigen.passage(), serum.passage())) {
+                homologous_canditates.insert_if_not_present(ag_no);
+                matched = true;
+            }
+        }
+        return matched;
+    };
+
+    check_antigens(true) || check_antigens(false);
+
+    return homologous_canditates;
+
+} // ae::chart::v3::Antigens::homologous
+
+// ----------------------------------------------------------------------

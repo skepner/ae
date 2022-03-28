@@ -31,8 +31,8 @@ namespace ae::chart::v3
                 else
                     merge[entry->second.index] = source[no];
                 // AD_DEBUG("merge_antigens_sera {} {} <- {} {}", entry->second.index, merge.at(entry->second.index).full_name(), no, source.at(no)->full_name());
-                if constexpr (std::is_same_v<AgSrs, Sera>)
-                    merge[entry->second.index].homologous_antigens().get().clear();
+                // if constexpr (std::is_same_v<AgSrs, Sera>)
+                //     merge[entry->second.index].homologous_antigens().get().clear();
             }
         }
     };

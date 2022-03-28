@@ -161,7 +161,7 @@ inline void read_sera(ae::chart::v3::Sera& target, ::simdjson::ondemand::array s
                     serum.serum_id(ae::chart::v3::SerumId{static_cast<std::string_view>(field.value())});
                 }
                 else if (key == "h") { // array of numbers | homologous antigen indices, e.g. [0]
-                    serum.homologous_antigens().push_back(ae::antigen_index{static_cast<uint64_t>(field.value())});
+                    // deprecated, ignored // serum.homologous_antigens().push_back(ae::antigen_index{static_cast<uint64_t>(field.value())});
                 }
                 else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
                     unhandled_key({"c", "s", key});
