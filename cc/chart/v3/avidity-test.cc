@@ -47,13 +47,11 @@ ae::chart::v3::avidity_test::per_adjust_t ae::chart::v3::avidity_test::test(cons
 {
     const auto original_stress = original_projection.stress();
     Projection projection{original_projection};
-    AD_DEBUG("{}", projection.layout());
+    // AD_DEBUG("{}", projection.layout());
     auto& avidity_adjusts = projection.avidity_adjusts_access();
-    avidity_adjusts.resize(*chart.antigens().size() + *chart.sera().size());
+    resize(avidity_adjusts, chart.antigens().size(), chart.sera().size());
     set_logged(avidity_adjusts, antigen_no, logged_adjust);
     projection.comment(fmt::format("avidity {:+.1f} AG {}", logged_adjust, antigen_no));
-    // auto stress = stress_factory(chart, projection, options.mult);
-    // auto& layout = projection.layout();
     const auto status = projection.relax(chart, options);
     AD_DEBUG("avidity relax AG {} adjust:{:4.1f} stress: {:10.4f} diff: {:8.4f}", antigen_no, logged_adjust, status.final_stress, status.final_stress - original_stress);
 

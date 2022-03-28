@@ -163,7 +163,6 @@ void ae::alglib::cg_optimize(ae::chart::v3::optimization_status& status, ae::cha
 
         ::alglib::real_1d_array x;
         x.attach_to_ptr(args.size(), args.data());
-
         ::alglib::mincgstate state;
         mincgcreate(x, state);
         mincgsetcond(state, epsg, epsf, epsx, max_iterations);

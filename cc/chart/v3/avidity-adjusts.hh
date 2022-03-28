@@ -38,12 +38,12 @@ namespace ae::chart::v3
         aa[antigen_no.get()] = std::exp2(logged_adjust);
     }
 
-    inline void resize(avidity_adjusts& aa, antigen_index number_of_points)
+    inline void resize(avidity_adjusts& aa, antigen_index number_of_antigens, serum_index number_of_sera)
     {
         if (aa.size() == 0)
-            aa.get().resize(number_of_points.get(), 1.0);
-        else if (antigen_index{aa.size()} != number_of_points)
-            throw std::runtime_error{AD_FORMAT("attempt to resize AvidityAdjusts from {} to {}", aa.size(), number_of_points)};
+            aa.get().resize(number_of_antigens.get() + number_of_sera.get(), 1.0);
+        else if (aa.size() != (number_of_antigens.get() + number_of_sera.get()))
+            throw std::runtime_error{AD_FORMAT("attempt to resize AvidityAdjusts from {} to {}+{}", aa.size(), number_of_antigens, number_of_sera)};
     }
 
 } // namespace ae::chart::v3
