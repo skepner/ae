@@ -934,12 +934,17 @@ void ae::py::chart_v3(pybind11::module_& mdl)
         .def(
             "__getitem__", [](const avidity_test::results_t& results, size_t antigen_no) { return results.get(antigen_index{antigen_no}); }, "antigen_no"_a,
             pybind11::return_value_policy::reference_internal) //
+        .def(
+            "__iter__", [](const avidity_test::results_t& pc) { return pybind11::make_iterator(pc.begin(), pc.end()); }, pybind11::return_value_policy::reference_internal) //
         ;
 
-    pybind11::class_<avidity_test::result_t>(chart_v3_submodule, "AvidityTestResult")    //
-        .def_readonly("best_logged_adjust", &avidity_test::result_t::best_logged_adjust) //
+    pybind11::class_<avidity_test::result_t>(chart_v3_submodule, "AvidityTestResult")                                 //
+        .def_property_readonly("antigen_no", [](const avidity_test::result_t& result) { return *result.antigen_no; }) //
+        .def_readonly("best_logged_adjust", &avidity_test::result_t::best_logged_adjust)                              //
         .def(
-            "__getitem__", [](const avidity_test::result_t& result, size_t index) { return result.adjusts[index]; }, "index"_a, pybind11::return_value_policy::reference_internal) //
+            "best_adjust", [](const avidity_test::result_t& result) { return result.best_adjust(); }, pybind11::return_value_policy::reference_internal) //
+        .def(
+            "__getitem__", [](const avidity_test::result_t& result, size_t index) { return result.adjusts[index]; }, "index"_a, pybind11::keep_alive<0, 1>()) //
         ;
 
     pybind11::class_<avidity_test::per_adjust_t>(chart_v3_submodule, "AvidityTestResult_PerAdjust")                                                      //

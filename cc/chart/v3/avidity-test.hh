@@ -70,6 +70,9 @@ namespace ae::chart::v3
 
             const auto& results() const { return data_; }
 
+            auto begin() const { return data_.begin(); }
+            auto end() const { return data_.end(); }
+
           private:
             std::vector<result_t> data_;
             double original_stress_;
