@@ -2,6 +2,7 @@
 import os, sys, pprint, argparse, traceback
 from pathlib import Path
 import ae_backend
+from ae.utils import format_table
 
 # ----------------------------------------------------------------------
 
@@ -10,6 +11,20 @@ def main(args: argparse.Namespace):
     results = chart.projection(args.projection).serum_circles(fold=args.fold)
     for res in results:
         print(f"SR {res.serum_no:4d} {chart.serum(res.serum_no).designation()} titrations:{chart.titers().titrations_for_serum(res.serum_no)}")
+        table = [["  ", "titer", "theor", "empir", "", "", f"col-basis:{res.column_basis}", f"fold:{res.fold}"]]
+        for ag_data in res:
+            status = ""
+            if (theor := ag_data.theoretical) is not None:
+                theor = f"{theor:5.2f}"
+            else:
+                theor = ""
+            if (empir := ag_data.empirical) is not None:
+                empir = f"{empir:5.2f}"
+            else:
+                empir = ""
+                status = ag_data.status()
+            table.append(["", ag_data.titer, theor, empir, status, ag_data.antigen_no, chart.antigen(ag_data.antigen_no).designation()])
+        print(format_table.format_table(table, field_sep=" "), end="\n\n")
 
 # ----------------------------------------------------------------------
 

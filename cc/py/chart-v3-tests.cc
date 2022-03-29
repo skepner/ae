@@ -129,17 +129,17 @@ void ae::py::chart_v3_tests(pybind11::module_& chart_v3_submodule)
              [](const serum_circle_antigen_t& cs) {
                  switch (cs.status) {
                      case serum_circle_status::not_calculated:
-                         return "not_calculated";
+                         return "not calculated";
                      case serum_circle_status::good:
                          return "good";
                      case serum_circle_status::non_regular_homologous_titer:
-                         return "non_regular_homologous_titer";
+                         return "non regular homologous titer";
                      case serum_circle_status::titer_too_low:
-                         return "titer_too_low";
+                         return "titer too low";
                      case serum_circle_status::serum_disconnected:
-                         return "serum_disconnected";
+                         return "serum disconnected";
                      case serum_circle_status::antigen_disconnected:
-                         return "antigen_disconnected";
+                         return "antigen disconnected";
                  }
                  return "unknown";
              }) //
