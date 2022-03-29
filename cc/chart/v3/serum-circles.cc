@@ -108,6 +108,9 @@ void ae::chart::v3::set_empirical(serum_circle_serum_t& serum_data, const Layout
         else if (!layout.point_has_coordinates(antigen_data.antigen_no)) {
             antigen_data.status = serum_circle_status::antigen_disconnected;
         }
+        else if (antigen_data.titer.is_dont_care()) {
+            antigen_data.status = serum_circle_status::non_regular_homologous_titer;
+        }
         else {
             std::vector<titer_distance_t> titers_and_distances(*titers.number_of_antigens());
             antigen_index max_titer_for_serum_ag_no{0};

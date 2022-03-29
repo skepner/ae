@@ -110,11 +110,12 @@ void ae::py::chart_v3_tests(pybind11::module_& chart_v3_submodule)
             "__iter__", [](const serum_circles_t& circles) { return pybind11::make_iterator(circles.sera.begin(), circles.sera.end()); }, pybind11::return_value_policy::reference_internal) //
         ;
 
-    pybind11::class_<serum_circle_serum_t>(chart_v3_submodule, "SerumCircleForSerum")                   //
-        .def_property_readonly("serum_no", [](const serum_circle_serum_t& cs) { return *cs.serum_no; }) //
-        .def_readonly("column_basis", &serum_circle_serum_t::column_basis)                              //
-        .def_property_readonly("fold", [](const serum_circle_serum_t& cs) { return *cs.fold; })         //
-        .def("valid", &serum_circle_serum_t::valid)                                                     //
+    pybind11::class_<serum_circle_serum_t>(chart_v3_submodule, "SerumCircleForSerum")                                                          //
+        .def_property_readonly("serum_no", [](const serum_circle_serum_t& cs) { return *cs.serum_no; })                                        //
+        .def_readonly("column_basis", &serum_circle_serum_t::column_basis)                                                                     //
+        .def_property_readonly("fold", [](const serum_circle_serum_t& cs) { return *cs.fold; })                                                //
+        .def("valid", &serum_circle_serum_t::valid)                                                                                            //
+        .def("number_of_homologous_antigens", [](const serum_circle_serum_t& circles_for_serum) { return circles_for_serum.antigens.size(); }) //
         .def(
             "__iter__", [](const serum_circle_serum_t& circles_for_serum) { return pybind11::make_iterator(circles_for_serum.antigens.begin(), circles_for_serum.antigens.end()); },
             pybind11::return_value_policy::reference_internal) //
