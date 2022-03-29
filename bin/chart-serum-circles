@@ -8,9 +8,8 @@ import ae_backend
 def main(args: argparse.Namespace):
     chart = ae_backend.chart_v3.Chart(args.chart)
     results = chart.projection(args.projection).serum_circles(fold=args.fold)
-    print(results)
-    # for res in results:
-    #     print(f"AG {res.antigen_no:4d}")
+    for res in results:
+        print(f"SR {res.serum_no:4d} {chart.serum(res.serum_no).designation()}")
 
 # ----------------------------------------------------------------------
 

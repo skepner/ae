@@ -102,6 +102,48 @@ void ae::py::chart_v3_tests(pybind11::module_& chart_v3_submodule)
             },
             "most_moved_index"_a, pybind11::return_value_policy::reference_internal) //
         ;
+
+    // ----------------------------------------------------------------------
+
+    pybind11::class_<serum_circles_t>(chart_v3_submodule, "SerumCircles") //
+        .def(
+            "__iter__", [](const serum_circles_t& circles) { return pybind11::make_iterator(circles.sera.begin(), circles.sera.end()); }, pybind11::return_value_policy::reference_internal) //
+        ;
+
+    pybind11::class_<serum_circle_serum_t>(chart_v3_submodule, "SerumCircleForSerum")                   //
+        .def_property_readonly("serum_no", [](const serum_circle_serum_t& cs) { return *cs.serum_no; }) //
+        .def_readonly("column_basis", &serum_circle_serum_t::column_basis)                              //
+        .def_property_readonly("fold", [](const serum_circle_serum_t& cs) { return *cs.fold; })         //
+        .def("valid", &serum_circle_serum_t::valid)                                                     //
+        .def(
+            "__iter__", [](const serum_circle_serum_t& circles_for_serum) { return pybind11::make_iterator(circles_for_serum.antigens.begin(), circles_for_serum.antigens.end()); },
+            pybind11::return_value_policy::reference_internal) //
+        ;
+
+    pybind11::class_<serum_circle_antigen_t>(chart_v3_submodule, "SerumCircleForAntigen")                     //
+        .def_property_readonly("antigen_no", [](const serum_circle_antigen_t& cs) { return *cs.antigen_no; }) //
+        .def_readonly("titer", &serum_circle_antigen_t::titer)                                                //
+        .def_readonly("theoretical", &serum_circle_antigen_t::theoretical)                                    //
+        .def_readonly("empirical", &serum_circle_antigen_t::empirical)                                        //
+        .def("status",
+             [](const serum_circle_antigen_t& cs) {
+                 switch (cs.status) {
+                     case serum_circle_status::not_calculated:
+                         return "not_calculated";
+                     case serum_circle_status::good:
+                         return "good";
+                     case serum_circle_status::non_regular_homologous_titer:
+                         return "non_regular_homologous_titer";
+                     case serum_circle_status::titer_too_low:
+                         return "titer_too_low";
+                     case serum_circle_status::serum_disconnected:
+                         return "serum_disconnected";
+                     case serum_circle_status::antigen_disconnected:
+                         return "antigen_disconnected";
+                 }
+                 return "unknown";
+             }) //
+        ;
 }
 
 // ----------------------------------------------------------------------

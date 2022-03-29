@@ -246,6 +246,11 @@ void ae::py::chart_v3(pybind11::module_& mdl)
         // ----------------------------------------------------------------------
 
         .def(
+            "antigen", [](Chart& chart, size_t antigen_no) { return chart.antigens()[antigen_index{antigen_no}]; }, "antigen_no"_a, pybind11::return_value_policy::reference_internal) //
+        .def(
+            "serum", [](Chart& chart, size_t serum_no) { return chart.sera()[serum_index{serum_no}]; }, "serum_no"_a, pybind11::return_value_policy::reference_internal) //
+
+        .def(
             "select_antigens", //
             [](std::shared_ptr<Chart> chart, const std::function<bool(const SelectionData<Antigen>&)>& func, size_t projection_no) {
                 return new SelectedAntigens{chart, func, projection_index{projection_no}};
