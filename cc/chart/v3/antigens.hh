@@ -10,6 +10,7 @@
 #include "virus/reassortant.hh"
 #include "sequences/lineage.hh"
 #include "sequences/sequence.hh"
+#include "sequences/clades.hh"
 #include "chart/v3/index.hh"
 #include "chart/v3/annotations.hh"
 #include "chart/v3/semantic.hh"

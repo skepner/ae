@@ -7,6 +7,15 @@
 
 // ======================================================================
 
+void ae::sequences::Clades::load()
+{
+    if (const char* clades_file = getenv("AC_CLADES_JSON_V2"); clades_file)
+        load(clades_file);
+
+} // ae::sequences::Clades::load
+
+// ----------------------------------------------------------------------
+
 void ae::sequences::Clades::load(const std::filesystem::path& clades_file)
 {
     if (std::filesystem::exists(clades_file)) {
@@ -117,30 +126,29 @@ ae::sequences::Clades::subset_t ae::sequences::Clades::get_subset(const ae::viru
 
 // ----------------------------------------------------------------------
 
-std::vector<std::string> ae::sequences::Clades::clades(const sequence_aa_t& aa, const sequence_nuc_t& nuc, const entries_t& entries, std::string_view set)
+ae::sequences::clades_t ae::sequences::Clades::clades(const sequence_aa_t& aa, const sequence_nuc_t& nuc, const entries_t& entries, std::string_view set)
 {
-    std::vector<std::string> clades;
+    clades_t clades;
     for (const auto& en : entries) {
         if ((set.empty() || set == en.set) && (aa.empty() || en.aa.empty() || matches_all(aa, en.aa)) && (nuc.empty() || en.nuc.empty() || matches_all(nuc, en.nuc))) {
             // AD_DEBUG("Clades::clades \"{}\"", en.name);
             clades.push_back(en.name);
         }
     }
-    std::sort(std::begin(clades), std::end(clades));
-    clades.erase(std::unique(std::begin(clades), std::end(clades)), std::end(clades));
+    clades.unique();
     return clades;
 
 } // ae::sequences::Clades::clades
 
 // ----------------------------------------------------------------------
 
-std::vector<std::string> ae::sequences::Clades::clades(const sequence_aa_t& aa, const sequence_nuc_t& nuc, const ae::virus::type_subtype_t& subtype, const lineage_t& lineage,
+ae::sequences::clades_t ae::sequences::Clades::clades(const sequence_aa_t& aa, const sequence_nuc_t& nuc, const ae::virus::type_subtype_t& subtype, const lineage_t& lineage,
                                                        std::string_view set) const
 {
     if (const auto* entries = get_entries(subtype, lineage); entries)
         return clades(aa, nuc, *entries, set);
     else
-        return {};
+        return clades_t{};
 
 } // ae::sequences::Clades::clades
 

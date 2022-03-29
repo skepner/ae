@@ -13,6 +13,7 @@
 #include "sequences/sequence.hh"
 #include "sequences/issues.hh"
 #include "sequences/lineage.hh"
+#include "chart/v3/semantic.hh"
 
 // ======================================================================
 
@@ -44,7 +45,7 @@ namespace ae::sequences
         const SeqdbEntry* entry{nullptr};
         const SeqdbSeq* seq{nullptr};
         const SeqdbSeq* master{nullptr};
-        std::vector<std::string> clades{};
+        clades_t clades{};
 
         constexpr bool operator==(const SeqdbSeqRef& rhs) const { return seq == rhs.seq; }
         constexpr operator bool() const { return entry != nullptr && seq != nullptr; }

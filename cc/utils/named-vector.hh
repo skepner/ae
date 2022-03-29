@@ -20,6 +20,7 @@ namespace ae
         using iterator = typename std::vector<T>::iterator;
         using const_iterator = typename std::vector<T>::const_iterator;
 
+        named_vector_t() = default;
         explicit named_vector_t(size_t size, T val) : named_t<std::vector<T>, Tag>{std::vector<T>(size, val)} {}
         template <typename Iter> named_vector_t(Iter first, Iter last) : named_t<std::vector<T>, Tag>{std::vector<T>(first, last)} {}
         auto operator<=>(const named_vector_t&) const = default;
@@ -81,6 +82,12 @@ namespace ae
         {
             for (const auto& val : another)
                 insert_if_not_present(val);
+        }
+
+        void unique()
+        {
+            std::sort(begin(), end());
+            this->get().erase(std::unique(begin(), end()), end());
         }
     };
 

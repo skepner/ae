@@ -4,6 +4,7 @@
 #include "virus/type-subtype.hh"
 #include "sequences/sequence.hh"
 #include "sequences/lineage.hh"
+#include "sequences/clades.hh"
 #include "tree/tree-iterator.hh"
 
 // ======================================================================
@@ -40,7 +41,7 @@ namespace ae::tree
         std::string country{};
         sequences::sequence_aa_t aa{};
         sequences::sequence_nuc_t nuc{};
-        std::vector<std::string> clades{};
+        sequences::clades_t clades{};
     };
 
     struct Inode : public Node

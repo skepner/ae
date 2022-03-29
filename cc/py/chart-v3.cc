@@ -148,13 +148,7 @@ namespace ae::py
     static inline std::pair<size_t, size_t> populate_from_seqdb(Chart& chart)
     {
         const auto& seqdb = ae::sequences::seqdb_for_subtype(chart.info().virus_subtype());
-        const auto load_clades = []() -> ae::sequences::Clades {
-            if (const char* clades_file = getenv("AC_CLADES_JSON_V2"); clades_file)
-                return ae::sequences::Clades{clades_file};
-            else
-                return {};
-        };
-        const auto clades{load_clades()};
+        const ae::sequences::Clades clades{ae::sequences::Clades::load_from_default_file};
 
         const auto populate = [&seqdb, &clades](auto& ag_srs) -> size_t {
             size_t populated{0};
@@ -166,12 +160,11 @@ namespace ae::py
                     selected->find_clades(clades);
                     ag_sr.aa(selected->at(0).aa());
                     ag_sr.nuc(selected->at(0).nuc());
+                    ag_sr.semantic().clades = selected->at(0).clades;
                     ++populated;
-                    // for (const auto& clade : selected->at(0).clades)
-                    //     ag_sr_ptr->add_clade(clade);
                 }
             }
-            AD_DEBUG("populated {}", populated);
+            // AD_DEBUG("populated {}", populated);
             return populated;
         };
 

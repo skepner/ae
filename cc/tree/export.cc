@@ -414,7 +414,7 @@ namespace ae::tree
                     break;
                 case 'L': // ["clade", "2A1B"]
                     for (auto clade : field.value().get_array())
-                        current_leaf_->clades.emplace_back(static_cast<std::string_view>(clade));
+                        current_leaf_->clades.insert(static_cast<std::string_view>(clade));
                     break;
                 default:
                     unhandled_key(key);
