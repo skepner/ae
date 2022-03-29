@@ -11,6 +11,9 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
 
     fmt::memory_buffer out;
 
+    const auto not_empty = [](const auto& val) { return !val.empty(); };
+    // const auto always = [](const auto&) { return true; };
+
     const auto put_comma = [&out](bool comma) -> bool {
         if (comma)
             fmt::format_to(std::back_inserter(out), ",");
@@ -100,9 +103,20 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
             return comma;
     };
 
+    const auto put_semantic = [&out, put_comma, not_empty, put_array_str](const SemanticAttributes& value, auto&& condition, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
+        if (condition(value)) {
+            put_comma(comma);
+            if (!after_comma.empty())
+                fmt::format_to(std::back_inserter(out), "{}", after_comma);
+            fmt::format_to(std::back_inserter(out), "\"{}\":{{", key);
+            [[maybe_unused]] auto comma_inside = put_array_str(value.clades, not_empty, "C", false);
+            fmt::format_to(std::back_inserter(out), "}}");
+            return true;
+        }
+        else
+            return comma;
+    };
 
-    const auto not_empty = [](const auto& val) { return !val.empty(); };
-    // const auto always = [](const auto&) { return true; };
 
     fmt::format_to(std::back_inserter(out), R"({{"_": "-*- js-indent-level: 1 -*-",
  "  version": "acmacs-ace-v1",
@@ -176,6 +190,7 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
         comma4 = put_str(antigen.lineage(), not_empty, "L", comma4);
         comma4 = put_str(antigen.passage(), not_empty, "P", comma4);
         comma4 = put_array_str(antigen.lab_ids(), not_empty, "l", comma4);
+        comma4 = put_semantic(antigen.semantic(), not_empty, "s", comma4);
         comma4 = put_str(antigen.aa(), not_empty, "A", comma4); // , "\n    ");
         comma4 = put_str(antigen.nuc(), not_empty, "B", comma4); // , "\n    ");
         // "s": {} -- semantic
@@ -191,10 +206,10 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
     //  "P" | str              | passage, e.g. "MDCK2/SIAT1 (2016-05-12)"
     //  "I" | str              | serum id, e.g "CDC 2016-045"
     //  "s" | str              | serum species, e.g "FERRET"
-    //  "h" | array of numbers | homologous antigen indices, e.g. [0]
     //  "A" | str              | aligned amino-acid sequence
     //  "B" | str              | aligned nucleotide sequence
     //  "s" | key-value  pairs | semantic attributes by group (see below the table)
+    //  "h" | array of numbers | DEPRECATED homologous antigen indices, e.g. [0]
     //  "C" | str              | (DEPRECATED, use "s") continent: "ASIA", "AUSTRALIA-OCEANIA", "NORTH-AMERICA", "EUROPE", "RUSSIA", "AFRICA", "MIDDLE-EAST", "SOUTH-AMERICA", "CENTRAL-AMERICA"
     //  "c" | array of str     | (DEPRECATED, use "s") clades, e.g. ["5.2.1"]
     //  "S" | str              | (DEPRECATED, use "s") single letter semantic boolean attributes: E - egg
@@ -211,10 +226,10 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
         comma6 = put_str(serum.passage(), not_empty, "P", comma6);
         comma6 = put_str(serum.serum_id(), not_empty, "I", comma6);
         comma6 = put_str(serum.serum_species(), not_empty, "s", comma6);
-        // comma6 = put_array_int(serum.homologous_antigens(), not_empty, "h", comma6);
+        // DEPRECATED comma6 = put_array_int(serum.homologous_antigens(), not_empty, "h", comma6);
+        comma6 = put_semantic(serum.semantic(), not_empty, "s", comma6);
         comma6 = put_str(serum.aa(), not_empty, "A", comma6); // , "\n    ");
         comma6 = put_str(serum.nuc(), not_empty, "B", comma6); // , "\n    ");
-        // "s": {} -- semantic
         fmt::format_to(std::back_inserter(out), "}}");
     }
     fmt::format_to(std::back_inserter(out), "\n  ]");

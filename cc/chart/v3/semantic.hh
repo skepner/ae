@@ -11,6 +11,8 @@ namespace ae::chart::v3
       public:
         bool operator==(const SemanticAttributes&) const = default;
 
+        bool empty() const { return clades.empty(); }
+
         sequences::clades_t clades;
     };
 
