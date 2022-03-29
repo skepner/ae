@@ -145,9 +145,9 @@ void ae::py::chart_v3_tests(pybind11::module_& chart_v3_submodule)
 
     // ----------------------------------------------------------------------
 
-    pybind11::class_<serum_coverage_serum_t>(chart_v3_submodule, "SerumCoverage") //
-        .def_readonly("within", &serum_coverage_serum_t::within)                  //
-        .def_readonly("outside", &serum_coverage_serum_t::outside)                //
+    pybind11::class_<serum_coverage_serum_t>(chart_v3_submodule, "SerumCoverage")                        //
+        .def("within", [](const serum_coverage_serum_t& cov) { return to_vector_base_t(cov.within); })   //
+        .def("outside", [](const serum_coverage_serum_t& cov) { return to_vector_base_t(cov.outside); }) //
         ;
 }
 
