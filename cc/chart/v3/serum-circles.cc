@@ -4,8 +4,8 @@
 
 namespace ae::chart::v3
 {
-    static void set_theoretical(serum_circle_serum_t& serum_data);
-    static void set_empirical(serum_circle_serum_t& serum_data, const Layout& layout, const Titers& titers);
+    static void set_theoretical(serum_circles_for_serum_t& serum_data);
+    static void set_empirical(serum_circles_for_serum_t& serum_data, const Layout& layout, const Titers& titers);
 
     class titer_distance_t
     {
@@ -27,14 +27,14 @@ namespace ae::chart::v3
 
 // ----------------------------------------------------------------------
 
-ae::chart::v3::serum_circles_t ae::chart::v3::serum_circles(const Chart& chart, const Projection& projection, serum_circle_fold fold)
+std::vector<ae::chart::v3::serum_circles_for_serum_t> ae::chart::v3::serum_circles(const Chart& chart, const Projection& projection, serum_circle_fold fold)
 {
     const auto column_bases = chart.column_bases(projection.minimum_column_basis());
-    serum_circles_t circles;
+    std::vector<serum_circles_for_serum_t> circles;
 
     for (const auto sr_no : chart.sera().size()) {
         // AD_DEBUG("homologous SR {:4d} \"{}\": {}", sr_no, chart.sera()[sr_no].designation(), chart.antigens().homologous(chart.sera()[sr_no]));
-        auto& serum_data = circles.sera.emplace_back(sr_no, column_bases[sr_no], fold);
+        auto& serum_data = circles.emplace_back(sr_no, column_bases[sr_no], fold);
         for (const auto ag_no : chart.antigens().homologous(chart.sera()[sr_no])) {
             serum_data.antigens.push_back({.antigen_no = ag_no, .titer = chart.titers().titer(ag_no, sr_no)});
             set_theoretical(serum_data);
@@ -60,7 +60,7 @@ inline bool less(std::optional<double> v1, std::optional<double> v2)
         return false;
 }
 
-std::optional<double> ae::chart::v3::serum_circle_serum_t::theoretical() const
+std::optional<double> ae::chart::v3::serum_circles_for_serum_t::theoretical() const
 {
     const auto val = std::min_element(antigens.begin(), antigens.end(), [](const auto& a1, const auto& a2) { return less(a1.theoretical, a2.theoretical); })->theoretical;
     if (val)
@@ -72,7 +72,7 @@ std::optional<double> ae::chart::v3::serum_circle_serum_t::theoretical() const
 
 // ----------------------------------------------------------------------
 
-std::optional<double> ae::chart::v3::serum_circle_serum_t::empirical() const
+std::optional<double> ae::chart::v3::serum_circles_for_serum_t::empirical() const
 {
     const auto val = std::min_element(antigens.begin(), antigens.end(), [](const auto& a1, const auto& a2) { return less(a1.empirical, a2.empirical); })->empirical;
     if (val)
@@ -91,7 +91,7 @@ std::optional<double> ae::chart::v3::serum_circle_serum_t::empirical() const
 // is fold + log2(max titer for serum S against any antigen A) - log2(homologous titer for serum S)
 // where fold is 2 by default (4-fold).
 
-void ae::chart::v3::set_theoretical(serum_circle_serum_t& serum_data)
+void ae::chart::v3::set_theoretical(serum_circles_for_serum_t& serum_data)
 {
     for (auto& antigen_data : serum_data.antigens) {
         if (antigen_data.titer.is_regular()) {
@@ -135,7 +135,7 @@ void ae::chart::v3::set_theoretical(serum_circle_serum_t& serum_data)
 // If there are multiple optima with equal sums of 2 and 3, then the
 // radius is a mean of optimal radii.
 
-void ae::chart::v3::set_empirical(serum_circle_serum_t& serum_data, const Layout& layout, const Titers& titers)
+void ae::chart::v3::set_empirical(serum_circles_for_serum_t& serum_data, const Layout& layout, const Titers& titers)
 {
     for (auto& antigen_data : serum_data.antigens) {
         if (!layout.point_has_coordinates(titers.number_of_antigens() + serum_data.serum_no)) {

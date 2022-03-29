@@ -42,7 +42,7 @@ namespace ae::py
                                                      ae::chart::v3::avidity_test::settings_t{.adjust_step = adjust_step, .min_adjust = min_adjust, .max_adjust = max_adjust, .rough = rough});
         }
 
-        ae::chart::v3::serum_circles_t serum_circles(double fold) { return ae::chart::v3::serum_circles(*chart, projection, ae::chart::v3::serum_circle_fold{fold}); }
+        auto serum_circles(double fold) { return ae::chart::v3::serum_circles(*chart, projection, ae::chart::v3::serum_circle_fold{fold}); }
     };
 }
 

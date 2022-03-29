@@ -24,25 +24,26 @@ namespace ae::chart::v3
         bool valid_empirical() const { return empirical.has_value(); }
     };
 
-    struct serum_circle_serum_t
+    struct serum_circles_for_serum_t
     {
         serum_index serum_no;
         double column_basis;
         serum_circle_fold fold;
         std::vector<serum_circle_antigen_t> antigens{};
 
-        serum_circle_serum_t(serum_index sr_no, double cb, serum_circle_fold a_fold) : serum_no{sr_no}, column_basis{cb}, fold{a_fold} {}
+        serum_circles_for_serum_t(serum_index sr_no, double cb, serum_circle_fold a_fold) : serum_no{sr_no}, column_basis{cb}, fold{a_fold} {}
         bool valid() const { return !antigens.empty(); }
         std::optional<double> theoretical() const;
         std::optional<double> empirical() const;
     };
 
-    struct serum_circles_t
-    {
-        std::vector<serum_circle_serum_t> sera{};
-    };
+    std::vector<serum_circles_for_serum_t> serum_circles(const Chart& chart, const Projection& projection, serum_circle_fold fold);
 
-    serum_circles_t serum_circles(const Chart& chart, const Projection& projection, serum_circle_fold fold);
+    // ----------------------------------------------------------------------
+
+    struct serum_coverage_serum_t
+    {
+    };
 
 } // namespace ae::chart::v3
 
