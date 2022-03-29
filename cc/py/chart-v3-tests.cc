@@ -142,6 +142,13 @@ void ae::py::chart_v3_tests(pybind11::module_& chart_v3_submodule)
                  return "unknown";
              }) //
         ;
+
+    // ----------------------------------------------------------------------
+
+    pybind11::class_<serum_coverage_serum_t>(chart_v3_submodule, "SerumCoverage") //
+        .def_readonly("within", &serum_coverage_serum_t::within)                  //
+        .def_readonly("outside", &serum_coverage_serum_t::outside)                //
+        ;
 }
 
 // ----------------------------------------------------------------------

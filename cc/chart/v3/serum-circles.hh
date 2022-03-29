@@ -43,7 +43,19 @@ namespace ae::chart::v3
 
     struct serum_coverage_serum_t
     {
+        antigen_indexes within{}; // indexes of antigens which are within 4fold (fold=2.0) distance from homologous titer
+        antigen_indexes outside{}; // indexes of antigens which are outside 4fold (fold=2.0) distance from homologous titer
+        std::optional<antigen_index> homologous_antigen{};
     };
+
+    serum_coverage_serum_t serum_coverage(const Titers& titers, const Titer& homologous_titer, serum_index serum_no, serum_circle_fold fold);
+
+    inline serum_coverage_serum_t serum_coverage(const Titers& titers, antigen_index antigen_no, serum_index serum_no, serum_circle_fold fold)
+    {
+        auto cov = serum_coverage(titers, titers.titer(antigen_no, serum_no), serum_no, fold);
+        cov.homologous_antigen = antigen_no;
+        return cov;
+    }
 
 } // namespace ae::chart::v3
 

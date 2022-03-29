@@ -17,13 +17,14 @@ def main(args: argparse.Namespace):
                 ["", "", format_radius(res.theoretical()), format_radius(res.empirical())],
             ]
             for ag_data in res:
+                coverage = chart.titers().serum_coverage(antigen_no=ag_data.antigen_no, serum_no=res.serum_no, fold=args.fold)
                 theor = format_radius(ag_data.theoretical)
                 empir = format_radius(ag_data.empirical)
                 if not empir:
                     status = ag_data.status()
                 else:
                     status = ""
-                table.append(["", ag_data.titer, theor, empir, status, ag_data.antigen_no, chart.antigen(ag_data.antigen_no).designation()])
+                table.append(["", ag_data.titer, theor, empir, status, ag_data.antigen_no, chart.antigen(ag_data.antigen_no).designation(), f"coverage within:{len(coverage.within)} outside:{len(coverage.outside)}"])
             print(format_table.format_table(table, field_sep=" "), end="\n\n")
         else:
             print("  no homologous antigens\n")

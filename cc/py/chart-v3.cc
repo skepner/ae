@@ -435,6 +435,10 @@ void ae::py::chart_v3(pybind11::module_& mdl)
             "titrations_for_antigen", [](const Titers& titers, size_t antigen_no) { return titers.titrations_for_antigen(antigen_index{antigen_no}); }, "antigen_no"_a) //
         .def(
             "titrations_for_serum", [](const Titers& titers, size_t serum_no) { return titers.titrations_for_serum(serum_index{serum_no}); }, "serum_no"_a) //
+        .def(
+            "serum_coverage",
+            [](const Titers& titers, size_t antigen_no, size_t serum_no, double fold) { return serum_coverage(titers, antigen_index{antigen_no}, serum_index{serum_no}, serum_circle_fold{fold}); },
+            "antigen_no"_a, "serum_no"_a, "fold"_a = 2.0) //
         ;
 
     pybind11::class_<Titer>(chart_v3_submodule, "Titer")                                                                      //

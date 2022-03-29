@@ -226,3 +226,27 @@ void ae::chart::v3::set_empirical(serum_circles_for_serum_t& serum_data, const L
 } // ae::chart::v3::set_empirical
 
 // ----------------------------------------------------------------------
+
+ae::chart::v3::serum_coverage_serum_t ae::chart::v3::serum_coverage(const Titers& titers, const Titer& homologous_titer, serum_index serum_no, serum_circle_fold fold)
+{
+    if (!homologous_titer.is_regular())
+        throw Error(fmt::format("cannot handle non-regular homologous titer: {}", homologous_titer));
+    const double titer_threshold = homologous_titer.logged() - *fold;
+    if (titer_threshold <= 0)
+        throw Error(fmt::format("homologous titer is too low: {}", homologous_titer));
+    serum_coverage_serum_t coverage;
+    for (const auto  ag_no : titers.number_of_antigens()) {
+        const auto& titer = titers.titer(ag_no, serum_no);
+        const double value = titer.is_dont_care() ? -1 : titer.logged_for_column_bases();
+        if (value >= titer_threshold)
+            coverage.within.insert(ag_no);
+        else if (value >= 0 && value < titer_threshold)
+            coverage.outside.insert(ag_no);
+    }
+    if (coverage.within.empty())
+        AD_WARNING("no antigens within fold from homologous titer (for serum coverage)");
+    return coverage;
+
+} // ae::chart::v3::serum_coverage
+
+// ----------------------------------------------------------------------
