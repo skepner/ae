@@ -108,6 +108,7 @@ namespace ae::sequences
         }
 
         std::shared_ptr<SeqdbSelected> select_all() const;
+        std::shared_ptr<SeqdbSelected> select_by_name(std::string_view name) const; // name only (not checked), without reassortant, passage, etc.
 
         void set_verbose(verbose verb) const { verbose_ = verb; }
         bool is_verbose() const { return verbose_ == verbose::yes; }

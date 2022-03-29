@@ -165,6 +165,23 @@ std::shared_ptr<ae::sequences::SeqdbSelected> ae::sequences::Seqdb::select_all()
 
 // ----------------------------------------------------------------------
 
+std::shared_ptr<ae::sequences::SeqdbSelected> ae::sequences::Seqdb::select_by_name(std::string_view name) const // name only (not checked), without reassortant, passage, etc.
+{
+    if (ae::string::startswith(name, fmt::format("{}/", subtype())))
+        name.remove_prefix(subtype().size() + 1);
+    auto selected = std::make_shared<SeqdbSelected>(*this);
+    for (const auto& entry : entries_) {
+        if (entry.name == name) {
+            for (const auto& seq : entry.seqs)
+                selected->refs_.push_back(SeqdbSeqRef{.entry = &entry, .seq = &seq});
+        }
+    }
+    return selected;
+
+} // ae::sequences::Seqdb::select_by_name
+
+// ----------------------------------------------------------------------
+
 const ae::sequences::Seqdb::seq_id_index_t& ae::sequences::Seqdb::seq_id_index() const
 {
     if (seq_id_index_.empty()) {

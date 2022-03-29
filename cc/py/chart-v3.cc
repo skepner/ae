@@ -5,6 +5,8 @@
 #include "chart/v3/procrustes.hh"
 #include "chart/v3/grid-test.hh"
 #include "pybind11/detail/common.h"
+#include "sequences/seqdb.hh"
+#include "sequences/seqdb-selected.hh"
 
 // ======================================================================
 
@@ -140,6 +142,35 @@ namespace ae::py
         return ae::chart::v3::procrustes(proj1.projection, proj2.projection, common, scaling ? ae::chart::v3::procrustes_scaling_t::yes : ae::chart::v3::procrustes_scaling_t::no);
     }
 
+    // ----------------------------------------------------------------------
+
+    static inline std::pair<size_t, size_t> populate_from_seqdb(Chart& chart)
+    {
+        const auto& seqdb = ae::sequences::seqdb_for_subtype(chart.info().virus_subtype());
+
+        const auto populate = [&seqdb](auto& ag_srs) -> size_t {
+            size_t populated{0};
+            for (auto& ag_sr : ag_srs) {
+                auto selected = seqdb.select_by_name(ag_sr.name());
+                selected->filter_name(ag_sr.name(), ag_sr.reassortant(), ag_sr.passage().to_string());
+                if (!selected->empty()) {
+                    selected->find_masters();
+                    // if (const char* clades_file = getenv("AC_CLADES_JSON_V2"); clades_file)
+                    //     selected->find_clades(clades_file);
+                    ag_sr.aa(selected->at(0).aa());
+                    ag_sr.nuc(selected->at(0).nuc());
+                    ++populated;
+                    // for (const auto& clade : selected->at(0).clades)
+                    //     ag_sr_ptr->add_clade(clade);
+                }
+            }
+            AD_DEBUG("populated {}", populated);
+            return populated;
+        };
+
+        return std::make_pair(populate(chart.antigens()), populate(chart.sera()));
+    }
+
 } // namespace ae::py
 
 // ======================================================================
@@ -177,6 +208,8 @@ void ae::py::chart_v3(pybind11::module_& mdl)
         .def("forced_column_bases", [](const Chart& chart) { return chart.forced_column_bases().data(); })      //
 
         .def("info", [](std::shared_ptr<Chart> chart) { return new InfoRef{chart}; }) //
+
+        .def("populate_from_seqdb", &populate_from_seqdb, pybind11::doc("populate with sequences from seqdb, returns number of antigens and number of sera that have sequences")) //
 
         // ----------------------------------------------------------------------
 

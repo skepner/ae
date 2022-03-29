@@ -11,10 +11,9 @@ import ae_backend
 
 def main(args: argparse.Namespace):
     for filename in args.charts:
-        chart = ae_backend.chart_v3.Chart(filename)
-        ag, sr = chart.populate_from_seqdb()
-        print(f"AG {ag:4d} of {chart.number_of_antigens():4d}\nSR {sr:4d} of {chart.number_of_sera():4d}")
-        chart.write(filename=filename)
+        chart = ae_backend.chart_v2.Chart(filename)
+        chart.populate_from_seqdb(remove_old_sequences_clades=True)
+        chart.export(filename=filename, program_name=sys.argv[0])
 
 # ----------------------------------------------------------------------
 

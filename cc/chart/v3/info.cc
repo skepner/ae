@@ -115,6 +115,20 @@ std::string ae::chart::v3::Info::make_virus_subtype() const
 
 // ----------------------------------------------------------------------
 
+ae::virus::type_subtype_t ae::chart::v3::Info::virus_subtype() const
+{
+    if (!type_subtype().empty())
+        return type_subtype();
+    for (const auto& src : sources_) {
+        if (!src.type_subtype().empty())
+            return src.type_subtype();
+    }
+    return {};
+
+} // ae::chart::v3::Info::virus_subtype
+
+// ----------------------------------------------------------------------
+
 std::string ae::chart::v3::Info::make_assay(Assay::assay_name_t tassay) const
 {
     if (const auto ass = assay().name(tassay); !ass.empty())
