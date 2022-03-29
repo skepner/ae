@@ -85,42 +85,62 @@ std::string ae::sequences::Clades::subtype_key(const ae::virus::type_subtype_t& 
 
 // ----------------------------------------------------------------------
 
-ae::sequences::Clades::subset_t ae::sequences::Clades::get(const ae::virus::type_subtype_t& subtype, const lineage_t& lineage, std::string_view set) const
+const ae::sequences::Clades::entries_t* ae::sequences::Clades::get_entries(const ae::virus::type_subtype_t& subtype, const lineage_t& lineage) const
+{
+    if (const auto full_set = data_.find(subtype_key(subtype, lineage)); full_set != data_.end())
+        return &full_set->second;
+    else
+        return nullptr;
+
+} // ae::sequences::Clades::get_entries
+
+// ----------------------------------------------------------------------
+
+ae::sequences::Clades::subset_t ae::sequences::Clades::get_subset(const ae::virus::type_subtype_t& subtype, const lineage_t& lineage, std::string_view set) const
 {
     subset_t subset;
-    if (const auto full_set = data_.find(subtype_key(subtype, lineage)); full_set != data_.end()) {
+    if (const auto* entries = get_entries(subtype, lineage); entries) {
         if (!set.empty()) {
-            for (const auto& en : full_set->second) {
+            for (const auto& en : *entries) {
                 if (en.set == set)
                     subset.push_back(&en);
             }
         }
         else
-            std::transform(std::begin(full_set->second), std::end(full_set->second), std::back_inserter(subset), [](const auto& en) { return &en; });
+            std::transform(std::begin(*entries), std::end(*entries), std::back_inserter(subset), [](const auto& en) { return &en; });
     }
     // for (const auto* en : subset)
     //     fmt::print(">>>> \"{}\" {} \"{}\"\n", en->name, en->aa, en->set);
     return subset;
 
-} // ae::sequences::Clades::get
+} // ae::sequences::Clades::get_subset
+
+// ----------------------------------------------------------------------
+
+std::vector<std::string> ae::sequences::Clades::clades(const sequence_aa_t& aa, const sequence_nuc_t& nuc, const entries_t& entries, std::string_view set)
+{
+    std::vector<std::string> clades;
+    for (const auto& en : entries) {
+        if ((set.empty() || set == en.set) && (aa.empty() || en.aa.empty() || matches_all(aa, en.aa)) && (nuc.empty() || en.nuc.empty() || matches_all(nuc, en.nuc))) {
+            // AD_DEBUG("Clades::clades \"{}\"", en.name);
+            clades.push_back(en.name);
+        }
+    }
+    std::sort(std::begin(clades), std::end(clades));
+    clades.erase(std::unique(std::begin(clades), std::end(clades)), std::end(clades));
+    return clades;
+
+} // ae::sequences::Clades::clades
 
 // ----------------------------------------------------------------------
 
 std::vector<std::string> ae::sequences::Clades::clades(const sequence_aa_t& aa, const sequence_nuc_t& nuc, const ae::virus::type_subtype_t& subtype, const lineage_t& lineage,
                                                        std::string_view set) const
 {
-    std::vector<std::string> clades;
-    if (const auto full_set = data_.find(subtype_key(subtype, lineage)); full_set != data_.end()) {
-        for (const auto& en : full_set->second) {
-            if ((set.empty() || set == en.set) && (aa.empty() || en.aa.empty() || matches_all(aa, en.aa)) && (nuc.empty() || en.nuc.empty() || matches_all(nuc, en.nuc))) {
-                // AD_DEBUG("Clades::clades \"{}\"", en.name);
-                clades.push_back(en.name);
-            }
-        }
-    }
-    std::sort(std::begin(clades), std::end(clades));
-    clades.erase(std::unique(std::begin(clades), std::end(clades)), std::end(clades));
-    return clades;
+    if (const auto* entries = get_entries(subtype, lineage); entries)
+        return clades(aa, nuc, *entries, set);
+    else
+        return {};
 
 } // ae::sequences::Clades::clades
 

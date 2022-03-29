@@ -217,14 +217,25 @@ ae::sequences::SeqdbSelected& ae::sequences::SeqdbSelected::move_name_to_beginni
 
 // ----------------------------------------------------------------------
 
-ae::sequences::SeqdbSelected& ae::sequences::SeqdbSelected::find_clades(std::string_view clades_json_file)
+ae::sequences::SeqdbSelected& ae::sequences::SeqdbSelected::find_clades(const Clades& clades)
 {
     if (!empty()) {
-        Clades clades{clades_json_file};
         find_masters();
-        for (auto& ref : refs_)
-            ref.clades = clades.clades(ref.aa(), ref.nuc(), seqdb_.subtype(), ref.entry->lineage);
+        if (const auto* entries = clades.get_entries(seqdb_.subtype(), refs_[0].entry->lineage); entries) {
+            for (auto& ref : refs_)
+                ref.clades = clades.clades(ref.aa(), ref.nuc(), *entries);
+        }
     }
+    return *this;
+
+} // ae::sequences::SeqdbSelected::find_clades
+
+// ----------------------------------------------------------------------
+
+ae::sequences::SeqdbSelected& ae::sequences::SeqdbSelected::find_clades(std::string_view clades_json_file)
+{
+    if (!empty())
+        find_clades(Clades{clades_json_file});
     return *this;
 
 } // ae::sequences::SeqdbSelected::find_clades

@@ -5,6 +5,7 @@
 #include "chart/v3/procrustes.hh"
 #include "chart/v3/grid-test.hh"
 #include "pybind11/detail/common.h"
+#include "sequences/clades.hh"
 #include "sequences/seqdb.hh"
 #include "sequences/seqdb-selected.hh"
 
@@ -147,16 +148,22 @@ namespace ae::py
     static inline std::pair<size_t, size_t> populate_from_seqdb(Chart& chart)
     {
         const auto& seqdb = ae::sequences::seqdb_for_subtype(chart.info().virus_subtype());
+        const auto load_clades = []() -> ae::sequences::Clades {
+            if (const char* clades_file = getenv("AC_CLADES_JSON_V2"); clades_file)
+                return ae::sequences::Clades{clades_file};
+            else
+                return {};
+        };
+        const auto clades{load_clades()};
 
-        const auto populate = [&seqdb](auto& ag_srs) -> size_t {
+        const auto populate = [&seqdb, &clades](auto& ag_srs) -> size_t {
             size_t populated{0};
             for (auto& ag_sr : ag_srs) {
                 auto selected = seqdb.select_by_name(ag_sr.name());
                 selected->filter_name(ag_sr.name(), ag_sr.reassortant(), ag_sr.passage().to_string());
                 if (!selected->empty()) {
                     selected->find_masters();
-                    // if (const char* clades_file = getenv("AC_CLADES_JSON_V2"); clades_file)
-                    //     selected->find_clades(clades_file);
+                    selected->find_clades(clades);
                     ag_sr.aa(selected->at(0).aa());
                     ag_sr.nuc(selected->at(0).nuc());
                     ++populated;

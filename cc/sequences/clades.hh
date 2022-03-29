@@ -25,15 +25,19 @@ namespace ae::sequences
             std::string set{};
         };
 
+        using entries_t = std::vector<entry_t>;
         using subset_t = std::vector<const entry_t*>;
 
+        Clades() = default;
         Clades(const std::filesystem::path& clades_file) { load(clades_file); }
 
         std::vector<std::string> clades(const sequence_aa_t& aa, const sequence_nuc_t& nuc, const ae::virus::type_subtype_t& subtype, const lineage_t& lineage, std::string_view set = {}) const;
-        subset_t get(const ae::virus::type_subtype_t& subtype, const lineage_t& lineage, std::string_view set = {}) const;
+        const entries_t* get_entries(const ae::virus::type_subtype_t& subtype, const lineage_t& lineage) const;
+        subset_t get_subset(const ae::virus::type_subtype_t& subtype, const lineage_t& lineage, std::string_view set = {}) const;
+
+        static std::vector<std::string> clades(const sequence_aa_t& aa, const sequence_nuc_t& nuc, const entries_t& entries, std::string_view set = {});
 
       private:
-        using entries_t = std::vector<entry_t>;
         std::unordered_map<std::string, entries_t> data_{};
 
         void load(const std::filesystem::path& clades_file);

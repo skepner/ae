@@ -6,6 +6,8 @@
 
 namespace ae::sequences
 {
+    class Clades;
+
     class SeqdbSelected
     {
       public:
@@ -83,6 +85,7 @@ namespace ae::sequences
         }
 
         SeqdbSelected& find_clades(std::string_view clades_json_file);
+        SeqdbSelected& find_clades(const Clades& clades);
 
         SeqdbSelected& remove_hash_duplicates() // keep most recent
         {
