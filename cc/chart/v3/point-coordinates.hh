@@ -114,7 +114,7 @@ namespace ae::chart::v3
         using point_coordinates_with_storage<storage_t>::point_coordinates_with_storage;
         point_coordinates(number_of_dimensions_t num_dim) : point_coordinates_with_storage<storage_t>(num_dim) {}
         point_coordinates(std::initializer_list<double> vals) : point_coordinates_with_storage<storage_t>(vals.begin(), vals.end()) {}
-        template <typename Storage> explicit point_coordinates(const point_coordinates_with_storage<Storage>& src) : point_coordinates_with_storage<storage_t>(src.begin(), src.end()) {}
+        template <typename Storage> point_coordinates(const point_coordinates_with_storage<Storage>& src) : point_coordinates_with_storage<storage_t>(src.begin(), src.end()) {}
         template <typename Storage> point_coordinates& operator=(const point_coordinates_with_storage<Storage>& src)
         {
             storage().assign(src.begin(), src.end());

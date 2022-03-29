@@ -51,7 +51,7 @@ namespace ae::chart::v3
 
         const AgSrs& primary_;
         const AgSrs& secondary_;
-        std::vector<match_t> match_;
+        std::vector<match_t> match_{};
         size_t number_of_common_{0};
         const index_t min_number_;
 

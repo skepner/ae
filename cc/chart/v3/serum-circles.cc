@@ -11,16 +11,16 @@ namespace ae::chart::v3
     {
       public:
         titer_distance_t(const Titer& aTiter, double aColumnBase, double aDistance)
-            : titer(aTiter), similarity(aTiter.is_dont_care() ? 0.0 : aTiter.logged_for_column_bases()), final_similarity(std::min(aColumnBase, similarity)), distance(aDistance)
+            : titer{aTiter}, similarity{aTiter.is_dont_care() ? 0.0 : aTiter.logged_for_column_bases()}, final_similarity{std::min(aColumnBase, similarity)}, distance{aDistance}
         {
         }
-        titer_distance_t() : similarity(0), final_similarity(0), distance(std::numeric_limits<double>::quiet_NaN()) {}
+        titer_distance_t() = default;
         explicit operator bool() const { return !titer.is_dont_care() && !std::isnan(distance); }
 
-        Titer titer;
-        double similarity;
-        double final_similarity;
-        double distance;
+        Titer titer{};
+        double similarity{0.0};
+        double final_similarity{0.0};
+        double distance{std::numeric_limits<double>::quiet_NaN()};
     };
 
 } // namespace ae::chart::v3

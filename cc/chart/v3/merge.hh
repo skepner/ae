@@ -65,11 +65,11 @@ namespace ae::chart::v3
       private:
         std::shared_ptr<Chart> chart1_, chart2_; // keep charts because common_ uses Antigens& and Sera&
         common_antigens_sera_t common_;
-        index_mapping_t<antigen_index> antigens_primary_target_, antigens_secondary_target_;
-        index_mapping_t<serum_index> sera_primary_target_, sera_secondary_target_;
+        index_mapping_t<antigen_index> antigens_primary_target_{}, antigens_secondary_target_{};
+        index_mapping_t<serum_index> sera_primary_target_{}, sera_secondary_target_{};
         antigen_index target_antigens_{0};
         serum_index target_sera_{0};
-        Titers::titer_merge_report titer_report_;
+        Titers::titer_merge_report titer_report_{};
 
         void build(const merge_settings_t& settings);
         antigen_indexes secondary_antigens_to_merge(const merge_settings_t& settings) const;

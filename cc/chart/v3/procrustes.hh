@@ -20,7 +20,7 @@ namespace ae::chart::v3
         Transformation transformation;
         double scale{1};
         double rms{0};
-        Layout secondary_transformed;
+        Layout secondary_transformed{};
 
         Layout apply(const Layout& source) const;
 

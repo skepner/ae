@@ -27,6 +27,8 @@ namespace ae::file
     {
       public:
         Brotli_Compressor(size_t padding = 0) : Compressor(padding) {}
+        Brotli_Compressor(const Brotli_Compressor&) = delete;
+        Brotli_Compressor& operator=(const Brotli_Compressor&) = delete;
 
         ~Brotli_Compressor() override
         {
