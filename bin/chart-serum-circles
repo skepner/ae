@@ -12,22 +12,29 @@ def main(args: argparse.Namespace):
     for res in results:
         print(f"SR {res.serum_no:4d} {chart.serum(res.serum_no).designation()} titrations:{chart.titers().titrations_for_serum(res.serum_no)}")
         if res.number_of_homologous_antigens():
-            table = [["  ", "titer", "theor", "empir", "", "", f"col-basis:{res.column_basis}", f"fold:{res.fold}"]]
+            table = [
+                ["  ", "titer", "theor", "empir", "", "", f"col-basis:{res.column_basis}", f"fold:{res.fold}"],
+                ["", "", format_radius(res.theoretical()), format_radius(res.empirical())],
+            ]
             for ag_data in res:
-                status = ""
-                if (theor := ag_data.theoretical) is not None:
-                    theor = f"{theor:5.2f}"
-                else:
-                    theor = ""
-                if (empir := ag_data.empirical) is not None:
-                    empir = f"{empir:5.2f}"
-                else:
-                    empir = ""
+                theor = format_radius(ag_data.theoretical)
+                empir = format_radius(ag_data.empirical)
+                if not empir:
                     status = ag_data.status()
+                else:
+                    status = ""
                 table.append(["", ag_data.titer, theor, empir, status, ag_data.antigen_no, chart.antigen(ag_data.antigen_no).designation()])
             print(format_table.format_table(table, field_sep=" "), end="\n\n")
         else:
             print("  no homologous antigens\n")
+
+# ----------------------------------------------------------------------
+
+def format_radius(radius):
+    if radius is not None:
+        return f"{radius:5.2f}"
+    else:
+        return ""
 
 # ----------------------------------------------------------------------
 

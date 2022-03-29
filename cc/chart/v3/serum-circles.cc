@@ -48,6 +48,42 @@ ae::chart::v3::serum_circles_t ae::chart::v3::serum_circles(const Chart& chart, 
 
 // ----------------------------------------------------------------------
 
+inline bool less(std::optional<double> v1, std::optional<double> v2)
+{
+    if (v1) {
+        if (v2)
+            return *v1 < *v2;
+        else
+            return true;
+    }
+    else
+        return false;
+}
+
+std::optional<double> ae::chart::v3::serum_circle_serum_t::theoretical() const
+{
+    const auto val = std::min_element(antigens.begin(), antigens.end(), [](const auto& a1, const auto& a2) { return less(a1.theoretical, a2.theoretical); })->theoretical;
+    if (val)
+        return std::max(*val, serum_circle_min_radius);
+    else
+        return val;
+
+} // ae::chart::v3::serum_circle_serum_t::theoretical
+
+// ----------------------------------------------------------------------
+
+std::optional<double> ae::chart::v3::serum_circle_serum_t::empirical() const
+{
+    const auto val = std::min_element(antigens.begin(), antigens.end(), [](const auto& a1, const auto& a2) { return less(a1.empirical, a2.empirical); })->empirical;
+    if (val)
+        return std::max(*val, serum_circle_min_radius);
+    else
+        return val;
+
+} // ae::chart::v3::serum_circle_serum_t::empirical
+
+// ----------------------------------------------------------------------
+
 // Low reactors are defined as >4-fold from the homologous titer,
 // hence the theoretical radius is 2 units plus the number of 2-folds
 // between max titer and the homologous titer for a serum. Saying the

@@ -112,6 +112,8 @@ void ae::py::chart_v3_tests(pybind11::module_& chart_v3_submodule)
 
     pybind11::class_<serum_circle_serum_t>(chart_v3_submodule, "SerumCircleForSerum")                                                          //
         .def_property_readonly("serum_no", [](const serum_circle_serum_t& cs) { return *cs.serum_no; })                                        //
+        .def("theoretical", &serum_circle_serum_t::theoretical)                                                                                //
+        .def("empirical", &serum_circle_serum_t::empirical)                                                                                    //
         .def_readonly("column_basis", &serum_circle_serum_t::column_basis)                                                                     //
         .def_property_readonly("fold", [](const serum_circle_serum_t& cs) { return *cs.fold; })                                                //
         .def("valid", &serum_circle_serum_t::valid)                                                                                            //
