@@ -75,6 +75,21 @@ inline void read_info(ae::chart::v3::Info& info, ::simdjson::ondemand::object so
 
 // ----------------------------------------------------------------------
 
+inline void read_semantic_attributes(ae::chart::v3::SemanticAttributes& target, ::simdjson::ondemand::object source)
+{
+    for (auto field : source) {
+        if (const std::string_view key = field.unescaped_key(); key == "C") { // clades
+            for (auto ann : field.value().get_array())
+                target.clades.insert_if_not_present(static_cast<std::string_view>(ann));
+        }
+        else {
+            unhandled_key({"c", "a/s", "s", key});
+        }
+   }
+}
+
+// ----------------------------------------------------------------------
+
 inline bool read_antigen_serum(ae::chart::v3::AntigenSerum& target, std::string_view key, ::simdjson::ondemand::value value)
 {
     bool handled{true};
@@ -103,7 +118,7 @@ inline bool read_antigen_serum(ae::chart::v3::AntigenSerum& target, std::string_
                 target.nuc(ae::sequences::sequence_nuc_t{static_cast<std::string_view>(value)});
                 break;
             case 's': // key-value  pairs                 | semantic attributes by group (see below the table)
-                handled = false;
+                read_semantic_attributes(target.semantic(), value.get_object());
                 break;
             case 'C': // str                              | (DEPRECATED, use "s") continent: "ASIA", "AUSTRALIA-OCEANIA", "NORTH-AMERICA", "EUROPE", "RUSSIA", "AFRICA", "MIDDLE-EAST", "SOUTH-AMERICA", "CENTRAL-AMERICA"
                 // handled = false;
