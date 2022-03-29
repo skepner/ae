@@ -9,7 +9,7 @@ def main(args: argparse.Namespace):
     chart = ae_backend.chart_v3.Chart(args.chart)
     results = chart.projection(args.projection).serum_circles(fold=args.fold)
     for res in results:
-        print(f"SR {res.serum_no:4d} {chart.serum(res.serum_no).designation()}")
+        print(f"SR {res.serum_no:4d} {chart.serum(res.serum_no).designation()} titrations:{chart.titers().titrations_for_serum(res.serum_no)}")
 
 # ----------------------------------------------------------------------
 
