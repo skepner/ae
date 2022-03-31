@@ -21,48 +21,23 @@ namespace ae::chart::v3
 {
     class Chart;
 
-    class Date : public named_string_t<std::string, struct date_tag>
+    using Date = named_string_t<std::string, struct date_tag>;
+
+    inline bool within_range(const Date& date, std::string_view first_date, std::string_view after_last_date)
     {
-      public:
-        using named_string_t<std::string, struct date_tag>::named_string_t;
-
-        bool within_range(std::string_view first_date, std::string_view after_last_date) const
-        {
-            return !empty() && (first_date.empty() || *this >= first_date) && (after_last_date.empty() || *this < after_last_date);
-        }
-
-        // void check() const;
-
-    }; // class Date
+        return !date.empty() && (first_date.empty() || date >= first_date) && (after_last_date.empty() || date < after_last_date);
+    }
 
     // ----------------------------------------------------------------------
 
-    class LabIds : public named_vector_t<std::string, struct LabIds_tag>
-    {
-      public:
-        using named_vector_t<std::string, struct LabIds_tag>::named_vector_t;
-
-        std::string join() const { return fmt::format("{}", fmt::join(*this, " ")); }
-
-    }; // class LabIds
+    using LabIds = named_vector_t<std::string, struct LabIds_tag>;
+    inline std::string join(const LabIds& lab_ids) { return fmt::format("{}", fmt::join(lab_ids, " ")); }
 
     // ----------------------------------------------------------------------
 
-    class SerumId : public named_string_t<std::string, struct SerumId_tag>
-    {
-      public:
-        using named_string_t<std::string, struct SerumId_tag>::named_string_t;
+    using SerumId = named_string_t<std::string, struct SerumId_tag>;
 
-    }; // class SerumId
-
-    // ----------------------------------------------------------------------
-
-    class SerumSpecies : public named_string_t<std::string, struct SerumSpecies_tag>
-    {
-      public:
-        using named_string_t<std::string, struct SerumSpecies_tag>::named_string_t;
-
-    }; // class SerumSpecies
+    using SerumSpecies = named_string_t<std::string, struct SerumSpecies_tag>;
 
     // ----------------------------------------------------------------------
 
@@ -204,9 +179,9 @@ namespace ae::chart::v3
         Element& add() { return data_.emplace_back(); }
 
         size_t max_designation() const
-            {
-                return std::accumulate(begin(), end(), 0ul, [](size_t mx, const Element& elt) { return std::max(mx, elt.designation_size()); });
-            }
+        {
+            return std::accumulate(begin(), end(), 0ul, [](size_t mx, const Element& elt) { return std::max(mx, elt.designation_size()); });
+        }
 
         // ----------------------------------------------------------------------
 
@@ -264,7 +239,6 @@ namespace ae::chart::v3
       public:
         using AntigensSera<Serum>::AntigensSera;
         bool operator==(const Sera&) const = default;
-
     };
 
 } // namespace ae::chart::v3

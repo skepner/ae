@@ -1,4 +1,4 @@
-# Time-stamp: <2022-03-28 14:33:39 eu>
+# Time-stamp: <2022-03-31 09:25:00 eu>
 * acmacs-ace-v1 format to store chart data
 
 fields with names starting with ? are ignored
@@ -31,7 +31,7 @@ fields with names starting with ? are ignored
 |             |     | "l" |     |     | array of str                     | lab ids ([lab#id]), e.g. ["CDC#2013706008"]                                                                                                                    |
 |             |     | "A" |     |     | str                              | aligned amino-acid sequence                                                                                                                                    |
 |             |     | "B" |     |     | str                              | aligned nucleotide sequence                                                                                                                                    |
-|             |     | "s" |     |     | key-value  pairs                 | semantic attributes by group (see below the table)                                                                                                             |
+|             |     | "T" |     |     | key-value  pairs                 | semantic attributes by group (see below the table)                                                                                                             |
 |             |     | "C" |     |     | str                              | (DEPRECATED, use "s") continent: "ASIA", "AUSTRALIA-OCEANIA", "NORTH-AMERICA", "EUROPE", "RUSSIA", "AFRICA", "MIDDLE-EAST", "SOUTH-AMERICA", "CENTRAL-AMERICA" |
 |             |     | "c" |     |     | array of str                     | (DEPRECATED, use "s") clades, e.g. ["5.2.1"]                                                                                                                   |
 |             |     | "S" |     |     | str                              | (DEPRECATED, use "s") single letter semantic boolean attributes: R - reference, E - egg, V - current vaccine, v - previous vaccine, S - vaccine surrogate      |
@@ -46,7 +46,7 @@ fields with names starting with ? are ignored
 |             |     | "I" |     |     | str                              | serum id, e.g "CDC 2016-045"                                                                                                                                   |
 |             |     | "A" |     |     | str                              | aligned amino-acid sequence                                                                                                                                    |
 |             |     | "B" |     |     | str                              | aligned nucleotide sequence                                                                                                                                    |
-|             |     | "s" |     |     | key-value  pairs                 | semantic attributes by group (see below the table)                                                                                                             |
+|             |     | "T" |     |     | key-value  pairs                 | semantic attributes by group (see below the table)                                                                                                             |
 |             |     | "h" |     |     | array of numbers                 | DEPRECATED homologous antigen indices, e.g. [0]                                                                                                                          |
 |             |     | "C" |     |     | str                              | (DEPRECATED, use "s") continent: "ASIA", "AUSTRALIA-OCEANIA", "NORTH-AMERICA", "EUROPE", "RUSSIA", "AFRICA", "MIDDLE-EAST", "SOUTH-AMERICA", "CENTRAL-AMERICA" |
 |             |     | "c" |     |     | array of str                     | (DEPRECATED, use "s") clades, e.g. ["5.2.1"]                                                                                                                   |

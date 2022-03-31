@@ -190,7 +190,7 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
         comma4 = put_str(antigen.lineage(), not_empty, "L", comma4);
         comma4 = put_str(antigen.passage(), not_empty, "P", comma4);
         comma4 = put_array_str(antigen.lab_ids(), not_empty, "l", comma4);
-        comma4 = put_semantic(antigen.semantic(), not_empty, "s", comma4);
+        comma4 = put_semantic(antigen.semantic(), not_empty, "T", comma4);
         comma4 = put_str(antigen.aa(), not_empty, "A", comma4); // , "\n    ");
         comma4 = put_str(antigen.nuc(), not_empty, "B", comma4); // , "\n    ");
         // "s": {} -- semantic
@@ -227,7 +227,7 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
         comma6 = put_str(serum.serum_id(), not_empty, "I", comma6);
         comma6 = put_str(serum.serum_species(), not_empty, "s", comma6);
         // DEPRECATED comma6 = put_array_int(serum.homologous_antigens(), not_empty, "h", comma6);
-        comma6 = put_semantic(serum.semantic(), not_empty, "s", comma6);
+        comma6 = put_semantic(serum.semantic(), not_empty, "T", comma6);
         comma6 = put_str(serum.aa(), not_empty, "A", comma6); // , "\n    ");
         comma6 = put_str(serum.nuc(), not_empty, "B", comma6); // , "\n    ");
         fmt::format_to(std::back_inserter(out), "}}");
