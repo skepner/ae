@@ -33,6 +33,7 @@ def bvic(subtype: str, args: argparse.Namespace):
         .exclude_name([
             "ANHUI_JINGHU/63/2019", # garbage in 406-414 leading to a long branch (2021-0722)
             "LISBOA/NISU182_17-18/2018", # yamagata, long branch 2021-1117
+            # "ZAMBIA/503/2021", # potential long branch 2022-0401
             ])
         .include_name(outgroup)    # outgroup BRISBANE/60/2008, B/CHONGQING BANAN/1840/2017 (V1A)
         .remove_hash_duplicates()
