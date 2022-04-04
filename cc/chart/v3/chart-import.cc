@@ -46,6 +46,9 @@ inline bool read_table_source(ae::chart::v3::TableSource& target, std::string_vi
             case 'r':
                 target.rbc_species(ae::chart::v3::RbcSpecies{static_cast<std::string_view>(value)});
                 break;
+            case 's':
+                // target.lineage(ae::chart::v3::Lineage{static_cast<std::string_view>(value)});
+                break;
             default:
                 handled = false;
                 break;
