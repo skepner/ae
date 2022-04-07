@@ -52,7 +52,9 @@ def find(subtype: str, lineage: str, names: list[str], args: argparse.Namespace)
     selected.filter_dates(args.start_date, args.end_date)
 
     reporting = args.aa or args.country or args.continent or names
-    if not reporting:
+    if args.masters_only:
+        selected.keep_masters_only()
+    elif not reporting:
         selected.remove_hash_duplicates().replace_with_master()
     else:
         selected.find_masters()
@@ -177,7 +179,8 @@ try:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("-b", "--start-date", dest="start_date", default="")
     parser.add_argument("-e", "--end-date", dest="end_date", default="")
-    parser.add_argument("--with-issues", dest="with_issues", action="store_true", default=False)
+    parser.add_argument("--with-issues", action="store_true", default=False)
+    parser.add_argument("--masters-only", action="store_true", default=False)
     parser.add_argument("-s", "--sort", dest="sort_order", default="+date", help="date, +date, -date, name, +name, -name")
     parser.add_argument("--fas-aa", dest="fasta_aa", type=Path)
     parser.add_argument("--fas-nuc", dest="fasta_nuc", type=Path)

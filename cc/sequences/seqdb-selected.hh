@@ -29,6 +29,13 @@ namespace ae::sequences
             return *this;
         }
 
+        SeqdbSelected& keep_masters_only(bool keep = true)
+        {
+            if (keep)
+                erase_slaves(*this);
+            return *this;
+        }
+
         SeqdbSelected& filter_dates(std::string_view first_date, std::string_view last_date)
         {
             if (!first_date.empty() || !last_date.empty())
@@ -115,6 +122,11 @@ namespace ae::sequences
         static inline void erase_with_issues(SeqdbSelected& selected)
         {
             erase_if(selected, [](const auto& ref) -> bool { return ref.seq->has_issues(); });
+        }
+
+        static inline void erase_slaves(SeqdbSelected& selected)
+        {
+            erase_if(selected, [](const auto& ref) -> bool { return !ref.is_master(); });
         }
 
         // void remove_empty()
