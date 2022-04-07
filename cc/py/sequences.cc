@@ -139,7 +139,7 @@ void ae::py::sequences(pybind11::module_& mdl)
         .def_property_readonly("aa", &SeqdbSeqRef::aa)                                                   //
         .def_property_readonly("nuc", &SeqdbSeqRef::nuc)                                                 //
         .def("lineage", [](const SeqdbSeqRef& ref) -> const std::string& { return ref.entry->lineage; }) //
-        .def_readonly("clades", &SeqdbSeqRef::clades)                                                    //
+        .def_property_readonly("clades", [](const SeqdbSeqRef& ref) -> std::vector<std::string> { return to_vector_base_t(ref.clades); })                                                    //
         .def("has_issues", [](const SeqdbSeqRef& ref) { return ref.seq->issues.has_issues(); })          //
         .def("issues", [](const SeqdbSeqRef& ref) { return ref.seq->issues.to_strings(); })              //
         .def("has_insertions", [](const SeqdbSeqRef& ref) { return !ref.seq->aa_insertions.empty(); })   //

@@ -91,6 +91,13 @@ namespace ae
         }
     };
 
+    template <typename Tag> inline std::vector<std::string> to_vector_base_t(const ae::named_vector_t<std::string, Tag>& source)
+    {
+        std::vector<std::string> result(source.size());
+        std::transform(source.begin(), source.end(), result.begin(), [](auto src) { return src; });
+        return result;
+    }
+
     template <typename Tag> bool operator<(const named_vector_t<std::string, Tag>& lhs, const named_vector_t<std::string, Tag>& rhs) noexcept
     {
         const auto sz = std::min(lhs.size(), rhs.size());
