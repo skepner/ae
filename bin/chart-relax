@@ -13,7 +13,11 @@ best projections, write resulting chart into b.ace
 
 chart-relax -n 1000 a.ace b.ace
 
-Add options to
+Add option to
+
+* relax in 3d
+
+  -d 3
 
 * specify minimum column basis
 
@@ -28,6 +32,8 @@ Add options to
   --dimension-annealing
 
 * do not disconnect antigens/sera having fewer than 3 numeric titers
+
+  --no-disconnect-having-few-titers
 
 * keep all projections
 
@@ -51,6 +57,18 @@ chart-relax --incremental -n 1000 a.ace b.ace
 Relaxing existing projection
 ----------------------------
 
+chart-relax --existing 0 -n 1000 a.ace b.ace
+
+Add option to
+
+* use rough optimisation
+
+  --rough
+
+* avoid running grid test afterwards
+
+  --no-grid
+
 ==============================================================================
 
 """
@@ -66,7 +84,11 @@ class Error (RuntimeError): pass
 def main(args: argparse.Namespace):
     chart = ae_backend.chart_v3.Chart(args.source)
 
-    if args.incremental:
+    if args.existing is not None:
+        if chart.number_of_projections() < args.existing:
+            raise Error("invali projection number ({args.existing}), chart has {chart.number_of_projections()} projections")
+        chart.projection(args.existing).relax(rough=args.rough)
+    elif args.incremental:
         if chart.number_of_projections() == 0 or chart.titers().number_of_layers() < 2:
             raise Error("cannot relax incrmentally")
         print(f"relaxing chart incrementally {args.number_of_optimizations}")
@@ -206,6 +228,7 @@ try:
     parser.add_argument("-k", "--keep-projections", default=10, type=int, help="number of projections to keep, 0 - keep all")
     # parser.add_argument("-r", "--reorient", help="chart to re-orient resulting projections to")
     parser.add_argument("-i", "--incremental", default=False, action="store_true", help="randomize only points having NaN coordinates")
+    parser.add_argument("--existing", type=int, metavar="projection_no", help="relax existing projection")
     parser.add_argument("--rough", default=False, action="store_true", help="perform rough optimisation")
     parser.add_argument("--no-grid", dest="grid", default=True, action="store_false")
     parser.add_argument("--grid-json", type=Path, help="export grid test results into json")
