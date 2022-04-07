@@ -15,30 +15,31 @@ chart-relax -n 1000 a.ace b.ace
 
 Add options to
 
-- specify minimum column basis
+* specify minimum column basis
 
   -m 1280
 
-- use rough optimisation (grid test is disabled)
+* use rough optimisation (grid test is disabled)
 
   --rough
 
-- use dimension annealing
+* use dimension annealing
 
-- do not disconnect antigens/sera having fewer than 3 numeric titers
+  --dimension-annealing
 
-- keep all projections
+* do not disconnect antigens/sera having fewer than 3 numeric titers
+
+* keep all projections
 
   -k 0
 
-- keep just the best projection
+* keep just the best projection
 
   -k 1
 
-- run grid test
+* avoid running grid test on the best projection
 
-Keeping fewer or more projections in the output
-
+  --no-grid
 
 Optimising incremental merge
 ----------------------------
@@ -54,25 +55,27 @@ import os, sys, re, json, argparse, traceback
 from pathlib import Path
 import ae_backend
 
-# N optimisations, rough
-# or fine, +/- dim anneal. Then the option to do further relaxation of
-# a map or a grid test. Also the option to manually move points &
-# relax. Don’t worry about L-BFGS. I only used it because it was an
-# option in acmacs.r and I was curious.
+class Error (RuntimeError): pass
 
 # ----------------------------------------------------------------------
 
 def main(args: argparse.Namespace):
     chart = ae_backend.chart_v3.Chart(args.source)
+
     if args.incremental:
+        if chart.number_of_projections() == 0 or chart.titers().number_of_layers() < 2:
+            raise Error("cannot relax incrmentally")
+        print(f"relaxing chart incrementally {args.number_of_optimizations}")
         chart.relax_incremental(number_of_optimizations=args.number_of_optimizations, remove_source_projection=not args.keep_original_projections, unmovable_non_nan_points=args.unmovable_non_nan_points, rough=args.rough)
     else:
+        print(f"relaxing chart {args.number_of_optimizations} times in {args.number_of_dimensions}d with minimum_column_basis={args.minimum_column_basis}")
         chart.relax(number_of_dimensions=args.number_of_dimensions, number_of_optimizations=args.number_of_optimizations, minimum_column_basis=args.minimum_column_basis, dimension_annealing=args.dimension_annealing, rough=args.rough)
-    if args.grid:
-        print(f">> grid test not yet implemented", file=sys.stderr)
+
+    if args.grid: # and not args.rough:
+        grid_test(chart)
+
     if args.keep_projections:
         chart.keep_projections(args.keep_projections)
-
 
     if args.output:
         # print brief report
@@ -86,7 +89,26 @@ def main(args: argparse.Namespace):
 
 # ----------------------------------------------------------------------
 
+def grid_test(chart: ae_backend.chart_v3.Chart):
+    projection = chart.projection()
+    print("running grid test on the best projection")
+    while True:
+        print(f"    stress: {projection.stress():.6f}")
+        result = chart.grid_test()
+        if cnt := result.count_trapped():
+            print("  {cnt} trapped points found, moving them and relaxing")
+            for en in result.trapped_hemisphering():
+                print(en)
+            result.apply(projection)
+            projection.relax()
+        else:
+            print("  no more trapped points found, grid test completed")
+            break
+
+# ----------------------------------------------------------------------
+
 def detailed_report(chart: ae_backend.chart_v3.Chart):
+    print("-" * 78)
     num_projections = chart.number_of_projections()
     print(chart.name(0), f"{chart.number_of_antigens()}:{chart.number_of_sera()}", f"projections:{num_projections}" if num_projections else "no projections")
     if chart_forced_column_bases := chart.forced_column_bases():
@@ -174,7 +196,7 @@ def report_column_bases(chart: ae_backend.chart_v3.Chart, column_bases: list):
 try:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
 
-    parser.add_argument("-n", dest="number_of_optimizations", default=0, type=int)
+    parser.add_argument("-n", dest="number_of_optimizations", default=100, type=int)
     parser.add_argument("-d", dest="number_of_dimensions", default=2, type=int)
     parser.add_argument("-m", dest="minimum_column_basis", default="none")
     parser.add_argument("-k", "--keep-projections", default=10, type=int, help="number of projections to keep, 0 - keep all")
@@ -197,8 +219,11 @@ try:
     parser.add_argument("output", nargs="?", type=Path)
     args = parser.parse_args()
     exit_code = main(args) or 0
+except Error as err:
+    print(f"> ERROR: {err}", file=sys.stderr)
+    exit_code = 1
 except Exception as err:
-    print(f"> {err}\n{traceback.format_exc()}", file=sys.stderr)
+    print(f"> ERROR: {err}\n{traceback.format_exc()}", file=sys.stderr)
     exit_code = 1
 exit(exit_code)
 
