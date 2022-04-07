@@ -122,7 +122,7 @@ def grid_test(chart: ae_backend.chart_v3.Chart):
         print(f"    stress: {projection.stress():.6f}")
         result = chart.grid_test()
         if cnt := result.count_trapped():
-            print("  {cnt} trapped points found, moving them and relaxing")
+            print(f"  {cnt} trapped points found, moving them and relaxing")
             for en in result.trapped_hemisphering():
                 print(en)
             result.apply(projection)
@@ -184,38 +184,6 @@ def report_column_bases(chart: ae_backend.chart_v3.Chart, column_bases: list):
         fcb = re.sub(r"0+$", lambda m: " " * len(m.group(0)), fcb)
         fcb = re.sub(r"\. ", "  ", fcb)
         print(f"{no:3d}     {fcb}   {sr.name()} {sr.serum_id()} {sr.passage()}")
-
-# ----------------------------------------------------------------------
-
-
-        # if args.all:
-        #     print()
-        #     for projection_no in range(num_projections):
-        #         projection = chart.projection(projection_no)
-        #         print(f"{projection_no:3d}  {projection.stress():11.6f} >={projection.minimum_column_basis()}", end="")
-        #         if comment := projection.comment():
-        #             print(f" <{comment}>", end="")
-        #         if projection_forced_column_bases := projection.forced_column_bases():
-        #             if projection_forced_column_bases == chart_forced_column_bases:
-        #                 print(" chart-forced-column-bases", end="")
-        #             else:
-        #                 print("", projection_forced_column_bases, end="")
-        #         print()
-        #     print()
-        #     info = chart.info()
-        #     if num_sources := info.number_of_sources():
-        #         print("sources", num_sources)
-        #         for source_no in range(num_sources):
-        #             source = info.source(source_no)
-        #             print(f"{source_no:3d} {source.date()} {source.name()}")
-        #         print()
-        #     if chart_forced_column_bases:
-        #         print("forced column bases")
-        #         for no, sr in chart.select_all_sera():
-        #             fcb = f"{chart_forced_column_bases[no]:11.8f}"
-        #             fcb = re.sub(r"0+$", lambda m: " " * len(m.group(0)), fcb)
-        #             fcb = re.sub(r"\. ", "  ", fcb)
-        #             print(f"{no:3d}     {fcb}   {sr.name()} {sr.serum_id()} {sr.passage()}")
 
 # ----------------------------------------------------------------------
 
