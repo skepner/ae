@@ -206,6 +206,7 @@ void ae::py::chart_v3(pybind11::module_& mdl)
         .def("number_of_sera", [](const Chart& chart) -> size_t { return *chart.sera().size(); })               //
         .def("number_of_projections", [](const Chart& chart) -> size_t { return *chart.projections().size(); }) //
         .def("forced_column_bases", [](const Chart& chart) { return chart.forced_column_bases().data(); })      //
+        .def("column_bases", [](const Chart& chart, std::string_view mcb) { return chart.column_bases(minimum_column_basis{mcb}).data(); }, "minimum_column_basis"_a = "none")      //
 
         .def("info", [](std::shared_ptr<Chart> chart) { return new InfoRef{chart}; }) //
 
