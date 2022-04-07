@@ -19,7 +19,7 @@ Add options to
 
   -m 1280
 
-* use rough optimisation (grid test is disabled)
+* use rough optimisation (~2 times faster)
 
   --rough
 
@@ -43,6 +43,10 @@ Add options to
 
 Optimising incremental merge
 ----------------------------
+
+Source chart must be made using incremental merge, e.g. by chart-merge --merge-type incremental
+
+chart-relax --incremental -n 1000 a.ace b.ace
 
 Relaxing existing projection
 ----------------------------
@@ -202,7 +206,7 @@ try:
     parser.add_argument("-k", "--keep-projections", default=10, type=int, help="number of projections to keep, 0 - keep all")
     # parser.add_argument("-r", "--reorient", help="chart to re-orient resulting projections to")
     parser.add_argument("-i", "--incremental", default=False, action="store_true", help="randomize only points having NaN coordinates")
-    parser.add_argument("--rough", default=False, action="store_true", help="perform rough optimisation (grid test disabled)")
+    parser.add_argument("--rough", default=False, action="store_true", help="perform rough optimisation")
     parser.add_argument("--no-grid", dest="grid", default=True, action="store_false")
     parser.add_argument("--grid-json", type=Path, help="export grid test results into json")
     parser.add_argument("--grid-step", default=0.1, type=float)
