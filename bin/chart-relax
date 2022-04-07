@@ -1,39 +1,144 @@
 #! /usr/bin/env python3
+"""==============================================================================
+
+Making antigenic maps
+=====================
+
+Optimising chart (single table or merge) from scratch
+-----------------------------------------------------
+
+Read chart from a.ace, make a map using 1000 fine optimisations in 2d
+without minimum column basis without dimension annealing, keep only 10
+best projections, write resulting chart into b.ace
+
+chart-relax -n 1000 a.ace b.ace
+
+Add options to
+
+- specify minimum column basis
+
+  -m 1280
+
+- use rough optimisation (grid test is disabled)
+
+  --rough
+
+- use dimension annealing
+
+- do not disconnect antigens/sera having fewer than 3 numeric titers
+
+- keep all projections
+
+  -k 0
+
+- keep just the best projection
+
+  -k 1
+
+- run grid test
+
+Keeping fewer or more projections in the output
+
+
+Optimising incremental merge
+----------------------------
+
+Relaxing existing projection
+----------------------------
+
+==============================================================================
+
+"""
+
 import os, sys, re, json, argparse, traceback
 from pathlib import Path
 import ae_backend
+
+# N optimisations, rough
+# or fine, +/- dim anneal. Then the option to do further relaxation of
+# a map or a grid test. Also the option to manually move points &
+# relax. Don’t worry about L-BFGS. I only used it because it was an
+# option in acmacs.r and I was curious.
 
 # ----------------------------------------------------------------------
 
 def main(args: argparse.Namespace):
     chart = ae_backend.chart_v3.Chart(args.source)
     if args.incremental:
-        chart.relax_incremental(number_of_optimizations=args.number_of_optimizations, remove_source_projection=not args.keep_original_projections, unmovable_non_nan_points=args.unmovable_non_nan_points)
+        chart.relax_incremental(number_of_optimizations=args.number_of_optimizations, remove_source_projection=not args.keep_original_projections, unmovable_non_nan_points=args.unmovable_non_nan_points, rough=args.rough)
     else:
-        chart.relax(number_of_dimensions=args.number_of_dimensions, number_of_optimizations=args.number_of_optimizations, minimum_column_basis=args.minimum_column_basis, dimension_annealing=args.dimension_annealing)
+        chart.relax(number_of_dimensions=args.number_of_dimensions, number_of_optimizations=args.number_of_optimizations, minimum_column_basis=args.minimum_column_basis, dimension_annealing=args.dimension_annealing, rough=args.rough)
     if args.grid:
         print(f">> grid test not yet implemented", file=sys.stderr)
     if args.keep_projections:
         chart.keep_projections(args.keep_projections)
-    print(chart.name(0), f"{chart.number_of_antigens()}:{chart.number_of_sera()}", f"projections:{chart.number_of_projections()}")
+
+
     if args.output:
+        # print brief report
+        print(chart.name(0), f"{chart.number_of_antigens()}:{chart.number_of_sera()}", f"projections:{chart.number_of_projections()}")
+        # write resulting chart
         chart.write(args.output)
+    else:
+        # no output is requested
+        # print detailed report
+        detailed_report(chart)
 
-        # num_projections = chart.number_of_projections()
-        # print(chart.name_for_file())
-        # print(chart.name(0), f"{chart.number_of_antigens()}:{chart.number_of_sera()}", f"projections:{num_projections}" if num_projections else "no projections")
-        # if chart_forced_column_bases := chart.forced_column_bases():
-        #     if args.all:
-        #         print("  forced column bases: see after sources below")
-        #     else:
-        #         print("  forced column bases:", chart_forced_column_bases)
+# ----------------------------------------------------------------------
 
-        # # def sel_ser(serum_ref):
-        # #     print(serum_ref.no, serum_ref.point_no, serum_ref.serum.name(), serum_ref.serum.serum_id(), serum_ref.serum.passage())
-        # #     return "DARWIN" in serum_ref.serum.name()
+def detailed_report(chart: ae_backend.chart_v3.Chart):
+    num_projections = chart.number_of_projections()
+    print(chart.name(0), f"{chart.number_of_antigens()}:{chart.number_of_sera()}", f"projections:{num_projections}" if num_projections else "no projections")
+    if chart_forced_column_bases := chart.forced_column_bases():
+        print("  forced column bases: see after sources below")
+    print()
 
-        # # srr = chart.select_sera(sel_ser)
-        # # print(len(srr), [[no, sr.name()] for no, sr in srr])
+    # print data about each projection
+    for projection_no in range(num_projections):
+        projection = chart.projection(projection_no)
+        print(f"{projection_no:3d}  {projection.stress():11.6f} >={projection.minimum_column_basis()}", end="")
+        if comment := projection.comment():
+            print(f" <{comment}>", end="")
+        if projection_forced_column_bases := projection.forced_column_bases():
+            if projection_forced_column_bases == chart_forced_column_bases:
+                print(" chart-forced-column-bases", end="")
+            else:
+                print("", projection_forced_column_bases, end="")
+        if disconnected := projection.disconnected():
+            print(f" discon:{disconnected}", end="")
+        # if unmovable := projection.unmovable():
+        #     print(f" unmov:{unmovable}", end="")
+        # if unmovable_in_the_last_dimension := projection.unmovable_in_the_last_dimension():
+        #     print(f" unmov-last:{unmovable_in_the_last_dimension}", end="")
+        print()
+
+    info = chart.info()
+    if num_sources := info.number_of_sources():
+        # show data about each table in the merge
+        print(f"\nsources {num_sources}")
+        for source_no in range(num_sources):
+            source = info.source(source_no)
+            print(f"{source_no:3d} {source.date()} {source.name()}")
+
+    if chart_forced_column_bases:
+        # show detailed information about column bases
+        print("\nforced column bases")
+        report_column_bases(chart=chart, column_bases=chart_forced_column_bases)
+    else:
+        print("\ncolumn bases")
+        report_column_bases(chart=chart, column_bases=chart.column_bases(chart.projection(0).minimum_column_basis()))
+
+# ----------------------------------------------------------------------
+
+def report_column_bases(chart: ae_backend.chart_v3.Chart, column_bases: list):
+    for no, sr in chart.select_all_sera():
+        fcb = f"{column_bases[no]:11.8f}"
+        fcb = re.sub(r"0+$", lambda m: " " * len(m.group(0)), fcb)
+        fcb = re.sub(r"\. ", "  ", fcb)
+        print(f"{no:3d}     {fcb}   {sr.name()} {sr.serum_id()} {sr.passage()}")
+
+# ----------------------------------------------------------------------
+
 
         # if args.all:
         #     print()
@@ -67,7 +172,7 @@ def main(args: argparse.Namespace):
 # ----------------------------------------------------------------------
 
 try:
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
 
     parser.add_argument("-n", dest="number_of_optimizations", default=0, type=int)
     parser.add_argument("-d", dest="number_of_dimensions", default=2, type=int)
@@ -75,6 +180,7 @@ try:
     parser.add_argument("-k", "--keep-projections", default=10, type=int, help="number of projections to keep, 0 - keep all")
     # parser.add_argument("-r", "--reorient", help="chart to re-orient resulting projections to")
     parser.add_argument("-i", "--incremental", default=False, action="store_true", help="randomize only points having NaN coordinates")
+    parser.add_argument("--rough", default=False, action="store_true", help="perform rough optimisation (grid test disabled)")
     parser.add_argument("--no-grid", dest="grid", default=True, action="store_false")
     parser.add_argument("--grid-json", type=Path, help="export grid test results into json")
     parser.add_argument("--grid-step", default=0.1, type=float)
