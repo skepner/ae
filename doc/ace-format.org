@@ -1,4 +1,4 @@
-# Time-stamp: <2022-03-31 09:25:00 eu>
+# Time-stamp: <2022-04-13 12:33:01 eu>
 * acmacs-ace-v1 format to store chart data
 
 fields with names starting with ? are ignored
@@ -47,7 +47,7 @@ fields with names starting with ? are ignored
 |             |     | "A" |     |     | str                              | aligned amino-acid sequence                                                                                                                                    |
 |             |     | "B" |     |     | str                              | aligned nucleotide sequence                                                                                                                                    |
 |             |     | "T" |     |     | key-value  pairs                 | semantic attributes by group (see below the table)                                                                                                             |
-|             |     | "h" |     |     | array of numbers                 | DEPRECATED homologous antigen indices, e.g. [0]                                                                                                                          |
+|             |     | "h" |     |     | array of numbers                 | DEPRECATED homologous antigen indices, e.g. [0]                                                                                                                |
 |             |     | "C" |     |     | str                              | (DEPRECATED, use "s") continent: "ASIA", "AUSTRALIA-OCEANIA", "NORTH-AMERICA", "EUROPE", "RUSSIA", "AFRICA", "MIDDLE-EAST", "SOUTH-AMERICA", "CENTRAL-AMERICA" |
 |             |     | "c" |     |     | array of str                     | (DEPRECATED, use "s") clades, e.g. ["5.2.1"]                                                                                                                   |
 |             |     | "S" |     |     | str                              | (DEPRECATED, use "s") single letter semantic boolean attributes: E - egg                                                                                       |
@@ -112,7 +112,7 @@ fields with names starting with ? are ignored
 |             |     |     |     | "c" | color, str                       | label color, default: "black"                                                                                                                                  |
 |             |     |     |     | "r" | float                            | label rotation, default 0.0                                                                                                                                    |
 |             |     |     |     | "i" | float                            | addtional interval between lines as a fraction of line height, default 0.2                                                                                     |
-|             |     | "p" |     |     | array of integers               | index in "P" for each point, antigens followed by sera                                                                                                                                                               |
+|             |     | "p" |     |     | array of integers                | index in "P" for each point, antigens followed by sera                                                                                                         |
 |             |     | "l" |     |     | array of integers                | ? for each procrustes line, index in the "L" list                                                                                                              |
 |             |     | "L" |     |     | array                            | ? list of procrustes lines styles                                                                                                                              |
 |             |     | "s" |     |     | array of integers                | list of point indices for point shown on all maps in the time series                                                                                           |
