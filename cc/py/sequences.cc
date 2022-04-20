@@ -51,7 +51,7 @@ void ae::py::sequences(pybind11::module_& mdl)
                     return selected[selected.size() - static_cast<size_t>(index)];
             },
             "index"_a, pybind11::keep_alive<0, 1>())                                       //
-        .def("exclude_with_issue", &SeqdbSelected::exclude_with_issue, "exclude"_a = true) //
+        .def("exclude_with_issue", &SeqdbSelected::exclude_with_issue, "exclude"_a = true, "do_not_exclude_too_short"_a = false) //
         .def("keep_masters_only", &SeqdbSelected::keep_masters_only, "keep"_a = true)   //
         .def(
             "filter_dates", [](SeqdbSelected& selected, std::string_view first, std::string_view last) -> SeqdbSelected& { return selected.filter_dates(first, last); }, "first"_a = std::string_view{},

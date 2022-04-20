@@ -22,10 +22,14 @@ namespace ae::sequences
         const auto& operator[](size_t index) const { return refs_[index]; }
         const auto& at(size_t index) const { return refs_[index]; }
 
-        SeqdbSelected& exclude_with_issue(bool exclude = true)
+        SeqdbSelected& exclude_with_issue(bool exclude, bool do_not_exclude_too_short)
         {
-            if (exclude)
-                erase_with_issues(*this);
+            if (exclude) {
+                if (do_not_exclude_too_short)
+                    erase_with_issues_but_not_too_short(*this);
+                else
+                    erase_with_issues(*this);
+            }
             return *this;
         }
 
@@ -122,6 +126,11 @@ namespace ae::sequences
         static inline void erase_with_issues(SeqdbSelected& selected)
         {
             erase_if(selected, [](const auto& ref) -> bool { return ref.seq->has_issues(); });
+        }
+
+        static inline void erase_with_issues_but_not_too_short(SeqdbSelected& selected)
+        {
+            erase_if(selected, [](const auto& ref) -> bool { return ref.seq->has_issues_but_not_too_short(); });
         }
 
         static inline void erase_slaves(SeqdbSelected& selected)

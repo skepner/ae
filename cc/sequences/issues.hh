@@ -96,6 +96,7 @@ namespace ae::sequences
         }
 
         bool has_issues() const { return !data_.empty(); }
+        bool just_too_short() const { return data_ == "s"; } // there is just one issue it is too_short
 
         bool update(const issues_t& issues)
         {

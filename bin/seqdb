@@ -46,7 +46,7 @@ def find(subtype: str, lineage: str, names: list[str], args: argparse.Namespace)
             return name
 
     selected = ae_backend.seqdb.for_subtype(subtype).select_all()
-    selected.exclude_with_issue(not args.with_issues)
+    selected.exclude_with_issue(exclude=not args.with_issues, do_not_exclude_too_short=args.do_not_exclude_too_short)
     if lineage:
         subtype.lineage(lineage)
     selected.filter_dates(args.start_date, args.end_date)
@@ -180,6 +180,7 @@ try:
     parser.add_argument("-b", "--start-date", dest="start_date", default="")
     parser.add_argument("-e", "--end-date", dest="end_date", default="")
     parser.add_argument("--with-issues", action="store_true", default=False)
+    parser.add_argument("--do-not-exclude-too-short", action="store_true", default=False, help="do not exclude too short")
     parser.add_argument("--masters-only", action="store_true", default=False)
     parser.add_argument("-s", "--sort", dest="sort_order", default="+date", help="date, +date, -date, name, +name, -name")
     parser.add_argument("--fas-aa", dest="fasta_aa", type=Path)

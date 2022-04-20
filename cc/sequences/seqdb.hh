@@ -233,6 +233,7 @@ namespace ae::sequences
         bool update(const RawSequence& raw_sequence, bool keep_sequence); // returns if entry was modified
 
         bool has_issues() const { return issues.has_issues(); }
+        bool has_issues_but_not_too_short() const { return issues.has_issues() && !issues.just_too_short(); }
 
         void dont_keep_sequence()
         {
