@@ -38,7 +38,7 @@ def main(args: argparse.Namespace):
 
 # ----------------------------------------------------------------------
 
-def find(subtype: str, lineage: str, names: list[str], args: argparse.Namespace):
+def find(subtype: str, lineage: str, names: list, args: argparse.Namespace):
     def fix_name(name):
         if name.startswith(f"{subtype}/"):
             return name[len(subtype) + 1:]
