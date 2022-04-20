@@ -73,7 +73,7 @@ def regular_name_parser(name: str, lab_hint: str, context: Context):
 # writer
 # ======================================================================
 
-def write(filename_or_stream: Union[io.TextIOWrapper, Path], selected :ae_backend.seqdb.Selected, aa: bool, wrap_pos: int = 0, name=lambda ref: ref.seq_id()):
+def write(filename_or_stream: Union[io.TextIOWrapper, Path], selected :ae_backend.seqdb.Selected, aa: bool, wrap_pos: int = 0, name=lambda ref: ref.seq_id(), expand_too_short = False):
     def do_wrap(data: str):
         if wrap_pos:
             return "\n".join(data[i:i+wrap_pos] for i in range(0, len(data), wrap_pos))
@@ -87,8 +87,17 @@ def write(filename_or_stream: Union[io.TextIOWrapper, Path], selected :ae_backen
             fil = filename_or_stream.open("w")
     else:
         fil = filename_or_stream
+    max_nuc, max_aa = selected.max_length();
     for ref in selected:
-        fil.write(f">{name(ref)}\n{do_wrap(str(ref.aa if aa else ref.nuc))}\n")
+        if aa:
+            seq = str(ref.aa)
+            if expand_too_short:
+                seq += "X" * (max_aa - len(seq))
+        else:
+            seq = str(ref.nuc)
+            if expand_too_short:
+                seq += "-" * (max_nuc - len(seq))
+        fil.write(f">{name(ref)}\n{do_wrap(str(seq))}\n")
     if isinstance(filename_or_stream, (Path, str)) and str(filename_or_stream) != "-":
         fil.close()
 

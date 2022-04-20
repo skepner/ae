@@ -132,6 +132,7 @@ void ae::py::sequences(pybind11::module_& mdl)
         .def("remove_hash_duplicates", &SeqdbSelected::remove_hash_duplicates)                                             //
         .def("replace_with_master", &SeqdbSelected::replace_with_master)                                                   //
         .def("length_stat", &SeqdbSelected::length_stat)                                                                   //
+        .def("max_length", &SeqdbSelected::max_length) //
         ;
 
     pybind11::class_<SeqdbSeqRef>(seqdb_submodule, "SeqdbSeqRef")                                                                         //

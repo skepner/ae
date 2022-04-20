@@ -264,3 +264,16 @@ ae::sequences::SeqdbSelected& ae::sequences::SeqdbSelected::length_stat()
 } // ae::sequences::SeqdbSelected::length_stat
 
 // ----------------------------------------------------------------------
+
+std::pair<size_t, size_t> ae::sequences::SeqdbSelected::max_length() const // returns max nuc and aa length
+{
+    size_t max_nuc{0}, max_aa{0};
+    for (const auto& ref : refs_) {
+        max_nuc = std::max(max_nuc, ref.nuc().size());
+        max_aa = std::max(max_aa, ref.aa().size());
+    }
+    return {max_nuc, max_aa};
+
+} // ae::sequences::SeqdbSelected::max_length
+
+// ----------------------------------------------------------------------
