@@ -1,5 +1,6 @@
 #include <regex>
 #include <variant>
+#include <map>
 
 #include "utils/string-hash.hh"
 #include "virus/passage.hh"
@@ -239,5 +240,27 @@ ae::sequences::SeqdbSelected& ae::sequences::SeqdbSelected::find_clades(std::str
     return *this;
 
 } // ae::sequences::SeqdbSelected::find_clades
+
+// ----------------------------------------------------------------------
+
+ae::sequences::SeqdbSelected& ae::sequences::SeqdbSelected::length_stat()
+{
+    std::map<size_t, size_t> aa_length_count, nuc_length_count;
+    for (const auto& ref : refs_) {
+        if (const auto [iter, added] = aa_length_count.try_emplace(ref.aa().size(), 1); !added)
+            ++iter->second;
+        if (const auto [iter, added] = nuc_length_count.try_emplace(ref.nuc().size(), 1); !added)
+            ++iter->second;
+    }
+    fmt::print(">>> nuc size stat\n");
+    for (const auto& [size, count]: nuc_length_count)
+        fmt::print("  {:4d}  {:4d}\n", size, count);
+    fmt::print(">>> aa size stat\n");
+    for (const auto& [size, count]: aa_length_count)
+        fmt::print("  {:4d}  {:4d}\n", size, count);
+
+    return *this;
+
+} // ae::sequences::SeqdbSelected::length_stat
 
 // ----------------------------------------------------------------------

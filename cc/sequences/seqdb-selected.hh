@@ -114,6 +114,8 @@ namespace ae::sequences
             return *this;
         }
 
+        SeqdbSelected& length_stat();
+
       private:
         const Seqdb& seqdb_;
         SeqdbSeqRefList refs_{};

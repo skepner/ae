@@ -50,9 +50,9 @@ void ae::py::sequences(pybind11::module_& mdl)
                 else
                     return selected[selected.size() - static_cast<size_t>(index)];
             },
-            "index"_a, pybind11::keep_alive<0, 1>())                                       //
+            "index"_a, pybind11::keep_alive<0, 1>())                                                                             //
         .def("exclude_with_issue", &SeqdbSelected::exclude_with_issue, "exclude"_a = true, "do_not_exclude_too_short"_a = false) //
-        .def("keep_masters_only", &SeqdbSelected::keep_masters_only, "keep"_a = true)   //
+        .def("keep_masters_only", &SeqdbSelected::keep_masters_only, "keep"_a = true)                                            //
         .def(
             "filter_dates", [](SeqdbSelected& selected, std::string_view first, std::string_view last) -> SeqdbSelected& { return selected.filter_dates(first, last); }, "first"_a = std::string_view{},
             "last"_a = std::string_view{}) //
@@ -131,23 +131,24 @@ void ae::py::sequences(pybind11::module_& mdl)
         .def("find_clades", pybind11::overload_cast<std::string_view>(&SeqdbSelected::find_clades), "clades_file"_a)       //
         .def("remove_hash_duplicates", &SeqdbSelected::remove_hash_duplicates)                                             //
         .def("replace_with_master", &SeqdbSelected::replace_with_master)                                                   //
+        .def("length_stat", &SeqdbSelected::length_stat)                                                                   //
         ;
 
-    pybind11::class_<SeqdbSeqRef>(seqdb_submodule, "SeqdbSeqRef")                                        //
-        .def("seq_id", [](const SeqdbSeqRef& ref) { return ref.seq_id().get(); })                        //
-        .def("name", [](const SeqdbSeqRef& ref) { return ref.entry->name; })                             //
-        .def("date", &SeqdbSeqRef::date)                                                                 //
-        .def_property_readonly("aa", &SeqdbSeqRef::aa)                                                   //
-        .def_property_readonly("nuc", &SeqdbSeqRef::nuc)                                                 //
-        .def("lineage", [](const SeqdbSeqRef& ref) -> const std::string& { return ref.entry->lineage; }) //
-        .def_property_readonly("clades", [](const SeqdbSeqRef& ref) -> std::vector<std::string> { return to_vector_base_t(ref.clades); })                                                    //
-        .def("has_issues", [](const SeqdbSeqRef& ref) { return ref.seq->issues.has_issues(); })          //
-        .def("issues", [](const SeqdbSeqRef& ref) { return ref.seq->issues.to_strings(); })              //
-        .def("has_insertions", [](const SeqdbSeqRef& ref) { return !ref.seq->aa_insertions.empty(); })   //
-        .def("insertions", [](const SeqdbSeqRef& ref) { return ref.seq->aa_insertions; })                //
-        .def("country", [](const SeqdbSeqRef& ref) { return ref.entry->country; })                       //
-        .def("continent", [](const SeqdbSeqRef& ref) { return ref.entry->continent; })                   //
-        .def("host", [](const SeqdbSeqRef& ref) { return ref.entry->host; })                             //
+    pybind11::class_<SeqdbSeqRef>(seqdb_submodule, "SeqdbSeqRef")                                                                         //
+        .def("seq_id", [](const SeqdbSeqRef& ref) { return ref.seq_id().get(); })                                                         //
+        .def("name", [](const SeqdbSeqRef& ref) { return ref.entry->name; })                                                              //
+        .def("date", &SeqdbSeqRef::date)                                                                                                  //
+        .def_property_readonly("aa", &SeqdbSeqRef::aa)                                                                                    //
+        .def_property_readonly("nuc", &SeqdbSeqRef::nuc)                                                                                  //
+        .def("lineage", [](const SeqdbSeqRef& ref) -> const std::string& { return ref.entry->lineage; })                                  //
+        .def_property_readonly("clades", [](const SeqdbSeqRef& ref) -> std::vector<std::string> { return to_vector_base_t(ref.clades); }) //
+        .def("has_issues", [](const SeqdbSeqRef& ref) { return ref.seq->issues.has_issues(); })                                           //
+        .def("issues", [](const SeqdbSeqRef& ref) { return ref.seq->issues.to_strings(); })                                               //
+        .def("has_insertions", [](const SeqdbSeqRef& ref) { return !ref.seq->aa_insertions.empty(); })                                    //
+        .def("insertions", [](const SeqdbSeqRef& ref) { return ref.seq->aa_insertions; })                                                 //
+        .def("country", [](const SeqdbSeqRef& ref) { return ref.entry->country; })                                                        //
+        .def("continent", [](const SeqdbSeqRef& ref) { return ref.entry->continent; })                                                    //
+        .def("host", [](const SeqdbSeqRef& ref) { return ref.entry->host; })                                                              //
         ;
 
     pybind11::class_<sequence_aa_t>(mdl, "SequenceAA") //
