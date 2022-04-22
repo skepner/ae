@@ -537,7 +537,7 @@ namespace ae::virus::name::inline v1
     }
 
     // return source unchanged, if year is not valid but add message
-    inline std::string fix_year(const std::string& year, std::string_view source, Parts& parts, Messages& messages, const MessageLocation& message_location)
+    inline std::string fix_year(const std::string& year, std::string_view source, std::string_view hint, Parts& parts, Messages& messages, const MessageLocation& message_location)
     {
         try {
             const size_t earlierst_year = 1900;
@@ -548,7 +548,7 @@ namespace ae::virus::name::inline v1
                         throw std::invalid_argument{fmt::format("out of range {}..{}", earlierst_year, today_year)};
                     return year;
                 case 2:
-                    if (const auto year_i = ae::from_chars<size_t>(year); year_i <= (today_year - 2000))
+                    if (const auto year_i = ae::from_chars<size_t>(year); year_i <= (today_year - 2000) && !hint.empty() && hint[0] == '2')
                         return fmt::format("{}", year_i + 2000);
                     else
                         return fmt::format("{}", year_i + 1900);
@@ -677,7 +677,7 @@ static inline bool is_host(std::string_view name)
 
 // ----------------------------------------------------------------------
 
-ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, parse_settings& settings, Messages& messages, const MessageLocation& message_location)
+ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, std::string_view year_hint, parse_settings& settings, Messages& messages, const MessageLocation& message_location)
 {
     const auto& locdb = locdb::get();
     Parts result;
@@ -720,7 +720,7 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
         }
         std::tie(result.location, result.continent, result.country) = fix_location(parts[2], source, result, messages, message_location);
         result.isolation = fix_isolation(parts[3], source, result, messages, message_location);
-        result.year = fix_year(parts[4], source, result, messages, message_location);
+        result.year = fix_year(parts[4], source, year_hint, result, messages, message_location);
         if (type_match(parts[5], part_type::reassortant))
             result.reassortant = fix_reassortant(parts[5], source, result, messages, message_location);
         else if (type_match(parts[5], part_type::any))
@@ -737,7 +737,7 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
             result.country = loc2.second->country;
             result.continent = locdb.continent(result.country);
             result.isolation = fix_isolation(parts[3], source, result, messages, message_location);
-            result.year = fix_year(parts[4], source, result, messages, message_location);
+            result.year = fix_year(parts[4], source, year_hint, result, messages, message_location);
         }
         else if (const auto loc12 = locdb.find(fmt::format("{} {}", parts[1].head, parts[2].head)); !loc12.first.empty()) {
             // A(H3N2)/LYON/CHU/19/2016
@@ -746,7 +746,7 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
             result.country = loc12.second->country;
             result.continent = locdb.continent(result.country);
             result.isolation = fix_isolation(parts[3], source, result, messages, message_location);
-            result.year = fix_year(parts[4], source, result, messages, message_location);
+            result.year = fix_year(parts[4], source, year_hint, result, messages, message_location);
         }
         else if (!loc1.first.empty() && loc2.first.empty()) {
             // A(H3N2)/LYON/XXX/19/2016
@@ -755,7 +755,7 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
             result.country = loc1.second->country;
             result.continent = locdb.continent(result.country);
             result.isolation = fmt::format("{}-{}", parts[2].head, std::string{parts[3]});
-            result.year = fix_year(parts[4], source, result, messages, message_location);
+            result.year = fix_year(parts[4], source, year_hint, result, messages, message_location);
         }
         else if (!loc2.first.empty() && is_host(parts[1].head)) {
             // A/turkey/Poland/027/2020
@@ -765,7 +765,7 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
             result.country = loc2.second->country;
             result.continent = locdb.continent(result.country);
             result.isolation = fix_isolation(parts[3], source, result, messages, message_location);
-            result.year = fix_year(parts[4], source, result, messages, message_location);
+            result.year = fix_year(parts[4], source, year_hint, result, messages, message_location);
         }
         else { // unrecognized_location
             result.subtype = parts[0];
@@ -778,7 +778,7 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
             result.issues.add(Parts::issue::unrecognized_location);
             messages.add(Message::unrecognized_location, settings.type_subtype_hint(), result.location, source, message_location);
             result.isolation = fix_isolation(parts[3], source, result, messages, message_location);
-            result.year = fix_year(parts[4], source, result, messages, message_location);
+            result.year = fix_year(parts[4], source, year_hint, result, messages, message_location);
         }
         if (!parts[5].empty())
             result.extra = parts[5];
@@ -796,7 +796,7 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
         std::tie(result.location, result.continent, result.country) = fix_location(parts[1], source, result, messages, message_location);
         // AD_DEBUG("fix location \"{}\" -> \"{}\"", parts[1], result.location);
         result.isolation = fix_isolation(parts[2], source, result, messages, message_location);
-        result.year = fix_year(parts[3], source, result, messages, message_location);
+        result.year = fix_year(parts[3], source, year_hint, result, messages, message_location);
         if (type_match(parts[4], part_type::reassortant)) {
             result.reassortant = fix_reassortant(parts[4], source, result, messages, message_location);
             if (type_match(parts[5], part_type::any))
@@ -811,7 +811,7 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, p
         result.subtype = parts[0];
         std::tie(result.location, result.continent, result.country) = fix_location(parts[1], source, result, messages, message_location);
         result.isolation = fix_isolation(fmt::format("{}-{}", std::string{parts[2]}, std::string{parts[3]}), source, result, messages, message_location);
-        result.year = fix_year(parts[4], source, result, messages, message_location);
+        result.year = fix_year(parts[4], source, year_hint, result, messages, message_location);
     }
     else
         messages.add(Message::unhandled_virus_name, settings.type_subtype_hint(), fmt::format("{}", parts), source, message_location);
@@ -835,7 +835,7 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source)
 {
     parse_settings settings;
     Messages messages;
-    return parse(source, settings, messages, MessageLocation{});
+    return parse(source, std::string_view{}, settings, messages, MessageLocation{});
 }
 
 // ----------------------------------------------------------------------

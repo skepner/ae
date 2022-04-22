@@ -74,7 +74,7 @@ namespace ae::virus::name::inline v1
         virus::type_subtype_t type_subtype_hint_;
     };
 
-    Parts parse(std::string_view source, parse_settings& settings, Messages& messages, const MessageLocation& location);
+    Parts parse(std::string_view source, std::string_view year_hint, parse_settings& settings, Messages& messages, const MessageLocation& location);
     Parts parse(std::string_view source);
 
     inline bool is_good(std::string_view source) { return parse(source).good(); }

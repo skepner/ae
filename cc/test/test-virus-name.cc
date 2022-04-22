@@ -166,7 +166,7 @@ size_t virus_name_parsing_test(bool verbose)
     for (const auto [no, entry] : ranges::views::enumerate(data)) {
         try {
             ae::Messages messages;
-            const auto result = ae::virus::name::parse(entry.raw_name, settings, messages, ae::MessageLocation{"test", no});
+            const auto result = ae::virus::name::parse(entry.raw_name, std::string_view{}, settings, messages, ae::MessageLocation{"test", no});
             // if (verbose)
             //     fmt::print(">>>  \"{}\"\n", entry.raw_name);
             if (!messages.empty()) {
