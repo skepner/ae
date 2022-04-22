@@ -1,4 +1,4 @@
-Time-stamp: <2022-02-18 10:51:57 eu>
+Time-stamp: <2022-04-22 14:59:26 eu>
 * already downloaded from gisaid: ~/ac/sequences
 ls -l ~/ac/sequences/gis*.fas.xz
 
@@ -34,7 +34,7 @@ ssa
 ** re-build from scratch
 
 #+BEGIN_SRC bash
-rm -f /r/seqdb-*.v4.json.xz; env SEQDB_V4=/r ~/ae/bin/seqdb-update ~/ac/sequences/gisaid-{19,201,2020}*.fas.xz ~/ac/sequences/gisaid-20210101-20210917.fas.xz ~/ac/sequences/n*.fas.xz ~/ac/sequences/ncbi ~/ac/sequences/gisaid-202?-*.fas.xz
+rm -f /r/seqdb-*.v4.json.xz; env SEQDB_V4=/r ~/ae/bin/seqdb-update ~/ac/sequences/gisaid-{19,201,2020}*.fas.xz ~/ac/sequences/gisaid-20210101-20210917.fas.xz ~/ac/sequences/n*.fas.xz ~/ac/sequences/ncbi ~/ac/sequences/gisaid-202?-*.fas.*
 --> 5m
 #+END_SRC
 
