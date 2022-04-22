@@ -73,7 +73,7 @@ def regular_name_parser(name: str, lab_hint: str, context: Context):
 # writer
 # ======================================================================
 
-def write(filename_or_stream: Union[io.TextIOWrapper, Path], selected :ae_backend.seqdb.Selected, aa: bool, wrap_pos: int = 0, name=lambda ref: ref.seq_id(), expand_too_short = False):
+def write(filename_or_stream: Union[io.TextIOWrapper, Path], selected :ae_backend.seqdb.Selected, aa: bool, wrap_pos: int = 0, truncate_at: int = None, name=lambda ref: ref.seq_id(), expand_too_short = False):
     def do_wrap(data: str):
         if wrap_pos:
             return "\n".join(data[i:i+wrap_pos] for i in range(0, len(data), wrap_pos))
@@ -97,6 +97,8 @@ def write(filename_or_stream: Union[io.TextIOWrapper, Path], selected :ae_backen
             seq = str(ref.nuc)
             if expand_too_short:
                 seq += "-" * (max_nuc - len(seq))
+        if truncate_at is not None and len(seq) > truncate_at:
+            seq = seq[:truncate_at]
         fil.write(f">{name(ref)}\n{do_wrap(str(seq))}\n")
     if isinstance(filename_or_stream, (Path, str)) and str(filename_or_stream) != "-":
         fil.close()
