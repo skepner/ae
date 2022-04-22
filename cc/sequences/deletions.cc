@@ -369,14 +369,14 @@ void ae::sequences::find_deletions_insertions_set_lineage(RawSequence& sequence,
     if (sequence.type_subtype == "A(H1N1)"sv) {
         // expected deletion at 130 in INDONESIA/2389/2006 and number of others seasonal H1
         auto deletions = find_deletions_insertions(sequence);
-        if (N_deletions_at(deletions, 1, pos1_t{124}, pos1_t{127})) {
+        if (N_deletions_at(deletions, 1, pos1_t{124}, pos1_t{129})) {
             deletions.deletions[0].pos = pos1_t{130}; // misplacement, according to Colin it's 130
             apply_deletions(deletions);
         }
-        // else if (!deletions.empty())
-        //     AD_DEBUG("H1    del {:10s} {:50s} {}  {}", sequence.date, sequence.name, deletions, sequence.sequence.aa.substr(pos1_t{124}, 20));
-        // else if (sequence.date < "2008" && sequence.host.empty())
-        //     AD_DEBUG("H1 no-del {:10s} {:50s}              {}", sequence.date, sequence.name, sequence.sequence.aa.substr(pos1_t{124}, 20));
+        else if (!deletions.empty())
+            AD_DEBUG("H1    del {:10s} {:50s} {}  {}", sequence.date, sequence.name, deletions, sequence.sequence.aa.substr(pos1_t{124}, 20));
+        else if (sequence.date < "2008" && sequence.host.empty())
+            AD_DEBUG("H1 no-del {:10s} {:50s}              {}", sequence.date, sequence.name, sequence.sequence.aa.substr(pos1_t{124}, 20));
     }
 
 } // ae::sequences::find_deletions_insertions_set_lineage
