@@ -1,6 +1,6 @@
-Time-stamp: <2022-04-22 14:59:26 eu>
+Time-stamp: <2022-04-22 18:05:02 eu>
 * already downloaded from gisaid: ~/ac/sequences
-ls -l ~/ac/sequences/gis*.fas.xz
+ls -l ~/ac/sequences/gis*.fas.*
 
 * [[https://platform.gisaid.org/epi3/start][GISAID]]
  *Download A and B separately: perhaps bug in gisaid*
@@ -31,12 +31,19 @@ seqdb-put
 ssa
 #+END_SRC
 
+** re-build from scratch incrementally (to support weekly trees)
+
+#+BEGIN_SRC bash
+rm -f /r/seqdb-*.v4.json.*; env SEQDB_V4=/r gtime ~/ae/bin/seqdb-update ~/ac/sequences/gisaid-{19,201,2020}*.fas.xz ~/ac/sequences/gisaid-20210101-20210917.fas.xz ~/ac/sequences/n*.fas.xz ~/ac/sequences/ncbi && for ff in ~/ac/sequences/gisaid-202?-*.fas.*; do env SEQDB_V4=/r gtime ~/ae/bin/seqdb-update $ff; done
+#+END_SRC
+-->
+
 ** re-build from scratch
 
 #+BEGIN_SRC bash
-rm -f /r/seqdb-*.v4.json.xz; env SEQDB_V4=/r ~/ae/bin/seqdb-update ~/ac/sequences/gisaid-{19,201,2020}*.fas.xz ~/ac/sequences/gisaid-20210101-20210917.fas.xz ~/ac/sequences/n*.fas.xz ~/ac/sequences/ncbi ~/ac/sequences/gisaid-202?-*.fas.*
---> 5m
+rm -f /r/seqdb-*.v4.json.*; env SEQDB_V4=/r gtime ~/ae/bin/seqdb-update ~/ac/sequences/gisaid-{19,201,2020}*.fas.xz ~/ac/sequences/gisaid-20210101-20210917.fas.xz ~/ac/sequences/n*.fas.xz ~/ac/sequences/ncbi ~/ac/sequences/gisaid-202?-*.fas.*
 #+END_SRC
+--> 13m
 
 * Weekly trees
 [[file:../proj/weekly-tree/README.org][Make weekly trees]]

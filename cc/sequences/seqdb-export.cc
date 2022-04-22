@@ -16,9 +16,9 @@ using namespace std::string_view_literals;
 namespace ae::sequences
 {
     static const std::vector<std::pair<std::string_view, std::string_view>> sSeqdbSubtypeToFilename{
-        {"B"sv, "seqdb-b.v4.json.br"sv},        //
-        {"A(H1N1)"sv, "seqdb-h1.v4.json.br"sv}, //
-        {"A(H3N2)"sv, "seqdb-h3.v4.json.br"sv}  //
+        {"B"sv, "seqdb-b.v4.json.xz"sv},        //
+        {"A(H1N1)"sv, "seqdb-h1.v4.json.xz"sv}, //
+        {"A(H3N2)"sv, "seqdb-h3.v4.json.xz"sv}  //
     };
 
 } // namespace ae::sequences

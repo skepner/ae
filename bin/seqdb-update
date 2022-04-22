@@ -74,7 +74,7 @@ def main(args: argparse.Namespace):
         for seq in sequences_by_subtype.get(subtype, []):
             if ae_backend.seqdb.for_subtype(seqdb_subtype).add(seq):
                 num_added += 1
-        print(f"{subtype:7s} -> {seqdb_subtype:7s}: {num_added:5d} (of {len(sequences_by_subtype.get(subtype, [])):5d})")
+        print(f"{subtype:7s} -> {seqdb_subtype:7s}: {num_added:6d} (of {len(sequences_by_subtype.get(subtype, [])):6d})")
     if args.save_seqdb:
         ae_backend.seqdb.save()
 

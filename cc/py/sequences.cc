@@ -117,7 +117,7 @@ void ae::py::sequences(pybind11::module_& mdl)
                 else if (sorting_order == "-name"sv)
                     ord = order::name_descending;
                 else
-                    fmt::print(">> unrecognized soring order {} (+date assumed)", sorting_order);
+                    fmt::print(stderr, ">> unrecognized soring order {} (+date assumed)", sorting_order);
                 return selected.sort(ord);
             },
             "order"_a = "+date", pybind11::doc("sequences without date are ordered last if +date or -date ordering used")) //
