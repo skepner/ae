@@ -39,18 +39,18 @@ namespace ae::file::detail
     {
         constexpr size_t chunk_size = 1024 * 100;
         std::string data;
-        data.reserve(chunk_size + padding);
-        data.resize(chunk_size);
+        data.resize(chunk_size + padding);
         ssize_t start = 0;
         for (;;) {
             if (const auto bytes_read = ::read(0, data.data() + start, chunk_size); bytes_read > 0) {
                 start += bytes_read;
-                data.resize(static_cast<size_t>(start));
-                data.reserve(static_cast<size_t>(start) + padding);
+                data.resize(static_cast<size_t>(start + chunk_size) + padding);
             }
             else
                 break;
         }
+        data.resize(static_cast<size_t>(start));
+        data.reserve(static_cast<size_t>(start) + padding);
         return decompress_if_necessary(data, padding);
     }
 
