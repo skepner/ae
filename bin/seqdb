@@ -77,7 +77,7 @@ def find(subtype: str, lineage: str, names: list, args: argparse.Namespace):
         else:
             selected.human()
 
-    if args.do_not_exclude_too_short:
+    if args.do_not_exclude_too_short and str(args.fasta_aa) != "-" and str(args.fasta_nuc) != "-":
         selected.length_stat()
 
     print_names = args.print_names
