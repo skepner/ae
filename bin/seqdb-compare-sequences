@@ -54,7 +54,7 @@ class Group:
     def format_json(self, positions: list):
         return {
             "name": self.name,
-            "pos1": {str(pos0+1): [{"a": aa, "c": count} for aa, count in self.counters[pos0].most_common()] for pos0 in positions},
+            "pos1": {str(pos0+1): [{"a": aa, "c": count} for aa, count in self.counters[pos0].most_common()] for pos0 in positions if len(self.counters) > pos0},
             "seq": [{"id": seq.seq_id, "seq": str(seq.seq)} for seq in self.seqs]
         }
 
