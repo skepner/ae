@@ -373,8 +373,10 @@ void ae::sequences::find_deletions_insertions_set_lineage(RawSequence& sequence,
             deletions.deletions[0].pos = pos1_t{130};
             apply_deletions(deletions);
         }
-        // else if (!deletions.empty() && sequence.host.empty())
-        //     AD_DEBUG("H1    del {:10s} {:50s} {:20s} {}", sequence.date, sequence.name, sequence.host, deletions, sequence.sequence.aa.substr(pos1_t{124}, 20));
+        else if (!deletions.empty()) { // && sequence.host.empty())
+            // AD_DEBUG("H1    del {:10s} {:50s} {:20s} {}", sequence.date, sequence.name, sequence.host, deletions, sequence.sequence.aa.substr(pos1_t{124}, 20));
+            apply_deletions(deletions);
+        }
         // else if (sequence.date < "2008" && sequence.host.empty())
         //     AD_DEBUG("H1 no-del {:10s} {:50s}              {}", sequence.date, sequence.name, sequence.sequence.aa.substr(pos1_t{124}, 20));
     }
