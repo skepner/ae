@@ -22,8 +22,9 @@ struct deletions_insertions_t
         auto operator<=>(const pos_num_t&) const = default;
     };
 
-    std::vector<pos_num_t> deletions{};
-    std::vector<pos_num_t> insertions{};
+    using data_t = std::vector<pos_num_t>;
+    data_t deletions{};
+    data_t insertions{};
 
     bool empty() const { return deletions.empty() && insertions.empty(); }
 
@@ -114,6 +115,11 @@ inline bool N_deletions_at(const deletions_insertions_t& deletions, size_t num_d
 inline bool N_deletions_at(const deletions_insertions_t& deletions, size_t num_deletions, ae::sequences::pos1_t pos)
 {
     return !deletions.deletions.empty() && deletions.deletions.front().pos == pos && deletions.deletions.front().num == num_deletions;
+}
+
+inline bool N_insertions_at(const deletions_insertions_t& deletions, size_t num_insertions, ae::sequences::pos1_t pos)
+{
+    return !deletions.insertions.empty() && deletions.insertions.front().pos == pos && deletions.insertions.front().num == num_insertions;
 }
 
 // ----------------------------------------------------------------------
@@ -243,8 +249,9 @@ inline deletions_insertions_t find_deletions_insertions(const ae::sequences::Raw
             update_both(tail_deletions.deletions, tail_deletions.head.head, master_tail, to_align_tail, master_offset, to_align_offset);
         }
         else { // insertions or nothing (in some cases)
-            if (tail_deletions.insertions)
+            if (tail_deletions.insertions) {
                 deletions.insertions.push_back({pos0_t{master_offset}, tail_deletions.insertions});
+            }
             update_both(tail_deletions.insertions, tail_deletions.head.head, to_align_tail, master_tail, to_align_offset, master_offset);
         }
         // common += tail_deletions.head.common;
@@ -377,6 +384,18 @@ void ae::sequences::find_deletions_insertions_set_lineage(RawSequence& sequence,
             // AD_DEBUG("H1    del {:10s} {:50s} {:20s} {}", sequence.date, sequence.name, sequence.host, deletions, sequence.sequence.aa.substr(pos1_t{124}, 20));
             apply_deletions(deletions);
         }
+        else if (sequence.sequence.aa.substr(pos1_t{130}, 5) == "GVSAS") { // must be deletion at 130
+            // AD_DEBUG("130:GVSAS {:10s} {:50s} {}", sequence.date, sequence.name, deletions);
+            deletions.deletions.push_back({pos0_t{130}, 1});
+            apply_deletions(deletions);
+            auto deletions2 = find_deletions_insertions(sequence);
+            if (N_insertions_at(deletions2, 1, pos1_t{283}))
+                deletions2.insertions[0].pos = pos1_t{286};
+            apply_deletions(deletions2);
+            // AD_DEBUG("del2      {:61s} {}", std::string_view{}, deletions2);
+            // AD_DEBUG("{}", sequence.sequence.aa);
+        }
+
         // else if (sequence.date < "2008" && sequence.host.empty())
         //     AD_DEBUG("H1 no-del {:10s} {:50s}              {}", sequence.date, sequence.name, sequence.sequence.aa.substr(pos1_t{124}, 20));
     }
