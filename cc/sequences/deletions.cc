@@ -382,19 +382,19 @@ void ae::sequences::find_deletions_insertions_set_lineage(RawSequence& sequence,
         }
         else if (!deletions.empty()) { // && sequence.host.empty())
             apply_deletions(deletions);
-            // if (sequence.sequence.aa.substr(pos1_t{130}, 5) == "GVSAS")
-            //     AD_DEBUG("130:GVSAS {:10s} {:50s} {}", sequence.date, sequence.name, deletions);
-            // AD_DEBUG("H1    del {:10s} {:50s} {:20s} {}", sequence.date, sequence.name, sequence.host, deletions, sequence.sequence.aa.substr(pos1_t{124}, 20));
         }
-        else if (sequence.sequence.aa.substr(pos1_t{130}, 5) == "GVSAS") { // must be deletion at 130
+        if (sequence.sequence.aa.substr(pos1_t{130}, 5) == "GVSAS") { // must be deletion at 130
             // AD_DEBUG("130:GVSAS {:10s} {:50s} {}", sequence.date, sequence.name, deletions);
-            deletions.deletions.push_back({pos1_t{130}, 1});
-            apply_deletions(deletions);
-            auto deletions2 = find_deletions_insertions(sequence);
-            if (N_insertions_at(deletions2, 1, pos1_t{283}))
-                deletions2.insertions[0].pos = pos1_t{286};
+            deletions_insertions_t deletions2;
+            deletions2.deletions.push_back({pos1_t{130}, 1});
             apply_deletions(deletions2);
-            // AD_DEBUG("del2      {:61s} {}", std::string_view{}, deletions2);
+
+            auto deletions3 = find_deletions_insertions(sequence);
+            if (N_insertions_at(deletions3, 1, pos1_t{283}))
+                deletions3.insertions[0].pos = pos1_t{286};
+            if (!deletions3.empty())
+                apply_deletions(deletions3);
+            // AD_DEBUG("del2      {:61s} {}", std::string_view{}, deletions3);
             // AD_DEBUG("{}", sequence.sequence.aa);
         }
 
