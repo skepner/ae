@@ -373,7 +373,7 @@ void ae::sequences::find_deletions_insertions_set_lineage(RawSequence& sequence,
         }
     }
 
-    if (sequence.type_subtype == "A(H1N1)"sv) {
+    if (sequence.type_subtype == "A(H1N1)"sv || sequence.type_subtype == "A(H1)"sv) {
         // expected deletion at 130 in INDONESIA/2389/2006 and number of others seasonal H1
         auto deletions = find_deletions_insertions(sequence);
         if (N_deletions_at(deletions, 1, pos1_t{124}, pos1_t{129}) || (N_deletions_at(deletions, 1, pos1_t{156}, pos1_t{190}) && sequence.sequence.aa.substr(pos1_t{130}, 5) == "GVSAS")) { // misplacement, according to Colin it's 130
@@ -381,12 +381,14 @@ void ae::sequences::find_deletions_insertions_set_lineage(RawSequence& sequence,
             apply_deletions(deletions);
         }
         else if (!deletions.empty()) { // && sequence.host.empty())
-            // AD_DEBUG("H1    del {:10s} {:50s} {:20s} {}", sequence.date, sequence.name, sequence.host, deletions, sequence.sequence.aa.substr(pos1_t{124}, 20));
             apply_deletions(deletions);
+            // if (sequence.sequence.aa.substr(pos1_t{130}, 5) == "GVSAS")
+            //     AD_DEBUG("130:GVSAS {:10s} {:50s} {}", sequence.date, sequence.name, deletions);
+            // AD_DEBUG("H1    del {:10s} {:50s} {:20s} {}", sequence.date, sequence.name, sequence.host, deletions, sequence.sequence.aa.substr(pos1_t{124}, 20));
         }
         else if (sequence.sequence.aa.substr(pos1_t{130}, 5) == "GVSAS") { // must be deletion at 130
             // AD_DEBUG("130:GVSAS {:10s} {:50s} {}", sequence.date, sequence.name, deletions);
-            deletions.deletions.push_back({pos0_t{130}, 1});
+            deletions.deletions.push_back({pos1_t{130}, 1});
             apply_deletions(deletions);
             auto deletions2 = find_deletions_insertions(sequence);
             if (N_insertions_at(deletions2, 1, pos1_t{283}))
