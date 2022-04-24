@@ -686,11 +686,14 @@ std::string ae::virus::name::v1::Parts::host_location_isolation_year() const
 
 using namespace std::string_view_literals;
 static const std::array sHosts{
+    "BLUE WINGED TEAL"sv,
     "CHICKEN"sv,
     "DUCK"sv,
     "EGRET"sv,
     "FOX"sv,
     "MALLARD"sv,
+    "PINTAIL DUCK"sv,
+    "QUAIL"sv,
     "ROOK"sv,
     "SWINE"sv,
     "TURKEY"sv,
