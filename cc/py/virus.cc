@@ -66,6 +66,7 @@ void ae::py::virus(pybind11::module_& mdl)
         .def_readonly("extra", &ae::virus::name::Parts::extra)                                      //
         .def_readonly("continent", &ae::virus::name::Parts::continent)                              //
         .def_readonly("country", &ae::virus::name::Parts::country)                                  //
+        .def("fields", &ae::virus::name::Parts::fields)                                             //
         ;
 
     // ----------------------------------------------------------------------

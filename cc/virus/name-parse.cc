@@ -640,6 +640,31 @@ std::string ae::virus::name::v1::Parts::name(mark_extra me) const
 
 // ----------------------------------------------------------------------
 
+std::string ae::virus::name::v1::Parts::fields() const
+{
+    fmt::memory_buffer out;
+    const auto format = [&out](bool space, std::string_view name, std::string_view value) -> bool {
+        if (value.empty())
+            return false;
+        fmt::format_to(std::back_inserter(out), "{}{}: \"{}\"", space ? " " : "", name, value);
+        return true;
+    };
+
+    fmt::format_to(std::back_inserter(out), "{{");
+    bool space = format(false, "subtype", subtype);
+    space |= format(space, "host", host);
+    space |= format(space, "loc", location);
+    space |= format(space, "isolation", isolation);
+    space |= format(space, "year", year);
+    space |= format(space, "reass", reassortant);
+    format(space, "extra", extra);
+    fmt::format_to(std::back_inserter(out), "}}");
+    return fmt::to_string(out);
+
+} // ae::virus::name::v1::Parts::fields
+
+// ----------------------------------------------------------------------
+
 std::string ae::virus::name::v1::Parts::host_location_isolation_year() const
 {
     fmt::memory_buffer out;
@@ -665,9 +690,11 @@ static const std::array sHosts{
     "DUCK"sv,
     "EGRET"sv,
     "FOX"sv,
+    "MALLARD"sv,
     "ROOK"sv,
     "SWINE"sv,
     "TURKEY"sv,
+    "WDK"sv,                    // wild duck?
 };
 
 static inline bool is_host(std::string_view name)

@@ -9,19 +9,13 @@ import ae_backend
 def main(args: argparse.Namespace):
     failures = 0
     for name in args.names:
-        print(name)
+        # print(name)
         res = ae_backend.virus.name_parse(name, trace=args.trace)
-        if res.good():
-            print(res.parts.name())
-            if res.messages:
-                print(res.messages)
-        else:
-            failures += 1
-            # print(f">> \"{name}\" --> {res.parts.name()}", file=sys.stderr)
-            for msg in res.messages:
-                print(f">> {msg.type}", file=sys.stderr)
-                print(f">> {msg}", file=sys.stderr)
-            print("", file=sys.stderr)
+        failures += 0 if res.good() else 1
+        print(f"{'' if res.good() else '> '}\"{res.parts.name()}\" <-- \"{name}\" {res.parts.fields()}")
+        for msg in res.messages:
+            print(f">> {msg.type}", file=sys.stderr)
+            print(f">> {msg}", file=sys.stderr)
     return failures
 
 # ----------------------------------------------------------------------
