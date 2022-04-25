@@ -83,6 +83,11 @@ class Context:
 # ======================================================================
 
 def parse_name(name: str, metadata: dict, context: Context):
+
+    def set_metadata(key: str, value: str, new_only: bool = False):
+        if value and (not new_only or not metadata.get(key)):
+            metadata[key] = value
+
     preprocessed_name = context.preprocess_virus_name(name, metadata)
     if preprocessed_name[:10] == "<no-parse>":
         metadata["name"] = preprocessed_name[10:].upper()
@@ -93,9 +98,6 @@ def parse_name(name: str, metadata: dict, context: Context):
         result = ae_backend.virus.name_parse(preprocessed_name, type_subtype=metadata.get("type_subtype", ""), year_hint=metadata.get("date", "")[:4], filename=context.filename, line_no=context.line_no)
         if result.good():
             metadata["name"] = result.parts.host_location_isolation_year()
-            metadata["host"] = result.parts.host
-            metadata["continent"] = result.parts.continent
-            metadata["country"] = result.parts.country
         else:
             metadata["name"] = preprocessed_name.upper()
             if preprocessed_name != name:
@@ -105,12 +107,12 @@ def parse_name(name: str, metadata: dict, context: Context):
             for message in result.messages:
                 context.message(field="name", value=value, message_raw=message)
             context.unrecognized_locations(result.messages.unrecognized_locations())
-        if not metadata.get("date") and (year := result.parts.year):
-            metadata["date"] = year
-        if not metadata.get("reassortant") and (reassortant := result.parts.reassortant):
-            metadata["reassortant"] = reassortant
-        if not metadata.get("extra") and (extra := result.parts.extra):
-            metadata["extra"] = extra
+        set_metadata("host", result.parts.host)
+        set_metadata("continent", result.parts.continent)
+        set_metadata("country", result.parts.country)
+        set_metadata("date", result.parts.year, new_only=True)
+        set_metadata("reassortant", result.parts.reassortant, new_only=True)
+        set_metadata("extra", result.parts.extra, new_only=True)
 
 # ----------------------------------------------------------------------
 
