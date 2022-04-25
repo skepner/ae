@@ -32,7 +32,6 @@ def main(args: argparse.Namespace):
 
         for metadata, sequence in reader:
             if not (excluded := metadata.get("excluded")):
-                print(metadata)
                 fasta.add_metadata_to_sequence(metadata, sequence)
                 sequence_messages = ae_backend.Messages()
                 try:
