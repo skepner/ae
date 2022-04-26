@@ -131,6 +131,11 @@ def h1(subtype: str, args: argparse.Namespace):
             "NETHERLANDS/10370-1A/2020",
             # 2022-0131 potential long branch
             "DENMARK/36/2021",
+            # 2022-04-26 mess in 156-179
+            "INDIA/NIV-NICOBAR91/2020_OR_01A87F80",
+            "INDIA/NIV-NICOBAR163/2020_OR_823B2A0F",
+            "INDIA/NIV-NICOBAR106/2020_OR_B81F1DC2",
+            "INDIA/NIV-NICOBAR164/2020_OR_37A11133",
         ])
         .remove_hash_duplicates()
         .replace_with_master()
