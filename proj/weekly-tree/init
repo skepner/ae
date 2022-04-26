@@ -5,7 +5,7 @@ from pathlib import Path
 WEEKLY_TREE_ROOT_DIR = Path("/syn/eu/ac/results/trees")
 TODAY = datetime.date.today().strftime("%Y-%m%d")
 TODAY_DIR = WEEKLY_TREE_ROOT_DIR.joinpath(TODAY)
-SUBTYPES = ["bvic", "byam", "h1", "h3"]
+SUBTYPES = ["h1", "h3", "bvic", "byam"]
 
 CMD_DIR = Path(sys.argv[0]).parent
 EXPORT_CMD = CMD_DIR.joinpath("export")

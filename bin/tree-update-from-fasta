@@ -42,12 +42,12 @@ def main(args: argparse.Namespace):
     new_seq_ids = set(fasta_data) - names_in_tree
     closest_data = find_closest(tree=tree, all_sequences=fasta_data, new_seq_ids=new_seq_ids)
     print(f"Adding {len(closest_data)} leaves (soted by hamming distance to the existing closest leaf in the tree):")
-    names_sorted_by_hamming = sorted(closest_data, key=lambda nn: closest_data[nn]["dist"])
-    max_name = max(len(name) for name in names_sorted_by_hamming)
-    for name in names_sorted_by_hamming:
-        en = closest_data[name]
-        print(f"    {name:{max_name}s} <- {en['dist']:3d} -> {en['leaf'].name()}")
-        en["leaf"].add_sibling_leaf(name)
+    if names_sorted_by_hamming := sorted(closest_data, key=lambda nn: closest_data[nn]["dist"]):
+        max_name = max(len(name) for name in names_sorted_by_hamming)
+        for name in names_sorted_by_hamming:
+            en = closest_data[name]
+            print(f"    {name:{max_name}s} <- {en['dist']:3d} -> {en['leaf'].name()}")
+            en["leaf"].add_sibling_leaf(name)
 
     if args.output_tree:
         ae_backend.tree.export(tree, args.output_tree)
