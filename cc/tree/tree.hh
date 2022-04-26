@@ -141,6 +141,8 @@ namespace ae::tree
         void update_number_of_leaves_in_subtree();
         size_t number_of_leaves() const { return root().number_of_leaves(); }
 
+        std::vector<std::string> fix_names_by_seqdb(const virus::type_subtype_t& subtype);
+
         enum class ladderize_method { none, number_of_leaves, max_edge_length };
         void ladderize(ladderize_method method);
 

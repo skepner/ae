@@ -451,6 +451,31 @@ void ae::tree::Tree::remove_leaves_isolated_before(std::string_view last_date, c
 
 // ----------------------------------------------------------------------
 
+std::vector<std::string> ae::tree::Tree::fix_names_by_seqdb(const virus::type_subtype_t& subtype)
+{
+    const auto& seqdb = ae::sequences::seqdb_for_subtype(subtype);
+    std::vector<std::string> messages;
+    for (auto node_ref : visit(tree_visiting::leaves)) {
+        auto& leaf = *node_ref.leaf();
+        const ae::sequences::seq_id_t seq_id{leaf.name};
+        auto ref = seqdb.find_by_seq_id(seq_id, ae::sequences::Seqdb::set_master::no);
+        if (ref.empty() || !ref.is_master())
+            ref = seqdb.find_by_hash(ae::hash_t{seq_id->substr(seq_id.size() - 8)});
+        if (!ref.empty()) {
+            if (ref.seq_id() != seq_id) {
+                leaf.name = ref.seq_id();
+                messages.push_back(fmt::format(">>> renamed \"{}\" <-- \"{}\"", ref.seq_id(), seq_id));
+            }
+        }
+        else
+            messages.push_back(fmt::format(">> not found: \"{}\"", seq_id));
+    }
+    return messages;
+
+} // ae::tree::Tree::fix_names_by_seqdb
+
+// ----------------------------------------------------------------------
+
 ae::tree::Nodes& ae::tree::Nodes::sort_by_cumulative()
 {
     const auto cumulative_edge = [this](const auto& id) { return tree.node(id).visit([](const auto* node) { return node->cumulative_edge; }); };

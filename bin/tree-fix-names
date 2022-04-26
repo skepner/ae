@@ -13,18 +13,10 @@ import ae_backend
 sSubtypeFix = {"B": "B", "BVIC": "B", "BV": "B", "BY": "B", "BYAM": "B", "A(H1N1)": "A(H1N1)", "H1": "A(H1N1)", "1": "A(H1N1)", "A(H3N2)": "A(H3N2)", "H3": "A(H3N2)", "3": "A(H3N2)"}
 
 def main(args: argparse.Namespace):
-    seqdb = ae_backend.seqdb.for_subtype(sSubtypeFix[args.subtype.upper()])
+    # seqdb = ae_backend.seqdb.for_subtype(sSubtypeFix[args.subtype.upper()])
     tree = ae_backend.tree.load(args.input_tree)
-    for leaf in tree.select_leaves():
-        ref = seqdb.find_by_seq_id(leaf.name())
-        if not ref or not ref.is_master():
-            ref = seqdb.find_by_hash(hash(leaf.name()))
-        if ref:
-            if ref.seq_id() != leaf.name():
-                print(f">>> rename \"{leaf.name()}\" -> \"{ref.seq_id()}\"")
-                leaf.name(ref.seq_id())
-        else:
-            print(f">> not found: \"{leaf.name()}\"", file=sys.stderr)
+    messages = tree.fix_names_by_seqdb(sSubtypeFix[args.subtype.upper()])
+    print("\n".join(messages))
     if args.output_tree:
         ae_backend.tree.export(tree, args.output_tree)
 

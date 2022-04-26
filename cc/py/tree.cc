@@ -106,6 +106,9 @@ void ae::py::tree(pybind11::module_& mdl)
             "method"_a = "number-of-leaves")                                                                                              //
         .def("remove_leaves_isolated_before", &Tree::remove_leaves_isolated_before, "date"_a, "important"_a = std::vector<std::string>{}) //
         .def("number_of_leaves", &Tree::number_of_leaves)                                                                                 //
+        .def(
+            "fix_names_by_seqdb", [](Tree& tree, std::string_view subtype) { return tree.fix_names_by_seqdb(virus::type_subtype_t{subtype}); }, "subtype"_a,
+            pybind11::doc("fix names not found in the current seqdb using hash, returns list of messages")) //
         ;
 
     pybind11::class_<Nodes>(tree_submodule, "Nodes")                                                       //
