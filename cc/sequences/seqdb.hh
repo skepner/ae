@@ -54,6 +54,7 @@ namespace ae::sequences
             entry = nullptr;
             seq = nullptr;
         }
+        bool empty() const { return entry == nullptr || seq == nullptr; }
 
         bool is_master() const;
         void set_master(const Seqdb& seqdb);

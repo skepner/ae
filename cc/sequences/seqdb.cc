@@ -426,7 +426,7 @@ inline ae::sequences::seq_id_t make_seq_id(std::string_view designation)
 
 ae::sequences::seq_id_t ae::sequences::SeqdbSeqRef::seq_id() const
 {
-    if (entry != nullptr && seq != nullptr) {
+    if (!empty()) {
         return make_seq_id(
             fmt::format("{} {} {} {}", entry->name, seq->reassortants.empty() ? std::string{} : seq->reassortants.front(), seq->passages.empty() ? std::string{} : seq->passages.front(), seq->hash));
     }

@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 """
-Read test from newick, remove leaves not found in fasta, populate with new sequences from fasta, export to newick
+Read tree from newick, remove leaves not found in fasta, populate with new sequences from fasta, export to newick
 """
 
 import os, sys, re, collections, pprint, argparse, traceback

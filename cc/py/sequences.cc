@@ -34,6 +34,10 @@ void ae::py::sequences(pybind11::module_& mdl)
         .def("add", &Seqdb::add, "raw_sequence"_a, pybind11::doc{"returns if sequence was added."})                       //
         .def("save", pybind11::overload_cast<const std::filesystem::path&>(&Seqdb::save, pybind11::const_), "filename"_a) //
         .def("select_all", &Seqdb::select_all)                                                                            //
+        .def(
+            "find_by_seq_id", [](const Seqdb& seqdb, std::string_view seq_id) { return seqdb.find_by_seq_id(seq_id_t{seq_id}, Seqdb::set_master::no); }, "seq_id"_a) //
+        .def(
+            "find_by_hash", [](const Seqdb& seqdb, std::string_view hash) { return seqdb.find_by_hash(hash_t{hash}); }, "hash"_a) //
         ;
 
     pybind11::class_<SeqdbSelected, std::shared_ptr<SeqdbSelected>>(seqdb_submodule, "Selected") //
@@ -132,10 +136,14 @@ void ae::py::sequences(pybind11::module_& mdl)
         .def("remove_hash_duplicates", &SeqdbSelected::remove_hash_duplicates)                                             //
         .def("replace_with_master", &SeqdbSelected::replace_with_master)                                                   //
         .def("length_stat", &SeqdbSelected::length_stat)                                                                   //
-        .def("max_length", &SeqdbSelected::max_length) //
+        .def("max_length", &SeqdbSelected::max_length)                                                                     //
         ;
 
-    pybind11::class_<SeqdbSeqRef>(seqdb_submodule, "SeqdbSeqRef")                                                                         //
+    pybind11::class_<SeqdbSeqRef>(seqdb_submodule, "SeqdbSeqRef")             //
+        .def("empty", &SeqdbSeqRef::empty)                                    //
+        .def("__bool__", [](const SeqdbSeqRef& ref) { return !ref.empty(); }) //
+        .def("is_master", &SeqdbSeqRef::is_master)                            //
+
         .def("seq_id", [](const SeqdbSeqRef& ref) { return ref.seq_id().get(); })                                                         //
         .def("name", [](const SeqdbSeqRef& ref) { return ref.entry->name; })                                                              //
         .def("date", &SeqdbSeqRef::date)                                                                                                  //
