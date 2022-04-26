@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 """
-Read tree from newick, remove leaves not found in fasta, populate with new sequences from fasta, export to newick
+Read tree from newick, fix name by seqdb, remove leaves not found in fasta, populate with new sequences from fasta, export to newick
 """
 
 import os, sys, re, collections, pprint, argparse, traceback
@@ -15,8 +15,13 @@ from ae.sequences.utils import hamming_distance
 
 # ----------------------------------------------------------------------
 
+sSubtypeFix = {"B": "B", "BVIC": "B", "BV": "B", "BY": "B", "BYAM": "B", "A(H1N1)": "A(H1N1)", "H1": "A(H1N1)", "1": "A(H1N1)", "A(H3N2)": "A(H3N2)", "H3": "A(H3N2)", "3": "A(H3N2)"}
+
 def main(args: argparse.Namespace):
     tree = ae_backend.tree.load(args.input_tree)
+    messages = tree.fix_names_by_seqdb(sSubtypeFix[args.subtype.upper()])
+    print("\n".join(messages))
+
     fasta_data = fasta.read(args.input_fasta)
 
     # find seq_id in the tree and fasta that are different in case only
@@ -60,6 +65,7 @@ def find_closest(tree: ae_backend.tree.Tree, all_sequences: dict, new_seq_ids: s
 
 try:
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("subtype", choices=["b", "h1", "h3"])
     parser.add_argument("input_tree", type=Path)
     parser.add_argument("input_fasta", type=Path)
     parser.add_argument("output_tree", nargs="?", type=Path)

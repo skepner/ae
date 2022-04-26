@@ -5,4 +5,4 @@ if [[ $# -ne 1 ]]; then
     exit 1
 fi
 SUBTYPE="$1"
-${AE_ROOT}/bin/tree-update-from-fasta ${SUBTYPE}/previous.newick ${SUBTYPE}/source.fas ${SUBTYPE}/source.newick
+${AE_ROOT}/bin/tree-update-from-fasta ${SUBTYPE} ${SUBTYPE}/previous.newick ${SUBTYPE}/source.fas ${SUBTYPE}/source.newick
