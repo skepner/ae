@@ -687,14 +687,26 @@ std::string ae::virus::name::v1::Parts::host_location_isolation_year() const
 using namespace std::string_view_literals;
 static const std::array sHosts{
     "BLUE WINGED TEAL"sv,
+    "CAMEL"sv,
+    "CHICK"sv,
     "CHICKEN"sv,
+    "COCKATOO"sv,
+    "CROW"sv,
     "DUCK"sv,
     "EGRET"sv,
+    "EQ"sv,
+    "EQUINE"sv,
     "FOX"sv,
+    "FOWL"sv,
     "MALLARD"sv,
+    "MALLARD DUCK"sv,
+    "MINK"sv, // otter, ferret
+    "OSTRICH"sv,
     "PINTAIL DUCK"sv,
     "QUAIL"sv,
     "ROOK"sv,
+    "SHEARWATER"sv,
+    "STARLING"sv,
     "SWINE"sv,
     "TURKEY"sv,
     "WDK"sv,                    // wild duck?
@@ -827,7 +839,8 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, s
     }
     else if (types_match(parts, {part_type::type_subtype, part_type::letters_only, part_type::letters_only, part_type::digits_hyphens})) {
         // A/swine/Cambridge/39
-        if (const auto loc1 = locdb.find(parts[1].head), loc2 = locdb.find(parts[2].head); !loc2.first.empty() && (loc1.first.empty() || is_host(parts[1].head))) {
+        const bool part1_host = is_host(parts[1].head);
+        if (const auto loc1 = locdb.find(parts[1].head), loc2 = locdb.find(parts[2].head); !loc2.first.empty() && (loc1.first.empty() || part1_host)) {
             // A/swine/Cambridge/39
             result.subtype = parts[0];
             result.host = parts[1];
@@ -835,17 +848,28 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, s
             result.isolation = "UNKNOWN";
             result.year = fix_year(parts[3], source, year_hint, result, messages, message_location);
         }
-        else if (!loc1.first.empty() && loc2.first.empty()) {
+        else if (part1_host) {
+            result.subtype = parts[0];
+            result.host = parts[1];
+            result.location = parts[2];
+            result.isolation = "UNKNOWN";
+            result.year = fix_year(parts[3], source, year_hint, result, messages, message_location);
+            result.issues.add(Parts::issue::unrecognized_location);
+            messages.add(Message::unrecognized_location, settings.type_subtype_hint(), result.location, source, message_location);
+        }
+        else if (!loc1.first.empty()) { // loc2 is either location or unknown
             result.subtype = parts[0];
             result.location = parts[1];
             result.isolation = fix_isolation(parts[2], source, result, messages, message_location);
             result.year = fix_year(parts[3], source, year_hint, result, messages, message_location);
+            // AD_DEBUG("loc good \"{}\" <-- \"{}\" \"{}\"", result, parts[1].head, parts[2].head);
         }
         else {
             result.subtype = parts[0];
             result.year = fix_year(parts[3], source, year_hint, result, messages, message_location);
             result.issues.add(Parts::issue::unrecognized_location);
             messages.add(Message::unrecognized_location, settings.type_subtype_hint(), result.location, source, message_location);
+            // AD_DEBUG("nothing \"{}\" <-- \"{}\" (host? {}) \"{}\"", result, parts[1].head, part1_host, parts[2].head);
         }
     }
     else if (types_match(parts, {part_type::type_subtype, part_type::letters_only, part_type::any, part_type::digits_hyphens}) ||
