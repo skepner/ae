@@ -735,8 +735,8 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, s
             result.extra = parts[1];
     }
     else if (types_match(parts, {part_type::type_subtype, part_type::subtype, part_type::letters_only, part_type::any, part_type::digits_hyphens}) ||
-        types_match(parts, {part_type::type_subtype, part_type::subtype, part_type::letters_only, part_type::any, part_type::digits_hyphens, part_type::reassortant}) ||
-        types_match(parts, {part_type::type_subtype, part_type::subtype, part_type::letters_only, part_type::any, part_type::digits_hyphens, part_type::any})) {
+             types_match(parts, {part_type::type_subtype, part_type::subtype, part_type::letters_only, part_type::any, part_type::digits_hyphens, part_type::reassortant}) ||
+             types_match(parts, {part_type::type_subtype, part_type::subtype, part_type::letters_only, part_type::any, part_type::digits_hyphens, part_type::any})) {
         // fmt::print(">>>> {}\n", parts);
         if (parts[0].head.size() == 1) {
             // A/H3N2/SINGAPORE/INFIMH-16-0019/2016
@@ -779,13 +779,25 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, s
             result.year = fix_year(parts[4], source, year_hint, result, messages, message_location);
         }
         else if (!loc1.first.empty() && loc2.first.empty()) {
-            // A(H3N2)/LYON/XXX/19/2016
-            result.subtype = parts[0];
-            result.location = loc1.first;
-            result.country = loc1.second->country;
-            result.continent = locdb.continent(result.country);
-            result.isolation = fmt::format("{}-{}", parts[2].head, std::string{parts[3]});
-            result.year = fix_year(parts[4], source, year_hint, result, messages, message_location);
+            if (is_host(parts[1].head) && parts[2].head.size() == 2) {
+                // "A(H7N2)/turkey/NC/11165/02"
+                result.subtype = parts[0];
+                result.host = parts[1];
+                result.location = parts[2]; // unrecognized (abbreviation)
+                result.isolation = fix_isolation(parts[3], source, result, messages, message_location);
+                result.year = fix_year(parts[4], source, year_hint, result, messages, message_location);
+                result.issues.add(Parts::issue::unrecognized_location);
+                messages.add(Message::unrecognized_location, settings.type_subtype_hint(), result.location, source, message_location);
+            }
+            else {
+                // A(H3N2)/LYON/XXX/19/2016
+                result.subtype = parts[0];
+                result.location = loc1.first;
+                result.country = loc1.second->country;
+                result.continent = locdb.continent(result.country);
+                result.isolation = fmt::format("{}-{}", parts[2].head, std::string{parts[3]});
+                result.year = fix_year(parts[4], source, year_hint, result, messages, message_location);
+            }
         }
         else if (!loc2.first.empty() && is_host(parts[1].head)) {
             // A/turkey/Poland/027/2020
