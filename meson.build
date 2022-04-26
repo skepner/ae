@@ -291,13 +291,13 @@ test('ae test passage parsing', test_passage)
 # https://github.com/mesonbuild/meson/issues/4677
 # ----------------------------------------------------------------------
 
-python3 = import('python').find_installation('python3')
+python3 = import('python').find_installation('python3.10')
 
 ae_lib = python3.extension_module(
   'ae_backend',
   sources : sources_py,
   include_directories : include_cc,
-  dependencies : [dependency('python3'), xxhash, pybind11, xlnt, fmt, range_v3, simdjson],
+  dependencies : [python3.dependency(), xxhash, pybind11, xlnt, fmt, range_v3, simdjson],
   link_with : [libae],
   install : true)
 

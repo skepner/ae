@@ -44,7 +44,7 @@ alglib = shared_library(
     '-Wno-null-pointer-subtraction',
     '-Wno-deprecated-volatile',
     '-Wno-uninitialized',       # g++13
-    '-Wno-volatile',            # g++13
+    # '-Wno-volatile',            # g++13, clang 13 complains
   ]
 )
 alglib_dep = declare_dependency(

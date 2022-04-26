@@ -825,6 +825,29 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, s
         if (!parts[5].empty())
             result.extra = parts[5];
     }
+    else if (types_match(parts, {part_type::type_subtype, part_type::letters_only, part_type::letters_only, part_type::digits_hyphens})) {
+        // A/swine/Cambridge/39
+        if (const auto loc1 = locdb.find(parts[1].head), loc2 = locdb.find(parts[2].head); !loc2.first.empty() && (loc1.first.empty() || is_host(parts[1].head))) {
+            // A/swine/Cambridge/39
+            result.subtype = parts[0];
+            result.host = parts[1];
+            result.location = parts[2];
+            result.isolation = "UNKNOWN";
+            result.year = fix_year(parts[3], source, year_hint, result, messages, message_location);
+        }
+        else if (!loc1.first.empty() && loc2.first.empty()) {
+            result.subtype = parts[0];
+            result.location = parts[1];
+            result.isolation = fix_isolation(parts[2], source, result, messages, message_location);
+            result.year = fix_year(parts[3], source, year_hint, result, messages, message_location);
+        }
+        else {
+            result.subtype = parts[0];
+            result.year = fix_year(parts[3], source, year_hint, result, messages, message_location);
+            result.issues.add(Parts::issue::unrecognized_location);
+            messages.add(Message::unrecognized_location, settings.type_subtype_hint(), result.location, source, message_location);
+        }
+    }
     else if (types_match(parts, {part_type::type_subtype, part_type::letters_only, part_type::any, part_type::digits_hyphens}) ||
              types_match(parts, {part_type::type_subtype, part_type::letters_only, part_type::any, part_type::digits_hyphens, part_type::reassortant}) ||
              types_match(parts, {part_type::type_subtype, part_type::letters_only, part_type::any, part_type::digits_hyphens, part_type::reassortant, part_type::any}) ||
