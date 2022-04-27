@@ -130,6 +130,7 @@ namespace ae::tree
         Nodes select_all();
         Nodes select_leaves();
         Nodes select_inodes();
+        Nodes select_inodes_with_just_one_child();
 
         // unlink passed nodes
         // if a parent inode has no children afterwards, unlink it too

@@ -72,11 +72,12 @@ void ae::py::tree(pybind11::module_& mdl)
         .def(
             "populate_with_duplicates", [](Tree& tree, std::string_view subtype) { tree.populate_with_duplicates(virus::type_subtype_t{subtype}); }, "subtype"_a) //
         .def(
-            "set_clades",                                                                                                                     //
-            [](Tree& tree, std::string_view clades_json_file) { tree.set_clades(std::filesystem::path{clades_json_file}); }, "clades_json"_a) //
-        .def("select_all", &Tree::select_all)                                                                                                 //
-        .def("select_leaves", &Tree::select_leaves)                                                                                           //
-        .def("select_inodes", &Tree::select_inodes)                                                                                           //
+            "set_clades",                                                                                                                                          //
+            [](Tree& tree, std::string_view clades_json_file) { tree.set_clades(std::filesystem::path{clades_json_file}); }, "clades_json"_a)                      //
+        .def("select_all", &Tree::select_all)                                                                                                                      //
+        .def("select_leaves", &Tree::select_leaves)                                                                                                                //
+        .def("select_inodes", &Tree::select_inodes)                                                                                                                //
+        .def("select_inodes_with_just_one_child", &Tree::select_inodes_with_just_one_child, pybind11::doc("inodes with just one child are problematic for raxml")) //
         .def(
             "remove",
             [](Tree& tree, std::vector<Node_Ref>& nodes) {

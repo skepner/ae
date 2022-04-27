@@ -354,6 +354,20 @@ ae::tree::Nodes ae::tree::Tree::select_inodes()
 
 // ----------------------------------------------------------------------
 
+ae::tree::Nodes ae::tree::Tree::select_inodes_with_just_one_child()
+{
+    Nodes nodes{{}, *this};
+    for (auto ref : visit(tree_visiting::inodes)) {
+        const auto& inode = *ref.inode();
+        if (inode.number_of_leaves() < 2)
+            nodes.nodes.push_back(inode.node_id_);
+    }
+    return nodes;
+
+} // ae::tree::Tree::select_inodes_with_just_one_child
+
+// ----------------------------------------------------------------------
+
 ae::tree::node_index_t ae::tree::Tree::parent(node_index_t child) const
 {
     if (child == node_index_t{0})
