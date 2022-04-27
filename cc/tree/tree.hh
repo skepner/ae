@@ -80,6 +80,7 @@ namespace ae::tree
         Inode& inode(node_index_t index) { return inodes_[static_cast<size_t>(-*index)]; }
         const Leaf& leaf(node_index_t index) const { return leaves_[static_cast<size_t>(*index)]; }
         Leaf& leaf(node_index_t index) { return leaves_[static_cast<size_t>(*index)]; }
+        node_index_t first_leaf(node_index_t index) const;
 
         const_tree_iterator::reference node(node_index_t index) const
         {

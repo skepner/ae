@@ -50,7 +50,8 @@ def main(args: argparse.Namespace):
             en["leaf"].add_sibling_leaf(name)
 
     if bad_inodes := tree.select_inodes_with_just_one_child():
-        print(f">> tree has inodes with just one child (raxml may fail)\n{bad_inodes}", file=sys.stderr)
+        bad_inodes_txt = "\n  ".join(f"{node.node_id()} --> {node.first_leaf().name()}" for node in bad_inodes)
+        print(f">> tree has {len(bad_inodes)} inode(s) with just one child (raxml may fail)\n  {bad_inodes_txt}", file=sys.stderr)
 
     if args.output_tree:
         ae_backend.tree.export(tree, args.output_tree)

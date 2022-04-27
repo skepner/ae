@@ -490,6 +490,18 @@ std::vector<std::string> ae::tree::Tree::fix_names_by_seqdb(const virus::type_su
 
 // ----------------------------------------------------------------------
 
+ae::tree::node_index_t ae::tree::Tree::first_leaf(node_index_t index) const
+{
+    while (true) {
+        if (is_leaf(index))
+            return index;
+        index = inode(index).children[0];
+    }
+
+} // ae::tree::Tree::first_leaf
+
+// ----------------------------------------------------------------------
+
 ae::tree::Nodes& ae::tree::Nodes::sort_by_cumulative()
 {
     const auto cumulative_edge = [this](const auto& id) { return tree.node(id).visit([](const auto* node) { return node->cumulative_edge; }); };
