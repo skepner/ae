@@ -15,6 +15,11 @@ sSubtypeFix = {"B": "B", "BVIC": "B", "BV": "B", "BY": "B", "BYAM": "B", "A(H1N1
 def main(args: argparse.Namespace):
     # seqdb = ae_backend.seqdb.for_subtype(sSubtypeFix[args.subtype.upper()])
     tree = ae_backend.tree.load(args.input_tree)
+
+    if bad_inodes := tree.select_inodes_with_just_one_child():
+        bad_inodes_txt = "\n  ".join(f"{node.node_id()} --> {node.first_leaf().name()}" for node in bad_inodes)
+        print(f">> tree has {len(bad_inodes)} inode(s) with just one child (raxml may fail)\n  {bad_inodes_txt}", file=sys.stderr)
+
     messages = tree.fix_names_by_seqdb(sSubtypeFix[args.subtype.upper()])
     print("\n".join(messages))
     if args.output_tree:
