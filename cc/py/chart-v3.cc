@@ -4,10 +4,8 @@
 #include "chart/v3/selected-antigens-sera.hh"
 #include "chart/v3/procrustes.hh"
 #include "chart/v3/grid-test.hh"
+#include "chart/v3/chart-seqdb.hh"
 #include "pybind11/detail/common.h"
-#include "sequences/clades.hh"
-#include "sequences/seqdb.hh"
-#include "sequences/seqdb-selected.hh"
 
 // ======================================================================
 
@@ -141,34 +139,6 @@ namespace ae::py
     static inline ae::chart::v3::procrustes_data_t procrustes(const ProjectionRef& proj1, const ProjectionRef& proj2, const ae::chart::v3::common_antigens_sera_t& common, bool scaling)
     {
         return ae::chart::v3::procrustes(proj1.projection, proj2.projection, common, scaling ? ae::chart::v3::procrustes_scaling_t::yes : ae::chart::v3::procrustes_scaling_t::no);
-    }
-
-    // ----------------------------------------------------------------------
-
-    static inline std::pair<size_t, size_t> populate_from_seqdb(Chart& chart)
-    {
-        const auto& seqdb = ae::sequences::seqdb_for_subtype(chart.info().virus_subtype());
-        const ae::sequences::Clades clades{ae::sequences::Clades::load_from_default_file};
-
-        const auto populate = [&seqdb, &clades](auto& ag_srs) -> size_t {
-            size_t populated{0};
-            for (auto& ag_sr : ag_srs) {
-                auto selected = seqdb.select_by_name(ag_sr.name());
-                selected->filter_name(ag_sr.name(), ag_sr.reassortant(), ag_sr.passage().to_string());
-                if (!selected->empty()) {
-                    selected->find_masters();
-                    selected->find_clades(clades);
-                    ag_sr.aa(selected->at(0).aa());
-                    ag_sr.nuc(selected->at(0).nuc());
-                    ag_sr.semantic().clades = selected->at(0).clades;
-                    ++populated;
-                }
-            }
-            // AD_DEBUG("populated {}", populated);
-            return populated;
-        };
-
-        return std::make_pair(populate(chart.antigens()), populate(chart.sera()));
     }
 
 } // namespace ae::py

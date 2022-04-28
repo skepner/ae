@@ -2,6 +2,7 @@
 #include <variant>
 #include <map>
 
+#include "utils/string.hh"
 #include "utils/string-hash.hh"
 #include "virus/passage.hh"
 #include "sequences/seqdb-selected.hh"
@@ -275,5 +276,27 @@ std::pair<size_t, size_t> ae::sequences::SeqdbSelected::max_length() const // re
     return {max_nuc, max_aa};
 
 } // ae::sequences::SeqdbSelected::max_length
+
+// ----------------------------------------------------------------------
+
+ae::sequences::SeqdbSelected& ae::sequences::SeqdbSelected::filter_lab_id(std::string_view lab_id) // passed lab_id is "LAB#ID", e.g. "CDC#2007700886", it is stored in ace
+{
+    using namespace std::string_view_literals;
+    if (const auto lab_and_id = string::split(lab_id, "#"sv); lab_and_id.size() == 2) {
+        erase_if(*this, [&lab_and_id](const auto& ref) -> bool {
+            for (const auto& [lab, ids] : ref.seq->lab_ids) {
+                if (lab == lab_and_id[0]) {
+                    for (const auto& id : ids) {
+                        if (id == lab_and_id[1])
+                            return false;
+                    }
+                }
+            }
+            return true;
+        });
+    }
+    return *this;
+
+} // ae::sequences::SeqdbSelected::filter_lab_id
 
 // ----------------------------------------------------------------------

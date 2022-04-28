@@ -202,8 +202,8 @@ namespace ae::sequences
 
     struct SeqdbSeq
     {
-        using lab_ids_t = std::vector<std::string>;
-        using labs_t = std::vector<std::pair<std::string, lab_ids_t>>;
+        using lab_ids_t = std::vector<std::string>; // list of ids without lab name, e.g. ["2007700815"]
+        using labs_t = std::vector<std::pair<std::string, lab_ids_t>>; // each entry is lab and list of lab_ids: {"CDC": ["2007700815"]}
 
         struct gisaid_data_t
         {

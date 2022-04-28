@@ -71,6 +71,8 @@ namespace ae::sequences
 
         SeqdbSelected& filter_name(std::string_view name, std::string_view reassortant, std::string_view passage);
 
+        SeqdbSelected& filter_lab_id(std::string_view lab_id); // passed lab_id is "LAB#ID", e.g. "CDC#2007700886", it is stored in ace
+
         // keeps refs for which predicate returned true
         template <std::regular_invocable<const SeqdbSeqRef&> Func> SeqdbSelected& filter(Func&& predicate)
         {
