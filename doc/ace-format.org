@@ -1,4 +1,4 @@
-# Time-stamp: <2022-04-28 15:42:16 eu>
+# Time-stamp: <2022-04-28 18:14:09 eu>
 * acmacs-ace-v1 format to store chart data
 
 fields with names starting with ? are ignored
@@ -80,12 +80,12 @@ fields with names starting with ? are ignored
 |             |     | "u"  |     |     | array of integers                | list of indices of points unmovable in the last dimension (antigen/serum attribute for stress evaluation)                                                      |
 |-------------+-----+------+-----+-----+----------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------|
 |             | "R" |      |     |     | key-value(key-value) pairs       | sematic attributes based plot specifications, key: name of the style                                                                                           |
-|             |     |      |     |     |                                  |                                                                                                                                                                |
-|             |     |      |     |     |                                  |                                                                                                                                                                |
-|             |     |      |     |     |                                  |                                                                                                                                                                |
-|             |     |      |     |     |                                  |                                                                                                                                                                |
-|             |     |      |     |     |                                  |                                                                                                                                                                |
-|             |     |      |     |     |                                  |                                                                                                                                                                |
+|             |     | "N"  |     |     | str                              | plot spec name                                                                                                                                                 |
+|             |     | "T"  |     |     | str                              | title                                                                                                                                                          |
+|             |     | "A"  |     |     | list of objects                  | objects to apply                                                                                                                                               |
+|             |     |      | "R" |     | str                              | name ("N") of another plot spec to use (inherited from)                                                                                                        |
+|             |     |      | "T" |     | object                           | {<name of semantic attribute>: <value>} to select antigens/sera, if value is true, it means ag/sr selected if they have that semantic attribute with any value |
+|             |     |      | "A" |     | bool                             | true: select antigens only, false: select sera only, absent: select antigens and sera                                                                          |
 |             |     |      |     |     |                                  |                                                                                                                                                                |
 |             |     |      |     |     |                                  |                                                                                                                                                                |
 |             |     |      |     |     |                                  |                                                                                                                                                                |
