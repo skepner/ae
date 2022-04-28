@@ -13,7 +13,10 @@ def main(args: argparse.Namespace):
     for filename in args.charts:
         chart = ae_backend.chart_v3.Chart(filename)
         ag, sr = chart.populate_from_seqdb()
-        print(f"AG {ag:4d} of {chart.number_of_antigens():4d}\nSR {sr:4d} of {chart.number_of_sera():4d}")
+        if len(args.charts) > 0:
+            print(f"{filename}\n  AG {ag:4d} of {chart.number_of_antigens():4d}\n  SR {sr:4d} of {chart.number_of_sera():4d}")
+        else:
+            print(f"AG {ag:4d} of {chart.number_of_antigens():4d}\nSR {sr:4d} of {chart.number_of_sera():4d}")
         if args.export:
             chart.write(filename=filename)
 

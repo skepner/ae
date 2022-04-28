@@ -20,12 +20,17 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
         return true;
     };
 
-    const auto put_str = [&out, put_comma](const auto& value, auto&& condition, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
+    const auto put_comma_key = [&out, put_comma](bool comma, std::string_view key, std::string_view after_comma) {
+        put_comma(comma);
+        if (!after_comma.empty())
+            fmt::format_to(std::back_inserter(out), "{}", after_comma);
+        fmt::format_to(std::back_inserter(out), "\"{}\":", key);
+    };
+
+    const auto put_str = [&out, put_comma_key](const auto& value, auto&& condition, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
         if (condition(value)) {
-            put_comma(comma);
-            if (!after_comma.empty())
-                fmt::format_to(std::back_inserter(out), "{}", after_comma);
-            fmt::format_to(std::back_inserter(out), "\"{}\":\"{}\"", key, value);
+            put_comma_key(comma, key, after_comma);
+            fmt::format_to(std::back_inserter(out), "\"{}\"", value);
             return true;
         }
         else
@@ -39,24 +44,20 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
             return format_double(*value);
     };
 
-    const auto put_double = [&out, put_comma, double_to_str](const auto& value, auto&& condition, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
+    const auto put_double = [&out, put_comma_key, double_to_str](const auto& value, auto&& condition, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
         if (condition(value)) {
-            put_comma(comma);
-            if (!after_comma.empty())
-                fmt::format_to(std::back_inserter(out), "{}", after_comma);
-            fmt::format_to(std::back_inserter(out), "\"{}\":{}", key, double_to_str(value));
+            put_comma_key(comma, key, after_comma);
+            fmt::format_to(std::back_inserter(out), "{}", double_to_str(value));
             return true;
         }
         else
             return comma;
     };
 
-    const auto put_bool = [&out, put_comma](bool value, bool dflt, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
+    const auto put_bool = [&out, put_comma_key](bool value, bool dflt, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
         if (value != dflt) {
-            put_comma(comma);
-            if (!after_comma.empty())
-                fmt::format_to(std::back_inserter(out), "{}", after_comma);
-            fmt::format_to(std::back_inserter(out), "\"{}\":{}", key, value);
+            put_comma_key(comma, key, after_comma);
+            fmt::format_to(std::back_inserter(out), "{}", value);
             return true;
         }
         else
@@ -73,24 +74,20 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
             return comma;
     };
 
-    const auto put_array_int = [&out, put_comma](const auto& value, auto&& condition, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
+    const auto put_array_int = [&out, put_comma_key](const auto& value, auto&& condition, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
         if (condition(value)) {
-            put_comma(comma);
-            if (!after_comma.empty())
-                fmt::format_to(std::back_inserter(out), "{}", after_comma);
-            fmt::format_to(std::back_inserter(out), "\"{}\":[{}]", key, fmt::join(value, ","));
+            put_comma_key(comma, key, after_comma);
+            fmt::format_to(std::back_inserter(out), "[{}]", fmt::join(value, ","));
             return true;
         }
         else
             return comma;
     };
 
-    const auto put_array_double = [&out, double_to_str, put_comma](const auto& value, auto&& condition, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
+    const auto put_array_double = [&out, double_to_str, put_comma, put_comma_key](const auto& value, auto&& condition, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
         if (condition(value)) {
-            put_comma(comma);
-            if (!after_comma.empty())
-                fmt::format_to(std::back_inserter(out), "{}", after_comma);
-            fmt::format_to(std::back_inserter(out), "\"{}\":[", key);
+            put_comma_key(comma, key, after_comma);
+            fmt::format_to(std::back_inserter(out), "[");
             bool comma2 = false;
             for (const auto en : value) {
                 comma2 = put_comma(comma2);
@@ -103,12 +100,26 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
             return comma;
     };
 
-    const auto put_semantic = [&out, put_comma, not_empty, put_array_str](const SemanticAttributes& value, auto&& condition, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
+    const auto put_insertions = [&out, put_comma, put_comma_key](const sequences::insertions_t& insertions, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
+        if (!insertions.empty()) {
+            put_comma_key(comma, key, after_comma);
+            fmt::format_to(std::back_inserter(out), "[");
+            bool comma2 = false;
+            for (const auto& en : insertions) {
+                comma2 = put_comma(comma2);
+                fmt::format_to(std::back_inserter(out), "[{}, \"{}\"]", en.pos, en.insertion);
+            }
+            fmt::format_to(std::back_inserter(out), "]");
+            return true;
+        }
+        return comma;
+    };
+
+    const auto put_semantic = [&out, put_comma_key, not_empty, put_array_str](const SemanticAttributes& value, auto&& condition, std::string_view key, bool comma,
+                                                                              std::string_view after_comma = {}) -> bool {
         if (condition(value)) {
-            put_comma(comma);
-            if (!after_comma.empty())
-                fmt::format_to(std::back_inserter(out), "{}", after_comma);
-            fmt::format_to(std::back_inserter(out), "\"{}\":{{", key);
+            put_comma_key(comma, key, after_comma);
+            fmt::format_to(std::back_inserter(out), "{{");
             [[maybe_unused]] auto comma_inside = put_array_str(value.clades, not_empty, "C", false);
             fmt::format_to(std::back_inserter(out), "}}");
             return true;
@@ -116,7 +127,6 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
         else
             return comma;
     };
-
 
     fmt::format_to(std::back_inserter(out), R"({{"_": "-*- js-indent-level: 1 -*-",
  "  version": "acmacs-ace-v1",
@@ -138,7 +148,8 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
 
     const auto put_table_source = [put_str, not_empty](const TableSource& source) -> bool {
         auto comma = put_str(source.name(), not_empty, "N", false);
-        comma = put_str(source.virus(), [](auto&& val) { return !val.empty() && val != ae::virus::virus_t{"INFLUENZA"}; }, "v", comma);
+        comma = put_str(
+            source.virus(), [](auto&& val) { return !val.empty() && val != ae::virus::virus_t{"INFLUENZA"}; }, "v", comma);
         comma = put_str(source.type_subtype(), not_empty, "V", comma);
         comma = put_str(source.lab(), not_empty, "l", comma);
         comma = put_str(source.assay(), not_empty, "A", comma);
@@ -173,10 +184,11 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
     //  "l" | array of str                     | lab ids ([lab#id]), e.g. ["CDC#2013706008"]
     //  "A" | str                              | aligned amino-acid sequence
     //  "B" | str                              | aligned nucleotide sequence
-    //  "s" | key-value  pairs                 | semantic attributes by group (see below the table)
-    //  "C" | str                              | (DEPRECATED, use "s") continent: "ASIA", "AUSTRALIA-OCEANIA", "NORTH-AMERICA", "EUROPE", "RUSSIA", "AFRICA", "MIDDLE-EAST", "SOUTH-AMERICA", "CENTRAL-AMERICA"
-    //  "c" | array of str                     | (DEPRECATED, use "s") clades, e.g. ["5.2.1"]
-    //  "S" | str                              | (DEPRECATED, use "s") single letter semantic boolean attributes: R - reference, E - egg, V - current vaccine, v - previous vaccine, S - vaccine surrogate
+    // "Ai" | list of [pos, "aas"]             | insertions at the aa level | "Bi" | list of [pos, "nucs"]            | insertions at the nucleotide level |
+    //  "T" | key-value  pairs                 | semantic attributes by group (see below the table)
+    //  "C" | str                              | (DEPRECATED, use "s") continent: "ASIA", "AUSTRALIA-OCEANIA", "NORTH-AMERICA", "EUROPE", "RUSSIA", "AFRICA", "MIDDLE-EAST", "SOUTH-AMERICA",
+    //  "CENTRAL-AMERICA" "c" | array of str                     | (DEPRECATED, use "s") clades, e.g. ["5.2.1"] "S" | str                              | (DEPRECATED, use "s") single letter semantic
+    //  boolean attributes: R - reference, E - egg, V - current vaccine, v - previous vaccine, S - vaccine surrogate
 
     fmt::format_to(std::back_inserter(out), ",\n  \"a\": [");
     auto comma3 = false;
@@ -191,9 +203,9 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
         comma4 = put_str(antigen.passage(), not_empty, "P", comma4);
         comma4 = put_array_str(antigen.lab_ids(), not_empty, "l", comma4);
         comma4 = put_semantic(antigen.semantic(), not_empty, "T", comma4);
-        comma4 = put_str(antigen.aa(), not_empty, "A", comma4); // , "\n    ");
-        comma4 = put_str(antigen.nuc(), not_empty, "B", comma4); // , "\n    ");
-        // "s": {} -- semantic
+        comma4 = put_str(antigen.aa(), not_empty, "A", comma4);         // , "\n    ");
+        comma4 = put_str(antigen.nuc(), not_empty, "B", comma4);        // , "\n    ");
+        comma4 = put_insertions(antigen.aa_insertions(), "Ai", comma4); // , "\n    ");
         fmt::format_to(std::back_inserter(out), "}}");
     }
     fmt::format_to(std::back_inserter(out), "\n  ]");
@@ -208,7 +220,8 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
     //  "s" | str              | serum species, e.g "FERRET"
     //  "A" | str              | aligned amino-acid sequence
     //  "B" | str              | aligned nucleotide sequence
-    //  "s" | key-value  pairs | semantic attributes by group (see below the table)
+    // "Ai" | list of [pos, "aas"]             | insertions at the aa level | "Bi" | list of [pos, "nucs"]            | insertions at the nucleotide level |
+    //  "T" | key-value  pairs | semantic attributes by group (see below the table)
     //  "h" | array of numbers | DEPRECATED homologous antigen indices, e.g. [0]
     //  "C" | str              | (DEPRECATED, use "s") continent: "ASIA", "AUSTRALIA-OCEANIA", "NORTH-AMERICA", "EUROPE", "RUSSIA", "AFRICA", "MIDDLE-EAST", "SOUTH-AMERICA", "CENTRAL-AMERICA"
     //  "c" | array of str     | (DEPRECATED, use "s") clades, e.g. ["5.2.1"]
@@ -228,8 +241,9 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
         comma6 = put_str(serum.serum_species(), not_empty, "s", comma6);
         // DEPRECATED comma6 = put_array_int(serum.homologous_antigens(), not_empty, "h", comma6);
         comma6 = put_semantic(serum.semantic(), not_empty, "T", comma6);
-        comma6 = put_str(serum.aa(), not_empty, "A", comma6); // , "\n    ");
-        comma6 = put_str(serum.nuc(), not_empty, "B", comma6); // , "\n    ");
+        comma6 = put_str(serum.aa(), not_empty, "A", comma6);         // , "\n    ");
+        comma6 = put_str(serum.nuc(), not_empty, "B", comma6);        // , "\n    ");
+        comma6 = put_insertions(serum.aa_insertions(), "Ai", comma6); // , "\n    ");
         fmt::format_to(std::back_inserter(out), "}}");
     }
     fmt::format_to(std::back_inserter(out), "\n  ]");
@@ -297,7 +311,8 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
             forced_column_bases_present = true;
         }
     }
-    put_array_double(forced_column_bases, [forced_column_bases_present](auto&&) { return forced_column_bases_present; }, "C", true, "\n  ");
+    put_array_double(
+        forced_column_bases, [forced_column_bases_present](auto&&) { return forced_column_bases_present; }, "C", true, "\n  ");
 
     // Projections
     // "c" | str (or any)              | comment
@@ -321,8 +336,10 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
         for (const auto& projection : projections()) {
             comma7 = put_comma(comma7);
             fmt::format_to(std::back_inserter(out), "\n   {{");
-            auto comma8 = put_double(projection.stress(), [](double stress) { return !std::isnan(stress) && stress >= 0.0; }, "s", false);
-            comma8 = put_str(projection.minimum_column_basis(), [](const auto& mcb) { return !mcb.is_none(); }, "m", comma8);
+            auto comma8 = put_double(
+                projection.stress(), [](double stress) { return !std::isnan(stress) && stress >= 0.0; }, "s", false);
+            comma8 = put_str(
+                projection.minimum_column_basis(), [](const auto& mcb) { return !mcb.is_none(); }, "m", comma8);
             comma8 = put_str(projection.comment(), not_empty, "c", comma8);
             comma8 = put_bool(projection.dodgy_titer_is_regular() == dodgy_titer_is_regular_e::yes, false, "d", comma8);
             comma8 = put_array_double(projection.forced_column_bases(), not_empty, "C", comma8);
@@ -357,9 +374,9 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
         fmt::format_to(std::back_inserter(out), "\n  ]");
     }
 
-// -----+-----+-----+-----+----------------------------------+---------------------------------------------------------------------------------------------------------------------
-//  "R" |     |     |     | key-value(key-value) pairs       | sematic attributes based plot specifications, key: name of the style
-// -----+-----+-----+-----+----------------------------------+---------------------------------------------------------------------------------------------------------------------
+    // -----+-----+-----+-----+----------------------------------+---------------------------------------------------------------------------------------------------------------------
+    //  "R" |     |     |     | key-value(key-value) pairs       | sematic attributes based plot specifications, key: name of the style
+    // -----+-----+-----+-----+----------------------------------+---------------------------------------------------------------------------------------------------------------------
 
     // legacy lispmds stype plot specification
     //  "d" |     |     | array of integers       | drawing order, point indices
@@ -386,11 +403,9 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
     //      |     | "c" | color, str              | label color, default: "black"
     //      |     | "r" | float                   | label rotation, default 0.0
     //      |     | "i" | float                   | addtional interval between lines as a fraction of line height, default 0.2
-    //  "p" |     |     | array of integers       | index in "P" for each point, antigens followed by sera                                                                                                                   |
-    //  "l" |     |     | array of integers       | ? for each procrustes line, index in the "L" list
-    //  "L" |     |     | array                   | ? list of procrustes lines styles
-    //  "s" |     |     | array of integers       | list of point indices for point shown on all maps in the time series
-    //  "t" |     |     | key-value pairs         | ? title style
+    //  "p" |     |     | array of integers       | index in "P" for each point, antigens followed by sera | "l" |     |     | array of integers       | ? for each procrustes line, index in the "L"
+    //  list "L" |     |     | array                   | ? list of procrustes lines styles "s" |     |     | array of integers       | list of point indices for point shown on all maps in the time
+    //  series "t" |     |     | key-value pairs         | ? title style
 
     if (const auto& plot_spec = legacy_plot_spec(); !plot_spec.empty()) {
         fmt::format_to(std::back_inserter(out), ",\n  \"p\": {{");
@@ -404,13 +419,20 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
                 comma11 = put_comma(comma11);
                 fmt::format_to(std::back_inserter(out), "\n    {{");
                 auto comma12 = put_bool(style.shown(), true, "+", false);
-                comma12 = put_str(style.fill(), [](const auto& color) { return color != Color{"transparent"}; }, "F", comma12);
-                comma12 = put_str(style.outline(), [](const auto& color) { return color != Color{"black"}; }, "O", comma12);
-                comma12 = put_double(style.outline_width(), [](double val) { return !float_equal(val, 1.0); }, "o", comma12);
-                comma12 = put_str(style.shape(), [](const auto& shape) { return shape != point_shape{}; }, "S", comma12);
-                comma12 = put_double(style.size(), [](auto val) { return !float_equal(val, 1.0); }, "s", comma12);
-                comma12 = put_double(style.rotation(), [](auto val) { return !float_zero(*val); }, "r", comma12);
-                comma12 = put_double(style.aspect(), [](auto val) { return !float_equal(*val, 1.0); }, "a", comma12);
+                comma12 = put_str(
+                    style.fill(), [](const auto& color) { return color != Color{"transparent"}; }, "F", comma12);
+                comma12 = put_str(
+                    style.outline(), [](const auto& color) { return color != Color{"black"}; }, "O", comma12);
+                comma12 = put_double(
+                    style.outline_width(), [](double val) { return !float_equal(val, 1.0); }, "o", comma12);
+                comma12 = put_str(
+                    style.shape(), [](const auto& shape) { return shape != point_shape{}; }, "S", comma12);
+                comma12 = put_double(
+                    style.size(), [](auto val) { return !float_equal(val, 1.0); }, "s", comma12);
+                comma12 = put_double(
+                    style.rotation(), [](auto val) { return !float_zero(*val); }, "r", comma12);
+                comma12 = put_double(
+                    style.aspect(), [](auto val) { return !float_equal(*val, 1.0); }, "a", comma12);
 
                 if (const auto& label_style = style.label(); !label_style.empty()) {
                     comma12 = put_comma(comma12);
@@ -418,13 +440,17 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
                     auto comma13 = put_str(style.label_text(), not_empty, "t", false);
                     comma13 = put_bool(label_style.shown, true, "+", comma13);
                     // "p" offset
-                    comma13 = put_str(label_style.color, [](const auto& color) { return color != Color{"black"}; }, "c", comma13);
-                    comma13 = put_str(label_style.style.slant, [](const auto& slant) { return slant != ae::draw::v2::font_slant_t{"normal"}; }, "S", comma13);
-                    comma13 = put_str(label_style.style.weight, [](const auto& weight) { return weight != ae::draw::v2::font_weight_t{"normal"}; }, "W", comma13);
+                    comma13 = put_str(
+                        label_style.color, [](const auto& color) { return color != Color{"black"}; }, "c", comma13);
+                    comma13 = put_str(
+                        label_style.style.slant, [](const auto& slant) { return slant != ae::draw::v2::font_slant_t{"normal"}; }, "S", comma13);
+                    comma13 = put_str(
+                        label_style.style.weight, [](const auto& weight) { return weight != ae::draw::v2::font_weight_t{"normal"}; }, "W", comma13);
                     comma13 = put_str(label_style.style.font_family, not_empty, "f", comma13);
                     //      |     | "s" | float                   | label size, default 1.0
                     //      |     | "r" | float                   | label rotation, default 0.0
-                    comma13 = put_double(label_style.interline, [](double interline) { return !float_equal(interline, 0.2); }, "i", comma13);
+                    comma13 = put_double(
+                        label_style.interline, [](double interline) { return !float_equal(interline, 0.2); }, "i", comma13);
                     fmt::format_to(std::back_inserter(out), "}}");
                 }
 
@@ -435,9 +461,9 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
         fmt::format_to(std::back_inserter(out), "\n  }}");
     }
 
-// -----+-----+-----+-----+----------------------------------+---------------------------------------------------------------------------------------------------------------------
-//  "x" |     |     |     | key-value pairs                  | extensions not used by acmacs
-// -----+-----+-----+-----+----------------------------------+---------------------------------------------------------------------------------------------------------------------
+    // -----+-----+-----+-----+----------------------------------+---------------------------------------------------------------------------------------------------------------------
+    //  "x" |     |     |     | key-value pairs                  | extensions not used by acmacs
+    // -----+-----+-----+-----+----------------------------------+---------------------------------------------------------------------------------------------------------------------
 
     // fmt::format_to(std::back_inserter(out), ",\n  \"x\": {{");
     // fmt::format_to(std::back_inserter(out), "\n  }}");

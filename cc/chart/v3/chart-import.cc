@@ -137,6 +137,10 @@ inline bool read_antigen_serum(ae::chart::v3::AntigenSerum& target, std::string_
                 break;
             }
     }
+    else if (key == "Ai") { // insertions at the aa level
+    }
+    else if (key == "Bi") { // insertions at the nucleotide level
+    }
     else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
         handled = false;
     return handled;

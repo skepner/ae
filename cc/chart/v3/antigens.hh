@@ -65,6 +65,8 @@ namespace ae::chart::v3
         void aa(const sequences::sequence_aa_t& aa) { aa_ = aa; }
         const auto& nuc() const { return nuc_; }
         void nuc(const sequences::sequence_nuc_t& nuc) { nuc_ = nuc; }
+        const auto& aa_insertions() const { return aa_insertions_; }
+        void aa_insertions(const sequences::insertions_t& aa_insertions) { aa_insertions_ = aa_insertions; }
         const auto& semantic() const { return semantic_; }
         SemanticAttributes& semantic() { return semantic_; }
 
@@ -78,6 +80,7 @@ namespace ae::chart::v3
         virus::Reassortant reassortant_{};
         sequences::sequence_aa_t aa_{};
         sequences::sequence_nuc_t nuc_{};
+        sequences::insertions_t aa_insertions_{};
         SemanticAttributes semantic_{};
     };
 

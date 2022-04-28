@@ -17,6 +17,8 @@ std::pair<size_t, size_t> ae::chart::v3::populate_from_seqdb(Chart& chart)
         ag_sr.aa(selected.at(0).aa());
         ag_sr.nuc(selected.at(0).nuc());
         ag_sr.semantic().clades = selected.at(0).clades;
+        if (const auto& insertions = selected.at(0).seq->aa_insertions; !insertions.empty())
+            ag_sr.aa_insertions(insertions);
     };
 
     const auto populate = [update, &seqdb](auto& ag_srs) -> size_t {
