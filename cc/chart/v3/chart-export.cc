@@ -184,7 +184,8 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
     //  "l" | array of str                     | lab ids ([lab#id]), e.g. ["CDC#2013706008"]
     //  "A" | str                              | aligned amino-acid sequence
     //  "B" | str                              | aligned nucleotide sequence
-    // "Ai" | list of [pos, "aas"]             | insertions at the aa level | "Bi" | list of [pos, "nucs"]            | insertions at the nucleotide level |
+    // "Ai" | list of [pos, "aas"]             | insertions at the aa level
+    // "Bi" | list of [pos, "nucs"]            | insertions at the nuc level
     //  "T" | key-value  pairs                 | semantic attributes by group (see below the table)
     //  "C" | str                              | (DEPRECATED, use "s") continent: "ASIA", "AUSTRALIA-OCEANIA", "NORTH-AMERICA", "EUROPE", "RUSSIA", "AFRICA", "MIDDLE-EAST", "SOUTH-AMERICA",
     //  "CENTRAL-AMERICA" "c" | array of str                     | (DEPRECATED, use "s") clades, e.g. ["5.2.1"] "S" | str                              | (DEPRECATED, use "s") single letter semantic
@@ -205,7 +206,8 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
         comma4 = put_semantic(antigen.semantic(), not_empty, "T", comma4);
         comma4 = put_str(antigen.aa(), not_empty, "A", comma4);         // , "\n    ");
         comma4 = put_str(antigen.nuc(), not_empty, "B", comma4);        // , "\n    ");
-        comma4 = put_insertions(antigen.aa_insertions(), "Ai", comma4); // , "\n    ");
+        comma4 = put_insertions(antigen.aa_insertions(), "Ai", comma4);
+        comma4 = put_insertions(antigen.nuc_insertions(), "Bi", comma4);
         fmt::format_to(std::back_inserter(out), "}}");
     }
     fmt::format_to(std::back_inserter(out), "\n  ]");
@@ -220,7 +222,8 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
     //  "s" | str              | serum species, e.g "FERRET"
     //  "A" | str              | aligned amino-acid sequence
     //  "B" | str              | aligned nucleotide sequence
-    // "Ai" | list of [pos, "aas"]             | insertions at the aa level | "Bi" | list of [pos, "nucs"]            | insertions at the nucleotide level |
+    // "Ai" | list of [pos, "aas"]             | insertions at the aa level
+    // "Bi" | list of [pos, "nucs"]            | insertions at the nuc level
     //  "T" | key-value  pairs | semantic attributes by group (see below the table)
     //  "h" | array of numbers | DEPRECATED homologous antigen indices, e.g. [0]
     //  "C" | str              | (DEPRECATED, use "s") continent: "ASIA", "AUSTRALIA-OCEANIA", "NORTH-AMERICA", "EUROPE", "RUSSIA", "AFRICA", "MIDDLE-EAST", "SOUTH-AMERICA", "CENTRAL-AMERICA"
@@ -244,6 +247,8 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
         comma6 = put_str(serum.aa(), not_empty, "A", comma6);         // , "\n    ");
         comma6 = put_str(serum.nuc(), not_empty, "B", comma6);        // , "\n    ");
         comma6 = put_insertions(serum.aa_insertions(), "Ai", comma6); // , "\n    ");
+        comma6 = put_insertions(serum.aa_insertions(), "Ai", comma6);
+        comma6 = put_insertions(serum.nuc_insertions(), "Bi", comma6);
         fmt::format_to(std::back_inserter(out), "}}");
     }
     fmt::format_to(std::back_inserter(out), "\n  ]");

@@ -1,4 +1,4 @@
-# Time-stamp: <2022-04-21 16:31:23 eu>
+# Time-stamp: <2022-04-28 15:42:16 eu>
 * acmacs-ace-v1 format to store chart data
 
 fields with names starting with ? are ignored
@@ -31,8 +31,8 @@ fields with names starting with ? are ignored
 |             |     | "l"  |     |     | array of str                     | lab ids ([lab#id]), e.g. ["CDC#2013706008"]                                                                                                                    |
 |             |     | "A"  |     |     | str                              | aligned amino-acid sequence                                                                                                                                    |
 |             |     | "B"  |     |     | str                              | aligned nucleotide sequence                                                                                                                                    |
-|             |     | "Ai" |     |     | list of [pos, "aas"]             | insertions at the aa level                                                                                                                                     |
-|             |     | "Bi" |     |     | list of [pos, "nucs"]            | insertions at the nucleotide level                                                                                                                             |
+|             |     | "Ai" |     |     | list of [pos1, "aas"]            | insertions at the aa level                                                                                                                                     |
+|             |     | "Bi" |     |     | list of [pos1, "nucs"]           | insertions at the nucleotide level                                                                                                                             |
 |             |     | "T"  |     |     | key-value  pairs                 | semantic attributes by group (see below the table)                                                                                                             |
 |             |     | "C"  |     |     | str                              | (DEPRECATED, use "s") continent: "ASIA", "AUSTRALIA-OCEANIA", "NORTH-AMERICA", "EUROPE", "RUSSIA", "AFRICA", "MIDDLE-EAST", "SOUTH-AMERICA", "CENTRAL-AMERICA" |
 |             |     | "c"  |     |     | array of str                     | (DEPRECATED, use "s") clades, e.g. ["5.2.1"]                                                                                                                   |
@@ -48,8 +48,8 @@ fields with names starting with ? are ignored
 |             |     | "I"  |     |     | str                              | serum id, e.g "CDC 2016-045"                                                                                                                                   |
 |             |     | "A"  |     |     | str                              | aligned amino-acid sequence                                                                                                                                    |
 |             |     | "B"  |     |     | str                              | aligned nucleotide sequence                                                                                                                                    |
-|             |     | "Ai" |     |     | list of [pos, "aas"]             | insertions at the aa level                                                                                                                                     |
-|             |     | "Bi" |     |     | list of [pos, "nucs"]            | insertions at the nucleotide level                                                                                                                             |
+|             |     | "Ai" |     |     | list of [pos1, "aas"]            | insertions at the aa level                                                                                                                                     |
+|             |     | "Bi" |     |     | list of [pos1, "nucs"]           | insertions at the nucleotide level                                                                                                                             |
 |             |     | "T"  |     |     | key-value  pairs                 | semantic attributes by group (see below the table)                                                                                                             |
 |             |     | "h"  |     |     | array of numbers                 | DEPRECATED homologous antigen indices, e.g. [0]                                                                                                                |
 |             |     | "C"  |     |     | str                              | (DEPRECATED, use "s") continent: "ASIA", "AUSTRALIA-OCEANIA", "NORTH-AMERICA", "EUROPE", "RUSSIA", "AFRICA", "MIDDLE-EAST", "SOUTH-AMERICA", "CENTRAL-AMERICA" |

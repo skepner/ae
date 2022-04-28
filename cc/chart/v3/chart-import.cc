@@ -93,6 +93,16 @@ inline void read_semantic_attributes(ae::chart::v3::SemanticAttributes& target, 
 
 // ----------------------------------------------------------------------
 
+inline ae::sequences::insertions_t read_inserions(::simdjson::ondemand::array source) {
+    ae::sequences::insertions_t insertions;
+    for (::simdjson::ondemand::array en : source) {
+        // insertions.emplace_back(ae::sequences::pos0_t{static_cast<int>(en[0])}, static_cast<std::string_view>(en[1]));
+    }
+    return insertions;
+}
+
+// ----------------------------------------------------------------------
+
 inline bool read_antigen_serum(ae::chart::v3::AntigenSerum& target, std::string_view key, ::simdjson::ondemand::value value)
 {
     bool handled{true};
@@ -138,8 +148,10 @@ inline bool read_antigen_serum(ae::chart::v3::AntigenSerum& target, std::string_
             }
     }
     else if (key == "Ai") { // insertions at the aa level
+        target.aa_insertions(read_inserions(value.get_array()));
     }
     else if (key == "Bi") { // insertions at the nucleotide level
+        target.nuc_insertions(read_inserions(value.get_array()));
     }
     else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
         handled = false;

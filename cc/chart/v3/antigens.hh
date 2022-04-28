@@ -67,6 +67,8 @@ namespace ae::chart::v3
         void nuc(const sequences::sequence_nuc_t& nuc) { nuc_ = nuc; }
         const auto& aa_insertions() const { return aa_insertions_; }
         void aa_insertions(const sequences::insertions_t& aa_insertions) { aa_insertions_ = aa_insertions; }
+        const auto& nuc_insertions() const { return nuc_insertions_; }
+        void nuc_insertions(const sequences::insertions_t& nuc_insertions) { nuc_insertions_ = nuc_insertions; }
         const auto& semantic() const { return semantic_; }
         SemanticAttributes& semantic() { return semantic_; }
 
@@ -81,6 +83,7 @@ namespace ae::chart::v3
         sequences::sequence_aa_t aa_{};
         sequences::sequence_nuc_t nuc_{};
         sequences::insertions_t aa_insertions_{};
+        sequences::insertions_t nuc_insertions_{};
         SemanticAttributes semantic_{};
     };
 
