@@ -107,7 +107,7 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
             bool comma2 = false;
             for (const auto& en : insertions) {
                 comma2 = put_comma(comma2);
-                fmt::format_to(std::back_inserter(out), "[{}, \"{}\"]", en.pos, en.insertion);
+                fmt::format_to(std::back_inserter(out), "[{}, \"{}\"]", en.pos, en.insertion); // pos0_t and pos1_t are both formatted as pos1
             }
             fmt::format_to(std::back_inserter(out), "]");
             return true;

@@ -15,7 +15,7 @@
             {
             "a": "sequence-amino-acids",
             "n": "sequence-nucleotides",
-            "I": [[pos, "aas"]], // aa insertions
+            "I": [[pos1, "aas"]], // aa insertions
             "H": "hash of nucs, xxhash32 hex encoded",
             "r": ["reassortant"],
             "A": ["annotations"],

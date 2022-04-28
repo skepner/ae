@@ -96,7 +96,10 @@ inline void read_semantic_attributes(ae::chart::v3::SemanticAttributes& target, 
 inline ae::sequences::insertions_t read_inserions(::simdjson::ondemand::array source) {
     ae::sequences::insertions_t insertions;
     for (::simdjson::ondemand::array en : source) {
-        // insertions.emplace_back(ae::sequences::pos0_t{static_cast<int>(en[0])}, static_cast<std::string_view>(en[1]));
+        auto it = en.begin();
+        const ae::sequences::pos1_t pos{static_cast<uint64_t>(*it)};
+        ++it;
+        insertions.push_back(ae::sequences::insertion_t{pos, std::string{static_cast<std::string_view>(*it)}});
     }
     return insertions;
 }
