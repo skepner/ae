@@ -18,7 +18,10 @@ def main(args: argparse.Namespace):
         else:
             print(f"AG {ag:4d} of {chart.number_of_antigens():4d}\nSR {sr:4d} of {chart.number_of_sera():4d}")
         if args.export:
-            chart.write(filename=filename)
+            if args.output_dir:
+                chart.write(filename=args.output_dir.joinpath(filename.name))
+            else:
+                chart.write(filename=filename)
 
 # ----------------------------------------------------------------------
 
@@ -26,6 +29,7 @@ try:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("charts", nargs="+", type=Path)
     parser.add_argument("-n", dest="export", action="store_false", default=True)
+    parser.add_argument("-o", "--output-dir", type=Path)
     args = parser.parse_args()
     exit_code = main(args) or 0
 except Exception as err:
