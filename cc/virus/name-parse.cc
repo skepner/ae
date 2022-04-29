@@ -259,7 +259,7 @@ namespace ae::virus::name::inline v1
         // static constexpr auto D = dsl::lit_c<'D'> / dsl::lit_c<'d'>;
         static constexpr auto E = dsl::lit_c<'E'> / dsl::lit_c<'e'>;
         // static constexpr auto F = dsl::lit_c<'F'> / dsl::lit_c<'f'>;
-        // static constexpr auto G = dsl::lit_c<'G'> / dsl::lit_c<'g'>;
+        static constexpr auto G = dsl::lit_c<'G'> / dsl::lit_c<'g'>;
         static constexpr auto H = dsl::lit_c<'H'> / dsl::lit_c<'h'>;
         static constexpr auto I = dsl::lit_c<'I'> / dsl::lit_c<'i'>;
         // static constexpr auto J = dsl::lit_c<'J'> / dsl::lit_c<'j'>;
@@ -385,10 +385,11 @@ namespace ae::virus::name::inline v1
             static constexpr auto IVR = (I / C) + V + R; // CVR is in gisaid
             static constexpr auto CNIC = C + N + I + C;
             static constexpr auto SAN = S + A + N;
+            static constexpr auto NIBRG = N + I + B + R + G; // Naomi Komadina
             static constexpr auto NIB = N + I + B;
             static constexpr auto VI = V + I;
             static constexpr auto ARIV = A + R + I + V; // NIBSC H5N3 A/duck/Singapore-Q/F119-3/1997 ARIV-1
-            static constexpr auto prefix = dsl::peek(IVR + hy_space) | dsl::peek(CNIC + hy_space) | dsl::peek(SAN + hy_space) | dsl::peek(NIB + hy_space) | dsl::peek(VI + hy_space) | dsl::peek(ARIV + hy_space);
+            static constexpr auto prefix = dsl::peek(IVR + hy_space) | dsl::peek(CNIC + hy_space) | dsl::peek(SAN + hy_space) | dsl::peek(NIBRG + hy_space) | dsl::peek(NIB + hy_space) | dsl::peek(VI + hy_space) | dsl::peek(ARIV + hy_space);
 
             static constexpr auto rule = (nymc_x_bx::peek >> dsl::p<nymc_x_bx>) //
                                          | (cber::peek >> dsl::p<cber>)         //
