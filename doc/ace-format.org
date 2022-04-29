@@ -1,4 +1,4 @@
-# Time-stamp: <2022-04-28 18:18:05 eu>
+# Time-stamp: <2022-04-29 08:56:06 eu>
 * acmacs-ace-v1 format to store chart data
 
 fields with names starting with ? are ignored
@@ -82,8 +82,9 @@ fields with names starting with ? are ignored
 |             | "R" |      |     |     | key-value(key-value) pairs       | sematic attributes based plot specifications, key: name of the style                                                                                           |
 |             |     | "N"  |     |     | str                              | plot spec name                                                                                                                                                 |
 |             |     | "T"  |     |     | str                              | title                                                                                                                                                          |
+|             |     | "V"  |     |     | [x, y, width, height]            | viewport                                                                                                                                                       |
 |             |     | "A"  |     |     | list of objects                  | objects to apply                                                                                                                                               |
-|             |     |      | "R" |     | str                              | name ("N") of another plot spec to use (inherited from)                                                                                                        |
+|             |     |      | "R" |     | str                              | name ("N") of another plot spec to use (inherited from), applied before adding other changes provided by this object                                           |
 |             |     |      | "T" |     | object                           | {<name of semantic attribute>: <value>} to select antigens/sera, if value is true, it means ag/sr selected if they have that semantic attribute with any value |
 |             |     |      | "A" |     | bool                             | true: select antigens only, false: select sera only, absent: select antigens and sera                                                                          |
 |             |     |      | "S" |     | str                              | shape: "C[IRCLE]" (default), "B[OX]", "T[RIANGLE]", "E[GG]", "U[GLYEGG]"                                                                                       |
