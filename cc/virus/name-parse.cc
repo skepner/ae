@@ -758,7 +758,6 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, s
     }
 
     const auto parts = parsing_result.value();
-    // AD_DEBUG("parsing \"{}\" -> {}", source, parts);
     AD_INFO(settings.trace(), "parts: {}", parts);
     // order of if's important, do not change!
     if (types_match(parts, {part_type::reassortant}) || types_match(parts, {part_type::reassortant, part_type::any})) {
@@ -769,7 +768,6 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, s
     else if (types_match(parts, {part_type::type_subtype, part_type::subtype, part_type::letters_only, part_type::any, part_type::digits_hyphens}) ||
              types_match(parts, {part_type::type_subtype, part_type::subtype, part_type::letters_only, part_type::any, part_type::digits_hyphens, part_type::reassortant}) ||
              types_match(parts, {part_type::type_subtype, part_type::subtype, part_type::letters_only, part_type::any, part_type::digits_hyphens, part_type::any})) {
-        // fmt::print(">>>> {}\n", parts);
         if (parts[0].head.size() == 1) {
             // A/H3N2/SINGAPORE/INFIMH-16-0019/2016
             result.subtype = fmt::format("{}({})", parts[0].head, parts[1].head);
@@ -896,7 +894,6 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, s
              types_match(parts, {part_type::type_subtype, part_type::letters_only, part_type::any, part_type::digits_hyphens, part_type::reassortant}) ||
              types_match(parts, {part_type::type_subtype, part_type::letters_only, part_type::any, part_type::digits_hyphens, part_type::reassortant, part_type::any}) ||
              types_match(parts, {part_type::type_subtype, part_type::letters_only, part_type::any, part_type::digits_hyphens, part_type::any})) {
-        // fmt::print(">>>> {}\n", parts);
         // A(H3N2)/SINGAPORE/INFIMH-16-0019/2016
         // A/SINGAPORE/INFIMH-16-0019/2016
         // A/Pennsylvania/1025/2019  IVR-213
@@ -915,18 +912,21 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, s
             result.extra = parts[4];
     }
     else if (types_match(parts, {part_type::type_subtype, part_type::letters_only, part_type::any, part_type::any, part_type::digits_hyphens})) {
-        // fmt::print(">>>> {}\n", parts);
         // A/Hanam/EL12112/145S04/2012 (gisaid)
         result.subtype = parts[0];
         std::tie(result.location, result.continent, result.country) = fix_location(parts[1], source, result, messages, message_location);
         result.isolation = fix_isolation(fmt::format("{}-{}", std::string{parts[2]}, std::string{parts[3]}), source, result, messages, message_location);
         result.year = fix_year(parts[4], source, year_hint, result, messages, message_location);
     }
-    else if (types_match(parts, {part_type::letters_only, part_type::any, part_type::digits_hyphens})) {
+    else if (types_match(parts, {part_type::letters_only, part_type::any, part_type::digits_hyphens}) ||
+             types_match(parts, {part_type::letters_only, part_type::any, part_type::digits_hyphens, part_type::reassortant})
+            ) {
         // without subtype, e.g. Slovenia/2903/2015
         std::tie(result.location, result.continent, result.country) = fix_location(parts[0], source, result, messages, message_location);
         result.isolation = fix_isolation(parts[1], source, result, messages, message_location);
         result.year = fix_year(parts[2], source, year_hint, result, messages, message_location);
+        if (type_match(parts[3], part_type::reassortant))
+            result.reassortant = fix_reassortant(parts[3], source, result, messages, message_location);
     }
     else
         messages.add(Message::unhandled_virus_name, settings.type_subtype_hint(), fmt::format("{}", parts), source, message_location);
