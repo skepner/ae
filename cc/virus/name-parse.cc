@@ -483,13 +483,18 @@ namespace ae::virus::name::inline v1
 
         struct virus_name
         {
-            static constexpr auto rule = (dsl::p<subtype_a> | dsl::p<subtype_b>) + dsl::slash + dsl::p<slash_separated> + OPT_SPACES;
-            static constexpr auto value = lexy::callback<parts_t>([](auto subtype, auto slash_separated) {
-                parts_t parts{subtype};
-                std::move(std::begin(slash_separated), std::end(slash_separated), std::next(std::begin(parts)));
-                return parts;
-            });
-
+            static constexpr auto rule = ((dsl::p<subtype_a> | dsl::p<subtype_b>) >> (dsl::slash + dsl::p<slash_separated> + OPT_SPACES)) | (dsl::else_ >> (dsl::p<slash_separated> + OPT_SPACES));
+            static constexpr auto value = lexy::callback<parts_t>(
+                [](auto subtype, auto slash_separated) {
+                    parts_t parts{subtype};
+                    std::move(std::begin(slash_separated), std::end(slash_separated), std::next(std::begin(parts)));
+                    return parts;
+                },
+                [](auto slash_separated) {
+                    parts_t parts;
+                    std::move(std::begin(slash_separated), std::end(slash_separated), std::begin(parts));
+                    return parts;
+                });
         };
 
         struct parts
@@ -686,18 +691,34 @@ std::string ae::virus::name::v1::Parts::host_location_isolation_year() const
 
 using namespace std::string_view_literals;
 static const std::array sHosts{
+    "BARNACLE GOOSE"sv,
+    "BARNACLE_GOOSE"sv,
     "BLUE WINGED TEAL"sv,
     "CAMEL"sv,
     "CHICK"sv,
     "CHICKEN"sv,
     "COCKATOO"sv,
+    "COMMON BUZZARD"sv,
+    "COMMON_BUZZARD"sv,
+    "COMMON KESTREL"sv,
     "CROW"sv,
     "DUCK"sv,
     "EGRET"sv,
     "EQ"sv,
     "EQUINE"sv,
+    "EURASIAN TEAL"sv,
+    "EURASIAN_TEAL"sv,
+    "EURASIAN WIGEON"sv,
+    "EURASIAN_WIGEON"sv,
+    "EUROPEAN HERRING GULL"sv,
+    "EUROPEAN_HERRING_GULL"sv,
     "FOX"sv,
     "FOWL"sv,
+    "GRAY_HERON"sv,
+    "GRAYLAG GOOSE"sv,
+    "GRAYLAG_GOOSE"sv,
+    "HARBOUR SEAL"sv,
+    "HARBOUR_SEAL"sv,
     "MALLARD"sv,
     "MALLARD DUCK"sv,
     "MINK"sv, // otter, ferret
@@ -710,6 +731,7 @@ static const std::array sHosts{
     "SWINE"sv,
     "TURKEY"sv,
     "WDK"sv,                    // wild duck?
+    "WHITE-TAILED EAGLE"sv,
 };
 
 static inline bool is_host(std::string_view name)
@@ -736,10 +758,8 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, s
     }
 
     const auto parts = parsing_result.value();
-    // if (source == "A(H1N1)/NIB/4/1988")
-    //     fmt::print(">>>> parsing \"{}\" -> {}\n", source, parts);
-    if (settings.trace())
-        fmt::print(">>> parts: {}\n", parts);
+    // AD_DEBUG("parsing \"{}\" -> {}", source, parts);
+    AD_INFO(settings.trace(), "parts: {}", parts);
     // order of if's important, do not change!
     if (types_match(parts, {part_type::reassortant}) || types_match(parts, {part_type::reassortant, part_type::any})) {
         result.reassortant = fix_reassortant(parts[0], source, result, messages, message_location);
@@ -901,6 +921,12 @@ ae::virus::name::v1::Parts ae::virus::name::v1::parse(std::string_view source, s
         std::tie(result.location, result.continent, result.country) = fix_location(parts[1], source, result, messages, message_location);
         result.isolation = fix_isolation(fmt::format("{}-{}", std::string{parts[2]}, std::string{parts[3]}), source, result, messages, message_location);
         result.year = fix_year(parts[4], source, year_hint, result, messages, message_location);
+    }
+    else if (types_match(parts, {part_type::letters_only, part_type::any, part_type::digits_hyphens})) {
+        // without subtype, e.g. Slovenia/2903/2015
+        std::tie(result.location, result.continent, result.country) = fix_location(parts[0], source, result, messages, message_location);
+        result.isolation = fix_isolation(parts[1], source, result, messages, message_location);
+        result.year = fix_year(parts[2], source, year_hint, result, messages, message_location);
     }
     else
         messages.add(Message::unhandled_virus_name, settings.type_subtype_hint(), fmt::format("{}", parts), source, message_location);
