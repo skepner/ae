@@ -203,6 +203,8 @@ void ae::py::chart_v3(pybind11::module_& mdl)
 
         .def("titers", pybind11::overload_cast<>(&Chart::titers), pybind11::return_value_policy::reference_internal) //
 
+        .def("styles", pybind11::overload_cast<>(&Chart::styles), pybind11::return_value_policy::reference_internal) //
+
         // ----------------------------------------------------------------------
 
         .def(
@@ -530,6 +532,7 @@ void ae::py::chart_v3(pybind11::module_& mdl)
     // ----------------------------------------------------------------------
 
     chart_v3_antigens(chart_v3_submodule);
+    chart_v3_plot_spec(chart_v3_submodule);
     chart_v3_tests(chart_v3_submodule);
     chart_v3_submodule.def("procrustes", &ae::py::procrustes, "chart1"_a, "chart2"_a, "common"_a, "scaling"_a = false);
 

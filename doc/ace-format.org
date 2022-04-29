@@ -1,4 +1,4 @@
-# Time-stamp: <2022-04-29 08:56:06 eu>
+# Time-stamp: <2022-04-29 13:42:08 eu>
 * acmacs-ace-v1 format to store chart data
 
 fields with names starting with ? are ignored
@@ -79,8 +79,8 @@ fields with names starting with ? are ignored
 |             |     | "D"  |     |     | array of integers                | list of indices of disconnected points (antigen/serum attribute for stress evaluation)                                                                         |
 |             |     | "u"  |     |     | array of integers                | list of indices of points unmovable in the last dimension (antigen/serum attribute for stress evaluation)                                                      |
 |-------------+-----+------+-----+-----+----------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|             | "R" |      |     |     | key-value(key-value) pairs       | sematic attributes based plot specifications, key: name of the style                                                                                           |
-|             |     | "N"  |     |     | str                              | plot spec name                                                                                                                                                 |
+|             | "R" |      |     |     | key-value pairs                  | sematic attributes based plot specifications, key: name of the style, value: style object                                                                      |
+|             |     | "z"  |     |     | int                              | priority order when showing in GUI                                                                                                                             |
 |             |     | "T"  |     |     | str                              | title                                                                                                                                                          |
 |             |     | "V"  |     |     | [x, y, width, height]            | viewport                                                                                                                                                       |
 |             |     | "A"  |     |     | list of objects                  | objects to apply                                                                                                                                               |
@@ -95,7 +95,7 @@ fields with names starting with ? are ignored
 |             |     |      | "r" |     | float                            | rotation in radians, default 0.0                                                                                                                               |
 |             |     |      | "a" |     | float                            | aspect ratio, default 1.0                                                                                                                                      |
 |             |     |      | "-" |     | boolean                          | hide point and its label                                                                                                                                       |
-|             |     |      |     |     |                                  |                                                                                                                                                                |
+|             |     |      | "D" |     | "r", "l"                         | drawing order: raise, lower                                                                                                                                    |
 |             |     |      |     |     |                                  |                                                                                                                                                                |
 |-------------+-----+------+-----+-----+----------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------|
 |             | "p" |      |     |     | key-value pairs                  | legacy lispmds stype plot specification                                                                                                                        |

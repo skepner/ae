@@ -81,6 +81,7 @@ sources_py = [
   'cc/py/whocc.cc',
   'cc/py/chart-v3.cc',
   'cc/py/chart-v3-antigens.cc',
+  'cc/py/chart-v3-plot-spec.cc',
   'cc/py/chart-v3-tests.cc',
   'cc/py/chart-v2.cc',
   'cc/py/utils.cc',
@@ -167,6 +168,7 @@ sources_chart_v3 = [
   'cc/chart/v3/avidity-test.cc',
   'cc/chart/v3/serum-circles.cc',
   'cc/chart/v3/chart-seqdb.cc',
+  'cc/chart/v3/styles.cc',
 ]
 
 sources_chart_v2 = [
