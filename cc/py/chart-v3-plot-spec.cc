@@ -33,6 +33,10 @@ namespace ae::py
                 modifier.point_style.aspect(ae::chart::v3::Aspect{value.cast<double>()});
             else if (keyword == "shape")
                 modifier.point_style.shape(ae::chart::v3::point_shape{value.cast<std::string_view>()});
+            else if (keyword == "raise" && value.cast<bool>())
+                modifier.order = ae::chart::v3::DrawingOrderModifier::raise;
+            else if (keyword == "lower" && value.cast<bool>())
+                modifier.order = ae::chart::v3::DrawingOrderModifier::lower;
             else
                 throw std::runtime_error("Style.add_modifier: unrecognized arg"); // fmt::format("Style.add_modifier: unrecognized arg \"{}\"", keyword));
         }
@@ -60,7 +64,7 @@ void ae::py::chart_v3_plot_spec(pybind11::module_& chart_v3_submodule)
         .def_readwrite("priority", &Style::priority)
         .def("add_modifier", &ae::py::add_modifier,
              // pybind11::kw_only(), */ "parent"_a, "selector"_a, "hide"_a, "fill"_a, "outline"_a, "outline_width"_a, "size"_a, "rotation"_a, "aspect"_a, "shape"_a
-             pybind11::doc("kwargs: parent, selector, hide, fill, outline, outline_width, size, rotation, aspect, shape")
+             pybind11::doc("kwargs: parent, selector, hide, fill, outline, outline_width, size, rotation, aspect, shape, raise, lower")
              ) //
         ;
 

@@ -1,4 +1,4 @@
-# Time-stamp: <2022-04-29 13:42:08 eu>
+# Time-stamp: <2022-05-01 11:12:04 eu>
 * acmacs-ace-v1 format to store chart data
 
 fields with names starting with ? are ignored
@@ -83,7 +83,7 @@ fields with names starting with ? are ignored
 |             |     | "z"  |     |     | int                              | priority order when showing in GUI                                                                                                                             |
 |             |     | "T"  |     |     | str                              | title                                                                                                                                                          |
 |             |     | "V"  |     |     | [x, y, width, height]            | viewport                                                                                                                                                       |
-|             |     | "A"  |     |     | list of objects                  | objects to apply                                                                                                                                               |
+|             |     | "A"  |     |     | list of objects                  | modifiers to apply                                                                                                                                             |
 |             |     |      | "R" |     | str                              | name ("N") of another plot spec to use (inherited from), applied before adding other changes provided by this object                                           |
 |             |     |      | "T" |     | object                           | {<name of semantic attribute>: <value>} to select antigens/sera, if value is true, it means ag/sr selected if they have that semantic attribute with any value |
 |             |     |      | "A" |     | bool                             | true: select antigens only, false: select sera only, absent: select antigens and sera                                                                          |
@@ -95,7 +95,7 @@ fields with names starting with ? are ignored
 |             |     |      | "r" |     | float                            | rotation in radians, default 0.0                                                                                                                               |
 |             |     |      | "a" |     | float                            | aspect ratio, default 1.0                                                                                                                                      |
 |             |     |      | "-" |     | boolean                          | hide point and its label                                                                                                                                       |
-|             |     |      | "D" |     | "r", "l"                         | drawing order: raise, lower                                                                                                                                    |
+|             |     |      | "D" |     | "r", "l"                         | drawing order: raise, lower, absent: no change                                                                                                                 |
 |             |     |      |     |     |                                  |                                                                                                                                                                |
 |-------------+-----+------+-----+-----+----------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------|
 |             | "p" |      |     |     | key-value pairs                  | legacy lispmds stype plot specification                                                                                                                        |

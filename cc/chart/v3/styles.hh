@@ -9,6 +9,8 @@
 
 namespace ae::chart::v3
 {
+    enum class DrawingOrderModifier { no_change, raise, lower };
+
     struct SematicSelector
     {
         std::string attribute;
@@ -20,6 +22,7 @@ namespace ae::chart::v3
         std::string parent{};
         SematicSelector semantic_selector{};
         PointStyle point_style{};
+        DrawingOrderModifier order{DrawingOrderModifier::no_change};
     };
 
     struct Style
