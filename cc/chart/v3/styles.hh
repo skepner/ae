@@ -9,10 +9,16 @@
 
 namespace ae::chart::v3
 {
+    struct SematicSelector
+    {
+        std::string attribute;
+        std::string value;
+    };
+
     struct StyleModifier
     {
         std::string parent{};
-        std::pair<std::string, std::string> semantic_selector{};
+        SematicSelector semantic_selector{};
         PointStyle point_style{};
     };
 
