@@ -10,17 +10,19 @@
 namespace ae::chart::v3
 {
     enum class DrawingOrderModifier { no_change, raise, lower };
+    enum class SelectAntigensSera { all, antigens_only, sera_only };
 
     struct SematicSelector
     {
-        std::string attribute;
-        std::string value;
+        std::string attribute{};
+        std::string value{};
     };
 
     struct StyleModifier
     {
         std::string parent{};
         SematicSelector semantic_selector{};
+        SelectAntigensSera select_antigens_sera;
         PointStyle point_style{};
         DrawingOrderModifier order{DrawingOrderModifier::no_change};
     };
@@ -50,6 +52,8 @@ namespace ae::chart::v3
         size_t size() const { return styles_.size(); }
         auto begin() { return styles_.begin(); }
         auto end() { return styles_.end(); }
+        auto begin() const { return styles_.begin(); }
+        auto end() const { return styles_.end(); }
 
         // find or add style by name
         Style& find(std::string_view name);

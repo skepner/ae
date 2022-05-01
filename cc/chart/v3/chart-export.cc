@@ -12,7 +12,8 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
     fmt::memory_buffer out;
 
     const auto not_empty = [](const auto& val) { return !val.empty(); };
-    // const auto always = [](const auto&) { return true; };
+    const auto not_zero = [](auto val) { return val != 0; };
+    const auto always = [](const auto&) { return true; };
 
     const auto put_comma = [&out](bool comma) -> bool {
         if (comma)
@@ -48,6 +49,16 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
         if (condition(value)) {
             put_comma_key(comma, key, after_comma);
             fmt::format_to(std::back_inserter(out), "{}", double_to_str(value));
+            return true;
+        }
+        else
+            return comma;
+    };
+
+    const auto put_int = [&out, put_comma_key](auto value, auto&& condition, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
+        if (condition(value)) {
+            put_comma_key(comma, key, after_comma);
+            fmt::format_to(std::back_inserter(out), "{}", value);
             return true;
         }
         else
@@ -128,6 +139,30 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
             return comma;
     };
 
+    const auto put_point_style = [put_bool, put_str, put_double](const PointStyle& style, bool shown_as_plus, bool comma) -> bool {
+        if (shown_as_plus)
+            comma = put_bool(style.shown(), true, "+", comma);
+        else
+            comma = put_bool(!style.shown(), false, "-", comma);
+        comma = put_str(
+            style.fill(), [](const auto& color) { return color != Color{"transparent"}; }, "F", comma);
+        comma = put_str(
+            style.outline(), [](const auto& color) { return color != Color{"black"}; }, "O", comma);
+        comma = put_double(
+            style.outline_width(), [](double val) { return !float_equal(val, 1.0); }, "o", comma);
+        comma = put_str(
+            style.shape(), [](const auto& shape) { return shape != point_shape{}; }, "S", comma);
+        comma = put_double(
+            style.size(), [](auto val) { return !float_equal(val, 1.0); }, "s", comma);
+        comma = put_double(
+            style.rotation(), [](auto val) { return !float_zero(*val); }, "r", comma);
+        comma = put_double(
+            style.aspect(), [](auto val) { return !float_equal(*val, 1.0); }, "a", comma);
+        return comma;
+    };
+
+    // ----------------------------------------------------------------------
+
     fmt::format_to(std::back_inserter(out), R"({{"_": "-*- js-indent-level: 1 -*-",
  "  version": "acmacs-ace-v1",
  "?created": "ae",
@@ -204,8 +239,8 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
         comma4 = put_str(antigen.passage(), not_empty, "P", comma4);
         comma4 = put_array_str(antigen.lab_ids(), not_empty, "l", comma4);
         comma4 = put_semantic(antigen.semantic(), not_empty, "T", comma4);
-        comma4 = put_str(antigen.aa(), not_empty, "A", comma4);         // , "\n    ");
-        comma4 = put_str(antigen.nuc(), not_empty, "B", comma4);        // , "\n    ");
+        comma4 = put_str(antigen.aa(), not_empty, "A", comma4);  // , "\n    ");
+        comma4 = put_str(antigen.nuc(), not_empty, "B", comma4); // , "\n    ");
         comma4 = put_insertions(antigen.aa_insertions(), "Ai", comma4);
         comma4 = put_insertions(antigen.nuc_insertions(), "Bi", comma4);
         fmt::format_to(std::back_inserter(out), "}}");
@@ -379,9 +414,72 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
         fmt::format_to(std::back_inserter(out), "\n  ]");
     }
 
-    // -----+-----+-----+-----+----------------------------------+---------------------------------------------------------------------------------------------------------------------
-    //  "R" |     |     |     | key-value(key-value) pairs       | sematic attributes based plot specifications, key: name of the style
-    // -----+-----+-----+-----+----------------------------------+---------------------------------------------------------------------------------------------------------------------
+    // "R" |      |     | key-value pairs       | sematic attributes based plot specifications, key: name of the style, value: style object
+    //     | "z"  |     | int                   | priority order when showing in GUI
+    //     | "T"  |     | str                   | title
+    //     | "V"  |     | [x, y, width, height] | viewport
+    //     | "A"  |     | list of objects       | modifiers to apply
+    //     |      | "R" | str                   | name ("N") of another plot spec to use (inherited from), applied before adding other changes provided by this object
+    //     |      | "T" | object                | {<name of semantic attribute>: <value>}
+    //     |      | "A" | bool                  | true: select antigens only, false: select sera only, absent: select antigens and sera
+    //     |      | "S" | str                   | shape: "C[IRCLE]" (default), "B[OX]", "T[RIANGLE]", "E[GG]", "U[GLYEGG]"
+    //     |      | "F" | color, str            | fill color
+    //     |      | "O" | color, str            | outline color
+    //     |      | "o" | float                 | outline width
+    //     |      | "s" | float                 | size, default 1.0
+    //     |      | "r" | float                 | rotation in radians, default 0.0
+    //     |      | "a" | float                 | aspect ratio, default 1.0
+    //     |      | "-" | boolean               | hide point and its label
+    //     |      | "D" | "r", "l"              | drawing order: raise, lower, absent: no change
+
+    if (!styles().empty()) {
+        fmt::format_to(std::back_inserter(out), ",\n  \"R\": {{");
+        auto comma = false;
+        for (const auto& style : styles()) {
+            comma = put_comma(comma);
+            fmt::format_to(std::back_inserter(out), "\n   \"{}\": {{", style.name);
+            comma = put_int(style.priority, not_zero, "z", comma);
+            comma = put_str(style.title, not_empty, "T", comma);
+            // viewport
+            if (!style.modifiers.empty()) {
+                fmt::format_to(std::back_inserter(out), "\n      \"A\": [\n        ");
+                bool comma2 = false;
+                for (const auto& modifier : style.modifiers) {
+                    comma2 = put_comma(comma2);
+                    fmt::format_to(std::back_inserter(out), "{{");
+                    auto comma4 = put_str(modifier.parent, not_empty, "R", false);
+                    comma4 = put_comma(comma4);
+                    fmt::format_to(std::back_inserter(out), "\"T\":{{\"{}\": \"{}\"}}", modifier.semantic_selector.attribute, modifier.semantic_selector.value);
+                    comma4 = put_point_style(modifier.point_style, false, comma4);
+                    switch (modifier.order) {
+                        case DrawingOrderModifier::no_change:
+                            break;
+                        case DrawingOrderModifier::raise:
+                            put_str("r", always, "D", comma4);
+                            break;
+                        case DrawingOrderModifier::lower:
+                            put_str("l", always, "D", comma4);
+                            break;
+                    }
+                    switch (modifier.select_antigens_sera) {
+                        case SelectAntigensSera::all:
+                            break;
+                        case SelectAntigensSera::antigens_only:
+                            put_bool(true, false, "A", comma4);
+                            break;
+                        case SelectAntigensSera::sera_only:
+                            put_bool(false, true, "A", comma4);
+                            break;
+                    }
+                    fmt::format_to(std::back_inserter(out), "}}");
+                }
+                fmt::format_to(std::back_inserter(out), "]");
+            }
+
+            fmt::format_to(std::back_inserter(out), "\n   }}");
+        }
+        fmt::format_to(std::back_inserter(out), "\n  }}");
+    }
 
     // legacy lispmds stype plot specification
     //  "d" |     |     | array of integers       | drawing order, point indices
@@ -408,9 +506,11 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
     //      |     | "c" | color, str              | label color, default: "black"
     //      |     | "r" | float                   | label rotation, default 0.0
     //      |     | "i" | float                   | addtional interval between lines as a fraction of line height, default 0.2
-    //  "p" |     |     | array of integers       | index in "P" for each point, antigens followed by sera | "l" |     |     | array of integers       | ? for each procrustes line, index in the "L"
-    //  list "L" |     |     | array                   | ? list of procrustes lines styles "s" |     |     | array of integers       | list of point indices for point shown on all maps in the time
-    //  series "t" |     |     | key-value pairs         | ? title style
+    //  "p" |     |     | array of integers       | index in "P" for each point, antigens followed by sera
+    //  "l" |     |     | array of integers       | ? for each procrustes line, index in the "L" list
+    //  "L" |     |     | array                   | ? list of procrustes lines styles "s"
+    //      |     |     | array of integers       | list of point indices for point shown on all maps in the time series
+    //  "t" |     |     | key-value pairs         | ? title style
 
     if (const auto& plot_spec = legacy_plot_spec(); !plot_spec.empty()) {
         fmt::format_to(std::back_inserter(out), ",\n  \"p\": {{");
@@ -423,21 +523,22 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
             for (const auto& style : plot_spec.styles()) {
                 comma11 = put_comma(comma11);
                 fmt::format_to(std::back_inserter(out), "\n    {{");
-                auto comma12 = put_bool(style.shown(), true, "+", false);
-                comma12 = put_str(
-                    style.fill(), [](const auto& color) { return color != Color{"transparent"}; }, "F", comma12);
-                comma12 = put_str(
-                    style.outline(), [](const auto& color) { return color != Color{"black"}; }, "O", comma12);
-                comma12 = put_double(
-                    style.outline_width(), [](double val) { return !float_equal(val, 1.0); }, "o", comma12);
-                comma12 = put_str(
-                    style.shape(), [](const auto& shape) { return shape != point_shape{}; }, "S", comma12);
-                comma12 = put_double(
-                    style.size(), [](auto val) { return !float_equal(val, 1.0); }, "s", comma12);
-                comma12 = put_double(
-                    style.rotation(), [](auto val) { return !float_zero(*val); }, "r", comma12);
-                comma12 = put_double(
-                    style.aspect(), [](auto val) { return !float_equal(*val, 1.0); }, "a", comma12);
+                auto comma12 = put_point_style(style, true, false);
+                // auto comma12 = put_bool(style.shown(), true, "+", false);
+                // comma12 = put_str(
+                //     style.fill(), [](const auto& color) { return color != Color{"transparent"}; }, "F", comma12);
+                // comma12 = put_str(
+                //     style.outline(), [](const auto& color) { return color != Color{"black"}; }, "O", comma12);
+                // comma12 = put_double(
+                //     style.outline_width(), [](double val) { return !float_equal(val, 1.0); }, "o", comma12);
+                // comma12 = put_str(
+                //     style.shape(), [](const auto& shape) { return shape != point_shape{}; }, "S", comma12);
+                // comma12 = put_double(
+                //     style.size(), [](auto val) { return !float_equal(val, 1.0); }, "s", comma12);
+                // comma12 = put_double(
+                //     style.rotation(), [](auto val) { return !float_zero(*val); }, "r", comma12);
+                // comma12 = put_double(
+                //     style.aspect(), [](auto val) { return !float_equal(*val, 1.0); }, "a", comma12);
 
                 if (const auto& label_style = style.label(); !label_style.empty()) {
                     comma12 = put_comma(comma12);
