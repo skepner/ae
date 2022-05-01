@@ -442,11 +442,11 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
             comma = put_str(style.title, not_empty, "T", comma);
             // viewport
             if (!style.modifiers.empty()) {
-                fmt::format_to(std::back_inserter(out), "\n      \"A\": [\n        ");
+                fmt::format_to(std::back_inserter(out), "\n      \"A\": [");
                 bool comma2 = false;
                 for (const auto& modifier : style.modifiers) {
                     comma2 = put_comma(comma2);
-                    fmt::format_to(std::back_inserter(out), "{{");
+                    fmt::format_to(std::back_inserter(out), "\n        {{");
                     auto comma4 = put_str(modifier.parent, not_empty, "R", false);
                     comma4 = put_comma(comma4);
                     fmt::format_to(std::back_inserter(out), "\"T\":{{\"{}\": \"{}\"}}", modifier.semantic_selector.attribute, modifier.semantic_selector.value);
@@ -473,7 +473,7 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
                     }
                     fmt::format_to(std::back_inserter(out), "}}");
                 }
-                fmt::format_to(std::back_inserter(out), "]");
+                fmt::format_to(std::back_inserter(out), "\n      ]");
             }
 
             fmt::format_to(std::back_inserter(out), "\n   }}");
