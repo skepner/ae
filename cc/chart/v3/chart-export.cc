@@ -139,7 +139,7 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
             return comma;
     };
 
-    const auto put_point_style = [put_bool, put_str, put_double](const PointStyle& style, bool shown_as_plus, bool comma) -> bool {
+    const auto put_point_style = [put_bool, put_str, put_double](const PointStyle& style, bool shown_as_plus, double default_size, bool comma) -> bool {
         if (shown_as_plus)
             comma = put_bool(style.shown(), true, "+", comma);
         else
@@ -153,7 +153,7 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
         comma = put_str(
             style.shape(), [](const auto& shape) { return shape != point_shape{}; }, "S", comma);
         comma = put_double(
-            style.size(), [](auto val) { return !float_equal(val, 1.0); }, "s", comma);
+            style.size(), [default_size](auto val) { return !float_equal(val, default_size); }, "s", comma);
         comma = put_double(
             style.rotation(), [](auto val) { return !float_zero(*val); }, "r", comma);
         comma = put_double(
@@ -449,8 +449,8 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
                     fmt::format_to(std::back_inserter(out), "\n        {{");
                     auto comma4 = put_str(modifier.parent, not_empty, "R", false);
                     comma4 = put_comma(comma4);
-                    fmt::format_to(std::back_inserter(out), "\"T\":{{\"{}\": \"{}\"}}", modifier.semantic_selector.attribute, modifier.semantic_selector.value);
-                    comma4 = put_point_style(modifier.point_style, false, comma4);
+                    fmt::format_to(std::back_inserter(out), "\"T\":{{\"{}\":\"{}\"}}", modifier.semantic_selector.attribute, modifier.semantic_selector.value);
+                    comma4 = put_point_style(modifier.point_style, false, 5.0, comma4);
                     switch (modifier.order) {
                         case DrawingOrderModifier::no_change:
                             break;
@@ -523,23 +523,7 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
             for (const auto& style : plot_spec.styles()) {
                 comma11 = put_comma(comma11);
                 fmt::format_to(std::back_inserter(out), "\n    {{");
-                auto comma12 = put_point_style(style, true, false);
-                // auto comma12 = put_bool(style.shown(), true, "+", false);
-                // comma12 = put_str(
-                //     style.fill(), [](const auto& color) { return color != Color{"transparent"}; }, "F", comma12);
-                // comma12 = put_str(
-                //     style.outline(), [](const auto& color) { return color != Color{"black"}; }, "O", comma12);
-                // comma12 = put_double(
-                //     style.outline_width(), [](double val) { return !float_equal(val, 1.0); }, "o", comma12);
-                // comma12 = put_str(
-                //     style.shape(), [](const auto& shape) { return shape != point_shape{}; }, "S", comma12);
-                // comma12 = put_double(
-                //     style.size(), [](auto val) { return !float_equal(val, 1.0); }, "s", comma12);
-                // comma12 = put_double(
-                //     style.rotation(), [](auto val) { return !float_zero(*val); }, "r", comma12);
-                // comma12 = put_double(
-                //     style.aspect(), [](auto val) { return !float_equal(*val, 1.0); }, "a", comma12);
-
+                auto comma12 = put_point_style(style, true, 1.0, false);
                 if (const auto& label_style = style.label(); !label_style.empty()) {
                     comma12 = put_comma(comma12);
                     fmt::format_to(std::back_inserter(out), "\"l\":{{");
