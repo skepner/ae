@@ -72,10 +72,10 @@ void ae::py::chart_v3_plot_spec(pybind11::module_& chart_v3_submodule)
     pybind11::class_<Style>(chart_v3_submodule, "Style") //
         .def_readwrite("title", &Style::title)
         .def_readwrite("priority", &Style::priority)
-        .def("add_modifier", &ae::py::add_modifier,
-             // pybind11::kw_only(), */ "parent"_a, "selector"_a, "hide"_a, "fill"_a, "outline"_a, "outline_width"_a, "size"_a, "rotation"_a, "aspect"_a, "shape"_a
-             pybind11::doc("kwargs: parent, selector, hide, fill, outline, outline_width, size, rotation, aspect, shape, raise, lower, only")
-             ) //
+        .def(
+            "add_modifier", &ae::py::add_modifier,
+            pybind11::doc(
+                R"(kwargs: parent="another-style", selector={"C": "clade"}, hide=False, fill="transparent", outline="black", outline_width=1.0, size=5.0, rotation=0.0, aspect=1.0, shape="C|B|E|U|T", raise=True, lower=True, only="a|s")")) //
         ;
 
     pybind11::class_<StyleModifier>(chart_v3_submodule, "StyleModifier") //

@@ -1,4 +1,4 @@
-# Time-stamp: <2022-05-01 11:12:04 eu>
+# Time-stamp: <2022-05-02 17:52:26 eu>
 * acmacs-ace-v1 format to store chart data
 
 fields with names starting with ? are ignored
@@ -86,7 +86,7 @@ fields with names starting with ? are ignored
 |             |     | "A"  |     |     | list of objects                  | modifiers to apply                                                                                                                                             |
 |             |     |      | "R" |     | str                              | name ("N") of another plot spec to use (inherited from), applied before adding other changes provided by this object                                           |
 |             |     |      | "T" |     | object                           | {<name of semantic attribute>: <value>} to select antigens/sera, if value is true, it means ag/sr selected if they have that semantic attribute with any value |
-|             |     |      | "A" |     | bool                             | true: select antigens only, false: select sera only, absent: select antigens and sera                                                                          |
+|             |     |      | "A" |     | bool or int                      | true or 1: select antigens only, false or 0: select sera only, absent or -1: select antigens and sera                                                          |
 |             |     |      | "S" |     | str                              | shape: "C[IRCLE]" (default), "B[OX]", "T[RIANGLE]", "E[GG]", "U[GLYEGG]"                                                                                       |
 |             |     |      | "F" |     | color, str                       | fill color                                                                                                                                                     |
 |             |     |      | "O" |     | color, str                       | outline color                                                                                                                                                  |

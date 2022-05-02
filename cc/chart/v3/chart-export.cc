@@ -434,41 +434,44 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
 
     if (!styles().empty()) {
         fmt::format_to(std::back_inserter(out), ",\n  \"R\": {{");
-        auto comma = false;
+        auto comma_R1 = false;
         for (const auto& style : styles()) {
-            comma = put_comma(comma);
+            comma_R1 = put_comma(comma_R1);
             fmt::format_to(std::back_inserter(out), "\n   \"{}\": {{", style.name);
-            comma = put_int(style.priority, not_zero, "z", comma);
-            comma = put_str(style.title, not_empty, "T", comma);
+            auto comma_R2 = put_int(style.priority, not_zero, "z", false);
+            comma_R2 = put_str(style.title, not_empty, "T", comma_R2);
             // viewport
             if (!style.modifiers.empty()) {
+                comma_R2 = put_comma(comma_R2);
                 fmt::format_to(std::back_inserter(out), "\n      \"A\": [");
-                bool comma2 = false;
+                bool comma_R3 = false;
                 for (const auto& modifier : style.modifiers) {
-                    comma2 = put_comma(comma2);
+                    comma_R3 = put_comma(comma_R3);
                     fmt::format_to(std::back_inserter(out), "\n        {{");
-                    auto comma4 = put_str(modifier.parent, not_empty, "R", false);
-                    comma4 = put_comma(comma4);
-                    fmt::format_to(std::back_inserter(out), "\"T\":{{\"{}\":\"{}\"}}", modifier.semantic_selector.attribute, modifier.semantic_selector.value);
-                    comma4 = put_point_style(modifier.point_style, false, 5.0, comma4);
+                    auto comma_R4 = put_str(modifier.parent, not_empty, "R", false);
+                    if (!modifier.semantic_selector.empty()) {
+                        comma_R4 = put_comma(comma_R4);
+                        fmt::format_to(std::back_inserter(out), "\"T\":{{\"{}\":\"{}\"}}", modifier.semantic_selector.attribute, modifier.semantic_selector.value);
+                    }
+                    comma_R4 = put_point_style(modifier.point_style, false, 5.0, comma_R4);
                     switch (modifier.order) {
                         case DrawingOrderModifier::no_change:
                             break;
                         case DrawingOrderModifier::raise:
-                            put_str("r", always, "D", comma4);
+                            put_str("r", always, "D", comma_R4);
                             break;
                         case DrawingOrderModifier::lower:
-                            put_str("l", always, "D", comma4);
+                            put_str("l", always, "D", comma_R4);
                             break;
                     }
                     switch (modifier.select_antigens_sera) {
                         case SelectAntigensSera::all:
                             break;
                         case SelectAntigensSera::antigens_only:
-                            put_bool(true, false, "A", comma4);
+                            put_int(1, always, "A", comma_R4);
                             break;
                         case SelectAntigensSera::sera_only:
-                            put_bool(false, true, "A", comma4);
+                            put_int(0, always, "A", comma_R4);
                             break;
                     }
                     fmt::format_to(std::back_inserter(out), "}}");

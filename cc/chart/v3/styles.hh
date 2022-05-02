@@ -16,6 +16,8 @@ namespace ae::chart::v3
     {
         std::string attribute{};
         std::string value{};
+
+        bool empty() const { return attribute.empty(); }
     };
 
     struct StyleModifier
