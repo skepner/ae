@@ -37,6 +37,16 @@ namespace ae::py
                 modifier.order = ae::chart::v3::DrawingOrderModifier::raise;
             else if (keyword == "lower" && value.cast<bool>())
                 modifier.order = ae::chart::v3::DrawingOrderModifier::lower;
+            else if (keyword == "only") {
+                switch (std::tolower(value.cast<std::string_view>()[0])) {
+                    case 'a':
+                        modifier.select_antigens_sera = ae::chart::v3::SelectAntigensSera::antigens_only;
+                        break;
+                    case 's':
+                        modifier.select_antigens_sera = ae::chart::v3::SelectAntigensSera::sera_only;
+                        break;
+                }
+            }
             else
                 throw std::runtime_error("Style.add_modifier: unrecognized arg"); // fmt::format("Style.add_modifier: unrecognized arg \"{}\"", keyword));
         }
@@ -64,7 +74,7 @@ void ae::py::chart_v3_plot_spec(pybind11::module_& chart_v3_submodule)
         .def_readwrite("priority", &Style::priority)
         .def("add_modifier", &ae::py::add_modifier,
              // pybind11::kw_only(), */ "parent"_a, "selector"_a, "hide"_a, "fill"_a, "outline"_a, "outline_width"_a, "size"_a, "rotation"_a, "aspect"_a, "shape"_a
-             pybind11::doc("kwargs: parent, selector, hide, fill, outline, outline_width, size, rotation, aspect, shape, raise, lower")
+             pybind11::doc("kwargs: parent, selector, hide, fill, outline, outline_width, size, rotation, aspect, shape, raise, lower, only")
              ) //
         ;
 

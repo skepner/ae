@@ -22,7 +22,7 @@ namespace ae::chart::v3
     {
         std::string parent{};
         SematicSelector semantic_selector{};
-        SelectAntigensSera select_antigens_sera;
+        SelectAntigensSera select_antigens_sera{SelectAntigensSera::all};
         PointStyle point_style{};
         DrawingOrderModifier order{DrawingOrderModifier::no_change};
     };
