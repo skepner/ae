@@ -455,6 +455,123 @@ inline void read_legacy_plot_specification(ae::chart::v3::legacy::PlotSpec& targ
 
 // ----------------------------------------------------------------------
 
+inline void read_semantic_plot_style_modifier(ae::chart::v3::StyleModifier& target, ::simdjson::ondemand::object source)
+{
+    for (auto field : source) {
+        if (const std::string_view key = field.unescaped_key(); key == "R") { // reference
+            target.parent.assign(static_cast<std::string_view>(field.value()));
+        }
+        else if (key == "T") {  // selector: {"C":"3C.2a"}
+            unhandled_key({"c", "R", "<name>", "A", "[index]", key});
+        }
+        else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
+            unhandled_key({"c", "R", "<name>", "A", "[index]", key});
+    }
+}
+
+//       | "T" |     | object                           | {<name of semantic attribute>: <value>} to select antigens/sera, if value is true, it means ag/sr selected if they have that semantic attribute with any value |
+//       | "A" |     | bool or int                      | true or 1: select antigens only, false or 0: select sera only, absent or -1: select antigens and sera                                                          |
+//       | "S" |     | str                              | shape: "C[IRCLE]" (default), "B[OX]", "T[RIANGLE]", "E[GG]", "U[GLYEGG]"                                                                                       |
+//       | "F" |     | color, str                       | fill color                                                                                                                                                     |
+//       | "O" |     | color, str                       | outline color                                                                                                                                                  |
+//       | "o" |     | float                            | outline width                                                                                                                                                  |
+//       | "s" |     | float                            | size, default 1.0                                                                                                                                              |
+//       | "r" |     | float                            | rotation in radians, default 0.0                                                                                                                               |
+//       | "a" |     | float                            | aspect ratio, default 1.0                                                                                                                                      |
+//       | "-" |     | boolean                          | hide point and its label                                                                                                                                       |
+//       | "D" |     | "r", "l"                         | drawing order: raise, lower, absent: no change                                                                                                                 |
+//       | "l" |     | key-value pairs                  | label style                                                                                                                                                    |
+//       |     | "-" | boolean                          | if label is hidden                                                                                                                                             |
+//       |     | "p" | [x, y]                           | label position (2D only), list of two doubles, default is [0, 1] means under point                                                                             |
+//       |     | "t" | str                              | label text if forced by user                                                                                                                                   |
+//       |     | "f" | str                              | font face                                                                                                                                                      |
+//       |     | "S" | str                              | font slant: "normal" (default), "italic"                                                                                                                       |
+//       |     | "W" | str                              | font weight: "normal" (default), "bold"                                                                                                                        |
+//       |     | "s" | float                            | label size, default 1.0                                                                                                                                        |
+//       |     | "c" | color                            | label color, default: "black"                                                                                                                                  |
+//       |     | "r" | float                            | label rotation, default 0.0                                                                                                                                    |
+//       |     | "i" | float                            | addtional interval between lines as a fraction of line height, default 0.2                                                                                     |
+//       | "L" |     | object                           | legend row                                                                                                                                                     |
+//       |     | "p" | int                              | priority                                                                                                                                                       |
+//       |     | "t" | str                              | text                                                                                                                                                           |
+
+inline void read_semantic_plot_style(ae::chart::v3::Style& target, ::simdjson::ondemand::object source)
+{
+    for (auto field : source) {
+        const std::string_view key = field.unescaped_key();
+        if (key == "z") {
+            target.priority = static_cast<int64_t>(field.value());
+        }
+        else if (key == "T") {
+            target.title.assign(static_cast<std::string_view>(field.value()));
+        }
+        else if (key == "V") {
+            //  "V"  |     |     | [x, y, width, height]            | viewport
+            unhandled_key({"c", "R", target.name, key});
+        }
+        else if (key == "A") {  // apply
+            AD_DEBUG("AA");
+            // AD_DEBUG("AA {}", field.value().);
+            for (auto apply_field : field.value().get_array())
+                read_semantic_plot_style_modifier(target.modifiers.emplace_back(), apply_field);
+        }
+        else if (key == "L") {  // legend
+            unhandled_key({"c", "R", target.name, key});
+            // read_semantic_plot_style_legend(, field.value());
+        }
+        else if (key == "T") {  // title
+            unhandled_key({"c", "R", target.name, key});
+            // read_semantic_plot_style_title(, field.value());
+        }
+        else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
+            unhandled_key({"c", "R", target.name, key});
+    }
+}
+
+
+//  "L"  |     |     | object                           | legend data                                                                                                                                                    |
+//       | "-" |     | bool                             | hidden                                                                                                                                                         |
+//       | "O" |     | [x, y]                           | offset, relative to "p"                                                                                                                                        |
+//       | "p" |     | "tl"                             | corner or center of the plot: t - top, c - center, b - bottom, l -left, r - right                                                                              |
+//       | "P" |     | [top, right, bottom, left]       | padding                                                                                                                                                        |
+//       | "A" |     | object                           | plot spec of the area                                                                                                                                          |
+//       |     | "O" | Color: black                     | border                                                                                                                                                         |
+//       |     | "o" | 1.0                              | outline width                                                                                                                                                  |
+//       |     | "F" | Color: white                     | fill                                                                                                                                                           |
+//       | "C" |     | bool                             | add counter                                                                                                                                                    |
+//       | "S" |     | 10.0                             | point size                                                                                                                                                     |
+//       | "T" |     | object                           | title                                                                                                                                                          |
+//       |     | "t" | str                              | title text                                                                                                                                                     |
+//       |     | "f" | str                              | font face                                                                                                                                                      |
+//       |     | "S" | str                              | font slant: "normal" (default), "italic"                                                                                                                       |
+//       |     | "W" | str                              | font weight: "normal" (default), "bold"                                                                                                                        |
+//       |     | "s" | float                            | label size, default 1.0                                                                                                                                        |
+//       |     | "c" | color                            | label color, default: "black"                                                                                                                                  |
+//       | "z" |     | bool                             | show rows with zero count                                                                                                                                      |
+//  "T"  |     |     | object                           | title data                                                                                                                                                     |
+//       | "-" |     | bool                             | hidden                                                                                                                                                         |
+//       | "O" |     | [x, y]                           | offset                                                                                                                                                         |
+//       | "P" |     | [top, right, bottom, left]       | padding                                                                                                                                                        |
+//       | "A" |     | object                           | plot spec of the area                                                                                                                                          |
+//       |     | "O" | Color: black                     | border                                                                                                                                                         |
+//       |     | "o" | 1.0                              | outline width                                                                                                                                                  |
+//       |     | "F" | Color: white                     | fill                                                                                                                                                           |
+//       | "T" |     | object                           |                                                                                                                                                                |
+//       |     | "t" | str                              | title text                                                                                                                                                     |
+//       |     | "f" | str                              | font face                                                                                                                                                      |
+//       |     | "S" | str                              | font slant: "normal" (default), "italic"                                                                                                                       |
+//       |     | "W" | str                              | font weight: "normal" (default), "bold"                                                                                                                        |
+//       |     | "s" | float                            | label size, default 1.0                                                                                                                                        |
+//       |     | "c" | color                            | label color, default: "black"                                                                                                                                  |
+
+inline void read_semantic_plot_specification(ae::chart::v3::Styles& target, ::simdjson::ondemand::object source)
+{
+    for (auto field : source)
+        read_semantic_plot_style(target.find(field.unescaped_key()), field.value());
+}
+
+// ----------------------------------------------------------------------
+
 void ae::chart::v3::Chart::read(const std::filesystem::path& filename)
 {
     Timeit ti{fmt::format("importing chart from {}", filename), std::chrono::milliseconds{1000}};
@@ -488,6 +605,9 @@ void ae::chart::v3::Chart::read(const std::filesystem::path& filename)
                                     break;
                                 case 'P':
                                     read_projections(projections(), field_c.value().get_array());
+                                    break;
+                                case 'R':
+                                    read_semantic_plot_specification(styles(), field_c.value().get_object());
                                     break;
                                 case 'p':
                                     read_legacy_plot_specification(legacy_plot_spec(), field_c.value().get_object());
