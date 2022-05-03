@@ -1,4 +1,4 @@
-# Time-stamp: <2022-05-03 13:57:51 eu>
+# Time-stamp: <2022-05-03 14:02:25 eu>
 * acmacs-ace-v1 format to store chart data
 
 fields with names starting with ? are ignored
@@ -108,7 +108,7 @@ fields with names starting with ? are ignored
 |             |     |      |     | "r" | float                            | label rotation, default 0.0                                                                                                                                    |
 |             |     |      |     | "i" | float                            | addtional interval between lines as a fraction of line height, default 0.2                                                                                     |
 |             |     | "L"  |     |     | object                           | legend data                                                                                                                                                    |
-|             |     |      | "-" |     | bool                             | hidden                                                                                                                                                    |
+|             |     |      | "-" |     | bool                             | hidden                                                                                                                                                         |
 |             |     |      | "O" |     | [x, y]                           | offset, relative to "p"                                                                                                                                        |
 |             |     |      | "p" |     | "tl"                             | corner or center of the plot: t - top, c - center, b - bottom, l -left, r - right                                                                              |
 |             |     |      | "P" |     | [top, right, bottom, left]       | padding                                                                                                                                                        |
@@ -119,6 +119,21 @@ fields with names starting with ? are ignored
 |             |     |      | "C" |     | bool                             | add counter                                                                                                                                                    |
 |             |     |      | "S" |     | 10.0                             | point size                                                                                                                                                     |
 |             |     |      | "T" |     | object                           | title                                                                                                                                                          |
+|             |     |      |     | "t" | str                              | title text                                                                                                                                                     |
+|             |     |      |     | "f" | str                              | font face                                                                                                                                                      |
+|             |     |      |     | "S" | str                              | font slant: "normal" (default), "italic"                                                                                                                       |
+|             |     |      |     | "W" | str                              | font weight: "normal" (default), "bold"                                                                                                                        |
+|             |     |      |     | "s" | float                            | label size, default 1.0                                                                                                                                        |
+|             |     |      |     | "c" | color                            | label color, default: "black"                                                                                                                                  |
+|             |     | "T"  |     |     | object                           | title data                                                                                                                                                     |
+|             |     |      | "-" |     | bool                             | hidden                                                                                                                                                         |
+|             |     |      | "O" |     | [x, y]                           | offset                                                                                                                                                         |
+|             |     |      | "P" |     | [top, right, bottom, left]       | padding                                                                                                                                                        |
+|             |     |      | "A" |     | object                           | plot spec of the area                                                                                                                                          |
+|             |     |      |     | "O" | Color: black                     | border                                                                                                                                                         |
+|             |     |      |     | "o" | 1.0                              | outline width                                                                                                                                                  |
+|             |     |      |     | "F" | Color: white                     | fill                                                                                                                                                           |
+|             |     |      | "T" |     | object                           |                                                                                                                                                                |
 |             |     |      |     | "t" | str                              | title text                                                                                                                                                     |
 |             |     |      |     | "f" | str                              | font face                                                                                                                                                      |
 |             |     |      |     | "S" | str                              | font slant: "normal" (default), "italic"                                                                                                                       |
