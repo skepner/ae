@@ -33,7 +33,7 @@ namespace ae::py
                 modifier.point_style.aspect(ae::chart::v3::Aspect{value.cast<double>()});
             else if (keyword == "shape")
                 modifier.point_style.shape(ae::chart::v3::point_shape{value.cast<std::string_view>()});
-            else if (keyword == "raise" && value.cast<bool>())
+            else if ((keyword == "raise" || keyword == "rais" || keyword == "raise_") && value.cast<bool>())
                 modifier.order = ae::chart::v3::DrawingOrderModifier::raise;
             else if (keyword == "lower" && value.cast<bool>())
                 modifier.order = ae::chart::v3::DrawingOrderModifier::lower;
@@ -75,7 +75,7 @@ void ae::py::chart_v3_plot_spec(pybind11::module_& chart_v3_submodule)
         .def(
             "add_modifier", &ae::py::add_modifier,
             pybind11::doc(
-                R"(kwargs: parent="another-style", selector={"C": "clade"}, hide=False, fill="transparent", outline="black", outline_width=1.0, size=5.0, rotation=0.0, aspect=1.0, shape="C|B|E|U|T", raise=True, lower=True, only="a|s")")) //
+                R"(kwargs: parent="another-style", selector={"C": "clade"}, hide=False, fill="transparent", outline="black", outline_width=1.0, size=5.0, rotation=0.0, aspect=1.0, shape="C|B|E|U|T", rais=True, raise_=True, lower=True, only="a|s")")) //
         ;
 
     pybind11::class_<StyleModifier>(chart_v3_submodule, "StyleModifier") //

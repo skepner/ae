@@ -82,17 +82,22 @@ template <> struct fmt::formatter<ae::chart::v3::point_shape> : fmt::formatter<a
         using namespace ae::chart::v3;
         switch (shape.get()) {
             case point_shape::Circle:
-                return format_to(ctx.out(), "CIRCLE");
+                // return format_to(ctx.out(), "CIRCLE");
+                return format_to(ctx.out(), "C");
             case point_shape::Box:
-                return format_to(ctx.out(), "BOX");
+                // return format_to(ctx.out(), "BOX");
+                return format_to(ctx.out(), "B");
             case point_shape::Triangle:
-                return format_to(ctx.out(), "TRIANGLE");
+                // return format_to(ctx.out(), "TRIANGLE");
+                return format_to(ctx.out(), "T");
             case point_shape::Egg:
-                return format_to(ctx.out(), "EGG");
+                // return format_to(ctx.out(), "EGG");
+                return format_to(ctx.out(), "E");
             case point_shape::UglyEgg:
-                return format_to(ctx.out(), "UGLYEGG");
+                // return format_to(ctx.out(), "UGLYEGG");
+                return format_to(ctx.out(), "U");
         }
-        return format_to(ctx.out(), "CIRCLE");
+        return format_to(ctx.out(), "C");
     }
 };
 

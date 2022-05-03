@@ -1,5 +1,7 @@
 #pragma once
 
+#include <optional>
+
 #include "draw/v2/label-style.hh"
 #include "draw/v2/rotation.hh"
 #include "chart/v3/point-shape.hh"
@@ -23,38 +25,38 @@ namespace ae::chart::v3
 
         bool operator==(const PointStyle&) const noexcept = default;
 
-        bool shown() const noexcept { return shown_; }
+        std::optional<bool> shown() const noexcept { return shown_; }
         void shown(bool a_shown) noexcept { shown_ = a_shown; }
         Color fill() const noexcept { return fill_; }
         void fill(Color a_fill) noexcept { fill_ = a_fill; }
         Color outline() const noexcept { return outline_; }
         void outline(Color a_outline) noexcept { outline_ = a_outline; }
-        double outline_width() const noexcept { return outline_width_; }
+        std::optional<double> outline_width() const noexcept { return outline_width_; }
         void outline_width(double a_outline_width) noexcept { outline_width_ = a_outline_width; }
-        double size() const noexcept { return size_; }
+        std::optional<double> size() const noexcept { return size_; }
         void size(double a_size) noexcept { size_ = a_size; }
-        Rotation rotation() const noexcept { return rotation_; }
+        std::optional<Rotation> rotation() const noexcept { return rotation_; }
         void rotation(Rotation a_rotation) noexcept { rotation_ = a_rotation; }
-        Aspect aspect() const noexcept { return aspect_; }
+        std::optional<Aspect> aspect() const noexcept { return aspect_; }
         void aspect(Aspect a_aspect) noexcept { aspect_ = a_aspect; }
-        point_shape shape() const noexcept { return shape_; }
+        std::optional<point_shape> shape() const noexcept { return shape_; }
         void shape(point_shape a_shape) noexcept { shape_ = a_shape; }
         const ae::draw::v2::label_style& label() const noexcept { return label_; }
         ae::draw::v2::label_style& label() noexcept { return label_; }
-        std::string_view label_text() const noexcept { return label_text_; }
+        std::optional<std::string_view> label_text() const noexcept { return label_text_; }
         void label_text(std::string_view a_label_text) noexcept { label_text_ = a_label_text; }
 
       private:
-        bool shown_{true};
-        Color fill_{"transparent"};
-        Color outline_{"black"};
-        double outline_width_{1.0}; // pixels
-        double size_{5.0};          // pixels
-        Rotation rotation_{ae::draw::v2::NoRotation};
-        Aspect aspect_{ae::draw::v2::AspectNormal};
-        point_shape shape_{};
-        ae::draw::v2::label_style label_{};
-        std::string label_text_{};
+        std::optional<bool> shown_;
+        Color fill_{};
+        Color outline_{};
+        std::optional<double> outline_width_; // pixels
+        std::optional<double> size_;          // pixels
+        std::optional<Rotation> rotation_;
+        std::optional<Aspect> aspect_;
+        std::optional<point_shape> shape_;
+        ae::draw::v2::label_style label_;
+        std::optional<std::string> label_text_;
 
     }; // class PointStyle
 
@@ -66,8 +68,33 @@ template <> struct fmt::formatter<ae::chart::v3::PointStyle> : fmt::formatter<ae
 {
     template <typename FormatCtx> auto format(const ae::chart::v3::PointStyle& style, FormatCtx& ctx)
     {
-        return format_to(ctx.out(), R"({{"shape": {}, "shown": {}, "fill": "{}", "outline": "{}", "outline_width": {}, "size": {}, "aspect": {}, "rotation": {}, "label": {}, "label_text": "{}"}})",
-                         style.shape(), style.shown(), style.fill(), style.outline(), style.outline_width(), style.size(), style.aspect(), style.rotation(), style.label(), style.label_text());
+        using namespace std::string_view_literals;
+        const auto out = [&ctx](std::string_view key, const auto& value, std::string_view format, bool comma) -> bool {
+            if (value.has_value()) {
+                format_to(ctx.out(), R"({}"{}": {})", comma ? ", " : "", key, fmt::format(format, *value));
+                return true;
+            }
+            else
+                return comma;
+        };
+
+        format_to(ctx.out(), "{{");
+        auto comma = out("shape"sv, style.shape(), "{}", false);
+        comma = out("shown"sv, style.shown(), "{}", comma);
+        comma = out("fill"sv, style.fill(), "\"{}\"", comma);
+        comma = out("outline"sv, style.outline(), "\"{}\"", comma);
+        comma = out("outline_width"sv, style.outline_width(), "{}", comma);
+        comma = out("size"sv, style.size(), "{}", comma);
+        comma = out("aspect"sv, style.aspect(), "{}", comma);
+        comma = out("rotation"sv, style.rotation(), "{}", comma);
+        comma = out("label_text"sv, style.label_text(), "{}", comma);
+        if (const auto& label = style.label(); !label.empty()) {
+            if (comma)
+                format_to(ctx.out(), ", ");
+            format_to(ctx.out(), "\"label\": {}", label);
+            comma = true;
+        }
+        return format_to(ctx.out(), "}}");
     }
 };
 

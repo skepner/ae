@@ -37,7 +37,7 @@ template <> struct fmt::formatter<ae::draw::v2::Color> : fmt::formatter<ae::fmt_
 {
     template <typename FormatCtx> auto format(const ae::draw::v2::Color& color, FormatCtx& ctx)
     {
-        return format_to(ctx.out(), "{}", fmt::join(color.blocks(), ":"));
+        return format_to(ctx.out(), "{}", fmt::join(color.blocks(), "/"));
     }
 };
 

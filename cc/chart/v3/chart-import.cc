@@ -359,10 +359,10 @@ inline void read_legacy_point_style(ae::chart::v3::PointStyle& target, ::simdjso
             target.shown(field.value());
         }
         else if (key == "F") {  // fill color: #FF0000 or T[RANSPARENT] or color name (red, green, blue, etc.), default is transparent
-            target.fill(ae::draw::v2::Color{field.value()});
+            target.fill(ae::chart::v3::Color{field.value()});
         }
         else if (key == "O") {  // outline color: #000000 or T[RANSPARENT] or color name (red, green, blue, etc.), default is black
-            target.outline(ae::draw::v2::Color{field.value()});
+            target.outline(ae::chart::v3::Color{field.value()});
         }
         else if (key == "o") {  // outline width, default 1.0
             target.outline_width(field.value());

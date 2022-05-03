@@ -45,6 +45,21 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
             return format_double(*value);
     };
 
+    const auto put_optional = [&out, put_comma_key, double_to_str]<typename Value>(const std::optional<Value>& value, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
+        if (value.has_value()) {
+            put_comma_key(comma, key, after_comma);
+            if constexpr (std::is_same_v<Value, double>)
+                fmt::format_to(std::back_inserter(out), "{}", double_to_str(*value));
+            else if constexpr (std::is_same_v<Value, std::string> || std::is_same_v<Value, point_shape>)
+                fmt::format_to(std::back_inserter(out), "\"{}\"", *value);
+            else
+                fmt::format_to(std::back_inserter(out), "{}", *value);
+            return true;
+        }
+        else
+            return comma;
+    };
+
     const auto put_double = [&out, put_comma_key, double_to_str](const auto& value, auto&& condition, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
         if (condition(value)) {
             put_comma_key(comma, key, after_comma);
@@ -139,25 +154,21 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
             return comma;
     };
 
-    const auto put_point_style = [put_bool, put_str, put_double](const PointStyle& style, bool shown_as_plus, double default_size, bool comma) -> bool {
-        if (shown_as_plus)
-            comma = put_bool(style.shown(), true, "+", comma);
-        else
-            comma = put_bool(!style.shown(), false, "-", comma);
-        comma = put_str(
-            style.fill(), [](const auto& color) { return color != Color{"transparent"}; }, "F", comma);
-        comma = put_str(
-            style.outline(), [](const auto& color) { return color != Color{"black"}; }, "O", comma);
-        comma = put_double(
-            style.outline_width(), [](double val) { return !float_equal(val, 1.0); }, "o", comma);
-        comma = put_str(
-            style.shape(), [](const auto& shape) { return shape != point_shape{}; }, "S", comma);
-        comma = put_double(
-            style.size(), [default_size](auto val) { return !float_equal(val, default_size); }, "s", comma);
-        comma = put_double(
-            style.rotation(), [](auto val) { return !float_zero(*val); }, "r", comma);
-        comma = put_double(
-            style.aspect(), [](auto val) { return !float_equal(*val, 1.0); }, "a", comma);
+    const auto put_point_style = [put_bool, put_str, put_optional, not_empty](const PointStyle& style, bool shown_as_plus, bool comma) -> bool {
+        if (style.shown().has_value()) {
+            const auto shown = *style.shown();
+            if (shown_as_plus)
+                comma = put_bool(shown, !shown, "+", comma);
+            else
+                comma = put_bool(!shown, shown, "-", comma);
+        }
+        comma = put_str(style.fill(), not_empty, "F", comma);
+        comma = put_str(style.outline(), not_empty, "O", comma);
+        comma = put_optional(style.outline_width(), "o", comma);
+        comma = put_optional(style.shape(), "S", comma);
+        comma = put_optional(style.size(), "s", comma);
+        comma = put_optional(style.rotation(), "r", comma);
+        comma = put_optional(style.aspect(), "a", comma);
         return comma;
     };
 
@@ -453,7 +464,7 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
                         comma_R4 = put_comma(comma_R4);
                         fmt::format_to(std::back_inserter(out), "\"T\":{{\"{}\":\"{}\"}}", modifier.semantic_selector.attribute, modifier.semantic_selector.value);
                     }
-                    comma_R4 = put_point_style(modifier.point_style, false, 5.0, comma_R4);
+                    comma_R4 = put_point_style(modifier.point_style, false, comma_R4);
                     switch (modifier.order) {
                         case DrawingOrderModifier::no_change:
                             break;
@@ -526,11 +537,11 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
             for (const auto& style : plot_spec.styles()) {
                 comma11 = put_comma(comma11);
                 fmt::format_to(std::back_inserter(out), "\n    {{");
-                auto comma12 = put_point_style(style, true, 1.0, false);
+                auto comma12 = put_point_style(style, true, false);
                 if (const auto& label_style = style.label(); !label_style.empty()) {
                     comma12 = put_comma(comma12);
                     fmt::format_to(std::back_inserter(out), "\"l\":{{");
-                    auto comma13 = put_str(style.label_text(), not_empty, "t", false);
+                    auto comma13 = put_optional(style.label_text(), "t", false);
                     comma13 = put_bool(label_style.shown, true, "+", comma13);
                     // "p" offset
                     comma13 = put_str(
