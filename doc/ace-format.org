@@ -1,4 +1,4 @@
-# Time-stamp: <2022-05-03 14:02:25 eu>
+# Time-stamp: <2022-05-03 17:02:08 eu>
 * acmacs-ace-v1 format to store chart data
 
 fields with names starting with ? are ignored
@@ -107,6 +107,9 @@ fields with names starting with ? are ignored
 |             |     |      |     | "c" | color                            | label color, default: "black"                                                                                                                                  |
 |             |     |      |     | "r" | float                            | label rotation, default 0.0                                                                                                                                    |
 |             |     |      |     | "i" | float                            | addtional interval between lines as a fraction of line height, default 0.2                                                                                     |
+|             |     |      | "L" |     | object                           | legend row                                                                                                                                                     |
+|             |     |      |     | "p" | int                              | priority                                                                                                                                                       |
+|             |     |      |     | "t" | str                              | text                                                                                                                                                           |
 |             |     | "L"  |     |     | object                           | legend data                                                                                                                                                    |
 |             |     |      | "-" |     | bool                             | hidden                                                                                                                                                         |
 |             |     |      | "O" |     | [x, y]                           | offset, relative to "p"                                                                                                                                        |
@@ -125,6 +128,7 @@ fields with names starting with ? are ignored
 |             |     |      |     | "W" | str                              | font weight: "normal" (default), "bold"                                                                                                                        |
 |             |     |      |     | "s" | float                            | label size, default 1.0                                                                                                                                        |
 |             |     |      |     | "c" | color                            | label color, default: "black"                                                                                                                                  |
+|             |     |      | "z" |     | bool                             | show rows with zero count                                                                                                                                      |
 |             |     | "T"  |     |     | object                           | title data                                                                                                                                                     |
 |             |     |      | "-" |     | bool                             | hidden                                                                                                                                                         |
 |             |     |      | "O" |     | [x, y]                           | offset                                                                                                                                                         |
