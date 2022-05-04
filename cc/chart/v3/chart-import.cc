@@ -352,43 +352,53 @@ inline void read_projections(ae::chart::v3::Projections& target, ::simdjson::ond
 
 // ----------------------------------------------------------------------
 
-inline void read_legacy_point_style(ae::chart::v3::PointStyle& target, ::simdjson::ondemand::object source)
+// returns if key/value was processed
+inline bool read_point_style_field(ae::chart::v3::PointStyle& target, std::string_view key, ::simdjson::simdjson_result<::simdjson::ondemand::value> value)
 {
-    for (auto field : source) {
-        if (const std::string_view key = field.unescaped_key(); key == "+") {  // if point is shown, default is true, disconnected points are usually not shown and having NaN coordinates in layout
-            target.shown(field.value());
+    if (key.size() == 1) {
+        switch (key[0]) {
+            case '+': // if point shown, default is true, disconnected points are usually not shown and having NaN coordinates in layout
+                target.shown(value);
+                break;
+            case '-': // if point hidden, default is false, disconnected points are usually not shown and having NaN coordinates in layout
+                target.shown(!value);
+                break;
+            case 'F': // fill color: #FF0000 or T[RANSPARENT] or color name (red, green, blue, etc.), default is transparent
+                target.fill(ae::chart::v3::Color{value});
+                break;
+            case 'O': // outline color: #000000 or T[RANSPARENT] or color name (red, green, blue, etc.), default is black
+                target.outline(ae::chart::v3::Color{value});
+                break;
+            case 'o': // outline width, default 1.0
+                target.outline_width(value);
+                break;
+            case 'S': // shape: "C[IRCLE]" (default), "B[OX]", "T[RIANGLE]", "E[GG]", "U[GLYEGG]"
+                target.shape(ae::chart::v3::point_shape{value});
+                break;
+            case 's': //  size, default 1.0
+                target.size(value);
+                break;
+            case 'r': // rotation in radians, default 0.0
+                target.rotation(ae::draw::v2::Rotation{value});
+                break;
+            case 'a': //  aspect ratio, default 1.0
+                target.aspect(ae::draw::v2::Aspect{value});
+                break;
+                // case 'l':  // label style
+                //     // unhandled_key({"c", "p", "P", key});
+                // break;
+            default:
+                return false;
         }
-        else if (key == "F") {  // fill color: #FF0000 or T[RANSPARENT] or color name (red, green, blue, etc.), default is transparent
-            target.fill(ae::chart::v3::Color{field.value()});
-        }
-        else if (key == "O") {  // outline color: #000000 or T[RANSPARENT] or color name (red, green, blue, etc.), default is black
-            target.outline(ae::chart::v3::Color{field.value()});
-        }
-        else if (key == "o") {  // outline width, default 1.0
-            target.outline_width(field.value());
-        }
-        else if (key == "S") {  // shape: "C[IRCLE]" (default), "B[OX]", "T[RIANGLE]", "E[GG]", "U[GLYEGG]"
-            target.shape(ae::chart::v3::point_shape{field.value()});
-        }
-        else if (key == "s") {  //  size, default 1.0
-            target.size(field.value());
-        }
-        else if (key == "r") {  // rotation in radians, default 0.0
-            target.rotation(ae::draw::v2::Rotation{field.value()});
-        }
-        else if (key == "a") {  //  aspect ratio, default 1.0
-            target.aspect(ae::draw::v2::Aspect{field.value()});
-        }
-        else if (key == "l") {  // label style
-            // unhandled_key({"c", "p", "P", key});
-        }
-        else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
-            unhandled_key({"c", "p", "P", key});
+        return true;
     }
+    else
+        return false;
 }
 
 //  "l" |     | key-value pairs                  | label style
-//      | "+" | boolean                          | if label is shown
+//      | "+" | boolean                          | if label is shown (legacy)
+//      | "-" | boolean                          | if label is hidden (semantic)
 //      | "p" | list of two floats               | label position (2D only), list of two doubles, default is [0, 1] means under point
 //      | "t" | str                              | label text if forced by user
 //      | "f" | str                              | font face
@@ -398,6 +408,20 @@ inline void read_legacy_point_style(ae::chart::v3::PointStyle& target, ::simdjso
 //      | "c" | color, str                       | label color, default: "black"
 //      | "r" | float                            | label rotation, default 0.0
 //      | "i" | float                            | addtional interval between lines as a fraction of line height, default 0.2
+
+// ----------------------------------------------------------------------
+
+inline void read_legacy_point_style(ae::chart::v3::PointStyle& target, ::simdjson::ondemand::object source)
+{
+    for (auto field : source) {
+        const std::string_view key = field.unescaped_key();
+        auto value = field.value();
+        if (!read_point_style_field(target, key, value)) {
+            if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
+                unhandled_key({"c", "p", "P", key});
+        }
+    }
+}
 
 // ----------------------------------------------------------------------
 
@@ -458,39 +482,38 @@ inline void read_legacy_plot_specification(ae::chart::v3::legacy::PlotSpec& targ
 inline void read_semantic_plot_style_modifier(ae::chart::v3::StyleModifier& target, ::simdjson::ondemand::object source)
 {
     for (auto field : source) {
-        if (const std::string_view key = field.unescaped_key(); key == "R") { // reference
-            target.parent.assign(static_cast<std::string_view>(field.value()));
+        const std::string_view key = field.unescaped_key();
+        auto value = field.value();
+        if (read_point_style_field(target.point_style, key, value)) {
+            // pass
         }
-        else if (key == "T") {  // selector: {"C":"3C.2a"}
-            unhandled_key({"c", "R", "<name>", "A", "[index]", key});
+        else if (key == "R") { // reference
+            target.parent.assign(static_cast<std::string_view>(value));
+        }
+        else if (key == "T") { // selector: {"C":"3C.2a"}
+            for (auto selector_field : value.get_object()) {
+                if (target.semantic_selector.empty())
+                    target.semantic_selector = ae::chart::v3::SematicSelector{.attribute = std::string{static_cast<std::string_view>(selector_field.unescaped_key())},
+                                                                              .value = std::string{static_cast<std::string_view>(selector_field.value())}};
+                else
+                    AD_WARNING("[chart semantic plot spec]: unhandled additional modifier selector {}: {}", static_cast<std::string_view>(selector_field.unescaped_key()), selector_field.value());
+            }
+        }
+        else if (key == "A") { // antigens only or sera only (bool or int)
+            bool val;
+            if (value.get(val)) // not bool
+                val = static_cast<int64_t>(value) != 0;
+            if (val)
+                target.select_antigens_sera = ae::chart::v3::SelectAntigensSera::antigens_only;
+            else
+                target.select_antigens_sera = ae::chart::v3::SelectAntigensSera::sera_only;
         }
         else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
             unhandled_key({"c", "R", "<name>", "A", "[index]", key});
     }
 }
 
-//       | "T" |     | object                           | {<name of semantic attribute>: <value>} to select antigens/sera, if value is true, it means ag/sr selected if they have that semantic attribute with any value |
-//       | "A" |     | bool or int                      | true or 1: select antigens only, false or 0: select sera only, absent or -1: select antigens and sera                                                          |
-//       | "S" |     | str                              | shape: "C[IRCLE]" (default), "B[OX]", "T[RIANGLE]", "E[GG]", "U[GLYEGG]"                                                                                       |
-//       | "F" |     | color, str                       | fill color                                                                                                                                                     |
-//       | "O" |     | color, str                       | outline color                                                                                                                                                  |
-//       | "o" |     | float                            | outline width                                                                                                                                                  |
-//       | "s" |     | float                            | size, default 1.0                                                                                                                                              |
-//       | "r" |     | float                            | rotation in radians, default 0.0                                                                                                                               |
-//       | "a" |     | float                            | aspect ratio, default 1.0                                                                                                                                      |
-//       | "-" |     | boolean                          | hide point and its label                                                                                                                                       |
 //       | "D" |     | "r", "l"                         | drawing order: raise, lower, absent: no change                                                                                                                 |
-//       | "l" |     | key-value pairs                  | label style                                                                                                                                                    |
-//       |     | "-" | boolean                          | if label is hidden                                                                                                                                             |
-//       |     | "p" | [x, y]                           | label position (2D only), list of two doubles, default is [0, 1] means under point                                                                             |
-//       |     | "t" | str                              | label text if forced by user                                                                                                                                   |
-//       |     | "f" | str                              | font face                                                                                                                                                      |
-//       |     | "S" | str                              | font slant: "normal" (default), "italic"                                                                                                                       |
-//       |     | "W" | str                              | font weight: "normal" (default), "bold"                                                                                                                        |
-//       |     | "s" | float                            | label size, default 1.0                                                                                                                                        |
-//       |     | "c" | color                            | label color, default: "black"                                                                                                                                  |
-//       |     | "r" | float                            | label rotation, default 0.0                                                                                                                                    |
-//       |     | "i" | float                            | addtional interval between lines as a fraction of line height, default 0.2                                                                                     |
 //       | "L" |     | object                           | legend row                                                                                                                                                     |
 //       |     | "p" | int                              | priority                                                                                                                                                       |
 //       |     | "t" | str                              | text                                                                                                                                                           |
@@ -498,9 +521,8 @@ inline void read_semantic_plot_style_modifier(ae::chart::v3::StyleModifier& targ
 inline void read_semantic_plot_style(ae::chart::v3::Style& target, ::simdjson::ondemand::object source)
 {
     for (auto field : source) {
-        const std::string_view key = field.unescaped_key();
-        if (key == "z") {
-            target.priority = static_cast<int64_t>(field.value());
+        if (const std::string_view key = field.unescaped_key(); key == "z") {
+            target.priority = static_cast<int>(static_cast<int64_t>(field.value()));
         }
         else if (key == "T") {
             target.title.assign(static_cast<std::string_view>(field.value()));
@@ -510,8 +532,6 @@ inline void read_semantic_plot_style(ae::chart::v3::Style& target, ::simdjson::o
             unhandled_key({"c", "R", target.name, key});
         }
         else if (key == "A") {  // apply
-            AD_DEBUG("AA");
-            // AD_DEBUG("AA {}", field.value().);
             for (auto apply_field : field.value().get_array())
                 read_semantic_plot_style_modifier(target.modifiers.emplace_back(), apply_field);
         }
