@@ -5,64 +5,226 @@
 
 // ----------------------------------------------------------------------
 
+const auto not_empty = [](const auto& val) -> bool { return !val.empty(); };
+const auto not_zero = [](auto val) -> bool { return val != 0; };
+const auto always = [](const auto&) -> bool { return true; };
+
+const auto put_comma = [](fmt::memory_buffer& out, bool comma) -> bool
+{
+    if (comma)
+        fmt::format_to(std::back_inserter(out), ",");
+    return true;
+};
+
+const auto put_comma_key = [](fmt::memory_buffer& out, bool comma, std::string_view key, std::string_view after_comma)
+{
+    put_comma(out, comma);
+    if (!after_comma.empty())
+        fmt::format_to(std::back_inserter(out), "{}", after_comma);
+    fmt::format_to(std::back_inserter(out), "\"{}\":", key);
+};
+
+const auto put_str = [](fmt::memory_buffer& out, const auto& value, auto&& condition, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool
+{
+    if (condition(value)) {
+        put_comma_key(out, comma, key, after_comma);
+        fmt::format_to(std::back_inserter(out), "\"{}\"", value);
+        return true;
+    }
+    else
+        return comma;
+};
+
+const auto put_int = [](fmt::memory_buffer& out, auto value, auto&& condition, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool
+{
+    if (condition(value)) {
+        put_comma_key(out, comma, key, after_comma);
+        fmt::format_to(std::back_inserter(out), "{}", value);
+        return true;
+    }
+    else
+        return comma;
+};
+
+const auto double_to_str = [](auto value) -> std::string {
+    if constexpr (std::is_convertible_v<decltype(value), double>)
+        return ae::format_double(value);
+    else
+        return ae::format_double(*value);
+};
+
+const auto put_bool = [](fmt::memory_buffer& out, bool value, bool dflt, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
+    if (value != dflt) {
+        put_comma_key(out, comma, key, after_comma);
+        fmt::format_to(std::back_inserter(out), "{}", value);
+        return true;
+    }
+    else
+        return comma;
+};
+
+const auto put_optional = []<typename Value>(fmt::memory_buffer& out, const std::optional<Value>& value, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
+    if (value.has_value()) {
+        put_comma_key(out, comma, key, after_comma);
+        if constexpr (std::is_same_v<Value, double>)
+            fmt::format_to(std::back_inserter(out), "{}", double_to_str(*value));
+        else if constexpr (std::is_same_v<Value, std::string> || std::is_same_v<Value, ae::chart::v3::point_shape>)
+            fmt::format_to(std::back_inserter(out), "\"{}\"", *value);
+        else
+            fmt::format_to(std::back_inserter(out), "{}", *value);
+        return true;
+    }
+    else
+        return comma;
+};
+
+const auto put_point_style = [](fmt::memory_buffer& out, const ae::chart::v3::PointStyle& style, bool shown_as_plus, bool comma) -> bool {
+    if (style.shown().has_value()) {
+        const auto shown = *style.shown();
+        if (shown_as_plus)
+            comma = put_bool(out, shown, !shown, "+", comma);
+        else
+            comma = put_bool(out, !shown, shown, "-", comma);
+    }
+    comma = put_str(out, style.fill(), not_empty, "F", comma);
+    comma = put_str(out, style.outline(), not_empty, "O", comma);
+    comma = put_optional(out, style.outline_width(), "o", comma);
+    comma = put_optional(out, style.shape(), "S", comma);
+    comma = put_optional(out, style.size(), "s", comma);
+    comma = put_optional(out, style.rotation(), "r", comma);
+    comma = put_optional(out, style.aspect(), "a", comma);
+    return comma;
+};
+
+// ----------------------------------------------------------------------
+
+    // "R" |     |     | key-value pairs       | sematic attributes based plot specifications, key: name of the style, value: style object
+    //     | "z" |     | int                   | priority order when showing in GUI
+    //     | "T" |     | str                   | title
+    //     | "V" |     | [x, y, width, height] | viewport
+    //     | "A" |     | list of objects       | modifiers to apply
+    //     |     | "R" | str                   | name ("N") of another plot spec to use (inherited from), applied before adding other changes provided by this object
+    //     |     | "T" | object                | {<name of semantic attribute>: <value>}
+    //     |     | "A" | bool                  | true: select antigens only, false: select sera only, absent: select antigens and sera
+    //     |     | "S" | str                   | shape: "C[IRCLE]" (default), "B[OX]", "T[RIANGLE]", "E[GG]", "U[GLYEGG]"
+    //     |     | "F" | color, str            | fill color
+    //     |     | "O" | color, str            | outline color
+    //     |     | "o" | float                 | outline width
+    //     |     | "s" | float                 | size, default 1.0
+    //     |     | "r" | float                 | rotation in radians, default 0.0
+    //     |     | "a" | float                 | aspect ratio, default 1.0
+    //     |     | "-" | boolean               | hide point and its label
+    //     |     | "D" | "r", "l"              | drawing order: raise, lower, absent: no change
+    //     |     | "L" |     | object                | legend row
+    //     |     |     | "p" | int                   | priority
+    //     |     |     | "t" | str                   | text
+
+    //     | "L"  |     |     | object                           | legend data
+    //     |      | "-" |     | bool                             | hidden
+    //     |      | "O" |     | [x, y]                           | offset, relative to "p"
+    //     |      | "p" |     | "tl"                             | corner or center of the plot: t - top, c - center, b - bottom, l -left, r - right
+    //     |      | "P" |     | [top, right, bottom, left]       | padding
+    //     |      | "A" |     | object                           | plot spec of the area
+    //     |      |     | "O" | Color: black                     | border
+    //     |      |     | "o" | 1.0                              | outline width
+    //     |      |     | "F" | Color: white                     | fill
+    //     |      | "C" |     | bool                             | add counter
+    //     |      | "S" |     | 10.0                             | point size
+    //     |      | "T" |     | object                           | title
+    //     |      |     | "t" | str                              | title text
+    //     |      |     | "f" | str                              | font face
+    //     |      |     | "S" | str                              | font slant: "normal" (default), "italic"
+    //     |      |     | "W" | str                              | font weight: "normal" (default), "bold"
+    //     |      |     | "s" | float                            | label size, default 1.0
+    //     |      |     | "c" | color                            | label color, default: "black"
+    //     |      | "z" |     | bool                             | show rows with zero count
+    //     | "T"  |     |     | object                           | title data
+    //     |      | "-" |     | bool                             | hidden
+    //     |      | "O" |     | [x, y]                           | offset
+    //     |      | "P" |     | [top, right, bottom, left]       | padding
+    //     |      | "A" |     | object                           | plot spec of the area
+    //     |      |     | "O" | Color: black                     | border
+    //     |      |     | "o" | 1.0                              | outline width
+    //     |      |     | "F" | Color: white                     | fill
+    //     |      | "T" |     | object                           |
+    //     |      |     | "t" | str                              | title text
+    //     |      |     | "f" | str                              | font face
+    //     |      |     | "S" | str                              | font slant: "normal" (default), "italic"
+    //     |      |     | "W" | str                              | font weight: "normal" (default), "bold"
+    //     |      |     | "s" | float                            | label size, default 1.0
+    //     |      |     | "c" | color                            | label color, default: "black"
+
+static inline void export_semnatic_plot_spec(fmt::memory_buffer& out, const ae::chart::v3::semantic::Styles& styles)
+{
+    using namespace ae::chart::v3::semantic;
+
+    if (!styles.empty()) {
+        fmt::format_to(std::back_inserter(out), ",\n  \"R\": {{");
+        auto comma_R1 = false;
+        for (const auto& style : styles) {
+            comma_R1 = put_comma(out, comma_R1);
+            fmt::format_to(std::back_inserter(out), "\n   \"{}\": {{", style.name);
+            auto comma_R2 = put_int(out, style.priority, not_zero, "z", false);
+            comma_R2 = put_str(out, style.title, not_empty, "T", comma_R2);
+            // viewport
+            if (!style.modifiers.empty()) {
+                comma_R2 = put_comma(out, comma_R2);
+                fmt::format_to(std::back_inserter(out), "\n      \"A\": [");
+                bool comma_R3 = false;
+                for (const auto& modifier : style.modifiers) {
+                    comma_R3 = put_comma(out, comma_R3);
+                    fmt::format_to(std::back_inserter(out), "\n        {{");
+                    auto comma_R4 = put_str(out, modifier.parent, not_empty, "R", false);
+                    if (!modifier.selector.empty()) {
+                        comma_R4 = put_comma(out, comma_R4);
+                        fmt::format_to(std::back_inserter(out), "\"T\":{{\"{}\":\"{}\"}}", modifier.selector.attribute, modifier.selector.value);
+                    }
+                    comma_R4 = put_point_style(out, modifier.point_style, false, comma_R4);
+                    switch (modifier.order) {
+                        case DrawingOrderModifier::no_change:
+                            break;
+                        case DrawingOrderModifier::raise:
+                            put_str(out, "r", always, "D", comma_R4);
+                            break;
+                        case DrawingOrderModifier::lower:
+                            put_str(out, "l", always, "D", comma_R4);
+                            break;
+                    }
+                    switch (modifier.select_antigens_sera) {
+                        case SelectAntigensSera::all:
+                            break;
+                        case SelectAntigensSera::antigens_only:
+                            put_int(out, 1, always, "A", comma_R4);
+                            break;
+                        case SelectAntigensSera::sera_only:
+                            put_int(out, 0, always, "A", comma_R4);
+                            break;
+                    }
+                    if (!modifier.legend.text.empty()) {
+                        comma_R4 = put_comma(out, comma_R4);
+                        fmt::format_to(std::back_inserter(out), "\"L\":{{\"p\":{},\"t\":\"{}\"}}", modifier.legend.priority, modifier.legend.text);
+                    }
+                    fmt::format_to(std::back_inserter(out), "}}");
+                }
+                fmt::format_to(std::back_inserter(out), "\n      ]");
+            }
+            fmt::format_to(std::back_inserter(out), "\n   }}");
+        }
+        fmt::format_to(std::back_inserter(out), "\n  }}");
+    }
+}
+
+// ----------------------------------------------------------------------
+
 void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
 {
     Timeit ti{fmt::format("exporting chart to {}", filename), std::chrono::milliseconds{1000}};
 
     fmt::memory_buffer out;
 
-    const auto not_empty = [](const auto& val) { return !val.empty(); };
-    const auto not_zero = [](auto val) { return val != 0; };
-    const auto always = [](const auto&) { return true; };
-
-    const auto put_comma = [&out](bool comma) -> bool {
-        if (comma)
-            fmt::format_to(std::back_inserter(out), ",");
-        return true;
-    };
-
-    const auto put_comma_key = [&out, put_comma](bool comma, std::string_view key, std::string_view after_comma) {
-        put_comma(comma);
-        if (!after_comma.empty())
-            fmt::format_to(std::back_inserter(out), "{}", after_comma);
-        fmt::format_to(std::back_inserter(out), "\"{}\":", key);
-    };
-
-    const auto put_str = [&out, put_comma_key](const auto& value, auto&& condition, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
+    const auto put_double = [&out](const auto& value, auto&& condition, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
         if (condition(value)) {
-            put_comma_key(comma, key, after_comma);
-            fmt::format_to(std::back_inserter(out), "\"{}\"", value);
-            return true;
-        }
-        else
-            return comma;
-    };
-
-    const auto double_to_str = [](auto value) -> std::string {
-        if constexpr (std::is_convertible_v<decltype(value), double>)
-            return format_double(value);
-        else
-            return format_double(*value);
-    };
-
-    const auto put_optional = [&out, put_comma_key, double_to_str]<typename Value>(const std::optional<Value>& value, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
-        if (value.has_value()) {
-            put_comma_key(comma, key, after_comma);
-            if constexpr (std::is_same_v<Value, double>)
-                fmt::format_to(std::back_inserter(out), "{}", double_to_str(*value));
-            else if constexpr (std::is_same_v<Value, std::string> || std::is_same_v<Value, point_shape>)
-                fmt::format_to(std::back_inserter(out), "\"{}\"", *value);
-            else
-                fmt::format_to(std::back_inserter(out), "{}", *value);
-            return true;
-        }
-        else
-            return comma;
-    };
-
-    const auto put_double = [&out, put_comma_key, double_to_str](const auto& value, auto&& condition, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
-        if (condition(value)) {
-            put_comma_key(comma, key, after_comma);
+            put_comma_key(out, comma, key, after_comma);
             fmt::format_to(std::back_inserter(out), "{}", double_to_str(value));
             return true;
         }
@@ -70,29 +232,9 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
             return comma;
     };
 
-    const auto put_int = [&out, put_comma_key](auto value, auto&& condition, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
+    const auto put_array_str = [&out](const auto& value, auto&& condition, std::string_view key, bool comma) -> bool {
         if (condition(value)) {
-            put_comma_key(comma, key, after_comma);
-            fmt::format_to(std::back_inserter(out), "{}", value);
-            return true;
-        }
-        else
-            return comma;
-    };
-
-    const auto put_bool = [&out, put_comma_key](bool value, bool dflt, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
-        if (value != dflt) {
-            put_comma_key(comma, key, after_comma);
-            fmt::format_to(std::back_inserter(out), "{}", value);
-            return true;
-        }
-        else
-            return comma;
-    };
-
-    const auto put_array_str = [&out, put_comma](const auto& value, auto&& condition, std::string_view key, bool comma) -> bool {
-        if (condition(value)) {
-            put_comma(comma);
+            put_comma(out, comma);
             fmt::format_to(std::back_inserter(out), "\"{}\":[\"{}\"]", key, fmt::join(value, "\",\""));
             return true;
         }
@@ -100,9 +242,9 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
             return comma;
     };
 
-    const auto put_array_int = [&out, put_comma_key](const auto& value, auto&& condition, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
+    const auto put_array_int = [&out](const auto& value, auto&& condition, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
         if (condition(value)) {
-            put_comma_key(comma, key, after_comma);
+            put_comma_key(out, comma, key, after_comma);
             fmt::format_to(std::back_inserter(out), "[{}]", fmt::join(value, ","));
             return true;
         }
@@ -110,13 +252,13 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
             return comma;
     };
 
-    const auto put_array_double = [&out, double_to_str, put_comma, put_comma_key](const auto& value, auto&& condition, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
+    const auto put_array_double = [&out](const auto& value, auto&& condition, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
         if (condition(value)) {
-            put_comma_key(comma, key, after_comma);
+            put_comma_key(out, comma, key, after_comma);
             fmt::format_to(std::back_inserter(out), "[");
             bool comma2 = false;
             for (const auto en : value) {
-                comma2 = put_comma(comma2);
+                comma2 = put_comma(out, comma2);
                 fmt::format_to(std::back_inserter(out), "{}", double_to_str(en));
             }
             fmt::format_to(std::back_inserter(out), "]");
@@ -126,13 +268,13 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
             return comma;
     };
 
-    const auto put_insertions = [&out, put_comma, put_comma_key](const sequences::insertions_t& insertions, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
+    const auto put_insertions = [&out](const sequences::insertions_t& insertions, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
         if (!insertions.empty()) {
-            put_comma_key(comma, key, after_comma);
+            put_comma_key(out, comma, key, after_comma);
             fmt::format_to(std::back_inserter(out), "[");
             bool comma2 = false;
             for (const auto& en : insertions) {
-                comma2 = put_comma(comma2);
+                comma2 = put_comma(out, comma2);
                 fmt::format_to(std::back_inserter(out), "[{}, \"{}\"]", en.pos, en.insertion); // pos0_t and pos1_t are both formatted as pos1
             }
             fmt::format_to(std::back_inserter(out), "]");
@@ -141,10 +283,10 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
         return comma;
     };
 
-    const auto put_semantic = [&out, put_comma_key, not_empty, put_array_str](const SemanticAttributes& value, auto&& condition, std::string_view key, bool comma,
+    const auto put_semantic = [&out, put_array_str](const SemanticAttributes& value, auto&& condition, std::string_view key, bool comma,
                                                                               std::string_view after_comma = {}) -> bool {
         if (condition(value)) {
-            put_comma_key(comma, key, after_comma);
+            put_comma_key(out, comma, key, after_comma);
             fmt::format_to(std::back_inserter(out), "{{");
             [[maybe_unused]] auto comma_inside = put_array_str(value.clades, not_empty, "C", false);
             fmt::format_to(std::back_inserter(out), "}}");
@@ -152,24 +294,6 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
         }
         else
             return comma;
-    };
-
-    const auto put_point_style = [put_bool, put_str, put_optional, not_empty](const PointStyle& style, bool shown_as_plus, bool comma) -> bool {
-        if (style.shown().has_value()) {
-            const auto shown = *style.shown();
-            if (shown_as_plus)
-                comma = put_bool(shown, !shown, "+", comma);
-            else
-                comma = put_bool(!shown, shown, "-", comma);
-        }
-        comma = put_str(style.fill(), not_empty, "F", comma);
-        comma = put_str(style.outline(), not_empty, "O", comma);
-        comma = put_optional(style.outline_width(), "o", comma);
-        comma = put_optional(style.shape(), "S", comma);
-        comma = put_optional(style.size(), "s", comma);
-        comma = put_optional(style.rotation(), "r", comma);
-        comma = put_optional(style.aspect(), "a", comma);
-        return comma;
     };
 
     // ----------------------------------------------------------------------
@@ -192,26 +316,26 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
     //      | "T" |     |     | str                              | table type "A[NTIGENIC]" - default, "G[ENETIC]"
     //      | "S" |     |     | array of key-value pairs         | source table info list, each entry is like "i"
 
-    const auto put_table_source = [put_str, not_empty](const TableSource& source) -> bool {
-        auto comma = put_str(source.name(), not_empty, "N", false);
-        comma = put_str(
+    const auto put_table_source = [&out](const TableSource& source) -> bool {
+        auto comma = put_str(out, source.name(), not_empty, "N", false);
+        comma = put_str(out,
             source.virus(), [](auto&& val) { return !val.empty() && val != ae::virus::virus_t{"INFLUENZA"}; }, "v", comma);
-        comma = put_str(source.type_subtype(), not_empty, "V", comma);
-        comma = put_str(source.lab(), not_empty, "l", comma);
-        comma = put_str(source.assay(), not_empty, "A", comma);
-        comma = put_str(source.date(), not_empty, "D", comma);
-        comma = put_str(source.rbc_species(), not_empty, "r", comma);
+        comma = put_str(out, source.type_subtype(), not_empty, "V", comma);
+        comma = put_str(out, source.lab(), not_empty, "l", comma);
+        comma = put_str(out, source.assay(), not_empty, "A", comma);
+        comma = put_str(out, source.date(), not_empty, "D", comma);
+        comma = put_str(out, source.rbc_species(), not_empty, "r", comma);
         return comma;
     };
 
     fmt::format_to(std::back_inserter(out), "  \"i\": {{");
     auto comma1 = put_table_source(info());
     if (const auto& sources = info().sources(); !sources.empty()) {
-        comma1 = put_comma(comma1);
+        comma1 = put_comma(out, comma1);
         fmt::format_to(std::back_inserter(out), "\n        \"S\": [");
         auto comma2 = false;
         for (const auto& src : sources) {
-            comma2 = put_comma(comma2);
+            comma2 = put_comma(out, comma2);
             fmt::format_to(std::back_inserter(out), "\n         {{");
             put_table_source(src);
             fmt::format_to(std::back_inserter(out), "}}");
@@ -240,18 +364,18 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
     fmt::format_to(std::back_inserter(out), ",\n  \"a\": [");
     auto comma3 = false;
     for (const auto& antigen : antigens()) {
-        comma3 = put_comma(comma3);
+        comma3 = put_comma(out, comma3);
         fmt::format_to(std::back_inserter(out), "\n   {{");
-        auto comma4 = put_str(antigen.name(), not_empty, "N", false);
+        auto comma4 = put_str(out, antigen.name(), not_empty, "N", false);
         comma4 = put_array_str(antigen.annotations(), not_empty, "a", comma4);
-        comma4 = put_str(antigen.reassortant(), not_empty, "R", comma4);
-        comma4 = put_str(antigen.date(), not_empty, "D", comma4);
-        comma4 = put_str(antigen.lineage(), not_empty, "L", comma4);
-        comma4 = put_str(antigen.passage(), not_empty, "P", comma4);
+        comma4 = put_str(out, antigen.reassortant(), not_empty, "R", comma4);
+        comma4 = put_str(out, antigen.date(), not_empty, "D", comma4);
+        comma4 = put_str(out, antigen.lineage(), not_empty, "L", comma4);
+        comma4 = put_str(out, antigen.passage(), not_empty, "P", comma4);
         comma4 = put_array_str(antigen.lab_ids(), not_empty, "l", comma4);
         comma4 = put_semantic(antigen.semantic(), not_empty, "T", comma4);
-        comma4 = put_str(antigen.aa(), not_empty, "A", comma4);  // , "\n    ");
-        comma4 = put_str(antigen.nuc(), not_empty, "B", comma4); // , "\n    ");
+        comma4 = put_str(out, antigen.aa(), not_empty, "A", comma4);  // , "\n    ");
+        comma4 = put_str(out, antigen.nuc(), not_empty, "B", comma4); // , "\n    ");
         comma4 = put_insertions(antigen.aa_insertions(), "Ai", comma4);
         comma4 = put_insertions(antigen.nuc_insertions(), "Bi", comma4);
         fmt::format_to(std::back_inserter(out), "}}");
@@ -279,19 +403,19 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
     fmt::format_to(std::back_inserter(out), ",\n  \"s\": [");
     auto comma5 = false;
     for (const auto& serum : sera()) {
-        comma5 = put_comma(comma5);
+        comma5 = put_comma(out, comma5);
         fmt::format_to(std::back_inserter(out), "\n   {{");
-        auto comma6 = put_str(serum.name(), not_empty, "N", false);
+        auto comma6 = put_str(out, serum.name(), not_empty, "N", false);
         comma6 = put_array_str(serum.annotations(), not_empty, "a", comma6);
-        comma6 = put_str(serum.reassortant(), not_empty, "R", comma6);
-        comma6 = put_str(serum.lineage(), not_empty, "L", comma6);
-        comma6 = put_str(serum.passage(), not_empty, "P", comma6);
-        comma6 = put_str(serum.serum_id(), not_empty, "I", comma6);
-        comma6 = put_str(serum.serum_species(), not_empty, "s", comma6);
+        comma6 = put_str(out, serum.reassortant(), not_empty, "R", comma6);
+        comma6 = put_str(out, serum.lineage(), not_empty, "L", comma6);
+        comma6 = put_str(out, serum.passage(), not_empty, "P", comma6);
+        comma6 = put_str(out, serum.serum_id(), not_empty, "I", comma6);
+        comma6 = put_str(out, serum.serum_species(), not_empty, "s", comma6);
         // DEPRECATED comma6 = put_array_int(serum.homologous_antigens(), not_empty, "h", comma6);
         comma6 = put_semantic(serum.semantic(), not_empty, "T", comma6);
-        comma6 = put_str(serum.aa(), not_empty, "A", comma6);         // , "\n    ");
-        comma6 = put_str(serum.nuc(), not_empty, "B", comma6);        // , "\n    ");
+        comma6 = put_str(out, serum.aa(), not_empty, "A", comma6);         // , "\n    ");
+        comma6 = put_str(out, serum.nuc(), not_empty, "B", comma6);        // , "\n    ");
         comma6 = put_insertions(serum.aa_insertions(), "Ai", comma6); // , "\n    ");
         comma6 = put_insertions(serum.aa_insertions(), "Ai", comma6);
         comma6 = put_insertions(serum.nuc_insertions(), "Bi", comma6);
@@ -304,14 +428,14 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
     //  "d" | array of key(str)-value(str) | sparse matrix, entry for each antigen present, key is serum index, value is titer, dont-care titers omitted
     //  "L" | array of arrays of key-value | layers of titers, each top level array element as in "d" or "l"
 
-    const auto put_sparse = [&out, put_comma, this](const Titers::sparse_t& data, std::string_view indent) {
+    const auto put_sparse = [&out, this](const Titers::sparse_t& data, std::string_view indent) {
         for (const auto ag_no : titers().number_of_antigens()) {
             if (ag_no != antigen_index{0})
                 fmt::format_to(std::back_inserter(out), ",");
             fmt::format_to(std::back_inserter(out), "\n{}{{", indent);
             bool comma = false;
             for (const auto& [sr_no, titer] : data[*ag_no]) {
-                comma = put_comma(comma);
+                comma = put_comma(out, comma);
                 fmt::format_to(std::back_inserter(out), "\"{}\":\"{}\"", sr_no, titer);
             }
             fmt::format_to(std::back_inserter(out), "}}");
@@ -385,14 +509,14 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
         fmt::format_to(std::back_inserter(out), ",\n  \"P\": [");
         auto comma7 = false;
         for (const auto& projection : projections()) {
-            comma7 = put_comma(comma7);
+            comma7 = put_comma(out, comma7);
             fmt::format_to(std::back_inserter(out), "\n   {{");
             auto comma8 = put_double(
                 projection.stress(), [](double stress) { return !std::isnan(stress) && stress >= 0.0; }, "s", false);
-            comma8 = put_str(
+            comma8 = put_str(out,
                 projection.minimum_column_basis(), [](const auto& mcb) { return !mcb.is_none(); }, "m", comma8);
-            comma8 = put_str(projection.comment(), not_empty, "c", comma8);
-            comma8 = put_bool(projection.dodgy_titer_is_regular() == dodgy_titer_is_regular_e::yes, false, "d", comma8);
+            comma8 = put_str(out, projection.comment(), not_empty, "c", comma8);
+            comma8 = put_bool(out, projection.dodgy_titer_is_regular() == dodgy_titer_is_regular_e::yes, false, "d", comma8);
             comma8 = put_array_double(projection.forced_column_bases(), not_empty, "C", comma8);
             comma8 = put_array_double(projection.transformation().as_vector(), not_empty, "t", comma8, "\n    ");
             comma8 = put_array_int(projection.unmovable(), not_empty, "U", comma8, "\n    ");
@@ -400,7 +524,7 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
             comma8 = put_array_int(projection.unmovable_in_the_last_dimension(), not_empty, "u", comma8, "\n    ");
 
             const auto& layout = projection.layout();
-            comma8 = put_comma(comma8);
+            comma8 = put_comma(out, comma8);
             fmt::format_to(std::back_inserter(out), "\n    \"l\": [");
             for (const auto point_no : layout.number_of_points()) {
                 if (point_no != point_index{0})
@@ -409,8 +533,8 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
                 if (const auto point = layout[point_no]; point.exists()) {
                     bool comma9 = false;
                     for (const auto coord : point) {
-                        comma9 = put_comma(comma9);
-                        fmt::format_to(std::back_inserter(out), "{}", format_double(coord));
+                        comma9 = put_comma(out, comma9);
+                        fmt::format_to(std::back_inserter(out), "{}", ae::format_double(coord));
                     }
                 }
                 fmt::format_to(std::back_inserter(out), "]");
@@ -425,116 +549,9 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
         fmt::format_to(std::back_inserter(out), "\n  ]");
     }
 
-    // "R" |     |     | key-value pairs       | sematic attributes based plot specifications, key: name of the style, value: style object
-    //     | "z" |     | int                   | priority order when showing in GUI
-    //     | "T" |     | str                   | title
-    //     | "V" |     | [x, y, width, height] | viewport
-    //     | "A" |     | list of objects       | modifiers to apply
-    //     |     | "R" | str                   | name ("N") of another plot spec to use (inherited from), applied before adding other changes provided by this object
-    //     |     | "T" | object                | {<name of semantic attribute>: <value>}
-    //     |     | "A" | bool                  | true: select antigens only, false: select sera only, absent: select antigens and sera
-    //     |     | "S" | str                   | shape: "C[IRCLE]" (default), "B[OX]", "T[RIANGLE]", "E[GG]", "U[GLYEGG]"
-    //     |     | "F" | color, str            | fill color
-    //     |     | "O" | color, str            | outline color
-    //     |     | "o" | float                 | outline width
-    //     |     | "s" | float                 | size, default 1.0
-    //     |     | "r" | float                 | rotation in radians, default 0.0
-    //     |     | "a" | float                 | aspect ratio, default 1.0
-    //     |     | "-" | boolean               | hide point and its label
-    //     |     | "D" | "r", "l"              | drawing order: raise, lower, absent: no change
-    //     |     | "L" |     | object                | legend row
-    //     |     |     | "p" | int                   | priority
-    //     |     |     | "t" | str                   | text
+    // ----------------------------------------------------------------------
 
-    //     | "L"  |     |     | object                           | legend data
-    //     |      | "-" |     | bool                             | hidden
-    //     |      | "O" |     | [x, y]                           | offset, relative to "p"
-    //     |      | "p" |     | "tl"                             | corner or center of the plot: t - top, c - center, b - bottom, l -left, r - right
-    //     |      | "P" |     | [top, right, bottom, left]       | padding
-    //     |      | "A" |     | object                           | plot spec of the area
-    //     |      |     | "O" | Color: black                     | border
-    //     |      |     | "o" | 1.0                              | outline width
-    //     |      |     | "F" | Color: white                     | fill
-    //     |      | "C" |     | bool                             | add counter
-    //     |      | "S" |     | 10.0                             | point size
-    //     |      | "T" |     | object                           | title
-    //     |      |     | "t" | str                              | title text
-    //     |      |     | "f" | str                              | font face
-    //     |      |     | "S" | str                              | font slant: "normal" (default), "italic"
-    //     |      |     | "W" | str                              | font weight: "normal" (default), "bold"
-    //     |      |     | "s" | float                            | label size, default 1.0
-    //     |      |     | "c" | color                            | label color, default: "black"
-    //     |      | "z" |     | bool                             | show rows with zero count
-    //     | "T"  |     |     | object                           | title data
-    //     |      | "-" |     | bool                             | hidden
-    //     |      | "O" |     | [x, y]                           | offset
-    //     |      | "P" |     | [top, right, bottom, left]       | padding
-    //     |      | "A" |     | object                           | plot spec of the area
-    //     |      |     | "O" | Color: black                     | border
-    //     |      |     | "o" | 1.0                              | outline width
-    //     |      |     | "F" | Color: white                     | fill
-    //     |      | "T" |     | object                           |
-    //     |      |     | "t" | str                              | title text
-    //     |      |     | "f" | str                              | font face
-    //     |      |     | "S" | str                              | font slant: "normal" (default), "italic"
-    //     |      |     | "W" | str                              | font weight: "normal" (default), "bold"
-    //     |      |     | "s" | float                            | label size, default 1.0
-    //     |      |     | "c" | color                            | label color, default: "black"
-
-    if (!styles().empty()) {
-        fmt::format_to(std::back_inserter(out), ",\n  \"R\": {{");
-        auto comma_R1 = false;
-        for (const auto& style : styles()) {
-            comma_R1 = put_comma(comma_R1);
-            fmt::format_to(std::back_inserter(out), "\n   \"{}\": {{", style.name);
-            auto comma_R2 = put_int(style.priority, not_zero, "z", false);
-            comma_R2 = put_str(style.title, not_empty, "T", comma_R2);
-            // viewport
-            if (!style.modifiers.empty()) {
-                comma_R2 = put_comma(comma_R2);
-                fmt::format_to(std::back_inserter(out), "\n      \"A\": [");
-                bool comma_R3 = false;
-                for (const auto& modifier : style.modifiers) {
-                    comma_R3 = put_comma(comma_R3);
-                    fmt::format_to(std::back_inserter(out), "\n        {{");
-                    auto comma_R4 = put_str(modifier.parent, not_empty, "R", false);
-                    if (!modifier.selector.empty()) {
-                        comma_R4 = put_comma(comma_R4);
-                        fmt::format_to(std::back_inserter(out), "\"T\":{{\"{}\":\"{}\"}}", modifier.selector.attribute, modifier.selector.value);
-                    }
-                    comma_R4 = put_point_style(modifier.point_style, false, comma_R4);
-                    switch (modifier.order) {
-                        case semantic::DrawingOrderModifier::no_change:
-                            break;
-                        case semantic::DrawingOrderModifier::raise:
-                            put_str("r", always, "D", comma_R4);
-                            break;
-                        case semantic::DrawingOrderModifier::lower:
-                            put_str("l", always, "D", comma_R4);
-                            break;
-                    }
-                    switch (modifier.select_antigens_sera) {
-                        case semantic::SelectAntigensSera::all:
-                            break;
-                        case semantic::SelectAntigensSera::antigens_only:
-                            put_int(1, always, "A", comma_R4);
-                            break;
-                        case semantic::SelectAntigensSera::sera_only:
-                            put_int(0, always, "A", comma_R4);
-                            break;
-                    }
-                    if (!modifier.legend.text.empty()) {
-                        comma_R4 = put_comma(comma_R4);
-                        fmt::format_to(std::back_inserter(out), "\"L\":{{\"p\":{},\"t\":\"{}\"}}", modifier.legend.priority, modifier.legend.text);
-                    }
-                    fmt::format_to(std::back_inserter(out), "}}");
-                }
-                fmt::format_to(std::back_inserter(out), "\n      ]");
-            }
-            fmt::format_to(std::back_inserter(out), "\n   }}");
-        }
-        fmt::format_to(std::back_inserter(out), "\n  }}");
-    }
+    export_semnatic_plot_spec(out, styles());
 
     // legacy lispmds stype plot specification
     //  "d" |     |     | array of integers       | drawing order, point indices
@@ -572,26 +589,26 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
         auto comma10 = put_array_int(plot_spec.drawing_order(), not_empty, "d", false, "\n   ");
         comma10 = put_array_int(plot_spec.style_for_point(), not_empty, "p", comma10, "\n   ");
         if (!plot_spec.styles().empty()) {
-            comma10 = put_comma(comma10);
+            comma10 = put_comma(out, comma10);
             fmt::format_to(std::back_inserter(out), "\n   \"P\": [");
             bool comma11 = false;
             for (const auto& style : plot_spec.styles()) {
-                comma11 = put_comma(comma11);
+                comma11 = put_comma(out, comma11);
                 fmt::format_to(std::back_inserter(out), "\n    {{");
-                auto comma12 = put_point_style(style, true, false);
+                auto comma12 = put_point_style(out, style, true, false);
                 if (const auto& label_style = style.label(); !label_style.empty()) {
-                    comma12 = put_comma(comma12);
+                    comma12 = put_comma(out, comma12);
                     fmt::format_to(std::back_inserter(out), "\"l\":{{");
-                    auto comma13 = put_optional(style.label_text(), "t", false);
-                    comma13 = put_bool(label_style.shown, true, "+", comma13);
+                    auto comma13 = put_optional(out, style.label_text(), "t", false);
+                    comma13 = put_bool(out, label_style.shown, true, "+", comma13);
                     // "p" offset
-                    comma13 = put_str(
+                    comma13 = put_str(out,
                         label_style.color, [](const auto& color) { return color != Color{"black"}; }, "c", comma13);
-                    comma13 = put_str(
+                    comma13 = put_str(out,
                         label_style.style.slant, [](const auto& slant) { return slant != ae::draw::v2::font_slant_t{"normal"}; }, "S", comma13);
-                    comma13 = put_str(
+                    comma13 = put_str(out,
                         label_style.style.weight, [](const auto& weight) { return weight != ae::draw::v2::font_weight_t{"normal"}; }, "W", comma13);
-                    comma13 = put_str(label_style.style.font_family, not_empty, "f", comma13);
+                    comma13 = put_str(out, label_style.style.font_family, not_empty, "f", comma13);
                     //      |     | "s" | float                   | label size, default 1.0
                     //      |     | "r" | float                   | label rotation, default 0.0
                     comma13 = put_double(
