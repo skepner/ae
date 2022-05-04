@@ -516,6 +516,16 @@ inline void read_semantic_plot_style_modifier(ae::chart::v3::semantic::StyleModi
             else
                 AD_WARNING("[chart semantic plot spec]: unrecognized drawing order modiifer \"{}\", \"r\" or \"l\" expected", val);
         }
+        else if (key == "L") { // legend row
+            for (auto legend_field : value.get_object()) {
+                if (const std::string_view legend_field_key = legend_field.unescaped_key(); legend_field_key == "p") // priority
+                    target.legend.priority = static_cast<int>(static_cast<int64_t>(legend_field.value()));
+                else if (legend_field_key == "t") // text
+                    target.legend.text.assign(static_cast<std::string_view>(legend_field.value()));
+                else
+                    AD_WARNING("[chart semantic plot spec]: unrecognized legend row field \"{}\"", legend_field_key);
+            }
+        }
         else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
             unhandled_key({"c", "R", "<name>", "A", "[index]", key});
     }
