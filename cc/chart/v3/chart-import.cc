@@ -508,12 +508,19 @@ inline void read_semantic_plot_style_modifier(ae::chart::v3::StyleModifier& targ
             else
                 target.select_antigens_sera = ae::chart::v3::SelectAntigensSera::sera_only;
         }
+        else if (key == "D") { // drawing order: raise, lower, absent: no change
+            if (const std::string_view val = value; val == "r")
+                target.order = ae::chart::v3::DrawingOrderModifier::raise;
+            else if (val == "l")
+                target.order = ae::chart::v3::DrawingOrderModifier::lower;
+            else
+                AD_WARNING("[chart semantic plot spec]: unrecognized drawing order modiifer \"{}\", \"r\" or \"l\" expected", val);
+        }
         else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
             unhandled_key({"c", "R", "<name>", "A", "[index]", key});
     }
 }
 
-//       | "D" |     | "r", "l"                         | drawing order: raise, lower, absent: no change                                                                                                                 |
 //       | "L" |     | object                           | legend row                                                                                                                                                     |
 //       |     | "p" | int                              | priority                                                                                                                                                       |
 //       |     | "t" | str                              | text                                                                                                                                                           |
