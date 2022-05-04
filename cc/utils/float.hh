@@ -8,6 +8,8 @@
 #include <stdexcept>
 #include <concepts>
 
+#include "ext/fmt.hh"
+
 // ----------------------------------------------------------------------
 
 // http://en.cppreference.com/w/cpp/types/numeric_limits/epsilon
@@ -47,5 +49,26 @@ template <std::floating_point T> constexpr inline T square(T v)
 {
     return v * v;
 }
+
+// ======================================================================
+
+// useful in structures with default operator ==
+struct Float
+{
+    Float(double val) : value{val} {}
+    Float(const Float&) = default;
+    Float(Float&&) = default;
+    Float& operator=(const Float&) = default;
+    Float& operator=(double val) { value = val; return *this; }
+    bool operator==(Float rhs) const { return float_equal(value, rhs.value); }
+    bool operator==(double rhs) const { return float_equal(value, rhs); }
+    operator double() const { return value; }
+    double value;
+};
+
+template <> struct fmt::formatter<Float> : fmt::formatter<double>
+{
+    template <typename FormatCtx> auto format(const Float& val, FormatCtx& ctx) const { return fmt::formatter<double>::format(val.value, ctx); }
+};
 
 // ======================================================================

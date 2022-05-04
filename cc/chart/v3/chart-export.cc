@@ -177,27 +177,6 @@ const auto put_point_style = [](fmt::memory_buffer& out, const ae::chart::v3::Po
 
 // ----------------------------------------------------------------------
 
-    // "R" |     |     | key-value pairs       | sematic attributes based plot specifications, key: name of the style, value: style object
-    //     | "z" |     | int                   | priority order when showing in GUI
-    //     | "T" |     | str                   | title
-    //     | "V" |     | [x, y, width, height] | viewport
-    //     | "A" |     | list of objects       | modifiers to apply
-    //     |     | "R" | str                   | name ("N") of another plot spec to use (inherited from), applied before adding other changes provided by this object
-    //     |     | "T" | object                | {<name of semantic attribute>: <value>}
-    //     |     | "A" | bool                  | true: select antigens only, false: select sera only, absent: select antigens and sera
-    //     |     | "S" | str                   | shape: "C[IRCLE]" (default), "B[OX]", "T[RIANGLE]", "E[GG]", "U[GLYEGG]"
-    //     |     | "F" | color, str            | fill color
-    //     |     | "O" | color, str            | outline color
-    //     |     | "o" | float                 | outline width
-    //     |     | "s" | float                 | size, default 1.0
-    //     |     | "r" | float                 | rotation in radians, default 0.0
-    //     |     | "a" | float                 | aspect ratio, default 1.0
-    //     |     | "-" | boolean               | hide point and its label
-    //     |     | "D" | "r", "l"              | drawing order: raise, lower, absent: no change
-    //     |     | "L" |     | object                | legend row
-    //     |     |     | "p" | int                   | priority
-    //     |     |     | "t" | str                   | text
-
     //     | "L"  |     |     | object                           | legend data
     //     |      | "-" |     | bool                             | hidden
     //     |      | "O" |     | [x, y]                           | offset, relative to "p"
@@ -217,6 +196,94 @@ const auto put_point_style = [](fmt::memory_buffer& out, const ae::chart::v3::Po
     //     |      |     | "s" | float                            | label size, default 1.0
     //     |      |     | "c" | color                            | label color, default: "black"
     //     |      | "z" |     | bool                             | show rows with zero count
+
+static inline bool export_semantic_plot_spec_legend(fmt::memory_buffer& out, const ae::chart::v3::semantic::Legend& legend, bool comma)
+{
+    if (!legend.empty()) {
+        comma = put_comma(out, comma);
+        fmt::format_to(std::back_inserter(out), "\n      \"L\": {{");
+        fmt::format_to(std::back_inserter(out), "}}");
+    }
+    return comma;
+}
+
+// ----------------------------------------------------------------------
+
+    //     | "A" |     | list of objects       | modifiers to apply
+    //     |     | "R" | str                   | name ("N") of another plot spec to use (inherited from), applied before adding other changes provided by this object
+    //     |     | "T" | object                | {<name of semantic attribute>: <value>}
+    //     |     | "A" | bool                  | true: select antigens only, false: select sera only, absent: select antigens and sera
+    //     |     | "S" | str                   | shape: "C[IRCLE]" (default), "B[OX]", "T[RIANGLE]", "E[GG]", "U[GLYEGG]"
+    //     |     | "F" | color, str            | fill color
+    //     |     | "O" | color, str            | outline color
+    //     |     | "o" | float                 | outline width
+    //     |     | "s" | float                 | size, default 1.0
+    //     |     | "r" | float                 | rotation in radians, default 0.0
+    //     |     | "a" | float                 | aspect ratio, default 1.0
+    //     |     | "-" | boolean               | hide point and its label
+    //     |     | "D" | "r", "l"              | drawing order: raise, lower, absent: no change
+    //     |     | "L" |     | object                | legend row
+    //     |     |     | "p" | int                   | priority
+    //     |     |     | "t" | str                   | text
+
+static inline bool export_semantic_plot_spec_modifiers(fmt::memory_buffer& out, const std::vector<ae::chart::v3::semantic::StyleModifier>& modifiers, bool comma)
+{
+    using namespace ae::chart::v3::semantic;
+    if (!modifiers.empty()) {
+        comma = put_comma(out, comma);
+        fmt::format_to(std::back_inserter(out), "\n      \"A\": [");
+        bool comma_R3 = false;
+        for (const auto& modifier : modifiers) {
+            comma_R3 = put_comma(out, comma_R3);
+            fmt::format_to(std::back_inserter(out), "\n        {{");
+            auto comma_R4 = put_str(out, modifier.parent, not_empty, "R", false);
+            if (!modifier.selector.empty()) {
+                comma_R4 = put_comma(out, comma_R4);
+                fmt::format_to(std::back_inserter(out), "\"T\":{{\"{}\":\"{}\"}}", modifier.selector.attribute, modifier.selector.value);
+            }
+            comma_R4 = put_point_style(out, modifier.point_style, false, comma_R4);
+            switch (modifier.order) {
+                case DrawingOrderModifier::no_change:
+                    break;
+                case DrawingOrderModifier::raise:
+                    put_str(out, "r", always, "D", comma_R4);
+                    break;
+                case DrawingOrderModifier::lower:
+                    put_str(out, "l", always, "D", comma_R4);
+                    break;
+            }
+            switch (modifier.select_antigens_sera) {
+                case SelectAntigensSera::all:
+                    break;
+                case SelectAntigensSera::antigens_only:
+                    put_int(out, 1, always, "A", comma_R4);
+                    break;
+                case SelectAntigensSera::sera_only:
+                    put_int(out, 0, always, "A", comma_R4);
+                    break;
+            }
+            if (!modifier.legend.text.empty()) {
+                comma_R4 = put_comma(out, comma_R4);
+                fmt::format_to(std::back_inserter(out), "\"L\":{{\"p\":{},\"t\":\"{}\"}}", modifier.legend.priority, modifier.legend.text);
+            }
+            fmt::format_to(std::back_inserter(out), "}}");
+        }
+        fmt::format_to(std::back_inserter(out), "\n      ]");
+    }
+    return comma;
+}
+
+// ----------------------------------------------------------------------
+
+    // "R" |     |     | key-value pairs       | sematic attributes based plot specifications, key: name of the style, value: style object
+    //     | "z" |     | int                   | priority order when showing in GUI
+    //     | "T" |     | str                   | title
+    //     | "V" |     | [x, y, width, height] | viewport
+
+    //     | "A" |     | list of objects       | modifiers to apply -> export_semantic_plot_spec_modifiers()
+
+    //     | "L"  |     |     | object                           | legend data --> export_semantic_plot_spec_legend()
+
     //     | "T"  |     |     | object                           | title data
     //     |      | "-" |     | bool                             | hidden
     //     |      | "O" |     | [x, y]                           | offset
@@ -233,9 +300,8 @@ const auto put_point_style = [](fmt::memory_buffer& out, const ae::chart::v3::Po
     //     |      |     | "s" | float                            | label size, default 1.0
     //     |      |     | "c" | color                            | label color, default: "black"
 
-static inline void export_semnatic_plot_spec(fmt::memory_buffer& out, const ae::chart::v3::semantic::Styles& styles)
+static inline void export_semantic_plot_spec(fmt::memory_buffer& out, const ae::chart::v3::semantic::Styles& styles)
 {
-    using namespace ae::chart::v3::semantic;
 
     if (!styles.empty()) {
         fmt::format_to(std::back_inserter(out), ",\n  \"R\": {{");
@@ -246,47 +312,9 @@ static inline void export_semnatic_plot_spec(fmt::memory_buffer& out, const ae::
             auto comma_R2 = put_int(out, style.priority, not_zero, "z", false);
             comma_R2 = put_str(out, style.title, not_empty, "T", comma_R2);
             // viewport
-            if (!style.modifiers.empty()) {
-                comma_R2 = put_comma(out, comma_R2);
-                fmt::format_to(std::back_inserter(out), "\n      \"A\": [");
-                bool comma_R3 = false;
-                for (const auto& modifier : style.modifiers) {
-                    comma_R3 = put_comma(out, comma_R3);
-                    fmt::format_to(std::back_inserter(out), "\n        {{");
-                    auto comma_R4 = put_str(out, modifier.parent, not_empty, "R", false);
-                    if (!modifier.selector.empty()) {
-                        comma_R4 = put_comma(out, comma_R4);
-                        fmt::format_to(std::back_inserter(out), "\"T\":{{\"{}\":\"{}\"}}", modifier.selector.attribute, modifier.selector.value);
-                    }
-                    comma_R4 = put_point_style(out, modifier.point_style, false, comma_R4);
-                    switch (modifier.order) {
-                        case DrawingOrderModifier::no_change:
-                            break;
-                        case DrawingOrderModifier::raise:
-                            put_str(out, "r", always, "D", comma_R4);
-                            break;
-                        case DrawingOrderModifier::lower:
-                            put_str(out, "l", always, "D", comma_R4);
-                            break;
-                    }
-                    switch (modifier.select_antigens_sera) {
-                        case SelectAntigensSera::all:
-                            break;
-                        case SelectAntigensSera::antigens_only:
-                            put_int(out, 1, always, "A", comma_R4);
-                            break;
-                        case SelectAntigensSera::sera_only:
-                            put_int(out, 0, always, "A", comma_R4);
-                            break;
-                    }
-                    if (!modifier.legend.text.empty()) {
-                        comma_R4 = put_comma(out, comma_R4);
-                        fmt::format_to(std::back_inserter(out), "\"L\":{{\"p\":{},\"t\":\"{}\"}}", modifier.legend.priority, modifier.legend.text);
-                    }
-                    fmt::format_to(std::back_inserter(out), "}}");
-                }
-                fmt::format_to(std::back_inserter(out), "\n      ]");
-            }
+            comma_R2 = export_semantic_plot_spec_modifiers(out, style.modifiers, comma_R2);
+            comma_R2 = export_semantic_plot_spec_legend(out, style.legend, comma_R2);
+
             fmt::format_to(std::back_inserter(out), "\n   }}");
         }
         fmt::format_to(std::back_inserter(out), "\n  }}");
@@ -556,7 +584,7 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
 
     // ----------------------------------------------------------------------
 
-    export_semnatic_plot_spec(out, styles());
+    export_semantic_plot_spec(out, styles());
 
     // legacy lispmds stype plot specification
     //  "d" |     |     | array of integers       | drawing order, point indices
