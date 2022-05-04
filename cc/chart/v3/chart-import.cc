@@ -479,7 +479,7 @@ inline void read_legacy_plot_specification(ae::chart::v3::legacy::PlotSpec& targ
 
 // ----------------------------------------------------------------------
 
-inline void read_semantic_plot_style_modifier(ae::chart::v3::StyleModifier& target, ::simdjson::ondemand::object source)
+inline void read_semantic_plot_style_modifier(ae::chart::v3::semantic::StyleModifier& target, ::simdjson::ondemand::object source)
 {
     for (auto field : source) {
         const std::string_view key = field.unescaped_key();
@@ -492,8 +492,8 @@ inline void read_semantic_plot_style_modifier(ae::chart::v3::StyleModifier& targ
         }
         else if (key == "T") { // selector: {"C":"3C.2a"}
             for (auto selector_field : value.get_object()) {
-                if (target.semantic_selector.empty())
-                    target.semantic_selector = ae::chart::v3::SematicSelector{.attribute = std::string{static_cast<std::string_view>(selector_field.unescaped_key())},
+                if (target.selector.empty())
+                    target.selector = ae::chart::v3::semantic::Selector{.attribute = std::string{static_cast<std::string_view>(selector_field.unescaped_key())},
                                                                               .value = std::string{static_cast<std::string_view>(selector_field.value())}};
                 else
                     AD_WARNING("[chart semantic plot spec]: unhandled additional modifier selector {}: {}", static_cast<std::string_view>(selector_field.unescaped_key()), selector_field.value());
@@ -504,15 +504,15 @@ inline void read_semantic_plot_style_modifier(ae::chart::v3::StyleModifier& targ
             if (value.get(val)) // not bool
                 val = static_cast<int64_t>(value) != 0;
             if (val)
-                target.select_antigens_sera = ae::chart::v3::SelectAntigensSera::antigens_only;
+                target.select_antigens_sera = ae::chart::v3::semantic::SelectAntigensSera::antigens_only;
             else
-                target.select_antigens_sera = ae::chart::v3::SelectAntigensSera::sera_only;
+                target.select_antigens_sera = ae::chart::v3::semantic::SelectAntigensSera::sera_only;
         }
         else if (key == "D") { // drawing order: raise, lower, absent: no change
             if (const std::string_view val = value; val == "r")
-                target.order = ae::chart::v3::DrawingOrderModifier::raise;
+                target.order = ae::chart::v3::semantic::DrawingOrderModifier::raise;
             else if (val == "l")
-                target.order = ae::chart::v3::DrawingOrderModifier::lower;
+                target.order = ae::chart::v3::semantic::DrawingOrderModifier::lower;
             else
                 AD_WARNING("[chart semantic plot spec]: unrecognized drawing order modiifer \"{}\", \"r\" or \"l\" expected", val);
         }
@@ -525,7 +525,7 @@ inline void read_semantic_plot_style_modifier(ae::chart::v3::StyleModifier& targ
 //       |     | "p" | int                              | priority                                                                                                                                                       |
 //       |     | "t" | str                              | text                                                                                                                                                           |
 
-inline void read_semantic_plot_style(ae::chart::v3::Style& target, ::simdjson::ondemand::object source)
+inline void read_semantic_plot_style(ae::chart::v3::semantic::Style& target, ::simdjson::ondemand::object source)
 {
     for (auto field : source) {
         if (const std::string_view key = field.unescaped_key(); key == "z") {
@@ -591,7 +591,7 @@ inline void read_semantic_plot_style(ae::chart::v3::Style& target, ::simdjson::o
 //       |     | "s" | float                            | label size, default 1.0                                                                                                                                        |
 //       |     | "c" | color                            | label color, default: "black"                                                                                                                                  |
 
-inline void read_semantic_plot_specification(ae::chart::v3::Styles& target, ::simdjson::ondemand::object source)
+inline void read_semantic_plot_specification(ae::chart::v3::semantic::Styles& target, ::simdjson::ondemand::object source)
 {
     for (auto field : source)
         read_semantic_plot_style(target.find(field.unescaped_key()), field.value());

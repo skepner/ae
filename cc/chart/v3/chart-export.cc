@@ -425,23 +425,26 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
         fmt::format_to(std::back_inserter(out), "\n  ]");
     }
 
-    // "R" |      |     | key-value pairs       | sematic attributes based plot specifications, key: name of the style, value: style object
-    //     | "z"  |     | int                   | priority order when showing in GUI
-    //     | "T"  |     | str                   | title
-    //     | "V"  |     | [x, y, width, height] | viewport
-    //     | "A"  |     | list of objects       | modifiers to apply
-    //     |      | "R" | str                   | name ("N") of another plot spec to use (inherited from), applied before adding other changes provided by this object
-    //     |      | "T" | object                | {<name of semantic attribute>: <value>}
-    //     |      | "A" | bool                  | true: select antigens only, false: select sera only, absent: select antigens and sera
-    //     |      | "S" | str                   | shape: "C[IRCLE]" (default), "B[OX]", "T[RIANGLE]", "E[GG]", "U[GLYEGG]"
-    //     |      | "F" | color, str            | fill color
-    //     |      | "O" | color, str            | outline color
-    //     |      | "o" | float                 | outline width
-    //     |      | "s" | float                 | size, default 1.0
-    //     |      | "r" | float                 | rotation in radians, default 0.0
-    //     |      | "a" | float                 | aspect ratio, default 1.0
-    //     |      | "-" | boolean               | hide point and its label
-    //     |      | "D" | "r", "l"              | drawing order: raise, lower, absent: no change
+    // "R" |     |     | key-value pairs       | sematic attributes based plot specifications, key: name of the style, value: style object
+    //     | "z" |     | int                   | priority order when showing in GUI
+    //     | "T" |     | str                   | title
+    //     | "V" |     | [x, y, width, height] | viewport
+    //     | "A" |     | list of objects       | modifiers to apply
+    //     |     | "R" | str                   | name ("N") of another plot spec to use (inherited from), applied before adding other changes provided by this object
+    //     |     | "T" | object                | {<name of semantic attribute>: <value>}
+    //     |     | "A" | bool                  | true: select antigens only, false: select sera only, absent: select antigens and sera
+    //     |     | "S" | str                   | shape: "C[IRCLE]" (default), "B[OX]", "T[RIANGLE]", "E[GG]", "U[GLYEGG]"
+    //     |     | "F" | color, str            | fill color
+    //     |     | "O" | color, str            | outline color
+    //     |     | "o" | float                 | outline width
+    //     |     | "s" | float                 | size, default 1.0
+    //     |     | "r" | float                 | rotation in radians, default 0.0
+    //     |     | "a" | float                 | aspect ratio, default 1.0
+    //     |     | "-" | boolean               | hide point and its label
+    //     |     | "D" | "r", "l"              | drawing order: raise, lower, absent: no change
+    //     |     | "L" |     | object                | legend row                                                                                                                                                     |
+    //     |     |     | "p" | int                   | priority                                                                                                                                                       |
+    //     |     |     | "t" | str                   | text                                                                                                                                                           |
 
     if (!styles().empty()) {
         fmt::format_to(std::back_inserter(out), ",\n  \"R\": {{");
@@ -460,36 +463,39 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
                     comma_R3 = put_comma(comma_R3);
                     fmt::format_to(std::back_inserter(out), "\n        {{");
                     auto comma_R4 = put_str(modifier.parent, not_empty, "R", false);
-                    if (!modifier.semantic_selector.empty()) {
+                    if (!modifier.selector.empty()) {
                         comma_R4 = put_comma(comma_R4);
-                        fmt::format_to(std::back_inserter(out), "\"T\":{{\"{}\":\"{}\"}}", modifier.semantic_selector.attribute, modifier.semantic_selector.value);
+                        fmt::format_to(std::back_inserter(out), "\"T\":{{\"{}\":\"{}\"}}", modifier.selector.attribute, modifier.selector.value);
                     }
                     comma_R4 = put_point_style(modifier.point_style, false, comma_R4);
                     switch (modifier.order) {
-                        case DrawingOrderModifier::no_change:
+                        case semantic::DrawingOrderModifier::no_change:
                             break;
-                        case DrawingOrderModifier::raise:
+                        case semantic::DrawingOrderModifier::raise:
                             put_str("r", always, "D", comma_R4);
                             break;
-                        case DrawingOrderModifier::lower:
+                        case semantic::DrawingOrderModifier::lower:
                             put_str("l", always, "D", comma_R4);
                             break;
                     }
                     switch (modifier.select_antigens_sera) {
-                        case SelectAntigensSera::all:
+                        case semantic::SelectAntigensSera::all:
                             break;
-                        case SelectAntigensSera::antigens_only:
+                        case semantic::SelectAntigensSera::antigens_only:
                             put_int(1, always, "A", comma_R4);
                             break;
-                        case SelectAntigensSera::sera_only:
+                        case semantic::SelectAntigensSera::sera_only:
                             put_int(0, always, "A", comma_R4);
                             break;
+                    }
+                    if (!modifier.legend.text.empty()) {
+                        comma_R4 = put_comma(comma_R4);
+                        fmt::format_to(std::back_inserter(out), "\"L\":{{\"p\":{},\"t\":\"{}\"}}", modifier.legend.priority, modifier.legend.text);
                     }
                     fmt::format_to(std::back_inserter(out), "}}");
                 }
                 fmt::format_to(std::back_inserter(out), "\n      ]");
             }
-
             fmt::format_to(std::back_inserter(out), "\n   }}");
         }
         fmt::format_to(std::back_inserter(out), "\n  }}");

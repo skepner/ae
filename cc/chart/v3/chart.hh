@@ -51,8 +51,8 @@ namespace ae::chart::v3
         const Titers& titers() const { return titers_; }
         Projections& projections() { return projections_; }
         const Projections& projections() const { return projections_; }
-        Styles& styles() { return styles_; }
-        const Styles& styles() const { return styles_; }
+        semantic::Styles& styles() { return styles_; }
+        const semantic::Styles& styles() const { return styles_; }
         legacy::PlotSpec& legacy_plot_spec() { return legacy_plot_spec_; }
         const legacy::PlotSpec& legacy_plot_spec() const { return legacy_plot_spec_; }
 
@@ -83,7 +83,7 @@ namespace ae::chart::v3
         Sera sera_{};
         Titers titers_{};
         Projections projections_{};
-        Styles styles_{};
+        semantic::Styles styles_{};
         legacy::PlotSpec legacy_plot_spec_{};
 
         void read(const std::filesystem::path& filename);

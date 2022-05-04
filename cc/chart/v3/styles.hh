@@ -7,12 +7,12 @@
 
 // ----------------------------------------------------------------------
 
-namespace ae::chart::v3
+namespace ae::chart::v3::semantic
 {
     enum class DrawingOrderModifier { no_change, raise, lower };
     enum class SelectAntigensSera { all, antigens_only, sera_only };
 
-    struct SematicSelector
+    struct Selector
     {
         std::string attribute{};
         std::string value{};
@@ -20,13 +20,20 @@ namespace ae::chart::v3
         bool empty() const { return attribute.empty(); }
     };
 
+    struct LegendRow
+    {
+        int priority{0};
+        std::string text{};
+    };
+
     struct StyleModifier
     {
         std::string parent{};
-        SematicSelector semantic_selector{};
+        Selector selector{};
         SelectAntigensSera select_antigens_sera{SelectAntigensSera::all};
         PointStyle point_style{};
         DrawingOrderModifier order{DrawingOrderModifier::no_change};
+        LegendRow legend{};
     };
 
     struct Style
