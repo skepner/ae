@@ -177,6 +177,35 @@ const auto put_point_style = [](fmt::memory_buffer& out, const ae::chart::v3::Po
 
 // ----------------------------------------------------------------------
 
+static inline std::string format_hv_relative(ae::chart::v3::semantic::Legend::v_relative vrelative, ae::chart::v3::semantic::Legend::h_relative hrelative)
+{
+    using namespace ae::chart::v3::semantic;
+    std::string res{"tl"};
+    switch (vrelative) {
+        case Legend::v_relative::top:
+            res[0] = 't';
+            break;
+        case Legend::v_relative::bottom:
+            res[0] = 'b';
+            break;
+        case Legend::v_relative::center:
+            res[0] = 'c';
+            break;
+    }
+    switch (hrelative) {
+        case Legend::h_relative::left:
+            res[1] = 'l';
+            break;
+        case Legend::h_relative::right:
+            res[1] = 'r';
+            break;
+        case Legend::h_relative::center:
+            res[1] = 'c';
+            break;
+    }
+    return res;
+}
+
     //     | "L"  |     |     | object                           | legend data
     //     |      | "-" |     | bool                             | hidden
     //     |      | "O" |     | [x, y]                           | offset, relative to "p"
@@ -199,9 +228,19 @@ const auto put_point_style = [](fmt::memory_buffer& out, const ae::chart::v3::Po
 
 static inline bool export_semantic_plot_spec_legend(fmt::memory_buffer& out, const ae::chart::v3::semantic::Legend& legend, bool comma)
 {
+    using namespace ae::chart::v3;
+
     if (!legend.empty()) {
         comma = put_comma(out, comma);
         fmt::format_to(std::back_inserter(out), "\n      \"L\": {{");
+        auto comma_L2 = put_bool(out, !legend.shown, legend.shown, "-", false);
+        // offset
+        comma_L2 = put_str(out, format_hv_relative(legend.vrelative, legend.hrelative), [](std::string_view val) { return val != "tl"; }, "p", comma_L2);
+        // padding
+        if (legend.border != Color{"black"} || legend.border_width != 1.0 || legend.background != Color{"white"}) {
+            comma_L2 = put_comma(out, comma_L2);
+            fmt::format_to(std::back_inserter(out), "\"A\":{{\"O\":\"{}\",\"o\":{},\"F\":\"{}\"}}", legend.border, legend.border_width, legend.background);
+        }
         fmt::format_to(std::back_inserter(out), "}}");
     }
     return comma;
