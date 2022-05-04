@@ -442,9 +442,44 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
     //     |     | "a" | float                 | aspect ratio, default 1.0
     //     |     | "-" | boolean               | hide point and its label
     //     |     | "D" | "r", "l"              | drawing order: raise, lower, absent: no change
-    //     |     | "L" |     | object                | legend row                                                                                                                                                     |
-    //     |     |     | "p" | int                   | priority                                                                                                                                                       |
-    //     |     |     | "t" | str                   | text                                                                                                                                                           |
+    //     |     | "L" |     | object                | legend row
+    //     |     |     | "p" | int                   | priority
+    //     |     |     | "t" | str                   | text
+
+    //     | "L"  |     |     | object                           | legend data
+    //     |      | "-" |     | bool                             | hidden
+    //     |      | "O" |     | [x, y]                           | offset, relative to "p"
+    //     |      | "p" |     | "tl"                             | corner or center of the plot: t - top, c - center, b - bottom, l -left, r - right
+    //     |      | "P" |     | [top, right, bottom, left]       | padding
+    //     |      | "A" |     | object                           | plot spec of the area
+    //     |      |     | "O" | Color: black                     | border
+    //     |      |     | "o" | 1.0                              | outline width
+    //     |      |     | "F" | Color: white                     | fill
+    //     |      | "C" |     | bool                             | add counter
+    //     |      | "S" |     | 10.0                             | point size
+    //     |      | "T" |     | object                           | title
+    //     |      |     | "t" | str                              | title text
+    //     |      |     | "f" | str                              | font face
+    //     |      |     | "S" | str                              | font slant: "normal" (default), "italic"
+    //     |      |     | "W" | str                              | font weight: "normal" (default), "bold"
+    //     |      |     | "s" | float                            | label size, default 1.0
+    //     |      |     | "c" | color                            | label color, default: "black"
+    //     |      | "z" |     | bool                             | show rows with zero count
+    //     | "T"  |     |     | object                           | title data
+    //     |      | "-" |     | bool                             | hidden
+    //     |      | "O" |     | [x, y]                           | offset
+    //     |      | "P" |     | [top, right, bottom, left]       | padding
+    //     |      | "A" |     | object                           | plot spec of the area
+    //     |      |     | "O" | Color: black                     | border
+    //     |      |     | "o" | 1.0                              | outline width
+    //     |      |     | "F" | Color: white                     | fill
+    //     |      | "T" |     | object                           |
+    //     |      |     | "t" | str                              | title text
+    //     |      |     | "f" | str                              | font face
+    //     |      |     | "S" | str                              | font slant: "normal" (default), "italic"
+    //     |      |     | "W" | str                              | font weight: "normal" (default), "bold"
+    //     |      |     | "s" | float                            | label size, default 1.0
+    //     |      |     | "c" | color                            | label color, default: "black"
 
     if (!styles().empty()) {
         fmt::format_to(std::back_inserter(out), ",\n  \"R\": {{");
