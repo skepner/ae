@@ -78,7 +78,7 @@ const auto put_optional = []<typename Value>(fmt::memory_buffer& out, const std:
         return comma;
 };
 
-const auto put_double = [](fmt::memory_buffer& out, const auto& value, auto&& condition, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool
+const auto put_double = [](fmt::memory_buffer& out, double value, auto&& condition, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool
 {
     if (condition(value)) {
         put_comma_key(out, comma, key, after_comma);
@@ -233,7 +233,7 @@ static inline bool export_semantic_plot_spec_legend(fmt::memory_buffer& out, con
     if (!legend.empty()) {
         comma = put_comma(out, comma);
         fmt::format_to(std::back_inserter(out), "\n      \"L\": {{");
-        auto comma_L2 = put_bool(out, !legend.shown, legend.shown, "-", false);
+        auto comma_L2 = put_bool(out, !legend.shown, true, "-", false);
         // offset
         comma_L2 = put_str(out, format_hv_relative(legend.vrelative, legend.hrelative), [](std::string_view val) { return val != "tl"; }, "p", comma_L2);
         // padding
@@ -241,6 +241,10 @@ static inline bool export_semantic_plot_spec_legend(fmt::memory_buffer& out, con
             comma_L2 = put_comma(out, comma_L2);
             fmt::format_to(std::back_inserter(out), "\"A\":{{\"O\":\"{}\",\"o\":{},\"F\":\"{}\"}}", legend.border, legend.border_width, legend.background);
         }
+        comma_L2 = put_bool(out, legend.add_counter, true, "C", comma_L2);
+        comma_L2 = put_double(out, legend.point_size, [](double val) { return !float_equal(val, semantic::Legend::default_point_size); }, "S", comma_L2);
+        // title
+        comma_L2 = put_bool(out, legend.show_rows_with_zero_count, true, "z", comma_L2);
         fmt::format_to(std::back_inserter(out), "}}");
     }
     return comma;

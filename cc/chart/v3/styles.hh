@@ -31,6 +31,7 @@ namespace ae::chart::v3::semantic
     {
         enum class v_relative { top, center, bottom };
         enum class h_relative { left, center, right };
+        static constexpr double default_point_size = 16.0;
 
         bool shown{true};
         // Offset offset{10, 10};
@@ -41,7 +42,7 @@ namespace ae::chart::v3::semantic
         Float border_width{1.0};
         Color background{"white"};
         bool add_counter{true};
-        Float point_size{16.0};
+        Float point_size{default_point_size};
         bool show_rows_with_zero_count{true};
 
         // title
