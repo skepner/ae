@@ -352,6 +352,16 @@ inline void read_projections(ae::chart::v3::Projections& target, ::simdjson::ond
 
 // ----------------------------------------------------------------------
 
+inline void read_offset(ae::draw::v2::offset_t& target, ::simdjson::ondemand::array source)
+{
+    auto it = source.begin();
+    target.x = *it;
+    ++it;
+    target.y = *it;
+}
+
+// ----------------------------------------------------------------------
+
 // returns if key/value was processed
 inline bool read_point_style_field(ae::chart::v3::PointStyle& target, std::string_view key, ::simdjson::simdjson_result<::simdjson::ondemand::value> value)
 {
@@ -533,12 +543,28 @@ inline void read_semantic_plot_style_modifier(ae::chart::v3::semantic::StyleModi
 
 // ----------------------------------------------------------------------
 
-inline void read_offset(ae::draw::v2::offset_t& target, ::simdjson::ondemand::array source)
+inline void read_semantic_plot_style_area(ae::chart::v3::semantic::AreaStyle& target, ::simdjson::ondemand::object source)
 {
-    auto it = source.begin();
-    target.x = *it;
-    ++it;
-    target.y = *it;
+    for (auto field : source) {
+        if (const std::string_view key = field.unescaped_key(); key == "P") {
+            size_t ind{0};
+            for (double val : field.value().get_array()) {
+                target.padding[ind] = val;
+                ++ind;
+            }
+        }
+        else if (key == "O") {
+            target.border_color = static_cast<std::string_view>(field.value());
+        }
+        else if (key == "o") {
+            target.border_width = static_cast<double>(field.value());
+        }
+        else if (key == "F") {
+            target.background = static_cast<std::string_view>(field.value());
+        }
+        else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
+            unhandled_key({"c", "R", "<name>", "L", "A", key});
+    }
 }
 
 // ----------------------------------------------------------------------
@@ -552,17 +578,17 @@ inline void read_semantic_plot_style_legend(ae::chart::v3::semantic::Legend& tar
         else if (key == "p") {
             read_offset(target.offset, field.value());
         }
+        else if (key == "c") {  // corner relative
+            target.relative_from(field.value());
+        }
+        else if (key == "A") {
+            read_semantic_plot_style_area(target, field.value());
+        }
         else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
             unhandled_key({"c", "R", "<name>", "L", key});
     }
 }
 
-// |             |     |      | "c" |     | "tl"                             | corner or center of the plot: t - top, c - center, b - bottom, l -left, r - right                                                                              |
-// |             |     |      | "A" |     | object                           | plot spec of the area  -> AreaData                                                                                                                             |
-// |             |     |      |     | "P" | [top, right, bottom, left]       | padding                                                                                                                                                        |
-// |             |     |      |     | "O" | Color: black                     | border                                                                                                                                                         |
-// |             |     |      |     | "o" | 1.0                              | outline width                                                                                                                                                  |
-// |             |     |      |     | "F" | Color: white                     | fill                                                                                                                                                           |
 // |             |     |      | "C" |     | bool                             | add counter                                                                                                                                                    |
 // |             |     |      | "S" |     | 10.0                             | point size                                                                                                                                                     |
 // |             |     |      | "T" |     | object                           | title -> TextData                                                                                                                                              |
