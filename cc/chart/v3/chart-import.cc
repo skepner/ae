@@ -433,9 +433,12 @@ inline bool read_point_style_field(ae::chart::v3::PointStyle& target, std::strin
             case 'a': //  aspect ratio, default 1.0
                 target.aspect(ae::draw::v2::Aspect{value});
                 break;
-                // case 'l':  // label style
-                //     // unhandled_key({"c", "p", "P", key});
-                // break;
+            case 'l': // label style
+                for (auto label_field : value.get_object()) {
+                    if (const std::string_view label_key = label_field.unescaped_key(); !read_text_and_offset(target.label(), label_key, label_field.value()))
+                        unhandled_key({"c", "p", "P", "l", label_key});
+                }
+                break;
             default:
                 return false;
         }
@@ -444,19 +447,6 @@ inline bool read_point_style_field(ae::chart::v3::PointStyle& target, std::strin
     else
         return false;
 }
-
-//  "l" |     | key-value pairs                  | label style
-//      | "+" | boolean                          | if label is shown (legacy)
-//      | "-" | boolean                          | if label is hidden (semantic)
-//      | "p" | list of two floats               | label position (2D only), list of two doubles, default is [0, 1] means under point
-//      | "t" | str                              | label text if forced by user
-//      | "f" | str                              | font face
-//      | "S" | str                              | font slant: "normal" (default), "italic"
-//      | "W" | str                              | font weight: "normal" (default), "bold"
-//      | "s" | float                            | label size, default 1.0
-//      | "c" | color, str                       | label color, default: "black"
-//      | "r" | float                            | label rotation, default 0.0
-//      | "i" | float                            | addtional interval between lines as a fraction of line height, default 0.2
 
 // ----------------------------------------------------------------------
 
