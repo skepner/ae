@@ -1,6 +1,7 @@
 #include "utils/log.hh"
 #include "utils/timeit.hh"
 #include "utils/file.hh"
+#include "utils/string.hh"
 #include "chart/v3/chart.hh"
 
 // ----------------------------------------------------------------------
@@ -25,11 +26,24 @@ const auto put_comma_key = [](fmt::memory_buffer& out, bool comma, std::string_v
     return true;
 };
 
-const auto put_str = [](fmt::memory_buffer& out, const auto& value, auto&& condition, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool
+inline void format_str(fmt::memory_buffer& out, std::string_view str)
 {
+    fmt::format_to(std::back_inserter(out), "\"");
+    bool nl{false};
+    for (auto it = ae::string::split_iterator(str, "\n", ae::string::split_emtpy::keep); it != ae::string::split_iterator{}; ++it) {
+        if (nl)
+            fmt::format_to(std::back_inserter(out), "\\n");
+        else
+            nl = true;
+        fmt::format_to(std::back_inserter(out), "{}", *it);
+    }
+    fmt::format_to(std::back_inserter(out), "\"");
+}
+
+const auto put_str = [](fmt::memory_buffer& out, const auto& value, auto&& condition, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
     if (condition(value)) {
         comma = put_comma_key(out, comma, key, after_comma);
-        fmt::format_to(std::back_inserter(out), "\"{}\"", value);
+        format_str(out, fmt::format("{}", value));
     }
     return comma;
 };
@@ -63,7 +77,9 @@ const auto put_optional = []<typename Value>(fmt::memory_buffer& out, const std:
         comma = put_comma_key(out, comma, key, after_comma);
         if constexpr (std::is_same_v<Value, double>)
             fmt::format_to(std::back_inserter(out), "{}", double_to_str(*value));
-        else if constexpr (std::is_same_v<Value, std::string> || std::is_same_v<Value, ae::chart::v3::point_shape>)
+        else if constexpr (std::is_same_v<Value, std::string>)
+            format_str(out, *value);
+        else if constexpr (std::is_same_v<Value, ae::chart::v3::point_shape>)
             fmt::format_to(std::back_inserter(out), "\"{}\"", *value);
         else
             fmt::format_to(std::back_inserter(out), "{}", *value);

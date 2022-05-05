@@ -143,6 +143,34 @@ namespace ae::draw::v2
 
 // ----------------------------------------------------------------------
 
+template <> struct fmt::formatter<ae::draw::v2::font_slant_t> : fmt::formatter<ae::fmt_helper::default_formatter>
+{
+    template <typename FormatCtx> constexpr auto format(const ae::draw::v2::font_slant_t& slant, FormatCtx& ctx)
+    {
+        switch (slant.get()) {
+            case ae::draw::v2::font_slant_t::Normal:
+                return format_to(ctx.out(), "normal");
+            case ae::draw::v2::font_slant_t::Italic:
+                return format_to(ctx.out(), "italic");
+        }
+        return ctx.out();
+    }
+};
+
+template <> struct fmt::formatter<ae::draw::v2::font_weight_t> : fmt::formatter<ae::fmt_helper::default_formatter>
+{
+    template <typename FormatCtx> constexpr auto format(const ae::draw::v2::font_weight_t& weight, FormatCtx& ctx)
+    {
+        switch (weight.get()) {
+            case ae::draw::v2::font_weight_t::Normal:
+                return format_to(ctx.out(), "normal");
+            case ae::draw::v2::font_weight_t::Bold:
+                return format_to(ctx.out(), "bold");
+        }
+        return ctx.out();
+    }
+};
+
 template <> struct fmt::formatter<ae::draw::v2::text_style> : fmt::formatter<ae::fmt_helper::default_formatter>
 {
     template <typename FormatCtx> constexpr auto format(const ae::draw::v2::text_style& style, FormatCtx& ctx)

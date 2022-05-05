@@ -6,6 +6,41 @@
 
 namespace ae::py
 {
+    static inline std::vector<double> get(const ae::draw::v2::offset_t& offset)
+    {
+        return std::vector<double>{offset.x, offset.y};
+    }
+
+    static inline void put(ae::draw::v2::offset_t& offset, const std::vector<double>& src)
+    {
+        if (src.size() != 2)
+            throw std::runtime_error{"invalid offset"};
+        offset.x = src[0];
+        offset.y = src[1];
+    }
+
+    static inline std::string get(const ae::draw::v2::font_slant_t& slant)
+    {
+        return fmt::format("{}", slant);
+    }
+
+    static inline void put(ae::draw::v2::font_slant_t& slant, std::string_view src)
+    {
+        slant = ae::draw::v2::font_slant_t{src};
+    }
+
+    static inline std::string get(const ae::draw::v2::font_weight_t& weight)
+    {
+        return fmt::format("{}", weight);
+    }
+
+    static inline void put(ae::draw::v2::font_weight_t& weight, std::string_view src)
+    {
+        weight = ae::draw::v2::font_weight_t{src};
+    }
+
+    // ----------------------------------------------------------------------
+
     static inline ae::chart::v3::semantic::StyleModifier& add_modifier(ae::chart::v3::semantic::Style& style, const pybind11::kwargs& kwargs)
     {
         auto& modifier = style.modifiers.emplace_back();
@@ -133,20 +168,47 @@ void ae::py::chart_v3_plot_spec(pybind11::module_& chart_v3_submodule)
         .def_property(
             "point_size", [](const semantic::Legend& legend) { return static_cast<double>(legend.point_size); }, [](semantic::Legend& legend, double point_size) { legend.point_size = point_size; }) //
         .def_property(
-            "offset",
-            [](const semantic::Legend& legend) {
-                return std::vector<double>{legend.offset.x, legend.offset.y};
-            },
-            [](semantic::Legend& legend, const std::vector<double>& offset) {
-                if (offset.size() != 2)
-                    throw std::runtime_error{"invalid legend offset"};
-                legend.offset.x = offset[0];
-                legend.offset.y = offset[1];
-            }) //
+            "offset", [](const semantic::Legend& legend) { return ae::py::get(legend.offset); },
+            [](semantic::Legend& legend, const std::vector<double>& offset) { ae::py::put(legend.offset, offset); }) //
         ;
 
     pybind11::class_<semantic::Title, semantic::AreaStyle>(chart_v3_submodule, "SemanticTitle") //
-                                                                                                // ae::draw::v2::text_and_offset text{ae::draw::v2::offset_t{10.0, 10.0}};
+        .def_property(
+            "offset", [](const semantic::Title& title) { return ae::py::get(title.text.offset); },
+            [](semantic::Title& title, const std::vector<double>& offset) { ae::py::put(title.text.offset, offset); }) //
+        .def_property(
+            "text",
+            [](const semantic::Title& title) {
+                if (title.text.text.has_value())
+                    return *title.text.text;
+                else
+                    return std::string{};
+            },
+            [](semantic::Title& title, std::string_view text) { title.text.text = std::string{text}; }) //
+        .def_property(
+            "shown", [](const semantic::Title& title) { return title.text.shown; },
+            [](semantic::Title& title, bool shown) { title.text.shown = shown; }) //
+        .def_property(
+            "size", [](const semantic::Title& title) { return title.text.size; },
+            [](semantic::Title& title, double size) { title.text.size = size; }) //
+        .def_property(
+            "color", [](const semantic::Title& title) { return fmt::format("{}", title.text.color); },
+            [](semantic::Title& title, std::string_view color) { title.text.color = color; }) //
+        .def_property(
+            "slant", [](const semantic::Title& title) { return ae::py::get(title.text.slant); },
+            [](semantic::Title& title, std::string_view slant) { ae::py::put(title.text.slant, slant); }) //
+        .def_property(
+            "weight", [](const semantic::Title& title) { return ae::py::get(title.text.weight); },
+            [](semantic::Title& title, std::string_view weight) { ae::py::put(title.text.weight, weight); }) //
+        .def_property(
+            "font_family", [](const semantic::Title& title) { return title.text.font_family; },
+            [](semantic::Title& title, std::string_view font_family) { title.text.font_family = font_family; }) //
+        .def_property(
+            "rotation", [](const semantic::Title& title) { return *title.text.rotation; },
+            [](semantic::Title& title, double rotation) { title.text.rotation = Rotation{rotation}; }) //
+        .def_property(
+            "interline", [](const semantic::Title& title) { return static_cast<double>(title.text.interline); },
+            [](semantic::Title& title, double interline) { title.text.interline = interline; }) //
         ;
 }
 
