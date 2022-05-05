@@ -16,34 +16,31 @@ const auto put_comma = [](fmt::memory_buffer& out, bool comma) -> bool
     return true;
 };
 
-const auto put_comma_key = [](fmt::memory_buffer& out, bool comma, std::string_view key, std::string_view after_comma)
+const auto put_comma_key = [](fmt::memory_buffer& out, bool comma, std::string_view key, std::string_view after_comma = {}) -> bool
 {
     put_comma(out, comma);
     if (!after_comma.empty())
         fmt::format_to(std::back_inserter(out), "{}", after_comma);
     fmt::format_to(std::back_inserter(out), "\"{}\":", key);
+    return true;
 };
 
 const auto put_str = [](fmt::memory_buffer& out, const auto& value, auto&& condition, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool
 {
     if (condition(value)) {
-        put_comma_key(out, comma, key, after_comma);
+        comma = put_comma_key(out, comma, key, after_comma);
         fmt::format_to(std::back_inserter(out), "\"{}\"", value);
-        return true;
     }
-    else
-        return comma;
+    return comma;
 };
 
 const auto put_int = [](fmt::memory_buffer& out, auto value, auto&& condition, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool
 {
     if (condition(value)) {
-        put_comma_key(out, comma, key, after_comma);
+        comma = put_comma_key(out, comma, key, after_comma);
         fmt::format_to(std::back_inserter(out), "{}", value);
-        return true;
     }
-    else
-        return comma;
+    return comma;
 };
 
 const auto double_to_str = [](auto value) -> std::string {
@@ -55,66 +52,56 @@ const auto double_to_str = [](auto value) -> std::string {
 
 const auto put_bool = [](fmt::memory_buffer& out, bool value, bool dflt, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
     if (value != dflt) {
-        put_comma_key(out, comma, key, after_comma);
+        comma = put_comma_key(out, comma, key, after_comma);
         fmt::format_to(std::back_inserter(out), "{}", value);
-        return true;
     }
-    else
-        return comma;
+    return comma;
 };
 
 const auto put_optional = []<typename Value>(fmt::memory_buffer& out, const std::optional<Value>& value, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool {
     if (value.has_value()) {
-        put_comma_key(out, comma, key, after_comma);
+        comma = put_comma_key(out, comma, key, after_comma);
         if constexpr (std::is_same_v<Value, double>)
             fmt::format_to(std::back_inserter(out), "{}", double_to_str(*value));
         else if constexpr (std::is_same_v<Value, std::string> || std::is_same_v<Value, ae::chart::v3::point_shape>)
             fmt::format_to(std::back_inserter(out), "\"{}\"", *value);
         else
             fmt::format_to(std::back_inserter(out), "{}", *value);
-        return true;
     }
-    else
-        return comma;
+    return comma;
 };
 
 const auto put_double = [](fmt::memory_buffer& out, double value, auto&& condition, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool
 {
     if (condition(value)) {
-        put_comma_key(out, comma, key, after_comma);
+        comma = put_comma_key(out, comma, key, after_comma);
         fmt::format_to(std::back_inserter(out), "{}", double_to_str(value));
-        return true;
     }
-    else
-        return comma;
+    return comma;
 };
 
 const auto put_array_str = [](fmt::memory_buffer& out, const auto& value, auto&& condition, std::string_view key, bool comma) -> bool
 {
     if (condition(value)) {
-        put_comma(out, comma);
+        comma = put_comma(out, comma);
         fmt::format_to(std::back_inserter(out), "\"{}\":[\"{}\"]", key, fmt::join(value, "\",\""));
-        return true;
     }
-    else
-        return comma;
+    return comma;
 };
 
 const auto put_array_int = [](fmt::memory_buffer& out, const auto& value, auto&& condition, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool
 {
     if (condition(value)) {
-        put_comma_key(out, comma, key, after_comma);
+        comma = put_comma_key(out, comma, key, after_comma);
         fmt::format_to(std::back_inserter(out), "[{}]", fmt::join(value, ","));
-        return true;
     }
-    else
-        return comma;
+    return comma;
 };
 
 const auto put_array_double = [](fmt::memory_buffer& out, const auto& value, auto&& condition, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool
 {
     if (condition(value)) {
-        put_comma_key(out, comma, key, after_comma);
+        comma = put_comma_key(out, comma, key, after_comma);
         fmt::format_to(std::back_inserter(out), "[");
         bool comma2 = false;
         for (const auto en : value) {
@@ -122,16 +109,14 @@ const auto put_array_double = [](fmt::memory_buffer& out, const auto& value, aut
             fmt::format_to(std::back_inserter(out), "{}", double_to_str(en));
         }
         fmt::format_to(std::back_inserter(out), "]");
-        return true;
     }
-    else
-        return comma;
+    return comma;
 };
 
 const auto put_insertions = [](fmt::memory_buffer& out, const ae::sequences::insertions_t& insertions, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool
 {
     if (!insertions.empty()) {
-        put_comma_key(out, comma, key, after_comma);
+        comma = put_comma_key(out, comma, key, after_comma);
         fmt::format_to(std::back_inserter(out), "[");
         bool comma2 = false;
         for (const auto& en : insertions) {
@@ -139,7 +124,6 @@ const auto put_insertions = [](fmt::memory_buffer& out, const ae::sequences::ins
             fmt::format_to(std::back_inserter(out), "[{}, \"{}\"]", en.pos, en.insertion); // pos0_t and pos1_t are both formatted as pos1
         }
         fmt::format_to(std::back_inserter(out), "]");
-        return true;
     }
     return comma;
 };
@@ -147,24 +131,75 @@ const auto put_insertions = [](fmt::memory_buffer& out, const ae::sequences::ins
 const auto put_semantic = [](fmt::memory_buffer& out, const ae::chart::v3::SemanticAttributes& value, auto&& condition, std::string_view key, bool comma, std::string_view after_comma = {}) -> bool
 {
     if (condition(value)) {
-        put_comma_key(out, comma, key, after_comma);
+        comma = put_comma_key(out, comma, key, after_comma);
         fmt::format_to(std::back_inserter(out), "{{");
         [[maybe_unused]] auto comma_inside = put_array_str(out, value.clades, not_empty, "C", false);
         fmt::format_to(std::back_inserter(out), "}}");
-        return true;
     }
-    else
-        return comma;
+    return comma;
 };
 
-const auto put_point_style = [](fmt::memory_buffer& out, const ae::chart::v3::PointStyle& style, bool shown_as_plus, bool comma) -> bool {
-    if (style.shown().has_value()) {
-        const auto shown = *style.shown();
-        if (shown_as_plus)
-            comma = put_bool(out, shown, !shown, "+", comma);
-        else
-            comma = put_bool(out, !shown, shown, "-", comma);
+// ----------------------------------------------------------------------
+
+static inline bool export_shown(fmt::memory_buffer& out, bool shown, bool hidden_as_minus, bool comma)
+{
+    if (!shown) {
+        if (hidden_as_minus) {
+            comma = put_comma_key(out, comma, "-");
+            fmt::format_to(std::back_inserter(out), "true");
+        }
+        else {
+            comma = put_comma_key(out, comma, "+");
+            fmt::format_to(std::back_inserter(out), "false");
+        }
     }
+    return comma;
+}
+
+static inline bool export_text_style(fmt::memory_buffer& out, const ae::draw::v2::text_style& text_style, bool hidden_as_minus, bool comma)
+{
+    const ae::draw::v2::text_style dflt{};
+
+    comma = export_shown(out, text_style.shown, hidden_as_minus, comma);
+    comma = put_double(
+        out, text_style.size, [&dflt](const auto& size) { return size != dflt.size; }, "s", comma);
+    comma = put_str(
+        out, text_style.color, [&dflt](const auto& color) { return color != dflt.color; }, "c", comma);
+    comma = put_str(
+        out, text_style.slant, [&dflt](const auto& slant) { return slant != dflt.slant; }, "S", comma);
+    comma = put_str(
+        out, text_style.weight, [&dflt](const auto& weight) { return weight != dflt.weight; }, "W", comma);
+    comma = put_str(
+        out, text_style.font_family, [&dflt](const auto& font_family) { return font_family != dflt.font_family; }, "f", comma);
+    comma = put_double(
+        out, *text_style.rotation, [&dflt](const auto& rotation) { return !float_equal(rotation, *dflt.rotation); }, "r", comma);
+    comma = put_double(
+        out, text_style.interline, [&dflt](const auto& interline) { return interline != dflt.interline; }, "i", comma);
+
+    return comma;
+}
+
+static inline bool export_text_data(fmt::memory_buffer& out, const ae::draw::v2::text_data& text_data, bool hidden_as_minus, bool comma)
+{
+    comma = put_optional(out, text_data.text, "t", comma);
+    return export_text_style(out, text_data, hidden_as_minus, comma);
+}
+
+static inline bool export_text_and_offset(fmt::memory_buffer& out, const ae::draw::v2::text_and_offset& text_offset, const ae::draw::v2::text_and_offset& dflt, bool hidden_as_minus, bool comma)
+{
+    if (text_offset.offset != dflt.offset) {
+        comma = put_comma(out, comma);
+        fmt::format_to(std::back_inserter(out), "\"p\":[{},{}]", ae::format_double(text_offset.offset.x), ae::format_double(text_offset.offset.y));
+    }
+    return export_text_data(out, text_offset, hidden_as_minus, comma);
+}
+
+// ----------------------------------------------------------------------
+
+static inline bool export_point_style(fmt::memory_buffer& out, const ae::chart::v3::PointStyle& style, bool hidden_as_minus, bool comma)
+{
+    if (style.shown().has_value())
+        comma = export_shown(out, *style.shown(), hidden_as_minus, comma);
     comma = put_str(out, style.fill(), not_empty, "F", comma);
     comma = put_str(out, style.outline(), not_empty, "O", comma);
     comma = put_optional(out, style.outline_width(), "o", comma);
@@ -172,10 +207,18 @@ const auto put_point_style = [](fmt::memory_buffer& out, const ae::chart::v3::Po
     comma = put_optional(out, style.size(), "s", comma);
     comma = put_optional(out, style.rotation(), "r", comma);
     comma = put_optional(out, style.aspect(), "a", comma);
+
+    if (const ae::draw::v2::point_label dflt{}; style.label() != dflt) {
+        comma = put_comma(out, comma);
+        fmt::format_to(std::back_inserter(out), "\"l\":{{");
+        export_text_and_offset(out, style.label(), dflt, hidden_as_minus, false);
+        fmt::format_to(std::back_inserter(out), "}}");
+    }
     return comma;
 };
 
 // ----------------------------------------------------------------------
+
 
 static inline std::string format_hv_relative(ae::chart::v3::semantic::Legend::v_relative vrelative, ae::chart::v3::semantic::Legend::h_relative hrelative)
 {
@@ -284,7 +327,7 @@ static inline bool export_semantic_plot_spec_modifiers(fmt::memory_buffer& out, 
                 comma_R4 = put_comma(out, comma_R4);
                 fmt::format_to(std::back_inserter(out), "\"T\":{{\"{}\":\"{}\"}}", modifier.selector.attribute, modifier.selector.value);
             }
-            comma_R4 = put_point_style(out, modifier.point_style, false, comma_R4);
+            comma_R4 = export_point_style(out, modifier.point_style, true, comma_R4);
             switch (modifier.order) {
                 case DrawingOrderModifier::no_change:
                     break;
@@ -359,6 +402,50 @@ static inline void export_semantic_plot_spec(fmt::memory_buffer& out, const ae::
             comma_R2 = export_semantic_plot_spec_legend(out, style.legend, comma_R2);
 
             fmt::format_to(std::back_inserter(out), "\n   }}");
+        }
+        fmt::format_to(std::back_inserter(out), "\n  }}");
+    }
+}
+
+// ----------------------------------------------------------------------
+
+    // legacy lispmds stype plot specification
+    //  "d" |     |     | array of integers       | drawing order, point indices
+    //  "E" |     |     | key-value pairs         | error line positive, default: {"c": "blue"}
+    //  "e" |     |     | key-value pairs         | error line negative, default: {"c": "red"}
+    //  "g" |     |     | ?                       | ? grid data
+    //  "P" |     |     | array of key-value pairs| list of plot styles
+    //      | "+" |     | boolean                 | if point is shown, default is true, disconnected points are usually not shown and having NaN coordinates in layout
+    //      | "F" |     | color, str              | fill color: #FF0000 or T[RANSPARENT] or color name (red, green, blue, etc.), default is transparent
+    //      | "O" |     | color, str              | outline color: #000000 or T[RANSPARENT] or color name (red, green, blue, etc.), default is black
+    //      | "o" |     | float                   | outline width, default 1.0
+    //      | "S" |     | str                     | shape: "C[IRCLE]" (default), "B[OX]", "T[RIANGLE]", "E[GG]", "U[GLYEGG]"
+    //      | "s" |     | float                   | size, default 1.0
+    //      | "r" |     | float                   | rotation in radians, default 0.0
+    //      | "a" |     | float                   | aspect ratio, default 1.0
+    //  "p" |     |     | array of integers       | index in "P" for each point, antigens followed by sera
+    //  "l" |     |     | array of integers       | ? for each procrustes line, index in the "L" list
+    //  "L" |     |     | array                   | ? list of procrustes lines styles "s"
+    //      |     |     | array of integers       | list of point indices for point shown on all maps in the time series
+    //  "t" |     |     | key-value pairs         | ? title style
+
+static inline void export_legacy_plot_spec(fmt::memory_buffer& out, const ae::chart::v3::legacy::PlotSpec& plot_spec)
+{
+    if (!plot_spec.empty()) {
+        fmt::format_to(std::back_inserter(out), ",\n  \"p\": {{");
+        auto comma10 = put_array_int(out, plot_spec.drawing_order(), not_empty, "d", false, "\n   ");
+        comma10 = put_array_int(out, plot_spec.style_for_point(), not_empty, "p", comma10, "\n   ");
+        if (!plot_spec.styles().empty()) {
+            comma10 = put_comma(out, comma10);
+            fmt::format_to(std::back_inserter(out), "\n   \"P\": [");
+            bool comma11 = false;
+            for (const auto& style : plot_spec.styles()) {
+                comma11 = put_comma(out, comma11);
+                fmt::format_to(std::back_inserter(out), "\n    {{");
+                export_point_style(out, style, false, false);
+                fmt::format_to(std::back_inserter(out), "}}");
+            }
+            fmt::format_to(std::back_inserter(out), "\n   ]");
         }
         fmt::format_to(std::back_inserter(out), "\n  }}");
     }
@@ -628,76 +715,7 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
     // ----------------------------------------------------------------------
 
     export_semantic_plot_spec(out, styles());
-
-    // legacy lispmds stype plot specification
-    //  "d" |     |     | array of integers       | drawing order, point indices
-    //  "E" |     |     | key-value pairs         | error line positive, default: {"c": "blue"}
-    //  "e" |     |     | key-value pairs         | error line negative, default: {"c": "red"}
-    //  "g" |     |     | ?                       | ? grid data
-    //  "P" |     |     | array of key-value pairs| list of plot styles
-    //      | "+" |     | boolean                 | if point is shown, default is true, disconnected points are usually not shown and having NaN coordinates in layout
-    //      | "F" |     | color, str              | fill color: #FF0000 or T[RANSPARENT] or color name (red, green, blue, etc.), default is transparent
-    //      | "O" |     | color, str              | outline color: #000000 or T[RANSPARENT] or color name (red, green, blue, etc.), default is black
-    //      | "o" |     | float                   | outline width, default 1.0
-    //      | "S" |     | str                     | shape: "C[IRCLE]" (default), "B[OX]", "T[RIANGLE]", "E[GG]", "U[GLYEGG]"
-    //      | "s" |     | float                   | size, default 1.0
-    //      | "r" |     | float                   | rotation in radians, default 0.0
-    //      | "a" |     | float                   | aspect ratio, default 1.0
-    //      | "l" |     | key-value pairs         | label style
-    //      |     | "+" | boolean                 | if label is shown
-    //      |     | "p" | list of two floats      | label position (2D only), list of two doubles, default is [0, 1] means under point
-    //      |     | "t" | str                     | label text if forced by user
-    //      |     | "f" | str                     | font face
-    //      |     | "S" | str                     | font slant: "normal" (default), "italic"
-    //      |     | "W" | str                     | font weight: "normal" (default), "bold"
-    //      |     | "s" | float                   | label size, default 1.0
-    //      |     | "c" | color, str              | label color, default: "black"
-    //      |     | "r" | float                   | label rotation, default 0.0
-    //      |     | "i" | float                   | addtional interval between lines as a fraction of line height, default 0.2
-    //  "p" |     |     | array of integers       | index in "P" for each point, antigens followed by sera
-    //  "l" |     |     | array of integers       | ? for each procrustes line, index in the "L" list
-    //  "L" |     |     | array                   | ? list of procrustes lines styles "s"
-    //      |     |     | array of integers       | list of point indices for point shown on all maps in the time series
-    //  "t" |     |     | key-value pairs         | ? title style
-
-    if (const auto& plot_spec = legacy_plot_spec(); !plot_spec.empty()) {
-        fmt::format_to(std::back_inserter(out), ",\n  \"p\": {{");
-        auto comma10 = put_array_int(out, plot_spec.drawing_order(), not_empty, "d", false, "\n   ");
-        comma10 = put_array_int(out, plot_spec.style_for_point(), not_empty, "p", comma10, "\n   ");
-        if (!plot_spec.styles().empty()) {
-            comma10 = put_comma(out, comma10);
-            fmt::format_to(std::back_inserter(out), "\n   \"P\": [");
-            bool comma11 = false;
-            for (const auto& style : plot_spec.styles()) {
-                comma11 = put_comma(out, comma11);
-                fmt::format_to(std::back_inserter(out), "\n    {{");
-                auto comma12 = put_point_style(out, style, true, false);
-                if (const auto& label_style = style.label(); !label_style.empty()) {
-                    comma12 = put_comma(out, comma12);
-                    fmt::format_to(std::back_inserter(out), "\"l\":{{");
-                    auto comma13 = put_optional(out, style.label_text(), "t", false);
-                    comma13 = put_bool(out, label_style.shown, true, "+", comma13);
-                    // "p" offset
-                    comma13 = put_str(
-                        out, label_style.color, [](const auto& color) { return color != Color{"black"}; }, "c", comma13);
-                    comma13 = put_str(
-                        out, label_style.style.slant, [](const auto& slant) { return slant != ae::draw::v2::font_slant_t{"normal"}; }, "S", comma13);
-                    comma13 = put_str(
-                        out, label_style.style.weight, [](const auto& weight) { return weight != ae::draw::v2::font_weight_t{"normal"}; }, "W", comma13);
-                    comma13 = put_str(out, label_style.style.font_family, not_empty, "f", comma13);
-                    //      |     | "s" | float                   | label size, default 1.0
-                    //      |     | "r" | float                   | label rotation, default 0.0
-                    comma13 = put_double(
-                        out, label_style.interline, [](double interline) { return !float_equal(interline, 0.2); }, "i", comma13);
-                    fmt::format_to(std::back_inserter(out), "}}");
-                }
-
-                fmt::format_to(std::back_inserter(out), "}}");
-            }
-            fmt::format_to(std::back_inserter(out), "\n   ]");
-        }
-        fmt::format_to(std::back_inserter(out), "\n  }}");
-    }
+    export_legacy_plot_spec(out, legacy_plot_spec());
 
     // -----+-----+-----+-----+----------------------------------+---------------------------------------------------------------------------------------------------------------------
     //  "x" |     |     |     | key-value pairs                  | extensions not used by acmacs

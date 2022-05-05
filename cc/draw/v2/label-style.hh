@@ -1,10 +1,10 @@
 #pragma once
 
-#include <string_view>
 
 #include "ext/fmt.hh"
 #include "utils/float.hh"
 #include "draw/v2/color.hh"
+#include "draw/v2/rotation.hh"
 
 // ----------------------------------------------------------------------
 
@@ -40,6 +40,8 @@ namespace ae::draw::v2
 
     }; // class font_slant_t
 
+    inline bool is_default(const font_slant_t& slant) { return slant == font_slant_t{}; }
+
 // ----------------------------------------------------------------------
 
     class font_weight_t
@@ -72,44 +74,107 @@ namespace ae::draw::v2
 
     }; // class font_weight_t
 
+    inline bool is_default(const font_weight_t& weight) { return weight == font_weight_t{}; }
+
     // ----------------------------------------------------------------------
 
-    class text_style
+    struct text_style
     {
-     public:
         text_style() = default;
         text_style(std::string_view font_name) : font_family{font_name} {}
-
         bool operator==(const text_style&) const = default;
 
-        bool empty() const { return slant == font_slant_t{} && weight == font_weight_t{} && font_family.empty(); }
-
+        bool shown{true};
+        Float size{16.0};
+        Color color{"black"};
         font_slant_t slant{};
         font_weight_t weight{};
         std::string font_family{};
+        Rotation rotation{NoRotation};
+        Float interline{0.2};
 
     }; // class text_style
 
+    inline bool is_default(const text_style& ts) { return ts == text_style{}; }
+
     // ----------------------------------------------------------------------
 
-    class label_style
+    struct text_data : public text_style
     {
-      public:
-        label_style() = default;
+        text_data() = default;
+        bool operator==(const text_data&) const = default;
 
-        bool operator==(const label_style&) const = default;
-
-        bool empty() const { return shown && color == Color{"black"} && float_equal(interline, 0.2) && style.empty(); }
-
-        bool shown{true};
-        // ae::draw::v1::Offset offset{0, 1};
-        // ae::draw::v1::Pixels size{10.0};
-        Color color{"black"};
-        // ae::draw::v1::Rotation rotation{ae::draw::v1::NoRotation};
-        double interline{0.2};
-        text_style style{};
+        std::optional<std::string> text{};
     };
 
+    inline bool is_default(const text_data& td) { return td == text_data{}; }
+
+    // ----------------------------------------------------------------------
+
+    struct offset_t
+    {
+        Float x{0.0}, y{0.0};
+
+        bool operator==(const offset_t&) const = default;
+    };
+
+    // ----------------------------------------------------------------------
+
+    struct text_and_offset : public text_data
+    {
+        text_and_offset() = default;
+        text_and_offset(offset_t&& offs) : offset{std::move(offs)} {}
+        bool operator==(const text_and_offset&) const = default;
+
+        offset_t offset;
+    };
+
+    inline bool is_default(const text_and_offset& to) { return to == text_and_offset{}; }
+
+    // ----------------------------------------------------------------------
+
+    struct point_label : public text_and_offset
+    {
+        point_label() : text_and_offset(offset_t{0.0, 1.0}) {}
+    };
+
+    inline bool is_default(const point_label& pl) { return pl == point_label{}; }
+
 } // namespace ae::draw::v2
+
+// ----------------------------------------------------------------------
+
+template <> struct fmt::formatter<ae::draw::v2::text_style> : fmt::formatter<ae::fmt_helper::default_formatter>
+{
+    template <typename FormatCtx> constexpr auto format(const ae::draw::v2::text_style& style, FormatCtx& ctx)
+    {
+        return format_to(ctx.out(), "shown:{}, color:\"{}\", slant:{}, weight:{} family:\"{}\", rotation:{}, interline:{}", style.shown, style.color, style.slant, style.weight, style.font_family,
+                         style.rotation, style.interline);
+    }
+};
+
+template <> struct fmt::formatter<ae::draw::v2::text_data> : fmt::formatter<ae::fmt_helper::default_formatter>
+{
+    template <typename FormatCtx> constexpr auto format(const ae::draw::v2::text_data& data, FormatCtx& ctx)
+    {
+        return format_to(ctx.out(), "{}, text:{}", static_cast<const ae::draw::v2::text_style&>(data), data.text);
+    }
+};
+
+template <> struct fmt::formatter<ae::draw::v2::offset_t> : fmt::formatter<ae::fmt_helper::default_formatter>
+{
+    template <typename FormatCtx> constexpr auto format(const ae::draw::v2::offset_t& offset, FormatCtx& ctx)
+    {
+        return format_to(ctx.out(), "[{}, {}]", offset.x, offset.y);
+    }
+};
+
+template <> struct fmt::formatter<ae::draw::v2::text_and_offset> : fmt::formatter<ae::fmt_helper::default_formatter>
+{
+    template <typename FormatCtx> constexpr auto format(const ae::draw::v2::text_and_offset& to, FormatCtx& ctx)
+    {
+        return format_to(ctx.out(), "{}, offset:{}", static_cast<const ae::draw::v2::text_data&>(to), to.offset);
+    }
+};
 
 // ----------------------------------------------------------------------

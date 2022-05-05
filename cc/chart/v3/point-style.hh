@@ -3,7 +3,6 @@
 #include <optional>
 
 #include "draw/v2/label-style.hh"
-#include "draw/v2/rotation.hh"
 #include "chart/v3/point-shape.hh"
 
 // ----------------------------------------------------------------------
@@ -41,10 +40,8 @@ namespace ae::chart::v3
         void aspect(Aspect a_aspect) noexcept { aspect_ = a_aspect; }
         std::optional<point_shape> shape() const noexcept { return shape_; }
         void shape(point_shape a_shape) noexcept { shape_ = a_shape; }
-        const ae::draw::v2::label_style& label() const noexcept { return label_; }
-        ae::draw::v2::label_style& label() noexcept { return label_; }
-        std::optional<std::string_view> label_text() const noexcept { return label_text_; }
-        void label_text(std::string_view a_label_text) noexcept { label_text_ = a_label_text; }
+        const ae::draw::v2::point_label& label() const noexcept { return label_; }
+        ae::draw::v2::point_label& label() noexcept { return label_; }
 
       private:
         std::optional<bool> shown_;
@@ -55,12 +52,9 @@ namespace ae::chart::v3
         std::optional<Rotation> rotation_;
         std::optional<Aspect> aspect_;
         std::optional<point_shape> shape_;
-        ae::draw::v2::label_style label_;
-        std::optional<std::string> label_text_;
-
+        ae::draw::v2::point_label label_;
     }; // class PointStyle
-
-}
+} // namespace ae::chart::v3
 
 // ----------------------------------------------------------------------
 
@@ -87,13 +81,7 @@ template <> struct fmt::formatter<ae::chart::v3::PointStyle> : fmt::formatter<ae
         comma = out("size"sv, style.size(), "{}", comma);
         comma = out("aspect"sv, style.aspect(), "{}", comma);
         comma = out("rotation"sv, style.rotation(), "{}", comma);
-        comma = out("label_text"sv, style.label_text(), "{}", comma);
-        if (const auto& label = style.label(); !label.empty()) {
-            if (comma)
-                format_to(ctx.out(), ", ");
-            format_to(ctx.out(), "\"label\": {}", label);
-            comma = true;
-        }
+        comma = out("label"sv, style.label(), "{}", comma);
         return format_to(ctx.out(), "}}");
     }
 };

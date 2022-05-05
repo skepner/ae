@@ -27,6 +27,8 @@
 
 #pragma GCC diagnostic pop
 
+#include <optional>
+
 // ======================================================================
 
 namespace ae::fmt_helper
@@ -118,5 +120,18 @@ namespace ae
             return res;
     }
 } // namespace ae
+
+// ----------------------------------------------------------------------
+
+template <> struct fmt::formatter<std::optional<std::string>> : fmt::formatter<ae::fmt_helper::default_formatter>
+{
+    template <typename FormatCtx> constexpr auto format(const std::optional<std::string>& str, FormatCtx& ctx)
+    {
+        if (str.has_value())
+            return format_to(ctx.out(), "\"{}\"", *str);
+        else
+            return format_to(ctx.out(), "<none>");
+    }
+};
 
 // ----------------------------------------------------------------------
