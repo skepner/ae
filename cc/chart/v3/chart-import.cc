@@ -362,6 +362,45 @@ inline void read_offset(ae::draw::v2::offset_t& target, ::simdjson::ondemand::ar
 
 // ----------------------------------------------------------------------
 
+inline bool read_text_and_offset(ae::draw::v2::text_and_offset& target, std::string_view key, ::simdjson::ondemand::value value)
+{
+    if (key == "-") {
+        target.shown = !value;
+    }
+    else if (key == "p") {
+        read_offset(target.offset, value);
+    }
+    else if (key == "t") {
+        target.text = std::string{static_cast<std::string_view>(value)};
+    }
+    else if (key == "s") {
+        target.size = static_cast<double>(value);
+    }
+    else if (key == "c") {
+        target.color = ae::chart::v3::Color{value};
+    }
+    else if (key == "S") {
+        target.slant = ae::draw::v2::font_slant_t{value};
+    }
+    else if (key == "W") {
+        target.weight = ae::draw::v2::font_weight_t{value};
+    }
+    else if (key == "f") {
+        target.font_family = static_cast<std::string_view>(value);
+    }
+    else if (key == "r") {
+        target.rotation = ae::draw::v2::Rotation{value};
+    }
+    else if (key == "i") {
+        target.interline = static_cast<double>(value);
+    }
+    else
+        return false;
+    return true;
+}
+
+// ----------------------------------------------------------------------
+
 // returns if key/value was processed
 inline bool read_point_style_field(ae::chart::v3::PointStyle& target, std::string_view key, ::simdjson::simdjson_result<::simdjson::ondemand::value> value)
 {
@@ -572,27 +611,16 @@ inline void read_semantic_plot_style_area(ae::chart::v3::semantic::AreaStyle& ta
 inline void read_semantic_plot_style_title(ae::chart::v3::semantic::Title& target, ::simdjson::ondemand::object source)
 {
     for (auto field : source) {
-        if (const std::string_view key = field.unescaped_key(); key == "-") {
-            target.text.shown = !field.value();
+        if (const std::string_view key = field.unescaped_key(); key == "A") {
+            read_semantic_plot_style_area(target, field.value());
+        }
+        else if (read_text_and_offset(target.text, key, field.value())) {
+            // pass
         }
         else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
             unhandled_key({"c", "R", "<name>", "T", key});
     }
 }
-
-// |             |     |      | "-" |     | bool                             | hidden                                                                                                                                                         |
-// |             |     |      | "p" |     | [x, y]                           | offset                                                                                                                                                         |
-// |             |     |      | "A" |     | object                           | plot spec of the area -> AreaData                                                                                                                              |
-// |             |     |      |     | "P" | [top, right, bottom, left]       | padding                                                                                                                                                        |
-// |             |     |      |     | "O" | Color: black                     | border                                                                                                                                                         |
-// |             |     |      |     | "o" | 1.0                              | outline width                                                                                                                                                  |
-// |             |     |      |     | "F" | Color: white                     | fill                                                                                                                                                           |
-// |             |     |      | "t" |     | str                              | title text                                                                                                                                                     |
-// |             |     |      | "f" |     | str                              | font face                                                                                                                                                      |
-// |             |     |      | "S" |     | str                              | font slant: "normal" (default), "italic"                                                                                                                       |
-// |             |     |      | "W" |     | str                              | font weight: "normal" (default), "bold"                                                                                                                        |
-// |             |     |      | "s" |     | float                            | label size, default 1.0                                                                                                                                        |
-// |             |     |      | "c" |     | color                            | label color, default: "black"                                                                                                                                  |
 
 // ----------------------------------------------------------------------
 
