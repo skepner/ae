@@ -263,13 +263,13 @@ static inline bool export_area_style(fmt::memory_buffer& out, const ae::chart::v
     if (area_style != dflt) {
         comma = put_comma(out, comma);
         fmt::format_to(std::back_inserter(out), "\"A\":{{");
-        put_array_double(out, area_style.padding, [&dflt](const auto& padding) { return padding != dflt.padding; }, "P", comma);
-        comma = put_str(
-            out, area_style.border_color, [&dflt](const auto& color) { return color != dflt.border_color; }, "O", comma);
-        comma = put_double(
-            out, area_style.border_width, [&dflt](Float width) { return width != dflt.border_width; }, "o", comma);
-        comma = put_str(
-            out, area_style.background, [&dflt](const auto& color) { return color != dflt.background; }, "F", comma);
+        auto comma_A2 = put_array_double(out, area_style.padding, [&dflt](const auto& padding) { return padding != dflt.padding; }, "P", false);
+        comma_A2 = put_str(
+            out, area_style.border_color, [&dflt](const auto& color) { return color != dflt.border_color; }, "O", comma_A2);
+        comma_A2 = put_double(
+            out, area_style.border_width, [&dflt](Float width) { return width != dflt.border_width; }, "o", comma_A2);
+        comma_A2 = put_str(
+            out, area_style.background, [&dflt](const auto& color) { return color != dflt.background; }, "F", comma_A2);
         fmt::format_to(std::back_inserter(out), "}}");
     }
     return comma;

@@ -98,18 +98,36 @@ void ae::py::chart_v3_plot_spec(pybind11::module_& chart_v3_submodule)
                     height = width;
                 style.viewport = ae::draw::v2::Viewport{x, y, width, height};
             },
-            "x"_a, "y"_a, "width"_a, "height"_a = -1.0)                                                       //
-        .def_readonly("legend", &semantic::Style::legend, pybind11::return_value_policy::reference_internal) //
-        .def_readonly("plot_title", &semantic::Style::plot_title, pybind11::return_value_policy::reference_internal)   //
+            "x"_a, "y"_a, "width"_a, "height"_a = -1.0)                                                              //
+        .def_readonly("legend", &semantic::Style::legend, pybind11::return_value_policy::reference_internal)         //
+        .def_readonly("plot_title", &semantic::Style::plot_title, pybind11::return_value_policy::reference_internal) //
         ;
 
     pybind11::class_<semantic::StyleModifier>(chart_v3_submodule, "SemanticStyleModifier") //
         ;
 
-    pybind11::class_<semantic::Legend>(chart_v3_submodule, "SemanticLegend") //
+    pybind11::class_<semantic::AreaStyle>(chart_v3_submodule, "SemanticAreaStyle") //
+        .def_property(
+            "border_color", [](const semantic::AreaStyle& area) { return fmt::format("{}", area.border_color); },
+            [](semantic::AreaStyle& area, std::string_view color) { area.border_color = color; }) //
+        .def_property(
+            "border_width", [](const semantic::AreaStyle& area) { return static_cast<double>(area.border_width); },
+            [](semantic::AreaStyle& area, double border_width) { area.border_width = border_width; }) //
+        .def_property(
+            "background", [](const semantic::AreaStyle& area) { return fmt::format("{}", area.background); }, [](semantic::AreaStyle& area, std::string_view color) { area.background = color; }) //
+        .def("padding", [](const semantic::AreaStyle& area) { return area.padding; })                                                                                                             //
+        .def(
+            "padding",
+            [](semantic::AreaStyle& area, double top, double right, double bottom, double left) {
+                area.padding = semantic::padding_t{top, right, bottom, left};
+            },
+            "top"_a, "right"_a, "bottom"_a, "left"_a) //
         ;
 
-    pybind11::class_<semantic::Title>(chart_v3_submodule, "SemanticTitle") //
+    pybind11::class_<semantic::Legend, semantic::AreaStyle>(chart_v3_submodule, "SemanticLegend") //
+        ;
+
+    pybind11::class_<semantic::Title, semantic::AreaStyle>(chart_v3_submodule, "SemanticTitle") //
         ;
 }
 
