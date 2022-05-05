@@ -6,6 +6,7 @@
 #include <optional>
 
 #include "utils/float.hh"
+#include "utils/log.hh"
 #include "draw/v2/viewport.hh"
 #include "chart/v3/point-style.hh"
 
@@ -64,6 +65,70 @@ namespace ae::chart::v3::semantic
         Title title{};
 
         bool operator==(const Legend&) const = default;
+
+        std::string format_relative() const
+        {
+            std::string res{"tl"};
+            switch (vrelative) {
+                case v_relative::top:
+                    res[0] = 't';
+                    break;
+                case v_relative::bottom:
+                    res[0] = 'b';
+                    break;
+                case v_relative::center:
+                    res[0] = 'c';
+                    break;
+            }
+            switch (hrelative) {
+                case h_relative::left:
+                    res[1] = 'l';
+                    break;
+                case h_relative::right:
+                    res[1] = 'r';
+                    break;
+                case h_relative::center:
+                    res[1] = 'c';
+                    break;
+            }
+            return res;
+        }
+
+        void relative_from(std::string_view source)
+            {
+                if (source.size() == 2) {
+                    switch (source[0]) {
+                        case 't':
+                            vrelative = v_relative::top;
+                            break;
+                        case 'b':
+                            vrelative = v_relative::bottom;
+                            break;
+                        case 'c':
+                            vrelative = v_relative::center;
+                            break;
+                        default:
+                            AD_WARNING("[semantic Legend relative]: invalid value \"{}\"", source);
+                            break;
+                    }
+                    switch (source[1]) {
+                        case 'l':
+                            hrelative = h_relative::left;
+                            break;
+                        case 'r':
+                            hrelative = h_relative::right;
+                            break;
+                        case 'c':
+                            hrelative = h_relative::center;
+                            break;
+                        default:
+                            AD_WARNING("[semantic Legend relative]: invalid value \"{}\"", source);
+                            break;
+                    }
+                }
+                else
+                    AD_WARNING("[semantic Legend relative]: invalid value \"{}\"", source);
+            }
     };
 
     inline bool is_default(const Legend& legend) { return legend == Legend{}; }

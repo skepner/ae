@@ -124,10 +124,19 @@ void ae::py::chart_v3_plot_spec(pybind11::module_& chart_v3_submodule)
             "top"_a, "right"_a, "bottom"_a, "left"_a) //
         ;
 
-    pybind11::class_<semantic::Legend, semantic::AreaStyle>(chart_v3_submodule, "SemanticLegend") //
+    pybind11::class_<semantic::Legend, semantic::AreaStyle>(chart_v3_submodule, "SemanticLegend")      //
+        .def_readwrite("shown", &semantic::Legend::shown)                                              //
+        .def_readwrite("add_counter", &semantic::Legend::add_counter)                                  //
+        .def_readwrite("show_rows_with_zero_count", &semantic::Legend::show_rows_with_zero_count)      //
+        .def_readonly("title", &semantic::Legend::title)                                               //
+        .def_property("relative", &semantic::Legend::format_relative, &semantic::Legend::relative_from) //
+        .def_property(
+            "point_size", [](const semantic::Legend& legend) { return static_cast<double>(legend.point_size); }, [](semantic::Legend& legend, double point_size) { legend.point_size = point_size; }) //
+        // ae::draw::v2::offset_t offset{10, 10};
         ;
 
     pybind11::class_<semantic::Title, semantic::AreaStyle>(chart_v3_submodule, "SemanticTitle") //
+                                                                                                // ae::draw::v2::text_and_offset text{ae::draw::v2::offset_t{10.0, 10.0}};
         ;
 }
 

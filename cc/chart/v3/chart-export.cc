@@ -226,38 +226,6 @@ static inline bool export_point_style(fmt::memory_buffer& out, const ae::chart::
 
 // ----------------------------------------------------------------------
 
-
-static inline std::string format_hv_relative(ae::chart::v3::semantic::Legend::v_relative vrelative, ae::chart::v3::semantic::Legend::h_relative hrelative)
-{
-    using namespace ae::chart::v3::semantic;
-    std::string res{"tl"};
-    switch (vrelative) {
-        case Legend::v_relative::top:
-            res[0] = 't';
-            break;
-        case Legend::v_relative::bottom:
-            res[0] = 'b';
-            break;
-        case Legend::v_relative::center:
-            res[0] = 'c';
-            break;
-    }
-    switch (hrelative) {
-        case Legend::h_relative::left:
-            res[1] = 'l';
-            break;
-        case Legend::h_relative::right:
-            res[1] = 'r';
-            break;
-        case Legend::h_relative::center:
-            res[1] = 'c';
-            break;
-    }
-    return res;
-}
-
-// ----------------------------------------------------------------------
-
 static inline bool export_area_style(fmt::memory_buffer& out, const ae::chart::v3::semantic::AreaStyle& area_style, const ae::chart::v3::semantic::AreaStyle& dflt, bool comma)
 {
     if (area_style != dflt) {
@@ -298,7 +266,7 @@ static inline bool export_semantic_plot_spec_legend(fmt::memory_buffer& out, con
         fmt::format_to(std::back_inserter(out), "\n      \"L\": {{");
         auto comma_L2 = export_shown(out, legend.shown, true, false);
         comma_L2 = export_offset(out, legend.offset, dflt.offset, comma_L2);
-        comma_L2 = put_str(out, format_hv_relative(legend.vrelative, legend.hrelative), [](std::string_view val) { return val != "tl"; }, "c", comma_L2);
+        comma_L2 = put_str(out, legend.format_relative(), [](std::string_view val) { return val != "tl"; }, "c", comma_L2);
         comma_L2 = export_area_style(out, legend, dflt, comma_L2);
         comma_L2 = put_bool(out, legend.add_counter, true, "C", comma_L2);
         comma_L2 = put_double(out, legend.point_size, [&dflt](Float val) { return val != dflt.point_size; }, "S", comma_L2);
