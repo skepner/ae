@@ -1,4 +1,4 @@
-# Time-stamp: <2022-05-05 15:03:53 eu>
+# Time-stamp: <2022-05-05 15:42:52 eu>
 * acmacs-ace-v1 format to store chart data
 
 fields with names starting with ? are ignored
@@ -81,7 +81,7 @@ fields with names starting with ? are ignored
 |-------------+-----+------+-----+-----+----------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------|
 |             | "R" |      |     |     | key-value pairs                  | sematic attributes based plot specifications, key: name of the style, value: style object                                                                      |
 |             |     | "z"  |     |     | int                              | priority order when showing in GUI                                                                                                                             |
-|             |     | "t" |     |     | str                              | title                                                                                                                                                          |
+|             |     | "t"  |     |     | str                              | title                                                                                                                                                          |
 |             |     | "V"  |     |     | [x, y, width, height]            | viewport                                                                                                                                                       |
 |             |     | "A"  |     |     | list of objects                  | modifiers to apply                                                                                                                                             |
 |             |     |      | "R" |     | str                              | name ("N") of another plot spec to use (inherited from), applied before adding other changes provided by this object                                           |
@@ -130,7 +130,7 @@ fields with names starting with ? are ignored
 |             |     |      |     | "c" | color                            | label color, default: "black"                                                                                                                                  |
 |             |     |      |     | "A" | object                           | plot spec of the area  -> AreaData                                                                                                                             |
 |             |     |      | "z" |     | bool                             | show rows with zero count                                                                                                                                      |
-|             |     | "T"  |     |     | object                           | plot title data -> Offset + TextData + AreaData                                                                                                                        |
+|             |     | "T"  |     |     | object                           | plot title data -> Offset + TextData + AreaData                                                                                                                |
 |             |     |      | "-" |     | bool                             | hidden                                                                                                                                                         |
 |             |     |      | "p" |     | [x, y]                           | offset                                                                                                                                                         |
 |             |     |      | "A" |     | object                           | plot spec of the area -> AreaData                                                                                                                              |
@@ -138,13 +138,12 @@ fields with names starting with ? are ignored
 |             |     |      |     | "O" | Color: black                     | border                                                                                                                                                         |
 |             |     |      |     | "o" | 1.0                              | outline width                                                                                                                                                  |
 |             |     |      |     | "F" | Color: white                     | fill                                                                                                                                                           |
-|             |     |      | "T" |     | object                           | -> TextData                                                                                                                                                    |
-|             |     |      |     | "t" | str                              | title text                                                                                                                                                     |
-|             |     |      |     | "f" | str                              | font face                                                                                                                                                      |
-|             |     |      |     | "S" | str                              | font slant: "normal" (default), "italic"                                                                                                                       |
-|             |     |      |     | "W" | str                              | font weight: "normal" (default), "bold"                                                                                                                        |
-|             |     |      |     | "s" | float                            | label size, default 1.0                                                                                                                                        |
-|             |     |      |     | "c" | color                            | label color, default: "black"                                                                                                                                  |
+|             |     |      | "t" |     | str                              | title text                                                                                                                                                     |
+|             |     |      | "f" |     | str                              | font face                                                                                                                                                      |
+|             |     |      | "S" |     | str                              | font slant: "normal" (default), "italic"                                                                                                                       |
+|             |     |      | "W" |     | str                              | font weight: "normal" (default), "bold"                                                                                                                        |
+|             |     |      | "s" |     | float                            | label size, default 1.0                                                                                                                                        |
+|             |     |      | "c" |     | color                            | label color, default: "black"                                                                                                                                  |
 |-------------+-----+------+-----+-----+----------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------|
 |             | "p" |      |     |     | key-value pairs                  | legacy lispmds stype plot specification                                                                                                                        |
 |             |     | "d"  |     |     | array of integers                | drawing order, point indices                                                                                                                                   |

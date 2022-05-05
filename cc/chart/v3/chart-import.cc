@@ -569,6 +569,33 @@ inline void read_semantic_plot_style_area(ae::chart::v3::semantic::AreaStyle& ta
 
 // ----------------------------------------------------------------------
 
+inline void read_semantic_plot_style_title(ae::chart::v3::semantic::Title& target, ::simdjson::ondemand::object source)
+{
+    for (auto field : source) {
+        if (const std::string_view key = field.unescaped_key(); key == "-") {
+            target.text.shown = !field.value();
+        }
+        else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
+            unhandled_key({"c", "R", "<name>", "T", key});
+    }
+}
+
+// |             |     |      | "-" |     | bool                             | hidden                                                                                                                                                         |
+// |             |     |      | "p" |     | [x, y]                           | offset                                                                                                                                                         |
+// |             |     |      | "A" |     | object                           | plot spec of the area -> AreaData                                                                                                                              |
+// |             |     |      |     | "P" | [top, right, bottom, left]       | padding                                                                                                                                                        |
+// |             |     |      |     | "O" | Color: black                     | border                                                                                                                                                         |
+// |             |     |      |     | "o" | 1.0                              | outline width                                                                                                                                                  |
+// |             |     |      |     | "F" | Color: white                     | fill                                                                                                                                                           |
+// |             |     |      | "t" |     | str                              | title text                                                                                                                                                     |
+// |             |     |      | "f" |     | str                              | font face                                                                                                                                                      |
+// |             |     |      | "S" |     | str                              | font slant: "normal" (default), "italic"                                                                                                                       |
+// |             |     |      | "W" |     | str                              | font weight: "normal" (default), "bold"                                                                                                                        |
+// |             |     |      | "s" |     | float                            | label size, default 1.0                                                                                                                                        |
+// |             |     |      | "c" |     | color                            | label color, default: "black"                                                                                                                                  |
+
+// ----------------------------------------------------------------------
+
 inline void read_semantic_plot_style_legend(ae::chart::v3::semantic::Legend& target, ::simdjson::ondemand::object source)
 {
     for (auto field : source) {
@@ -584,32 +611,20 @@ inline void read_semantic_plot_style_legend(ae::chart::v3::semantic::Legend& tar
         else if (key == "A") {
             read_semantic_plot_style_area(target, field.value());
         }
-        else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
-            unhandled_key({"c", "R", "<name>", "L", key});
-    }
-}
-
-// |             |     |      | "C" |     | bool                             | add counter                                                                                                                                                    |
-// |             |     |      | "S" |     | 10.0                             | point size                                                                                                                                                     |
-// |             |     |      | "T" |     | object                           | title -> TextData                                                                                                                                              |
-// |             |     |      |     | "t" | str                              | title text                                                                                                                                                     |
-// |             |     |      |     | "f" | str                              | font face                                                                                                                                                      |
-// |             |     |      |     | "S" | str                              | font slant: "normal" (default), "italic"                                                                                                                       |
-// |             |     |      |     | "W" | str                              | font weight: "normal" (default), "bold"                                                                                                                        |
-// |             |     |      |     | "s" | float                            | label size, default 1.0                                                                                                                                        |
-// |             |     |      |     | "c" | color                            | label color, default: "black"                                                                                                                                  |
-// |             |     |      |     | "A" | object                           | plot spec of the area  -> AreaData                                                                                                                             |
-// |             |     |      | "z" |     | bool                             | show rows with zero count                                                                                                                                      |
-
-// ----------------------------------------------------------------------
-
-inline void read_semantic_plot_style_title(ae::chart::v3::semantic::Title& target, ::simdjson::ondemand::object source)
-{
-    for (auto field : source) {
-        if (const std::string_view key = field.unescaped_key(); key == "") {
+        else if (key == "C") {
+            target.add_counter = field.value();
+        }
+        else if (key == "S") {
+            target.point_size = static_cast<double>(field.value());
+        }
+        else if (key == "z") {
+            target.show_rows_with_zero_count = field.value();
+        }
+        else if (key == "T") {
+            read_semantic_plot_style_title(target.title, field.value());
         }
         else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
-            unhandled_key({"c", "R", "<name>", "T", key});
+            unhandled_key({"c", "R", "<name>", "L", key});
     }
 }
 
