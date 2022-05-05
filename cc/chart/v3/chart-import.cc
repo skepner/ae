@@ -541,7 +541,7 @@ inline void read_semantic_plot_style(ae::chart::v3::semantic::Style& target, ::s
         if (const std::string_view key = field.unescaped_key(); key == "z") {
             target.priority = static_cast<int>(static_cast<int64_t>(field.value()));
         }
-        else if (key == "T") {
+        else if (key == "t") {
             target.title.assign(static_cast<std::string_view>(field.value()));
         }
         else if (key == "V") {
