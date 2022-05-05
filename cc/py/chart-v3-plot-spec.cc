@@ -75,7 +75,7 @@ void ae::py::chart_v3_plot_spec(pybind11::module_& chart_v3_submodule)
     using namespace pybind11::literals;
     using namespace ae::chart::v3;
 
-    pybind11::class_<semantic::Styles>(chart_v3_submodule, "SemanticStyles")                     //
+    pybind11::class_<semantic::Styles>(chart_v3_submodule, "SemanticStyles")             //
         .def("__len__", &semantic::Styles::size)                                         //
         .def("__bool__", [](const semantic::Styles& styles) { return !styles.empty(); }) //
         .def(
@@ -91,9 +91,25 @@ void ae::py::chart_v3_plot_spec(pybind11::module_& chart_v3_submodule)
             "add_modifier", &ae::py::add_modifier,
             pybind11::doc(
                 R"(kwargs: parent="another-style", selector={"C": "clade"}, hide=False, fill="transparent", outline="black", outline_width=1.0, size=5.0, rotation=0.0, aspect=1.0, shape="C|B|E|U|T", rais=True, raise_=True, lower=True, only="a|s", legend="text", legend_priority=0)")) //
+        .def(
+            "viewport",
+            [](semantic::Style& style, double x, double y, double width, double height) {
+                if (height < 0.0)
+                    height = width;
+                style.viewport = ae::draw::v2::Viewport{x, y, width, height};
+            },
+            "x"_a, "y"_a, "width"_a, "height"_a = -1.0)                                                       //
+        .def_readonly("legend", &semantic::Style::legend, pybind11::return_value_policy::reference_internal) //
+        .def_readonly("plot_title", &semantic::Style::plot_title, pybind11::return_value_policy::reference_internal)   //
         ;
 
     pybind11::class_<semantic::StyleModifier>(chart_v3_submodule, "SemanticStyleModifier") //
+        ;
+
+    pybind11::class_<semantic::Legend>(chart_v3_submodule, "SemanticLegend") //
+        ;
+
+    pybind11::class_<semantic::Title>(chart_v3_submodule, "SemanticTitle") //
         ;
 }
 

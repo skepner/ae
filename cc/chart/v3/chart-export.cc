@@ -170,7 +170,6 @@ static inline bool export_offset(fmt::memory_buffer& out, const ae::draw::v2::of
 static inline bool export_text_style(fmt::memory_buffer& out, const ae::draw::v2::text_style& text_style, bool hidden_as_minus, bool comma)
 {
     const ae::draw::v2::text_style dflt{};
-
     comma = export_shown(out, text_style.shown, hidden_as_minus, comma);
     comma = put_double(
         out, text_style.size, [&dflt](const auto& size) { return size != dflt.size; }, "s", comma);
@@ -294,8 +293,6 @@ static inline bool export_semantic_plot_title(fmt::memory_buffer& out, const ae:
 
 static inline bool export_semantic_plot_spec_legend(fmt::memory_buffer& out, const ae::chart::v3::semantic::Legend& legend, bool comma)
 {
-    // using namespace ae::chart::v3;
-
     if (const ae::chart::v3::semantic::Legend dflt{}; legend != dflt) {
         comma = put_comma(out, comma);
         fmt::format_to(std::back_inserter(out), "\n      \"L\": {{");
@@ -313,23 +310,6 @@ static inline bool export_semantic_plot_spec_legend(fmt::memory_buffer& out, con
 }
 
 // ----------------------------------------------------------------------
-
-    //     | "A" |     | list of objects       | modifiers to apply
-    //     |     | "R" | str                   | name ("N") of another plot spec to use (inherited from), applied before adding other changes provided by this object
-    //     |     | "T" | object                | {<name of semantic attribute>: <value>}
-    //     |     | "A" | bool                  | true: select antigens only, false: select sera only, absent: select antigens and sera
-    //     |     | "S" | str                   | shape: "C[IRCLE]" (default), "B[OX]", "T[RIANGLE]", "E[GG]", "U[GLYEGG]"
-    //     |     | "F" | color, str            | fill color
-    //     |     | "O" | color, str            | outline color
-    //     |     | "o" | float                 | outline width
-    //     |     | "s" | float                 | size, default 1.0
-    //     |     | "r" | float                 | rotation in radians, default 0.0
-    //     |     | "a" | float                 | aspect ratio, default 1.0
-    //     |     | "-" | boolean               | hide point and its label
-    //     |     | "D" | "r", "l"              | drawing order: raise, lower, absent: no change
-    //     |     | "L" |     | object                | legend row
-    //     |     |     | "p" | int                   | priority
-    //     |     |     | "t" | str                   | text
 
 static inline bool export_semantic_plot_spec_modifiers(fmt::memory_buffer& out, const std::vector<ae::chart::v3::semantic::StyleModifier>& modifiers, bool comma)
 {
