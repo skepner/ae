@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "ext/fmt.hh"
 #include "utils/float.hh"
 #include "draw/v2/color.hh"

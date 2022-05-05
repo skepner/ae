@@ -156,6 +156,17 @@ static inline bool export_shown(fmt::memory_buffer& out, bool shown, bool hidden
     return comma;
 }
 
+static inline bool export_offset(fmt::memory_buffer& out, const ae::draw::v2::offset_t& offset, const ae::draw::v2::offset_t& dflt, bool comma)
+{
+    if (offset != dflt) {
+        comma = put_comma(out, comma);
+        fmt::format_to(std::back_inserter(out), "\"p\":[{},{}]", ae::format_double(offset.x), ae::format_double(offset.y));
+    }
+    return comma;
+}
+
+// ----------------------------------------------------------------------
+
 static inline bool export_text_style(fmt::memory_buffer& out, const ae::draw::v2::text_style& text_style, bool hidden_as_minus, bool comma)
 {
     const ae::draw::v2::text_style dflt{};
@@ -187,10 +198,7 @@ static inline bool export_text_data(fmt::memory_buffer& out, const ae::draw::v2:
 
 static inline bool export_text_and_offset(fmt::memory_buffer& out, const ae::draw::v2::text_and_offset& text_offset, const ae::draw::v2::text_and_offset& dflt, bool hidden_as_minus, bool comma)
 {
-    if (text_offset.offset != dflt.offset) {
-        comma = put_comma(out, comma);
-        fmt::format_to(std::back_inserter(out), "\"p\":[{},{}]", ae::format_double(text_offset.offset.x), ae::format_double(text_offset.offset.y));
-    }
+    comma = export_offset(out, text_offset.offset, dflt.offset, comma);
     return export_text_data(out, text_offset, hidden_as_minus, comma);
 }
 
@@ -249,44 +257,55 @@ static inline std::string format_hv_relative(ae::chart::v3::semantic::Legend::v_
     return res;
 }
 
-    //     | "L"  |     |     | object                           | legend data
-    //     |      | "-" |     | bool                             | hidden
-    //     |      | "O" |     | [x, y]                           | offset, relative to "p"
-    //     |      | "p" |     | "tl"                             | corner or center of the plot: t - top, c - center, b - bottom, l -left, r - right
-    //     |      | "P" |     | [top, right, bottom, left]       | padding
-    //     |      | "A" |     | object                           | plot spec of the area
-    //     |      |     | "O" | Color: black                     | border
-    //     |      |     | "o" | 1.0                              | outline width
-    //     |      |     | "F" | Color: white                     | fill
-    //     |      | "C" |     | bool                             | add counter
-    //     |      | "S" |     | 10.0                             | point size
-    //     |      | "T" |     | object                           | title
-    //     |      |     | "t" | str                              | title text
-    //     |      |     | "f" | str                              | font face
-    //     |      |     | "S" | str                              | font slant: "normal" (default), "italic"
-    //     |      |     | "W" | str                              | font weight: "normal" (default), "bold"
-    //     |      |     | "s" | float                            | label size, default 1.0
-    //     |      |     | "c" | color                            | label color, default: "black"
-    //     |      | "z" |     | bool                             | show rows with zero count
+// ----------------------------------------------------------------------
+
+static inline bool export_area_style(fmt::memory_buffer& out, const ae::chart::v3::semantic::AreaStyle& area_style, const ae::chart::v3::semantic::AreaStyle& dflt, bool comma)
+{
+    if (area_style != dflt) {
+        comma = put_comma(out, comma);
+        fmt::format_to(std::back_inserter(out), "\"A\":{{");
+        put_array_double(out, area_style.padding, [&dflt](const auto& padding) { return padding != dflt.padding; }, "P", comma);
+        comma = put_str(
+            out, area_style.border_color, [&dflt](const auto& color) { return color != dflt.border_color; }, "O", comma);
+        comma = put_double(
+            out, area_style.border_width, [&dflt](Float width) { return width != dflt.border_width; }, "o", comma);
+        comma = put_str(
+            out, area_style.background, [&dflt](const auto& color) { return color != dflt.background; }, "F", comma);
+        fmt::format_to(std::back_inserter(out), "}}");
+    }
+    return comma;
+}
+
+// ----------------------------------------------------------------------
+
+static inline bool export_semantic_plot_title(fmt::memory_buffer& out, const ae::chart::v3::semantic::Title& title, const ae::chart::v3::semantic::Title& dflt, bool comma)
+{
+    if (title != dflt) {
+        comma = put_comma(out, comma);
+        fmt::format_to(std::back_inserter(out), "\"T\":{{");
+        auto comma_L3 = export_text_and_offset(out, title.text, dflt.text, true, false);
+        comma_L3 = export_area_style(out, title, dflt, comma_L3);
+        fmt::format_to(std::back_inserter(out), "}}");
+    }
+    return comma;
+}
+
+// ----------------------------------------------------------------------
 
 static inline bool export_semantic_plot_spec_legend(fmt::memory_buffer& out, const ae::chart::v3::semantic::Legend& legend, bool comma)
 {
-    using namespace ae::chart::v3;
+    // using namespace ae::chart::v3;
 
-    if (!legend.empty()) {
+    if (const ae::chart::v3::semantic::Legend dflt{}; legend != dflt) {
         comma = put_comma(out, comma);
         fmt::format_to(std::back_inserter(out), "\n      \"L\": {{");
-        auto comma_L2 = put_bool(out, !legend.shown, true, "-", false);
-        // offset
-        comma_L2 = put_str(out, format_hv_relative(legend.vrelative, legend.hrelative), [](std::string_view val) { return val != "tl"; }, "p", comma_L2);
-        // padding
-        if (legend.border != Color{"black"} || legend.border_width != 1.0 || legend.background != Color{"white"}) {
-            comma_L2 = put_comma(out, comma_L2);
-            fmt::format_to(std::back_inserter(out), "\"A\":{{\"O\":\"{}\",\"o\":{},\"F\":\"{}\"}}", legend.border, legend.border_width, legend.background);
-        }
+        auto comma_L2 = export_shown(out, legend.shown, true, false);
+        comma_L2 = export_offset(out, legend.offset, dflt.offset, comma_L2);
+        comma_L2 = put_str(out, format_hv_relative(legend.vrelative, legend.hrelative), [](std::string_view val) { return val != "tl"; }, "c", comma_L2);
+        comma_L2 = export_area_style(out, legend, dflt, comma_L2);
         comma_L2 = put_bool(out, legend.add_counter, true, "C", comma_L2);
-        comma_L2 = put_double(out, legend.point_size, [](double val) { return !float_equal(val, semantic::Legend::default_point_size); }, "S", comma_L2);
-        // title
+        comma_L2 = put_double(out, legend.point_size, [&dflt](Float val) { return val != dflt.point_size; }, "S", comma_L2);
+        comma_L2 = export_semantic_plot_title(out, legend.title, dflt.title, comma_L2);
         comma_L2 = put_bool(out, legend.show_rows_with_zero_count, true, "z", comma_L2);
         fmt::format_to(std::back_inserter(out), "}}");
     }
@@ -361,34 +380,8 @@ static inline bool export_semantic_plot_spec_modifiers(fmt::memory_buffer& out, 
 
 // ----------------------------------------------------------------------
 
-    // "R" |     |     | key-value pairs       | sematic attributes based plot specifications, key: name of the style, value: style object
-    //     | "z" |     | int                   | priority order when showing in GUI
-    //     | "T" |     | str                   | title
-    //     | "V" |     | [x, y, width, height] | viewport
-
-    //     | "A" |     | list of objects       | modifiers to apply -> export_semantic_plot_spec_modifiers()
-
-    //     | "L"  |     |     | object                           | legend data --> export_semantic_plot_spec_legend()
-
-    //     | "T"  |     |     | object                           | title data
-    //     |      | "-" |     | bool                             | hidden
-    //     |      | "O" |     | [x, y]                           | offset
-    //     |      | "P" |     | [top, right, bottom, left]       | padding
-    //     |      | "A" |     | object                           | plot spec of the area
-    //     |      |     | "O" | Color: black                     | border
-    //     |      |     | "o" | 1.0                              | outline width
-    //     |      |     | "F" | Color: white                     | fill
-    //     |      | "T" |     | object                           |
-    //     |      |     | "t" | str                              | title text
-    //     |      |     | "f" | str                              | font face
-    //     |      |     | "S" | str                              | font slant: "normal" (default), "italic"
-    //     |      |     | "W" | str                              | font weight: "normal" (default), "bold"
-    //     |      |     | "s" | float                            | label size, default 1.0
-    //     |      |     | "c" | color                            | label color, default: "black"
-
 static inline void export_semantic_plot_spec(fmt::memory_buffer& out, const ae::chart::v3::semantic::Styles& styles)
 {
-
     if (!styles.empty()) {
         fmt::format_to(std::back_inserter(out), ",\n  \"R\": {{");
         auto comma_R1 = false;
@@ -397,10 +390,14 @@ static inline void export_semantic_plot_spec(fmt::memory_buffer& out, const ae::
             fmt::format_to(std::back_inserter(out), "\n   \"{}\": {{", style.name);
             auto comma_R2 = put_int(out, style.priority, not_zero, "z", false);
             comma_R2 = put_str(out, style.title, not_empty, "T", comma_R2);
-            // viewport
+            if (style.viewport.has_value()) {
+                comma_R1 = put_comma(out, comma_R1);
+                fmt::format_to(std::back_inserter(out), "\"V\": [{}, {}, {}, {}]", ae::format_double(style.viewport->x), ae::format_double(style.viewport->y), ae::format_double(style.viewport->width),
+                               ae::format_double(style.viewport->height));
+            }
             comma_R2 = export_semantic_plot_spec_modifiers(out, style.modifiers, comma_R2);
             comma_R2 = export_semantic_plot_spec_legend(out, style.legend, comma_R2);
-
+            comma_R2 = export_semantic_plot_title(out, style.plot_title, ae::chart::v3::semantic::Title{}, comma_R2);
             fmt::format_to(std::back_inserter(out), "\n   }}");
         }
         fmt::format_to(std::back_inserter(out), "\n  }}");
@@ -408,26 +405,6 @@ static inline void export_semantic_plot_spec(fmt::memory_buffer& out, const ae::
 }
 
 // ----------------------------------------------------------------------
-
-    // legacy lispmds stype plot specification
-    //  "d" |     |     | array of integers       | drawing order, point indices
-    //  "E" |     |     | key-value pairs         | error line positive, default: {"c": "blue"}
-    //  "e" |     |     | key-value pairs         | error line negative, default: {"c": "red"}
-    //  "g" |     |     | ?                       | ? grid data
-    //  "P" |     |     | array of key-value pairs| list of plot styles
-    //      | "+" |     | boolean                 | if point is shown, default is true, disconnected points are usually not shown and having NaN coordinates in layout
-    //      | "F" |     | color, str              | fill color: #FF0000 or T[RANSPARENT] or color name (red, green, blue, etc.), default is transparent
-    //      | "O" |     | color, str              | outline color: #000000 or T[RANSPARENT] or color name (red, green, blue, etc.), default is black
-    //      | "o" |     | float                   | outline width, default 1.0
-    //      | "S" |     | str                     | shape: "C[IRCLE]" (default), "B[OX]", "T[RIANGLE]", "E[GG]", "U[GLYEGG]"
-    //      | "s" |     | float                   | size, default 1.0
-    //      | "r" |     | float                   | rotation in radians, default 0.0
-    //      | "a" |     | float                   | aspect ratio, default 1.0
-    //  "p" |     |     | array of integers       | index in "P" for each point, antigens followed by sera
-    //  "l" |     |     | array of integers       | ? for each procrustes line, index in the "L" list
-    //  "L" |     |     | array                   | ? list of procrustes lines styles "s"
-    //      |     |     | array of integers       | list of point indices for point shown on all maps in the time series
-    //  "t" |     |     | key-value pairs         | ? title style
 
 static inline void export_legacy_plot_spec(fmt::memory_buffer& out, const ae::chart::v3::legacy::PlotSpec& plot_spec)
 {

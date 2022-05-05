@@ -1,9 +1,12 @@
 #pragma once
 
 #include <vector>
+#include <array>
 #include <string>
+#include <optional>
 
 #include "utils/float.hh"
+#include "draw/v2/viewport.hh"
 #include "chart/v3/point-style.hh"
 
 // ----------------------------------------------------------------------
@@ -27,35 +30,43 @@ namespace ae::chart::v3::semantic
         std::string text{};
     };
 
-    struct Legend
+    using padding_t = std::array<double, 4>;
+
+    struct AreaStyle
+    {
+        Color border_color{"black"};
+        Float border_width{1.0};
+        Color background{"white"};
+        padding_t padding{0.0, 0.0, 0.0, 0.0};
+
+        bool operator==(const AreaStyle&) const = default;
+    };
+
+    struct Title : public AreaStyle
+    {
+        ae::draw::v2::text_and_offset text{ae::draw::v2::offset_t{10.0, 10.0}};
+
+        bool operator==(const Title&) const = default;
+    };
+
+    struct Legend : public AreaStyle
     {
         enum class v_relative { top, center, bottom };
         enum class h_relative { left, center, right };
-        static constexpr double default_point_size = 16.0;
 
         bool shown{true};
-        // Offset offset{10, 10};
+        ae::draw::v2::offset_t offset{10, 10};
         v_relative vrelative{v_relative::top};
         h_relative hrelative{h_relative::left};
-        // padding [top, right, bottom, left]
-        Color border{"black"};
-        Float border_width{1.0};
-        Color background{"white"};
         bool add_counter{true};
-        Float point_size{default_point_size};
+        Float point_size{16.0};
         bool show_rows_with_zero_count{true};
-
-        // title
-        // "t" | str                              | title text
-        //  "f" | str                              | font face
-        //  "S" | str                              | font slant: "normal" (default), "italic"
-        //  "W" | str                              | font weight: "normal" (default), "bold"
-        //  "s" | float                            | label size, default 1.0
-        //  "c" | color                            | label color, default: "black"
+        Title title{};
 
         bool operator==(const Legend&) const = default;
-        bool empty() const { return *this == Legend{}; }
     };
+
+    inline bool is_default(const Legend& legend) { return legend == Legend{}; }
 
     struct StyleModifier
     {
@@ -72,9 +83,10 @@ namespace ae::chart::v3::semantic
         std::string name{};
         std::string title{};
         int priority{0};
-        // viewport
+        std::optional<ae::draw::v2::Viewport> viewport{};
         std::vector<StyleModifier> modifiers{};
         Legend legend{};
+        Title plot_title{};
 
         Style() = default;
         Style(std::string_view a_name) : name{a_name} {}
