@@ -1,4 +1,4 @@
-# Time-stamp: <2022-05-05 15:42:52 eu>
+# Time-stamp: <2022-05-06 10:31:52 eu>
 * acmacs-ace-v1 format to store chart data
 
 fields with names starting with ? are ignored
@@ -136,8 +136,8 @@ fields with names starting with ? are ignored
 |             |     |      | "A" |     | object                           | plot spec of the area -> AreaData                                                                                                                              |
 |             |     |      |     | "P" | [top, right, bottom, left]       | padding                                                                                                                                                        |
 |             |     |      |     | "O" | Color: black                     | border                                                                                                                                                         |
-|             |     |      |     | "o" | 1.0                              | outline width                                                                                                                                                  |
-|             |     |      |     | "F" | Color: white                     | fill                                                                                                                                                           |
+|             |     |      |     | "o" | 0.0                              | outline width (default: 0.0, i.e. no border)                                                                                                                   |
+|             |     |      |     | "F" | Color: transparent               | fill                                                                                                                                                           |
 |             |     |      | "t" |     | str                              | title text                                                                                                                                                     |
 |             |     |      | "f" |     | str                              | font face                                                                                                                                                      |
 |             |     |      | "S" |     | str                              | font slant: "normal" (default), "italic"                                                                                                                       |
