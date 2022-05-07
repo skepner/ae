@@ -548,13 +548,14 @@ namespace ae::virus::name::inline v1
         try {
             const size_t earlierst_year = 1900;
             const auto today_year = date::today_year();
+            // AD_DEBUG("today_year {} year {} year_i {} hint \"{}\"", today_year, year, ae::from_chars<size_t>(year), hint);
             switch (year.size()) {
                 case 4:
                     if (const auto year_i = ae::from_chars<size_t>(year); year_i < earlierst_year || year_i > today_year)
                         throw std::invalid_argument{fmt::format("out of range {}..{}", earlierst_year, today_year)};
                     return year;
                 case 2:
-                    if (const auto year_i = ae::from_chars<size_t>(year); year_i <= (today_year - 2000) && !hint.empty() && hint[0] == '2')
+                    if (const auto year_i = ae::from_chars<size_t>(year); year_i <= (today_year - 2000) && (hint.empty() || hint[0] == '2'))
                         return fmt::format("{}", year_i + 2000);
                     else
                         return fmt::format("{}", year_i + 1900);
