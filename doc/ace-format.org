@@ -1,4 +1,4 @@
-# Time-stamp: <2022-05-09 17:28:09 eu>
+# Time-stamp: <2022-05-09 17:48:47 eu>
 * acmacs-ace-v1 format to store chart data
 
 fields with names starting with ? are ignored
@@ -145,6 +145,13 @@ fields with names starting with ? are ignored
 |     |      |     | "B" | str                | "black"       | Color          | border color                                                                                                                                                   |
 |     |      |     | "W" | float              | 0.0           |                | border width, 0 - no border                                                                                                                                    |
 |     |      |     | "F" | str                | "transparent" | Color          | background                                                                                                                                                     |
+|     |      | "t" |     | object             |               | :text:         | rows -> TextData                                                                                                                                      |
+|     |      |     | "f" | str                | "helvetica"   | :font-face:    | font face                                                                                                                                                      |
+|     |      |     | "S" | str                |               |                | font slant: "normal" (default), "italic"                                                                                                                       |
+|     |      |     | "W" | str                |               |                | font weight: "normal" (default), "bold"                                                                                                                        |
+|     |      |     | "s" | float              |               |                | label size, default 1.0                                                                                                                                        |
+|     |      |     | "c" | color              |               |                | label color, default: "black"                                                                                                                                  |
+|     |      |     | "i" | float              | 0.2           |                | addtional interval between lines as a fraction of line height                                                                                                  |
 |     |      | "T" |     | object             |               | :text:         | title -> TextData                                                                                                                                              |
 |     |      |     | "t" | str                |               |                | title text                                                                                                                                                     |
 |     |      |     | "f" | str                | "helvetica"   | :font-face:    | font face                                                                                                                                                      |
