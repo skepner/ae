@@ -572,32 +572,6 @@ inline void read_semantic_plot_style_modifier(ae::chart::v3::semantic::StyleModi
 
 // ----------------------------------------------------------------------
 
-// inline void read_semantic_plot_style_area(ae::chart::v3::semantic::AreaStyle& target, ::simdjson::ondemand::object source)
-// {
-//     for (auto field : source) {
-//         if (const std::string_view key = field.unescaped_key(); key == "P") {
-//             size_t ind{0};
-//             for (double val : field.value().get_array()) {
-//                 target.padding[ind] = val;
-//                 ++ind;
-//             }
-//         }
-//         else if (key == "O") {
-//             target.border_color = static_cast<std::string_view>(field.value());
-//         }
-//         else if (key == "o") {
-//             target.border_width = static_cast<double>(field.value());
-//         }
-//         else if (key == "F") {
-//             target.background = static_cast<std::string_view>(field.value());
-//         }
-//         else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
-//             unhandled_key({"c", "R", "<name>", "L", "A", key});
-//     }
-// }
-
-// ----------------------------------------------------------------------
-
 inline ae::chart::v3::semantic::box_t read_semantic_box(::simdjson::ondemand::object source)
 {
     ae::chart::v3::semantic::box_t box;

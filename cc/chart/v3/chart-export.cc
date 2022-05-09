@@ -253,25 +253,6 @@ static inline bool export_point_style(fmt::memory_buffer& out, const ae::chart::
 
 // ----------------------------------------------------------------------
 
-// static inline bool export_area_style(fmt::memory_buffer& out, const ae::chart::v3::semantic::AreaStyle& area_style, const ae::chart::v3::semantic::AreaStyle& dflt, bool comma)
-// {
-//     if (area_style != dflt) {
-//         comma = put_comma(out, comma);
-//         fmt::format_to(std::back_inserter(out), "\"A\":{{");
-//         auto comma_A2 = put_array_double(out, area_style.padding, [&dflt](const auto& padding) { return padding != dflt.padding; }, "P", false);
-//         comma_A2 = put_str(
-//             out, area_style.border_color, [&dflt](const auto& color) { return color != dflt.border_color; }, "O", comma_A2);
-//         comma_A2 = put_double(
-//             out, area_style.border_width, [&dflt](Float width) { return width != dflt.border_width; }, "o", comma_A2);
-//         comma_A2 = put_str(
-//             out, area_style.background, [&dflt](const auto& color) { return color != dflt.background; }, "F", comma_A2);
-//         fmt::format_to(std::back_inserter(out), "}}");
-//     }
-//     return comma;
-// }
-
-// ----------------------------------------------------------------------
-
 static inline bool export_semantic_box(fmt::memory_buffer& out, const std::optional<ae::chart::v3::semantic::box_t> box, bool comma)
 {
     if (box.has_value()) {
