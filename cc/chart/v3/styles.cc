@@ -16,7 +16,7 @@ ae::chart::v3::semantic::Style& ae::chart::v3::semantic::Styles::find(std::strin
 void ae::chart::v3::semantic::box_t::set_origin(std::string_view value)
 {
     using namespace std::string_view_literals;
-    if (value.size() != 2 || "TtBbCc"sv.find(value[0]) == std::string_view::npos || "LlRrCc"sv.find(value[1]) == std::string_view::npos)
+    if (value.size() != 2 || "TtBbc"sv.find(value[0]) == std::string_view::npos || "LlRrc"sv.find(value[1]) == std::string_view::npos)
         throw std::runtime_error{fmt::format("invalid sematic box origin \"{}\"", value)};
     origin = std::string{value};
 
