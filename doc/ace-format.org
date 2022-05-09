@@ -1,4 +1,4 @@
-# Time-stamp: <2022-05-09 16:38:27 eu>
+# Time-stamp: <2022-05-09 17:28:09 eu>
 * acmacs-ace-v1 format to store chart data
 
 fields with names starting with ? are ignored
@@ -112,7 +112,7 @@ fields with names starting with ? are ignored
 |     |      |     | "r" | float              |               |                | label rotation, default 0.0                                                                                                                                    |
 |     |      |     | "i" | float              | 0.2           |                | addtional interval between lines as a fraction of line height                                                                                                  |
 |     |      | "L" |     | object             |               |                | legend row                                                                                                                                                     |
-|     |      |     | "p" | int                |               |                | priority                                                                                                                                                       |
+|     |      |     | "p" | int                | 0             |                | priority                                                                                                                                                       |
 |     |      |     | "t" | str                |               |                | text                                                                                                                                                           |
 | --- | ---  | --- | --- | ------------------ | ------------  | -------------  | ------------------------------                                                                                                                                 |
 |     | "T"  |     |     | object             |               |                | Title                                                                                                                                                          |
