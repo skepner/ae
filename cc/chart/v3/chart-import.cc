@@ -703,27 +703,21 @@ inline void read_semantic_plot_style_legend(ae::chart::v3::semantic::Legend& tar
         if (const std::string_view key = field.unescaped_key(); key == "-") {
             target.shown = !field.value();
         }
-        // else if (key == "p") {
-        //     read_offset(target.offset, field.value());
-        // }
-        // else if (key == "c") {  // corner relative
-        //     target.relative_from(field.value());
-        // }
-        // else if (key == "A") {
-        //     read_semantic_plot_style_area(target, field.value());
-        // }
-        // else if (key == "C") {
-        //     target.add_counter = field.value();
-        // }
-        // else if (key == "S") {
-        //     target.point_size = static_cast<double>(field.value());
-        // }
-        // else if (key == "z") {
-        //     target.show_rows_with_zero_count = field.value();
-        // }
-        // else if (key == "T") {
-        //     read_semantic_plot_style_title(target.title, field.value());
-        // }
+        else if (key == "C") {
+            target.add_counter = field.value();
+        }
+        else if (key == "S") {
+            target.point_size = field.value();
+        }
+        else if (key == "z") {
+            target.show_rows_with_zero_count = field.value();
+        }
+        else if (key == "B") {
+            target.box = read_semantic_box(field.value());
+        }
+        else if (key == "T") {
+            target.title = read_semantic_text(field.value());
+        }
         else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
             unhandled_key({"c", "R", "<name>", "L", key});
     }
