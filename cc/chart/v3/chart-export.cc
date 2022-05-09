@@ -334,15 +334,13 @@ static inline bool export_semantic_plot_spec_legend(fmt::memory_buffer& out, con
     if (const ae::chart::v3::semantic::Legend dflt{}; legend != dflt) {
         comma = put_comma(out, comma);
         fmt::format_to(std::back_inserter(out), "\n      \"L\": {{");
-    //     auto comma_L2 = export_shown(out, legend.shown, true, false);
-    //     comma_L2 = export_offset(out, legend.offset, dflt.offset, comma_L2);
-    //     comma_L2 = put_str(out, legend.format_relative(), [](std::string_view val) { return val != "tl"; }, "c", comma_L2);
-    //     comma_L2 = export_area_style(out, legend, dflt, comma_L2);
-    //     comma_L2 = put_bool(out, legend.add_counter, true, "C", comma_L2);
-    //     comma_L2 = put_double(out, legend.point_size, [&dflt](Float val) { return val != dflt.point_size; }, "S", comma_L2);
-    //     comma_L2 = export_semantic_plot_title(out, legend.title, dflt.title, comma_L2);
-    //     comma_L2 = put_bool(out, legend.show_rows_with_zero_count, true, "z", comma_L2);
-    //     fmt::format_to(std::back_inserter(out), "}}");
+        auto comma_L2 = export_shown(out, legend.shown, false);
+        comma_L2 = put_optional(out, legend.add_counter, "C", comma_L2);
+        comma_L2 = put_optional(out, legend.point_size, "S", comma_L2);
+        comma_L2 = put_optional(out, legend.show_rows_with_zero_count, "z", comma_L2);
+        comma_L2 = export_semantic_box(out, legend.box, comma_L2);
+        comma_L2 = export_semantic_text(out, legend.title, comma_L2);
+        fmt::format_to(std::back_inserter(out), "}}");
     }
     return comma;
 }
