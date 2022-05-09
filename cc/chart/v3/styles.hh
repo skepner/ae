@@ -7,6 +7,7 @@
 
 #include "utils/float.hh"
 #include "utils/log.hh"
+#include "utils/named-type.hh"
 #include "draw/v2/viewport.hh"
 #include "chart/v3/point-style.hh"
 
@@ -31,104 +32,63 @@ namespace ae::chart::v3::semantic
         std::string text{};
     };
 
-    using padding_t = std::array<double, 4>;
+    using padding_t = std::array<std::optional<double>, 4>;
+    using offset_t = std::array<double, 2>;
+    using color_t = named_string_t<std::string, struct color_tag>;
 
-    struct AreaStyle
+    struct box_t
     {
-        Color border_color{"black"};
-        Float border_width{1.0};
-        Color background{"white"};
-        padding_t padding{0.0, 0.0, 0.0, 0.0};
+        std::optional<std::string> origin{}; // :box-rel: in ace-format.org
+        std::optional<padding_t> padding{};
+        std::optional<offset_t> offset{};
+        std::optional<color_t> border_color{};
+        std::optional<double> border_width{};
+        std::optional<color_t> background_color{};
 
-        bool operator==(const AreaStyle&) const = default;
+        bool operator==(const box_t&) const = default;
+        void set_origin(std::string_view value);
+        void set_padding(double value) { padding = padding_t{value, value, value, value}; }
     };
 
-    struct Title : public AreaStyle
+    struct text_t
     {
-        ae::draw::v2::text_and_offset text{ae::draw::v2::offset_t{10.0, 10.0}};
+        std::optional<std::string> text;
+        std::optional<std::string> font_face{};
+        std::optional<std::string> font_weight{};
+        std::optional<std::string> font_slant{};
+        std::optional<double> font_size{};
+        std::optional<color_t> color;
+        std::optional<double> interline{};
+
+        bool operator==(const text_t&) const = default;
+        void set_font_face(std::string_view value);
+        void set_font_weight(std::string_view value);
+        void set_font_slant(std::string_view value);
+    };
+
+    // ----------------------------------------------------------------------
+
+    struct Title
+    {
+        std::optional<bool> shown;
+        std::optional<box_t> box;
+        text_t text;
 
         bool operator==(const Title&) const = default;
     };
 
-    struct Legend : public AreaStyle
-    {
-        enum class v_relative { top, center, bottom };
-        enum class h_relative { left, center, right };
+    // ----------------------------------------------------------------------
 
-        bool shown{true};
-        ae::draw::v2::offset_t offset{10, 10};
-        v_relative vrelative{v_relative::top};
-        h_relative hrelative{h_relative::left};
-        bool add_counter{true};
-        Float point_size{16.0};
-        bool show_rows_with_zero_count{true};
-        Title title{};
+    struct Legend
+    {
+        std::optional<bool> shown;
+        std::optional<bool> add_counter{};
+        std::optional<double> point_size{};
+        std::optional<bool> show_rows_with_zero_count;
+        std::optional<box_t> box;
+        std::optional<text_t> title;
 
         bool operator==(const Legend&) const = default;
-
-        std::string format_relative() const
-        {
-            std::string res{"tl"};
-            switch (vrelative) {
-                case v_relative::top:
-                    res[0] = 't';
-                    break;
-                case v_relative::bottom:
-                    res[0] = 'b';
-                    break;
-                case v_relative::center:
-                    res[0] = 'c';
-                    break;
-            }
-            switch (hrelative) {
-                case h_relative::left:
-                    res[1] = 'l';
-                    break;
-                case h_relative::right:
-                    res[1] = 'r';
-                    break;
-                case h_relative::center:
-                    res[1] = 'c';
-                    break;
-            }
-            return res;
-        }
-
-        void relative_from(std::string_view source)
-            {
-                if (source.size() == 2) {
-                    switch (source[0]) {
-                        case 't':
-                            vrelative = v_relative::top;
-                            break;
-                        case 'b':
-                            vrelative = v_relative::bottom;
-                            break;
-                        case 'c':
-                            vrelative = v_relative::center;
-                            break;
-                        default:
-                            AD_WARNING("[semantic Legend relative]: invalid value \"{}\"", source);
-                            break;
-                    }
-                    switch (source[1]) {
-                        case 'l':
-                            hrelative = h_relative::left;
-                            break;
-                        case 'r':
-                            hrelative = h_relative::right;
-                            break;
-                        case 'c':
-                            hrelative = h_relative::center;
-                            break;
-                        default:
-                            AD_WARNING("[semantic Legend relative]: invalid value \"{}\"", source);
-                            break;
-                    }
-                }
-                else
-                    AD_WARNING("[semantic Legend relative]: invalid value \"{}\"", source);
-            }
     };
 
     inline bool is_default(const Legend& legend) { return legend == Legend{}; }

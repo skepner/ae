@@ -1,4 +1,4 @@
-# Time-stamp: <2022-05-06 15:53:09 eu>
+# Time-stamp: <2022-05-09 10:41:04 eu>
 * acmacs-ace-v1 format to store chart data
 
 fields with names starting with ? are ignored
@@ -118,7 +118,8 @@ fields with names starting with ? are ignored
 |     | "T"  |     |     | object             |               |                | Title                                                                                                                                                          |
 |     |      | "-" |     | bool               |               |                | hidden                                                                                                                                                         |
 |     |      | "B" |     | object             |               | :box:          | box area                                                                                                                                                       |
-|     |      |     | "o" | str                | "Tl"          | :box-rel:      | origin                                                                                                                                                         |
+|     |      |     | "o" | str                | "tl"          | :box-rel:      | origin                                                                                                                                                         |
+|     |      |     | "p" | object             |               | :box-padding:  | padding                                                                                                                                                  |
 |     |      |     | "O" | [float{2}]         | [10, 10]      |                | offset relative to origin (pixels)                                                                                                                             |
 |     |      |     | "B" | str                | "black"       | Color          | border color                                                                                                                                                   |
 |     |      |     | "W" | float              | 0.0           |                | border width, 0 - no border                                                                                                                                    |
@@ -134,25 +135,24 @@ fields with names starting with ? are ignored
 | --- | ---  | --- | --- | ------------------ | ------------  | -------------  | ------------------------------                                                                                                                                 |
 |     | "L"  |     |     | object             |               |                | legend data                                                                                                                                                    |
 |     |      | "-" |     | bool               | false         |                | hidden                                                                                                                                                         |
-|     |      | "p" |     | [float{2}]         | [0, 0]        | [x, y]         | offset, relative to "p"                                                                                                                                        |
-|     |      | "c" |     | "tl"               | "tl"          | :corner:       | corner or center of the plot: t - top, c - center, b - bottom, l -left, r - right                                                                              |
-|     |      | "A" |     | object             |               |                | plot spec of the area  -> AreaData                                                                                                                             |
-|     |      |     | "P" | [float{4}]         | [0,0,0,0]     | [t, r, b, l]   | padding                                                                                                                                                        |
-|     |      |     | "O" | str                | "black"       | Color          | border                                                                                                                                                         |
-|     |      |     | "o" | float              | 1.0           |                | outline width (default: 0.0, i.e. no border)                                                                                                                   |
-|     |      |     | "F" | str                | "transparent" | Color          | fill                                                                                                                                                           |
 |     |      | "C" |     | bool               |               |                | add counter                                                                                                                                                    |
 |     |      | "S" |     | 10.0               |               |                | point size                                                                                                                                                     |
-|     |      | "T" |     | object             |               |                | title -> TextData                                                                                                                                              |
+|     |      | "z" |     | bool               |               |                | show rows with zero count                                                                                                                                      |
+|     |      | "B" |     | object             |               | :box:          | box area                                                                                                                                                       |
+|     |      |     | "o" | str                | "tl"          | :box-rel:      | origin                                                                                                                                                         |
+|     |      |     | "p" | object             |               | :box-padding:  | padding                                                                                                                                                  |
+|     |      |     | "O" | [float{2}]         | [10, 10]      |                | offset relative to origin (pixels)                                                                                                                             |
+|     |      |     | "B" | str                | "black"       | Color          | border color                                                                                                                                                   |
+|     |      |     | "W" | float              | 0.0           |                | border width, 0 - no border                                                                                                                                    |
+|     |      |     | "F" | str                | "transparent" | Color          | background                                                                                                                                                     |
+|     |      | "T" |     | object             |               | :text:         | title -> TextData                                                                                                                                              |
 |     |      |     | "t" | str                |               |                | title text                                                                                                                                                     |
 |     |      |     | "f" | str                | "helvetica"   | :font-face:    | font face                                                                                                                                                      |
 |     |      |     | "S" | str                |               |                | font slant: "normal" (default), "italic"                                                                                                                       |
 |     |      |     | "W" | str                |               |                | font weight: "normal" (default), "bold"                                                                                                                        |
 |     |      |     | "s" | float              |               |                | label size, default 1.0                                                                                                                                        |
 |     |      |     | "c" | color              |               |                | label color, default: "black"                                                                                                                                  |
-|     |      |     | "A" | object             |               |                | plot spec of the area  -> AreaData                                                                                                                             |
 |     |      |     | "i" | float              | 0.2           |                | addtional interval between lines as a fraction of line height                                                                                                  |
-|     |      | "z" |     | bool               |               |                | show rows with zero count                                                                                                                                      |
 |-----+------+-----+-----+--------------------+---------------+----------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | "p" |      |     |     | object             |               |                | legacy lispmds stype plot specification                                                                                                                        |
 |     | "d"  |     |     | [int]              |               |                | drawing order, point indices                                                                                                                                   |
@@ -189,7 +189,24 @@ fields with names starting with ? are ignored
 |-----+------+-----+-----+--------------------+---------------+----------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------|
 
 Possible values:
-:corner:  "tl", "tc", "tr", "bl", "bc", "br", "cl", "cc", "cr"
+:box-rel:  two letter code,
+  first letter is for vertical position:
+    T - origin is bottom of the box relative to the top of the plot, i.e. box is above the plot
+    t - origin is top of the box relative to the top of the plot, i.e. box is within the plot
+    C - origin is bottom of the box relative to the center of the plot
+    c - origin is top of the box relative to the center of the plot
+    B - origin is bottom of the box relative to the bottom of the plot, i.e. box is within the plot
+    b - origin is top of the box relative to the bottom of the plot, i.e. box is above the plot
+  second letter is for horizontal position:
+    L - origin is right of the box relative to the left of the plot, i.e. box is to the left of the plot
+    l - origin is left of the box relative to the left of the plot, i.e. box is within the plot
+    C - origin is right of the box relative to the center of the plot
+    c - origin is left of the box relative to the center of the plot
+    R - origin is right of the box relative to the right of the plot, i.e. box is within the plot
+    r - origin is left of the box relative to the right of the plot, i.e. box is to the right of the plot
+
+:box-padding: {"t": 0.0, "b": 0.0, "l": 0.0", "r": 0.0}
+
 :font-face: "monospace", "sansserif", "serif", "helvetica", "courier", "times"
 
 * semantic attributes by group

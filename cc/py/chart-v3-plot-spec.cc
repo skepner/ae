@@ -6,38 +6,38 @@
 
 namespace ae::py
 {
-    static inline std::vector<double> get(const ae::draw::v2::offset_t& offset)
-    {
-        return std::vector<double>{offset.x, offset.y};
-    }
+    // static inline std::vector<double> get(const ae::draw::v2::offset_t& offset)
+    // {
+    //     return std::vector<double>{offset.x, offset.y};
+    // }
 
-    static inline void put(ae::draw::v2::offset_t& offset, const std::vector<double>& src)
-    {
-        if (src.size() != 2)
-            throw std::runtime_error{"invalid offset"};
-        offset.x = src[0];
-        offset.y = src[1];
-    }
+    // static inline void put(ae::draw::v2::offset_t& offset, const std::vector<double>& src)
+    // {
+    //     if (src.size() != 2)
+    //         throw std::runtime_error{"invalid offset"};
+    //     offset.x = src[0];
+    //     offset.y = src[1];
+    // }
 
-    static inline std::string get(const ae::draw::v2::font_slant_t& slant)
-    {
-        return fmt::format("{}", slant);
-    }
+    // static inline std::string get(const ae::draw::v2::font_slant_t& slant)
+    // {
+    //     return fmt::format("{}", slant);
+    // }
 
-    static inline void put(ae::draw::v2::font_slant_t& slant, std::string_view src)
-    {
-        slant = ae::draw::v2::font_slant_t{src};
-    }
+    // static inline void put(ae::draw::v2::font_slant_t& slant, std::string_view src)
+    // {
+    //     slant = ae::draw::v2::font_slant_t{src};
+    // }
 
-    static inline std::string get(const ae::draw::v2::font_weight_t& weight)
-    {
-        return fmt::format("{}", weight);
-    }
+    // static inline std::string get(const ae::draw::v2::font_weight_t& weight)
+    // {
+    //     return fmt::format("{}", weight);
+    // }
 
-    static inline void put(ae::draw::v2::font_weight_t& weight, std::string_view src)
-    {
-        weight = ae::draw::v2::font_weight_t{src};
-    }
+    // static inline void put(ae::draw::v2::font_weight_t& weight, std::string_view src)
+    // {
+    //     weight = ae::draw::v2::font_weight_t{src};
+    // }
 
     // ----------------------------------------------------------------------
 
@@ -141,75 +141,139 @@ void ae::py::chart_v3_plot_spec(pybind11::module_& chart_v3_submodule)
     pybind11::class_<semantic::StyleModifier>(chart_v3_submodule, "SemanticStyleModifier") //
         ;
 
-    pybind11::class_<semantic::AreaStyle>(chart_v3_submodule, "SemanticAreaStyle") //
+    pybind11::class_<semantic::Title>(chart_v3_submodule, "SemanticTitle") //
         .def_property(
-            "border_color", [](const semantic::AreaStyle& area) { return fmt::format("{}", area.border_color); },
-            [](semantic::AreaStyle& area, std::string_view color) { area.border_color = color; }) //
+            "shown", [](const semantic::Title& title) { return title.shown.has_value() ? *title.shown : false; }, [](semantic::Title& title, bool shown) { title.shown = shown; }) //
+        .def_property_readonly(
+            "box",
+            [](semantic::Title& title) -> semantic::box_t& {
+                if (!title.box.has_value())
+                    title.box = semantic::box_t{};
+                return *title.box;
+            },
+            pybind11::return_value_policy::reference_internal) //
+        .def_readwrite("text", &semantic::Title::text)         //
+        ;
+
+    pybind11::class_<semantic::box_t>(chart_v3_submodule, "SemanticBox") //
         .def_property(
-            "border_width", [](const semantic::AreaStyle& area) { return static_cast<double>(area.border_width); },
-            [](semantic::AreaStyle& area, double border_width) { area.border_width = border_width; }) //
+            "origin", [](const semantic::box_t& box) { return box.origin.has_value() ? *box.origin : std::string{"tl"}; },
+            [](semantic::box_t& box, std::string_view origin) { box.set_origin(origin); }) //
         .def_property(
-            "background", [](const semantic::AreaStyle& area) { return fmt::format("{}", area.background); }, [](semantic::AreaStyle& area, std::string_view color) { area.background = color; }) //
-        .def("padding", [](const semantic::AreaStyle& area) { return area.padding; })                                                                                                             //
+            "padding", [](const semantic::box_t& /*box*/) { return pybind11::none{}; }, [](semantic::box_t& box, double value) { box.set_padding(value); }) //
         .def(
-            "padding",
-            [](semantic::AreaStyle& area, double top, double right, double bottom, double left) {
-                area.padding = semantic::padding_t{top, right, bottom, left};
+            "offset",
+            [](semantic::box_t& box, double x, double y) {
+                box.offset = semantic::offset_t{x, y};
             },
-            "top"_a, "right"_a, "bottom"_a, "left"_a) //
+            "x"_a, "y"_a) //
+        .def_property(
+            "border_color", [](const semantic::box_t& box) { return box.border_color.has_value() ? **box.border_color : std::string{"transparent"}; },
+            [](semantic::box_t& box, std::string_view border_color) { box.border_color = semantic::color_t{border_color}; }) //
+        .def_property(
+            "border_width", [](const semantic::box_t& box) { return box.border_width.has_value() ? *box.border_width : 0.0; },
+            [](semantic::box_t& box, double border_width) { box.border_width = border_width; }) //
+        .def_property(
+            "background_color", [](const semantic::box_t& box) { return box.background_color.has_value() ? **box.background_color : std::string{"transparent"}; },
+            [](semantic::box_t& box, std::string_view background_color) { box.background_color = semantic::color_t{background_color}; }) //
         ;
 
-    pybind11::class_<semantic::Legend, semantic::AreaStyle>(chart_v3_submodule, "SemanticLegend")       //
-        .def_readwrite("shown", &semantic::Legend::shown)                                               //
-        .def_readwrite("add_counter", &semantic::Legend::add_counter)                                   //
-        .def_readwrite("show_rows_with_zero_count", &semantic::Legend::show_rows_with_zero_count)       //
-        .def_readonly("title", &semantic::Legend::title)                                                //
-        .def_property("relative", &semantic::Legend::format_relative, &semantic::Legend::relative_from) //
+    pybind11::class_<semantic::text_t>(chart_v3_submodule, "SemanticText") //
         .def_property(
-            "point_size", [](const semantic::Legend& legend) { return static_cast<double>(legend.point_size); }, [](semantic::Legend& legend, double point_size) { legend.point_size = point_size; }) //
+            "text", [](const semantic::text_t& text) { return text.text.has_value() ? *text.text : std::string{}; },
+            [](semantic::text_t& text, std::string_view value) { text.text = std::string{value}; }) //
         .def_property(
-            "offset", [](const semantic::Legend& legend) { return ae::py::get(legend.offset); },
-            [](semantic::Legend& legend, const std::vector<double>& offset) { ae::py::put(legend.offset, offset); }) //
+            "font_face", [](const semantic::text_t& text) { return text.font_face.has_value() ? *text.font_face : std::string{}; },
+            [](semantic::text_t& text, std::string_view font_face) { text.set_font_face(font_face); }) //
+        .def_property(
+            "font_weight", [](const semantic::text_t& text) { return text.font_weight.has_value() ? *text.font_weight : std::string{}; },
+            [](semantic::text_t& text, std::string_view font_weight) { text.set_font_weight(font_weight); }) //
+        .def_property(
+            "font_slant", [](const semantic::text_t& text) { return text.font_slant.has_value() ? *text.font_slant : std::string{}; },
+            [](semantic::text_t& text, std::string_view font_slant) { text.set_font_slant(font_slant); }) //
+        .def_property(
+            "font_size", [](const semantic::text_t& text) { return text.font_size.has_value() ? *text.font_size : 16.0; },
+            [](semantic::text_t& text, double font_size) { text.font_size = font_size; }) //
+        .def_property(
+            "color", [](const semantic::text_t& text) { return text.color.has_value() ? **text.color : std::string{"black"}; },
+            [](semantic::text_t& text, std::string_view color) { text.color = semantic::color_t{color}; }) //
+        .def_property(
+            "interline", [](const semantic::text_t& text) { return text.interline.has_value() ? *text.interline : 0.2; },
+            [](semantic::text_t& text, double interline) { text.interline = interline; }) //
         ;
 
-    pybind11::class_<semantic::Title, semantic::AreaStyle>(chart_v3_submodule, "SemanticTitle") //
-        .def_property(
-            "offset", [](const semantic::Title& title) { return ae::py::get(title.text.offset); },
-            [](semantic::Title& title, const std::vector<double>& offset) { ae::py::put(title.text.offset, offset); }) //
-        .def_property(
-            "text",
-            [](const semantic::Title& title) {
-                if (title.text.text.has_value())
-                    return *title.text.text;
-                else
-                    return std::string{};
-            },
-            [](semantic::Title& title, std::string_view text) { title.text.text = std::string{text}; }) //
-        .def_property(
-            "shown", [](const semantic::Title& title) { return title.text.shown; },
-            [](semantic::Title& title, bool shown) { title.text.shown = shown; }) //
-        .def_property(
-            "size", [](const semantic::Title& title) { return title.text.size; },
-            [](semantic::Title& title, double size) { title.text.size = size; }) //
-        .def_property(
-            "color", [](const semantic::Title& title) { return fmt::format("{}", title.text.color); },
-            [](semantic::Title& title, std::string_view color) { title.text.color = color; }) //
-        .def_property(
-            "slant", [](const semantic::Title& title) { return ae::py::get(title.text.slant); },
-            [](semantic::Title& title, std::string_view slant) { ae::py::put(title.text.slant, slant); }) //
-        .def_property(
-            "weight", [](const semantic::Title& title) { return ae::py::get(title.text.weight); },
-            [](semantic::Title& title, std::string_view weight) { ae::py::put(title.text.weight, weight); }) //
-        .def_property(
-            "font_family", [](const semantic::Title& title) { return title.text.font_family; },
-            [](semantic::Title& title, std::string_view font_family) { title.text.font_family = font_family; }) //
-        .def_property(
-            "rotation", [](const semantic::Title& title) { return *title.text.rotation; },
-            [](semantic::Title& title, double rotation) { title.text.rotation = Rotation{rotation}; }) //
-        .def_property(
-            "interline", [](const semantic::Title& title) { return static_cast<double>(title.text.interline); },
-            [](semantic::Title& title, double interline) { title.text.interline = interline; }) //
-        ;
+    // ======================================================================
+
+    // pybind11::class_<semantic::AreaStyle>(chart_v3_submodule, "SemanticAreaStyle") //
+    //     .def_property(
+    //         "border_color", [](const semantic::AreaStyle& area) { return fmt::format("{}", area.border_color); },
+    //         [](semantic::AreaStyle& area, std::string_view color) { area.border_color = color; }) //
+    //     .def_property(
+    //         "border_width", [](const semantic::AreaStyle& area) { return static_cast<double>(area.border_width); },
+    //         [](semantic::AreaStyle& area, double border_width) { area.border_width = border_width; }) //
+    //     .def_property(
+    //         "background", [](const semantic::AreaStyle& area) { return fmt::format("{}", area.background); }, [](semantic::AreaStyle& area, std::string_view color) { area.background = color; }) //
+    //     .def("padding", [](const semantic::AreaStyle& area) { return area.padding; })                                                                                                             //
+    //     .def(
+    //         "padding",
+    //         [](semantic::AreaStyle& area, double top, double right, double bottom, double left) {
+    //             area.padding = semantic::padding_t{top, right, bottom, left};
+    //         },
+    //         "top"_a, "right"_a, "bottom"_a, "left"_a) //
+    //     ;
+
+    // pybind11::class_<semantic::Legend, semantic::AreaStyle>(chart_v3_submodule, "SemanticLegend")       //
+    //     .def_readwrite("shown", &semantic::Legend::shown)                                               //
+    //     .def_readwrite("add_counter", &semantic::Legend::add_counter)                                   //
+    //     .def_readwrite("show_rows_with_zero_count", &semantic::Legend::show_rows_with_zero_count)       //
+    //     .def_readonly("title", &semantic::Legend::title)                                                //
+    //     .def_property("relative", &semantic::Legend::format_relative, &semantic::Legend::relative_from) //
+    //     .def_property(
+    //         "point_size", [](const semantic::Legend& legend) { return static_cast<double>(legend.point_size); }, [](semantic::Legend& legend, double point_size) { legend.point_size = point_size; })
+    //         //
+    //     .def_property(
+    //         "offset", [](const semantic::Legend& legend) { return ae::py::get(legend.offset); },
+    //         [](semantic::Legend& legend, const std::vector<double>& offset) { ae::py::put(legend.offset, offset); }) //
+    //     ;
+
+    // pybind11::class_<semantic::Title, semantic::AreaStyle>(chart_v3_submodule, "SemanticTitle") //
+    //     .def_property(
+    //         "offset", [](const semantic::Title& title) { return ae::py::get(title.text.offset); },
+    //         [](semantic::Title& title, const std::vector<double>& offset) { ae::py::put(title.text.offset, offset); }) //
+    //     .def_property(
+    //         "text",
+    //         [](const semantic::Title& title) {
+    //             if (title.text.text.has_value())
+    //                 return *title.text.text;
+    //             else
+    //                 return std::string{};
+    //         },
+    //         [](semantic::Title& title, std::string_view text) { title.text.text = std::string{text}; }) //
+    //     .def_property(
+    //         "shown", [](const semantic::Title& title) { return title.text.shown; },
+    //         [](semantic::Title& title, bool shown) { title.text.shown = shown; }) //
+    //     .def_property(
+    //         "size", [](const semantic::Title& title) { return title.text.size; },
+    //         [](semantic::Title& title, double size) { title.text.size = size; }) //
+    //     .def_property(
+    //         "color", [](const semantic::Title& title) { return fmt::format("{}", title.text.color); },
+    //         [](semantic::Title& title, std::string_view color) { title.text.color = color; }) //
+    //     .def_property(
+    //         "slant", [](const semantic::Title& title) { return ae::py::get(title.text.slant); },
+    //         [](semantic::Title& title, std::string_view slant) { ae::py::put(title.text.slant, slant); }) //
+    //     .def_property(
+    //         "weight", [](const semantic::Title& title) { return ae::py::get(title.text.weight); },
+    //         [](semantic::Title& title, std::string_view weight) { ae::py::put(title.text.weight, weight); }) //
+    //     .def_property(
+    //         "font_family", [](const semantic::Title& title) { return title.text.font_family; },
+    //         [](semantic::Title& title, std::string_view font_family) { title.text.font_family = font_family; }) //
+    //     .def_property(
+    //         "rotation", [](const semantic::Title& title) { return *title.text.rotation; },
+    //         [](semantic::Title& title, double rotation) { title.text.rotation = Rotation{rotation}; }) //
+    //     .def_property(
+    //         "interline", [](const semantic::Title& title) { return static_cast<double>(title.text.interline); },
+    //         [](semantic::Title& title, double interline) { title.text.interline = interline; }) //
+    //     ;
 }
 
 // ----------------------------------------------------------------------

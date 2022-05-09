@@ -572,40 +572,123 @@ inline void read_semantic_plot_style_modifier(ae::chart::v3::semantic::StyleModi
 
 // ----------------------------------------------------------------------
 
-inline void read_semantic_plot_style_area(ae::chart::v3::semantic::AreaStyle& target, ::simdjson::ondemand::object source)
+// inline void read_semantic_plot_style_area(ae::chart::v3::semantic::AreaStyle& target, ::simdjson::ondemand::object source)
+// {
+//     for (auto field : source) {
+//         if (const std::string_view key = field.unescaped_key(); key == "P") {
+//             size_t ind{0};
+//             for (double val : field.value().get_array()) {
+//                 target.padding[ind] = val;
+//                 ++ind;
+//             }
+//         }
+//         else if (key == "O") {
+//             target.border_color = static_cast<std::string_view>(field.value());
+//         }
+//         else if (key == "o") {
+//             target.border_width = static_cast<double>(field.value());
+//         }
+//         else if (key == "F") {
+//             target.background = static_cast<std::string_view>(field.value());
+//         }
+//         else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
+//             unhandled_key({"c", "R", "<name>", "L", "A", key});
+//     }
+// }
+
+// ----------------------------------------------------------------------
+
+inline ae::chart::v3::semantic::box_t read_semantic_box(::simdjson::ondemand::object source)
 {
+    ae::chart::v3::semantic::box_t box;
     for (auto field : source) {
-        if (const std::string_view key = field.unescaped_key(); key == "P") {
-            size_t ind{0};
-            for (double val : field.value().get_array()) {
-                target.padding[ind] = val;
-                ++ind;
+        if (const std::string_view key = field.unescaped_key(); key == "o") {
+            box.set_origin(field.value());
+        }
+        else if (key == "p") {
+            box.padding = ae::chart::v3::semantic::padding_t{};
+            for (auto field_padding : field.value().get_object()) {
+                if (const std::string_view key_padding = field_padding.unescaped_key(); key == "t") {
+                    (*box.padding)[0] = field.value();
+                }
+                else if (key == "r") {
+                    (*box.padding)[1] = field.value();
+                }
+                else if (key == "b") {
+                    (*box.padding)[2] = field.value();
+                }
+                else if (key == "l") {
+                    (*box.padding)[3] = field.value();
+                }
+                else if (key_padding[0] != '?' && key_padding[0] != ' ' && key_padding[0] != '_')
+                    unhandled_key({"c", "R", "<name>", "T", "B", "p", key_padding});
             }
         }
         else if (key == "O") {
-            target.border_color = static_cast<std::string_view>(field.value());
+            box.offset = ae::chart::v3::semantic::offset_t{};
+            auto offset = field.value().get_array();
+            auto it = offset.begin();
+            (*box.offset)[0] = *it;
+            ++it;
+            (*box.offset)[1] = *it;
         }
-        else if (key == "o") {
-            target.border_width = static_cast<double>(field.value());
+        else if (key == "B") {
+            box.border_color = ae::chart::v3::semantic::color_t{static_cast<std::string_view>(field.value())};
+        }
+        else if (key == "W") {
+            box.border_width = field.value();
         }
         else if (key == "F") {
-            target.background = static_cast<std::string_view>(field.value());
+            box.background_color = ae::chart::v3::semantic::color_t{static_cast<std::string_view>(field.value())};
         }
         else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
-            unhandled_key({"c", "R", "<name>", "L", "A", key});
+            unhandled_key({"c", "R", "<name>", "T", "B", key});
     }
+    return box;
 }
 
-// ----------------------------------------------------------------------
+inline ae::chart::v3::semantic::text_t read_semantic_text(::simdjson::ondemand::object source)
+{
+    ae::chart::v3::semantic::text_t text;
+    for (auto field : source) {
+        if (const std::string_view key = field.unescaped_key(); key == "t") {
+            text.text = std::string{static_cast<std::string_view>(field.value())};
+        }
+        else if (key == "f") {
+            text.set_font_face(field.value());
+        }
+        else if (key == "S") {
+            text.set_font_slant(field.value());
+        }
+        else if (key == "W") {
+            text.set_font_weight(field.value());
+        }
+        else if (key == "s") {
+            text.font_size = field.value();
+        }
+        else if (key == "c") {
+            text.color = ae::chart::v3::semantic::color_t{static_cast<std::string_view>(field.value())};
+        }
+        else if (key == "i") {
+            text.interline = field.value();
+        }
+        else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
+            unhandled_key({"c", "R", "<name>", "T", "T", key});
+    }
+    return text;
+}
 
 inline void read_semantic_plot_style_title(ae::chart::v3::semantic::Title& target, ::simdjson::ondemand::object source)
 {
     for (auto field : source) {
-        if (const std::string_view key = field.unescaped_key(); key == "A") {
-            read_semantic_plot_style_area(target, field.value());
+        if (const std::string_view key = field.unescaped_key(); key == "-") {
+            target.shown = !field.value();
         }
-        else if (read_text_and_offset(target.text, key, field.value())) {
-            // pass
+        else if (key == "B") {
+            target.box = read_semantic_box(field.value());
+        }
+        else if (key == "T") {
+            target.text = read_semantic_text(field.value());
         }
         else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
             unhandled_key({"c", "R", "<name>", "T", key});
@@ -620,27 +703,27 @@ inline void read_semantic_plot_style_legend(ae::chart::v3::semantic::Legend& tar
         if (const std::string_view key = field.unescaped_key(); key == "-") {
             target.shown = !field.value();
         }
-        else if (key == "p") {
-            read_offset(target.offset, field.value());
-        }
-        else if (key == "c") {  // corner relative
-            target.relative_from(field.value());
-        }
-        else if (key == "A") {
-            read_semantic_plot_style_area(target, field.value());
-        }
-        else if (key == "C") {
-            target.add_counter = field.value();
-        }
-        else if (key == "S") {
-            target.point_size = static_cast<double>(field.value());
-        }
-        else if (key == "z") {
-            target.show_rows_with_zero_count = field.value();
-        }
-        else if (key == "T") {
-            read_semantic_plot_style_title(target.title, field.value());
-        }
+        // else if (key == "p") {
+        //     read_offset(target.offset, field.value());
+        // }
+        // else if (key == "c") {  // corner relative
+        //     target.relative_from(field.value());
+        // }
+        // else if (key == "A") {
+        //     read_semantic_plot_style_area(target, field.value());
+        // }
+        // else if (key == "C") {
+        //     target.add_counter = field.value();
+        // }
+        // else if (key == "S") {
+        //     target.point_size = static_cast<double>(field.value());
+        // }
+        // else if (key == "z") {
+        //     target.show_rows_with_zero_count = field.value();
+        // }
+        // else if (key == "T") {
+        //     read_semantic_plot_style_title(target.title, field.value());
+        // }
         else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
             unhandled_key({"c", "R", "<name>", "L", key});
     }
