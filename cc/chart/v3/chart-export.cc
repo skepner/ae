@@ -260,12 +260,13 @@ static inline bool export_semantic_box(fmt::memory_buffer& out, const std::optio
         fmt::format_to(std::back_inserter(out), "\"B\":{{");
         auto comma_L2 = put_optional(out, box->origin, "o", false);
         if (box->padding.has_value()) {
+            const auto& padding = *box->padding;
             comma_L2 = put_comma(out, comma_L2);
             fmt::format_to(std::back_inserter(out), "\"p\":{{");
-            auto comma_L3 = put_optional(out, (*box->padding)[0], "t", false);
-            comma_L3 = put_optional(out, (*box->padding)[1], "r", comma_L3);
-            comma_L3 = put_optional(out, (*box->padding)[2], "b", comma_L3);
-            put_optional(out, (*box->padding)[3], "l", comma_L3);
+            auto comma_L3 = put_optional(out, padding[0], "t", false);
+            comma_L3 = put_optional(out, padding[1], "r", comma_L3);
+            comma_L3 = put_optional(out, padding[2], "b", comma_L3);
+            put_optional(out, padding[3], "l", comma_L3);
             fmt::format_to(std::back_inserter(out), "}}");
         }
         if (box->offset.has_value())

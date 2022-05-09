@@ -580,23 +580,24 @@ inline ae::chart::v3::semantic::box_t read_semantic_box(::simdjson::ondemand::ob
             box.set_origin(field.value());
         }
         else if (key == "p") {
-            box.padding = ae::chart::v3::semantic::padding_t{};
+            ae::chart::v3::semantic::padding_t padding{};
             for (auto field_padding : field.value().get_object()) {
-                if (const std::string_view key_padding = field_padding.unescaped_key(); key == "t") {
-                    (*box.padding)[0] = field.value();
+                if (const std::string_view key_padding = field_padding.unescaped_key(); key_padding == "t") {
+                    padding[0] = field_padding.value();
                 }
-                else if (key == "r") {
-                    (*box.padding)[1] = field.value();
+                else if (key_padding == "r") {
+                    padding[1] = field_padding.value();
                 }
-                else if (key == "b") {
-                    (*box.padding)[2] = field.value();
+                else if (key_padding == "b") {
+                    padding[2] = field_padding.value();
                 }
-                else if (key == "l") {
-                    (*box.padding)[3] = field.value();
+                else if (key_padding == "l") {
+                    padding[3] = field_padding.value();
                 }
                 else if (key_padding[0] != '?' && key_padding[0] != ' ' && key_padding[0] != '_')
                     unhandled_key({"c", "R", "<name>", "T", "B", "p", key_padding});
             }
+            box.padding = padding;
         }
         else if (key == "O") {
             box.offset = ae::chart::v3::semantic::offset_t{};
