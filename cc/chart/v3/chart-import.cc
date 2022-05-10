@@ -690,6 +690,9 @@ inline void read_semantic_plot_style_legend(ae::chart::v3::semantic::Legend& tar
         else if (key == "B") {
             target.box = read_semantic_box(field.value());
         }
+        else if (key == "t") {
+            target.row_style = read_semantic_text(field.value());
+        }
         else if (key == "T") {
             target.title = read_semantic_text(field.value());
         }

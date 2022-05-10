@@ -171,6 +171,14 @@ void ae::py::chart_v3_plot_spec(pybind11::module_& chart_v3_submodule)
             },
             pybind11::return_value_policy::reference_internal) //
         .def_property_readonly(
+            "row_style",
+            [](semantic::Legend& legend) -> semantic::text_t& {
+                if (!legend.row_style.has_value())
+                    legend.row_style = semantic::text_t{};
+                return *legend.row_style;
+            },
+            pybind11::return_value_policy::reference_internal) //
+        .def_property_readonly(
             "title",
             [](semantic::Legend& legend) -> semantic::text_t& {
                 if (!legend.title.has_value())

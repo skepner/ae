@@ -279,11 +279,11 @@ static inline bool export_semantic_box(fmt::memory_buffer& out, const std::optio
     return comma;
 }
 
-static inline bool export_semantic_text(fmt::memory_buffer& out, const std::optional<ae::chart::v3::semantic::text_t> text, bool comma)
+static inline bool export_semantic_text(fmt::memory_buffer& out, const std::optional<ae::chart::v3::semantic::text_t> text, std::string_view key, bool comma)
 {
     if (text.has_value()) {
         comma = put_comma(out, comma);
-        fmt::format_to(std::back_inserter(out), "\"T\":{{");
+        fmt::format_to(std::back_inserter(out), "\"{}\":{{", key);
         auto comma_L2 = put_optional(out, text->text, "t", false);
         comma_L2 = put_optional(out, text->font_face, "f", comma_L2);
         comma_L2 = put_optional(out, text->font_weight, "W", comma_L2);
@@ -303,7 +303,7 @@ static inline bool export_semantic_plot_title(fmt::memory_buffer& out, const ae:
         fmt::format_to(std::back_inserter(out), "\n      \"T\":{{");
         auto comma_L3 = export_shown(out, title.shown, false);
         comma_L3 = export_semantic_box(out, title.box, comma_L3);
-        comma_L3 = export_semantic_text(out, title.text, comma_L3);
+        comma_L3 = export_semantic_text(out, title.text, "T", comma_L3);
         fmt::format_to(std::back_inserter(out), "}}");
     }
     return comma;
@@ -321,7 +321,8 @@ static inline bool export_semantic_plot_spec_legend(fmt::memory_buffer& out, con
         comma_L2 = put_optional(out, legend.point_size, "S", comma_L2);
         comma_L2 = put_optional(out, legend.show_rows_with_zero_count, "z", comma_L2);
         comma_L2 = export_semantic_box(out, legend.box, comma_L2);
-        comma_L2 = export_semantic_text(out, legend.title, comma_L2);
+        comma_L2 = export_semantic_text(out, legend.row_style, "t", comma_L2);
+        comma_L2 = export_semantic_text(out, legend.title, "T", comma_L2);
         fmt::format_to(std::back_inserter(out), "}}");
     }
     return comma;

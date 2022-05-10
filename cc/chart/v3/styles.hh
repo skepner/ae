@@ -86,6 +86,7 @@ namespace ae::chart::v3::semantic
         std::optional<double> point_size{};
         std::optional<bool> show_rows_with_zero_count;
         std::optional<box_t> box;
+        std::optional<text_t> row_style; // style of text in a legend row
         std::optional<text_t> title;
 
         bool operator==(const Legend&) const = default;
