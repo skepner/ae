@@ -16,7 +16,18 @@ def main(args):
         chart.populate_from_seqdb()
         if not args.keep_old_spec:
             chart.styles().remove()
+        for mod in args.processing_modules:
+            process_module(chart, mod)
         # output(chart, source_filename=filename, output_filename=args.output, output_must_be_dir=len(args.source) > 1)
+
+# ----------------------------------------------------------------------
+
+def process_module(chart: ae_backend.chart_v3.Chart, module_filename: Path):
+    locls : dict = {}
+    exec(module_filename.open().read(), globals(), locls)
+    for func_name, func in locls.items():
+        if func_name == "sematic_data_for_subtype":
+            func(chart.info().type_subtype())
 
 # ----------------------------------------------------------------------
 
@@ -40,7 +51,7 @@ try:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("source", nargs="+", type=Path)
     parser.add_argument("-o", "--output", type=Path, help="if there is just one source, output can be a file name, otherwise output must be direcory, if ommited source is replaced.")
-    parser.add_argument("-s", dest="processing_modules", action="append", type=Path)
+    parser.add_argument("-s", dest="processing_modules", action="append", default=[], type=Path)
     parser.add_argument("--keep-old-spec", action="store_true", default=False, help="do not remove existing semantic plot styles")
 
     args = parser.parse_args()
