@@ -61,7 +61,7 @@ def main(args: argparse.Namespace):
     if args.ladderize:
         ladderize_method = "number-of-leaves"
         tree.ladderize(ladderize_method)
-        print(f">>> ladderized by \"{ladderize_method}", file=sys.stderr)
+        print(f">>> ladderized by \"{ladderize_method}\"", file=sys.stderr)
 
     if args.remove_leaves_isolated_before:
         print(f">>> removing leaves isolated before {args.remove_leaves_isolated_before}, but keeping tree topology", file=sys.stderr)

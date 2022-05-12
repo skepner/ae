@@ -1,0 +1,44 @@
+#! /usr/bin/env python3
+
+import os, sys, re, argparse
+from pathlib import Path
+import ae_backend
+
+# ----------------------------------------------------------------------
+
+def main(args: argparse.Namespace):
+    tree = ae_backend.tree.load(args.input_tree)
+    if bad_inodes := tree.select_inodes_with_just_one_child():
+        tree_newick = args.input_tree.open().read()
+        if tree_newick[0] != '(' or tree_newick[-2:] != ");":
+            raise RuntimeError(f"input tree ({args.input_tree}) is not in uncompressed newick format")
+        for bad_node in bad_inodes:
+            name = bad_node.first_leaf().name()
+            beg = tree_newick.find(name)
+            if tree_newick[beg-1] != '(':
+                raise RuntimeError(f"wrong symbol before \"{name}\" at {beg}")
+            end_edge = tree_newick.find(")", beg + len(name) + 1)
+            edge = float(tree_newick[beg + len(name) + 1:end_edge])
+            if not (mm := re.search(r"([\d\.e]+)[\),]", tree_newick[end_edge+2:], re.I)):
+                raise RuntimeError(f"cannot find parent edget end for \"{name}\"")
+            parent_edge = float(mm.group(1))
+            print(f"\"{name}\" edge:{edge} parent_edge:{parent_edge} -> {edge + parent_edge}")
+            tree_newick = f"{tree_newick[:beg-1]}{name}:{edge + parent_edge}{tree_newick[end_edge+2+mm.end(1):]}"
+        with args.output_tree.open("w") as out:
+            out.write(tree_newick)
+
+# ----------------------------------------------------------------------
+
+try:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("input_tree", type=Path)
+    parser.add_argument("output_tree", type=Path)
+    args = parser.parse_args()
+    exit_code = main(args) or 0
+except Exception as err:
+    import traceback
+    print(f"> {err}\n{traceback.format_exc()}", file=sys.stderr)
+    exit_code = 1
+exit(exit_code)
+
+# ======================================================================
