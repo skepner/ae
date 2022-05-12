@@ -4,9 +4,10 @@
 Add semantic plot styles to charts
 """
 
-import sys, os
+import sys, os, pprint
 from pathlib import Path
 import ae_backend
+import ae.utils.load_module
 
 # ======================================================================
 
@@ -23,11 +24,9 @@ def main(args):
 # ----------------------------------------------------------------------
 
 def process_module(chart: ae_backend.chart_v3.Chart, module_filename: Path):
-    locls : dict = {}
-    exec(module_filename.open().read(), globals(), locls)
-    for func_name, func in locls.items():
-        if func_name == "sematic_data_for_subtype":
-            func(chart.info().type_subtype())
+    mod = ae.utils.load_module.load(module_filename)
+    styles = mod.semantic_data_for_subtype(chart.info().type_subtype())
+    pprint.pprint(styles)
 
 # ----------------------------------------------------------------------
 
