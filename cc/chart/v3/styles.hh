@@ -127,6 +127,7 @@ namespace ae::chart::v3::semantic
         auto end() { return styles_.end(); }
         auto begin() const { return styles_.begin(); }
         auto end() const { return styles_.end(); }
+        void clear() { styles_.clear(); }
 
         // find or add style by name
         Style& find(std::string_view name);

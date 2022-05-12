@@ -116,6 +116,7 @@ void ae::py::chart_v3_plot_spec(pybind11::module_& chart_v3_submodule)
         .def(
             "__iter__", [](semantic::Styles& styles) { return pybind11::make_iterator(styles.begin(), styles.end()); }, pybind11::keep_alive<0, 1>())         //
         .def("__getitem__", &semantic::Styles::find, "name"_a, pybind11::return_value_policy::reference_internal, pybind11::doc("find or add style by name")) //
+        .def("remove", &semantic::Styles::clear, pybind11::doc("remove all sematic styles")) //
         ;
 
     pybind11::class_<semantic::Style>(chart_v3_submodule, "SemanticStyle") //

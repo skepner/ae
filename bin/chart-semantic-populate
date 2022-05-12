@@ -1,0 +1,53 @@
+#! /usr/bin/env python3
+# -*- Mode: Python; Mode: Rainbow; -*-
+"""
+Add semantic plot styles to charts
+"""
+
+import sys, os
+from pathlib import Path
+import ae_backend
+
+# ======================================================================
+
+def main(args):
+    for filename in args.source:
+        chart = ae_backend.chart_v3.Chart(filename)
+        chart.populate_from_seqdb()
+        if not args.keep_old_spec:
+            chart.styles().remove()
+        # output(chart, source_filename=filename, output_filename=args.output, output_must_be_dir=len(args.source) > 1)
+
+# ----------------------------------------------------------------------
+
+def output(chart: ae_backend.chart_v3.Chart, source_filename: Path, output_filename: Path, output_must_be_dir: bool):
+    if not output_filename:
+        output_filename = source_filename
+    else:
+        if not output_filename.exists() and (output_must_be_dir or output_filename.suffix != ".ace"):
+            output_filename.mkdir(parents=True)
+        if output_filename.is_dir():
+            output_filename = output_filename.joinpath(source_filename.name)
+        elif output_must_be_dir:
+            raise RuntimeError("--output must be directory")
+    chart.write(output_filename)
+
+# ======================================================================
+
+import argparse, traceback
+
+try:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("source", nargs="+", type=Path)
+    parser.add_argument("-o", "--output", type=Path, help="if there is just one source, output can be a file name, otherwise output must be direcory, if ommited source is replaced.")
+    parser.add_argument("-s", dest="processing_modules", action="append", type=Path)
+    parser.add_argument("--keep-old-spec", action="store_true", default=False, help="do not remove existing semantic plot styles")
+
+    args = parser.parse_args()
+    exit_code = main(args) or 0
+except Exception as err:
+    print(f"{err}\n{traceback.format_exc()}", file=sys.stderr)
+    exit_code = 1
+exit(exit_code)
+
+# ======================================================================
