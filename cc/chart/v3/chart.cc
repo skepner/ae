@@ -291,3 +291,29 @@ ae::antigen_indexes ae::chart::v3::Chart::reference() const
 } // ae::chart::v3::Chart::reference
 
 // ----------------------------------------------------------------------
+
+ae::sequences::lineage_t ae::chart::v3::Chart::lineage() const // major lineage
+{
+    const auto present_lineages = lineages();
+    const auto max = std::max_element(std::begin(present_lineages), std::end(present_lineages), [](const auto& en1, const auto& en2) { return en1.second < en2.second; });
+    if (max != std::end(present_lineages))
+        return max->first;
+    else
+        return sequences::lineage_t{};
+
+} // ae::chart::v3::Chart::lineage
+
+// ----------------------------------------------------------------------
+
+std::unordered_map<ae::sequences::lineage_t, size_t, ae::sequences::lineage_t_hash_for_unordered_map, std::equal_to<>> ae::chart::v3::Chart::lineages() const // lineage to antigen count
+{
+    std::unordered_map<sequences::lineage_t, size_t, ae::sequences::lineage_t_hash_for_unordered_map, std::equal_to<>> lineages;
+    for (const auto& antigen : antigens()) {
+        if (const auto& lineage = antigen.lineage(); !lineage.empty())
+            ++lineages.try_emplace(lineage, 0).first->second;
+    }
+    return lineages;
+
+} // ae::chart::v3::Chart::lineages
+
+// ----------------------------------------------------------------------

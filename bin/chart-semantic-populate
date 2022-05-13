@@ -42,7 +42,7 @@ def main(args):
 
 def process_module(chart: ae_backend.chart_v3.Chart, module_filename: Path):
     mod = ae.utils.load_module.load(module_filename)
-    return mod.semantic_data_for_subtype(chart.info().type_subtype())
+    return mod.semantic_data_for_subtype(f"{chart.info().type_subtype()}{chart.lineage()}")
 
 # ----------------------------------------------------------------------
 

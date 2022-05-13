@@ -40,6 +40,12 @@ namespace ae::sequences
         std::string lineage_{};
     };
 
+    struct lineage_t_hash_for_unordered_map
+    {
+        using is_transparent = void;
+        [[nodiscard]] size_t operator()(const sequences::lineage_t& txt) const { return std::hash<std::string_view>{}(txt); }
+    };
+
 } // namespace ae::sequences
 
 // ----------------------------------------------------------------------

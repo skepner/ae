@@ -1,6 +1,9 @@
 #pragma once
 
+#include <unordered_map>
+
 #include "ext/filesystem.hh"
+#include "sequences/lineage.hh"
 #include "chart/v3/info.hh"
 #include "chart/v3/antigens.hh"
 #include "chart/v3/titers.hh"
@@ -76,6 +79,9 @@ namespace ae::chart::v3
         antigen_indexes reference() const; // if antigen name+annotations is the same as serum name+annotations (ignoring reassortant, passage)
         void duplicates_distinct();
         void throw_if_duplicates() const;
+
+        sequences::lineage_t lineage() const; // major lineage
+        std::unordered_map<sequences::lineage_t, size_t, sequences::lineage_t_hash_for_unordered_map, std::equal_to<>> lineages() const; // lineage to antigen count
 
       private:
         Info info_{};
