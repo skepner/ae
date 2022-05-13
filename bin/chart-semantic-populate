@@ -5,6 +5,7 @@ Add semantic plot styles to charts
 """
 
 # pale clades
+# sequenced
 # serology
 # continent
 # time series
@@ -27,27 +28,73 @@ def main(args):
         chart.populate_from_seqdb()
         if not args.keep_old_spec:
             chart.styles().remove()
+        styles = {}
         for mod in args.processing_modules:
-            process_module(chart, mod)
+            styles.update(process_module(chart, mod))
+        # pprint.pprint(styles, width=200)
+        extra_clades = {}
+        for style_name, style in styles.items():
+            add_style(chart, style_name=style_name, style_data=style, extra_clades=extra_clades)
+        add_extra_clades(chart, extra_clades)
         output(chart, source_filename=filename, output_filename=args.output, output_must_be_dir=len(args.source) > 1)
 
 # ----------------------------------------------------------------------
 
 def process_module(chart: ae_backend.chart_v3.Chart, module_filename: Path):
     mod = ae.utils.load_module.load(module_filename)
-    style_desc = mod.semantic_data_for_subtype(chart.info().type_subtype())
-    styles = chart.styles()
-    for style_name, style in style_desc.items():
-        if priority := style.get("priority"):
-            styles[style_name].priority = priority
-        if parent := style.get("parent"):
-            styles[style_name].add_modifier(parent=parent)
-        legend_priority = 99
-        for modifier in style.get("modifiers", []):
-            if modifier.get("clade"):
-                selector = ["C", modifier["clade"]]
-            styles[style_name].add_modifier(selector=selector, fill=modifier["fill"], outline="black", rais=True, only="antigens", legend=modifier["legend"], legend_priority=legend_priority)
-            legend_priority -= 1
+    return mod.semantic_data_for_subtype(chart.info().type_subtype())
+
+# ----------------------------------------------------------------------
+
+def add_style(chart: ae_backend.chart_v3.Chart, style_name: str, style_data: list, extra_clades: dict):
+    # metadata = style_metadata(style_name)
+    style = chart.styles()[f"-{style_name}"]
+    style.priority = 1000
+    legend_priority = 99
+    map_type_suffix = ""
+    for modifier in style_data:
+        if clade := modifier.get("clade"):
+            map_type_suffix = "by clade"
+            if aa := modifier.get("aa"):
+                extra_clade = f"{clade} {aa}"
+                extra_clades[extra_clade] = {"base_clade": clade, "aa": aa}
+                clade = extra_clade
+            style.add_modifier(selector=["C", clade], fill=modifier["fill"], outline="black", rais=True, only="antigens", legend=modifier["legend"], legend_priority=legend_priority)
+        legend_priority -= 1
+    style.plot_title.text.text = f"{chart.info().lab()} {chart.info().type_subtype()} {chart.info().assay()} {map_type_suffix}"
+    style.legend.add_counter = True
+
+    # for style_name, style in style_desc.items():
+    #     if priority := style.get("priority"):
+    #         styles[style_name].priority = priority
+    #     if parent := style.get("parent"):
+    #         styles[style_name].add_modifier(parent=parent)
+    #     legend_priority = 99
+    #     for modifier in style.get("modifiers", []):
+    #         if modifier.get("clade"):
+    #             selector = ["C", modifier["clade"]]
+    #         styles[style_name].add_modifier(selector=selector, fill=modifier["fill"], outline="black", rais=True, only="antigens", legend=modifier["legend"], legend_priority=legend_priority)
+    #         legend_priority -= 1
+
+# ----------------------------------------------------------------------
+
+def add_extra_clades(chart: ae_backend.chart_v3.Chart, clades_to_add: dict):
+    for name, data in clades_to_add.items():
+        for selector in [chart.select_antigens, chart.select_sera]:
+            for no, ag_sr in selector(lambda en: en.has_clade(data["base_clade"]) and en.aa[data["aa"]]):
+                ag_sr.semantic.add_clade(name)
+
+# ----------------------------------------------------------------------
+
+# class StyleMetadata:
+
+#     def __int__(self, style_name: str):
+
+# def style_metadata(style_name: str) -> dict:
+#     metadata = {"priority": 1000, "prefix": "-"}
+#     if style_name.startswith("clades"):
+#         metadata["priority"
+#     return metadata
 
 # ----------------------------------------------------------------------
 
