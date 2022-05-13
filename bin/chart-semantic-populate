@@ -4,6 +4,16 @@
 Add semantic plot styles to charts
 """
 
+# pale clades
+# serology
+# continent
+# time series
+# bold outline for new
+# vaccines
+# serum circles
+# serum coverage
+# procrustes
+
 import sys, os, pprint
 from pathlib import Path
 import ae_backend
@@ -19,14 +29,25 @@ def main(args):
             chart.styles().remove()
         for mod in args.processing_modules:
             process_module(chart, mod)
-        # output(chart, source_filename=filename, output_filename=args.output, output_must_be_dir=len(args.source) > 1)
+        output(chart, source_filename=filename, output_filename=args.output, output_must_be_dir=len(args.source) > 1)
 
 # ----------------------------------------------------------------------
 
 def process_module(chart: ae_backend.chart_v3.Chart, module_filename: Path):
     mod = ae.utils.load_module.load(module_filename)
-    styles = mod.semantic_data_for_subtype(chart.info().type_subtype())
-    pprint.pprint(styles)
+    style_desc = mod.semantic_data_for_subtype(chart.info().type_subtype())
+    styles = chart.styles()
+    for style_name, style in style_desc.items():
+        if priority := style.get("priority"):
+            styles[style_name].priority = priority
+        if parent := style.get("parent"):
+            styles[style_name].add_modifier(parent=parent)
+        legend_priority = 99
+        for modifier in style.get("modifiers", []):
+            if modifier.get("clade"):
+                selector = ["C", modifier["clade"]]
+            styles[style_name].add_modifier(selector=selector, fill=modifier["fill"], outline="black", rais=True, only="antigens", legend=modifier["legend"], legend_priority=legend_priority)
+            legend_priority -= 1
 
 # ----------------------------------------------------------------------
 
