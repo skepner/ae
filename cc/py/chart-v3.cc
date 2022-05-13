@@ -27,6 +27,10 @@ namespace ae::py
         std::string_view virus() const { return *table_source.virus(); }
         std::string_view type_subtype() const { return *table_source.type_subtype(); }
         std::string_view assay() const { return *table_source.assay(); }
+        std::string assay_HI_or_Neut() const { return table_source.assay().HI_or_Neut(ae::chart::v3::Assay::no_hi::no); }
+        std::string assay_hi_or_neut() const { return table_source.assay().hi_or_neut(ae::chart::v3::Assay::no_hi::no); }
+        std::string assay_Neut() const { return table_source.assay().HI_or_Neut(ae::chart::v3::Assay::no_hi::yes); }
+        std::string assay_neut() const { return table_source.assay().hi_or_neut(ae::chart::v3::Assay::no_hi::yes); }
         std::string_view rbc_species() const { return *table_source.rbc_species(); }
         std::string_view lab() const { return *table_source.lab(); }
         std::string_view date() const { return *table_source.date(); }
@@ -176,7 +180,8 @@ void ae::py::chart_v3(pybind11::module_& mdl)
         .def("number_of_sera", [](const Chart& chart) -> size_t { return *chart.sera().size(); })               //
         .def("number_of_projections", [](const Chart& chart) -> size_t { return *chart.projections().size(); }) //
         .def("forced_column_bases", [](const Chart& chart) { return chart.forced_column_bases().data(); })      //
-        .def("column_bases", [](const Chart& chart, std::string_view mcb) { return chart.column_bases(minimum_column_basis{mcb}).data(); }, "minimum_column_basis"_a = "none")      //
+        .def(
+            "column_bases", [](const Chart& chart, std::string_view mcb) { return chart.column_bases(minimum_column_basis{mcb}).data(); }, "minimum_column_basis"_a = "none") //
 
         .def("info", [](std::shared_ptr<Chart> chart) { return new InfoRef{chart}; }) //
 
@@ -520,6 +525,10 @@ void ae::py::chart_v3(pybind11::module_& mdl)
         .def("virus", &InfoRef::virus)                         //
         .def("type_subtype", &InfoRef::type_subtype)           //
         .def("assay", &InfoRef::assay)                         //
+        .def("assay_HI_or_Neut", &InfoRef::assay_HI_or_Neut)   //
+        .def("assay_hi_or_neut", &InfoRef::assay_hi_or_neut)   //
+        .def("assay_Neut", &InfoRef::assay_Neut)               //
+        .def("assay_neut", &InfoRef::assay_neut)               //
         .def("rbc_species", &InfoRef::rbc_species)             //
         .def("lab", &InfoRef::lab)                             //
         .def("date", &InfoRef::date)                           //
