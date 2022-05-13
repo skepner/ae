@@ -3,10 +3,12 @@
 Export data from seqdb into fasta (sequences) and cvs (metainformation)
 """
 
-import sys, os
+import sys, os, csv
 #, datetime, re, json, subprocess
 from pathlib import Path
 import ae_backend
+from ae.sequences.source import fasta
+from locdb_v2 import continent
 
 sSubtypeFix = {"B": "B", "BVIC": "B", "BV": "B", "BY": "B", "BYAM": "B", "A(H1N1)": "A(H1N1)", "H1": "A(H1N1)", "1": "A(H1N1)", "A(H3N2)": "A(H3N2)", "H3": "A(H3N2)", "3": "A(H3N2)"}
 
@@ -21,9 +23,40 @@ def main(args):
     selected = ae_backend.seqdb.for_subtype(subtype).select_all()
     if lineage:
         selected.lineage(lineage)
+    if args.min_aa_length:
+        selected.exclude_too_short(args.min_aa_length)
     selected.find_masters()
     print(f">>> {subtype:7s} {len(selected)}", file=sys.stderr)
+    fasta.write(args.output.with_suffix(".faa"), selected, aa=True, wrap_pos=80 if args.wrap else 0, name=lambda ref: ref.seq_id())
+    fasta.write(args.output.with_suffix(".fna"), selected, aa=False, wrap_pos=80 if args.wrap else 0, name=lambda ref: ref.seq_id())
+    with args.output.with_suffix(".csv").open("w", newline="") as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=["id", "name", "host", "isolation date", "passage", "reassortant", "continent", "country"])
+        writer.writeheader()
+        for no, seq in enumerate(selected):
+            country = seq.country()
+            conti = seq.continent()
+            if country and not conti:
+                conti = continent(country)
+            writer.writerow({"id": seq.seq_id(),
+                             "name": prefix_name_with_subtype(seq.name(), subtype=subtype),
+                             "host": seq.host() or "HUMAN",
+                             "isolation date": seq.date(),
+                             "passage": seq.passage(),
+                             "reassortant": seq.reassortant(),
+                             "continent": conti,
+                             "country": country})
 
+# ----------------------------------------------------------------------
+
+def prefix_name_with_subtype(name: str, subtype: str):
+    if name[:2] not in ["A/", "A(", "B/"]:
+        if subtype == "A(H1N1)":
+            name = f"A(H1)/{name}"
+        elif subtype == "A(H3N2)":
+            name = f"A(H3)/{name}"
+        else:
+            name = f"{subtype}/{name}"
+    return name
 
 # ----------------------------------------------------------------------
 
@@ -34,6 +67,7 @@ try:
     parser.add_argument("subtype")
     parser.add_argument("output", type=Path, help="output prefix without suffix")
     parser.add_argument('--min-aa-length', type=int, default=None)
+    parser.add_argument("--wrap", dest="wrap", action="store_true", default=False)
     # parser.add_argument("charts", nargs="+")
 
     args = parser.parse_args()

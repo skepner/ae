@@ -55,7 +55,12 @@ def continent(name=None):
     try:
         return ldb.find_continent(country=name)
     except LocationNotFound:
-        return ldb.find_continent(country=ldb.find(name=name)["country"])
+        try:
+            return ldb.find_continent(country=ldb.find(name=name)["country"])
+        except LocationReplacement as replacement:
+            return ldb.find_continent(country=ldb.find(name=replacement.replacement)["country"])
+        except LocationNotFound:
+            return None
 
 # ----------------------------------------------------------------------
 

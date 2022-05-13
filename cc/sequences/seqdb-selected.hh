@@ -33,6 +33,12 @@ namespace ae::sequences
             return *this;
         }
 
+        SeqdbSelected& exclude_too_short(size_t min_aa_length)
+        {
+            erase_if(*this, [min_aa_length](const auto& ref) -> bool { return ref.seq->aa.size() < min_aa_length; });
+            return *this;
+        }
+
         SeqdbSelected& keep_masters_only(bool keep = true)
         {
             if (keep)
