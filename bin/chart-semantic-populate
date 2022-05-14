@@ -53,13 +53,17 @@ def add_style(chart: ae_backend.chart_v3.Chart, style_name: str, style_data: lis
     legend_priority = 99
     map_type_suffix = ""
     for modifier in style_data:
-        if clade := modifier.get("clade"):
+        if style_name.startswith("clades") and (clade := modifier.get("clade")):
             map_type_suffix = "by clade"
             if aa := modifier.get("aa"):
                 extra_clade = f"{clade} {aa}"
                 extra_clades[extra_clade] = {"base_clade": clade, "aa": aa}
                 clade = extra_clade
             style.add_modifier(selector=["C", clade], fill=modifier["fill"], outline="black", rais=True, only="antigens", legend=modifier["legend"], legend_priority=legend_priority)
+        elif style_name == "vaccines":
+            pass
+        else:
+            print(f">> unsupported style \"{style_name}\"", file=sys.stderr)
         legend_priority -= 1
     style.plot_title.text.text = f"{chart.info().lab()} {chart.info().type_subtype()} {chart.info().assay_HI_or_Neut()} {map_type_suffix}"
     style.legend.add_counter = True
