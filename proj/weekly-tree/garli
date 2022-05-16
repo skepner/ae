@@ -419,7 +419,7 @@ distanceswapbias = 1.0
 # ----------------------------------------------------------------------
 
 def get_output_dir(working_dir: Path, prefix: str, new_output: bool):
-    if not new_output and (output_dirs: = list(working_dir.glob(prefix + "*"))):
+    if not new_output and (output_dirs := list(working_dir.glob(prefix + "*"))):
         output_dir = max(output_dirs)
     else:
         output_dir = working_dir.joinpath(prefix + datetime.datetime.now().strftime('%Y-%m%d-%H%M%S'))
