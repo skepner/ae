@@ -70,7 +70,14 @@ find_compiler()
 {
     case $(uname) in
         Darwin)
-            export CXX=/usr/local/opt/llvm/bin/clang++
+            if [[ -x /usr/local/opt/llvm/bin/clang++ ]]; then
+                export CXX=/usr/local/opt/llvm/bin/clang++
+            elif [[ -x /opt/homebrew/opt/llvm/bin/clang++ ]]; then
+                export CXX=/opt/homebrew/opt/llvm/bin/clang++
+            else
+                echo "> clang++ not found" >&/dev/null
+                exit 1
+            fi
             MK_TIME=gtime
             ;;
         Linux)

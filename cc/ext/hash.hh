@@ -10,6 +10,8 @@
 #pragma GCC diagnostic ignored "-Wused-but-marked-unused"
 #pragma GCC diagnostic ignored "-Wextra-semi-stmt"
 #pragma GCC diagnostic ignored "-Wold-style-cast"
+// M1
+#pragma GCC diagnostic ignored "-Wreserved-identifier"
 // #pragma GCC diagnostic ignored ""
 #endif
 
