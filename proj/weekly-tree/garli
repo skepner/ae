@@ -24,7 +24,7 @@ def main(args: argparse.Namespace):
     else:
         source_fasta = working_dir.joinpath("source.fas").resolve()
     try:
-        best_tree_file = garli(working_dir=working_dir, tree=tree, source_fas=source_fasta, num_runs=args.num_runs, stoptime=args.stoptime, slurm_nodelist=args.slurm_nodelist, slurm_exclude_nodes=args.slurm_exclude_nodes)
+        best_tree_file = garli(working_dir=working_dir, tree=tree, source_fas=source_fasta, num_runs=args.num_runs, stoptime=args.stoptime, slurm_nodelist=args.slurm_nodelist, slurm_exclude_nodes=args.slurm_exclude_nodes, new_output=args.new_output)
         subprocess.run(["/usr/bin/mail", "-s", f"completed {sys.argv[0]} {working_dir}", "eu@antigenic-cartography.org"], input=f"cd {working_dir}\n{argv}\n{best_tree_file}\n", text=True)
         return 0
     except Exception as err:
@@ -33,7 +33,7 @@ def main(args: argparse.Namespace):
 
 # ----------------------------------------------------------------------
 
-def garli(working_dir: Path, tree: Path, source_fas: Path, num_runs: int, stoptime: int, slurm_nodelist: str, slurm_exclude_nodes: str):
+def garli(working_dir: Path, tree: Path, source_fas: Path, num_runs: int, stoptime: int, slurm_nodelist: str, slurm_exclude_nodes: str, new_output: bool):
 
     default_required_memory = 7000
 
@@ -42,7 +42,7 @@ def garli(working_dir: Path, tree: Path, source_fas: Path, num_runs: int, stopti
     # termination condition: when no new significantly better scoring topology has been encountered in greater than this number of generations, garli stops
     genthreshfortopoterm = 20000
 
-    output_dir = get_output_dir(working_dir, "garli.")
+    output_dir = get_output_dir(working_dir, "garli.", new_output=new_output)
 
     garli_cmd = "/syn/bin/garli"
     srun_cmd = [
@@ -418,9 +418,8 @@ distanceswapbias = 1.0
 
 # ----------------------------------------------------------------------
 
-def get_output_dir(working_dir, prefix):
-    output_dirs = list(working_dir.glob(prefix + "*"))
-    if output_dirs:
+def get_output_dir(working_dir: Path, prefix: str, new_output: bool):
+    if not new_output and (output_dirs: = list(working_dir.glob(prefix + "*"))):
         output_dir = max(output_dirs)
     else:
         output_dir = working_dir.joinpath(prefix + datetime.datetime.now().strftime('%Y-%m%d-%H%M%S'))
@@ -433,10 +432,11 @@ def get_output_dir(working_dir, prefix):
 try:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("subdir")
-    parser.add_argument("-n", "--num-runs", dest="num_runs", type=int, default=16)
-    parser.add_argument("-s", "--stoptime", dest="stoptime", default=60*60, type=int, help="termination condition: the maximum number of seconds for the run to continue")
-    parser.add_argument("-t", "--start-tree", dest="start_tree", default=None, type=Path)
-    parser.add_argument("-f", "--source-fasta", dest="source_fasta", default=None, type=Path)
+    parser.add_argument("-n", "--num-runs", type=int, default=16)
+    parser.add_argument("-s", "--stoptime", default=60*60, type=int, help="termination condition: the maximum number of seconds for the run to continue")
+    parser.add_argument("-t", "--start-tree", default=None, type=Path)
+    parser.add_argument("-f", "--source-fasta", default=None, type=Path)
+    parser.add_argument("--new-output", action="store_true", default=False)
     parser.add_argument("--node", dest="slurm_nodelist", default="i22", help="one node to run on, to run on multiple nodes use --exclude-nodes")
     parser.add_argument("--exclude-nodes", dest="slurm_exclude_nodes", default=None)
     args = parser.parse_args()

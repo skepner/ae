@@ -1,4 +1,4 @@
-# Time-stamp: <2022-04-01 09:15:15 eu>
+# Time-stamp: <2022-05-16 09:55:31 eu>
 * Making weekly tree by incrementally adding new strains to the trees of previous week
 
 ** Create and initialize new directory
@@ -30,6 +30,14 @@ ${AE_ROOT}/proj/weekly-tree/pdf <subtype>
 
 edit [[file:/scp:o:/syn/eu/ac/results/trees/weekly.html]]
 https://notebooks.antigenic-cartography.org/eu/results/trees/weekly.html
+
+** Ancestral state reconstruction (raxml)
+
+https://github.com/amkozlov/raxml-ng/wiki/Ancestral-state-reconstruction
+
+SUBTYPE=h3
+mkdir -p ${SUBTYPE}/raxml-asr && time /syn/bin/raxml-ng --ancestral --msa ${SUBTYPE}/source.fas --tree $(cat ${SUBTYPE}/raxml-best.txt) --model "GTR+G+I" --prefix ${SUBTYPE}/raxml-asr/asr
+${AE_ROOT}/proj/weekly-tree/garli --new-output --node i20 -t raxml-asr/asr.raxml.ancestralTree h3
 
 * -------------------- local vars ----------------------------------------------------------------------
   :PROPERTIES:
