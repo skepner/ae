@@ -15,7 +15,7 @@
         "hz",
         "eu-aa-transitions",
         {"N": "tree", "width-to-height-ratio": 0.41},
-        {"N": "time-series", "start": "2018-05", "end": "2022", "slot": {"width": 0.0085, "?width": 0.00765, "label": {"scale": 0.7, "rotation": "clockwise"}},
+        {"N": "time-series", "start": "2018-05", "?end": "2022", "slot": {"width": 0.0085, "?width": 0.00765, "label": {"scale": 0.7, "rotation": "clockwise"}},
          "dash": {"width": 0.5, "line_width_pixels": 0.1}},
 
         {"N": "nodes", "select": {"vaccine": {"type": "current", "passage": "cell"}, "report": false}, "apply": "report"},

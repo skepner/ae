@@ -23,7 +23,7 @@
 
         {"N": "gap", "width-to-height-ratio": 0.03},
 
-        {"N": "time-series", "start": "2016-07", "end": "2022-02",
+        {"N": "time-series", "start": "2016-07", "?end": "2022-02",
          "slot": {"width": 0.0058, "label": {"scale": 1.0, "rotation": "clockwise"}},
          "dash": {"width": 0.5, "line_width_pixels": 0.1}},
 
