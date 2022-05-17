@@ -6,6 +6,7 @@
 - ninja
 - meson 0.60+
 - cmake 3.18+ (to build lexy)
+- libomp
 - brotli
 - zlib
 - libbz2
@@ -14,7 +15,7 @@
 ## Installing dependencies on macOS
 
 - install homebrew https://brew.sh
-- brew install llvm ninja meson cmake brotli zlib xz gnu-time
+- brew install llvm ninja meson libomp cmake brotli zlib xz gnu-time
 
 ## Installing dependencies on Ubuntu
 

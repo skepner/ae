@@ -18,13 +18,11 @@ if meson.get_compiler('cpp').get_id() == 'clang'
     '-Wno-ambiguous-reversed-operator', # ISO C++20 considers use of overloaded operator '<=' to be ambiguous despite there being a unique best viable function
     '-Wno-zero-as-null-pointer-constant', # clang13 somtimes with operator<=>
     language : 'cpp')
-  libomp_dir = ['-L/usr/local/lib'] # for -lomp, otherwise not found
 else
   # add_project_arguments(
   #   '-Wno-unknown-pragmas',     # xlnt: ignoring ‘#pragma clang diagnostic’
   #   '-Wno-volatile',            # alglib: ‘++’ expression of ‘volatile’-qualified type is deprecated
   #   language : 'cpp')
-  libomp_dir = []
 endif
 
 # ----------------------------------------------------------------------
@@ -62,6 +60,14 @@ bzip2 = meson.get_compiler('cpp').find_library('bz2', required : false)
 alglib = dependency('alglib')
 
 omp = dependency('openmp')
+if host_machine.system() == 'darwin'
+  libomp_dir = ['-L' + run_command('brew', '--prefix', check: true).stdout().strip() + '/lib']
+else
+  libomp_dir = []
+endif
+
+# mylib = meson.get_compiler('cpp').find_library('omp', dirs: '/opt/homebrew/lib')
+message(host_machine.system())
 
 # websocketpp
 # asio
@@ -211,7 +217,7 @@ libae = library(
             sources_utils +
             sources_chart_v2 + sources_ad,
   include_directories : include_cc,
-  dependencies : [alglib, xxhash, fmt, simdjson, range_v3, lexy, omp, xlnt, brotli_enc, brotli_dec, bzip2, xz, zlib],
+  dependencies : [alglib, omp, xxhash, fmt, simdjson, range_v3, lexy, xlnt, brotli_enc, brotli_dec, bzip2, xz, zlib],
   link_args : libomp_dir,
   install : true)
 
