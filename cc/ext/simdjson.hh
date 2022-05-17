@@ -69,9 +69,9 @@ template <typename RT> struct fmt::formatter<simdjson::simdjson_result<RT>> : fm
 {
     template <typename FormatCtx> constexpr auto format(simdjson::simdjson_result<RT> value, FormatCtx& ctx)
     {
-        // if constexpr (std::is_same_v<RT, simdjson::fallback::ondemand::field>)
-        //     static_assert(std::is_same_v<RT, int>, "cannot format object field (key: value) because simdjson consumes data, use \"{}: {}\", static_cast<std::string_view>(field.unescaped_key()), field.value() if necessary");
-        // else
+        if constexpr (std::is_same_v<RT, simdjson::ondemand::field>)
+            static_assert(std::is_same_v<RT, int>, "cannot format object field (key: value) because simdjson consumes data, use \"{}: {}\", static_cast<std::string_view>(field.unescaped_key()), field.value() if necessary");
+        else
             return fmt::formatter<std::string_view>::format(static_cast<std::string_view>(simdjson::to_json_string(value)), ctx);
     }
 };

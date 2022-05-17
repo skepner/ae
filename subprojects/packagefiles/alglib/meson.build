@@ -23,6 +23,14 @@ alglib_src = files(
   'src/statistics.cpp'
 )
 
+simd = import('unstable_simd')
+simd_conf_data = simd.check('has_simd', sse: 'simd_sse.c', compiler: meson.get_compiler('cpp'))[1]
+if simd_conf_data.get('SSE', false)
+  arg_sse = '-mfpmath=sse'
+else
+  arg_sse = ''
+endif
+
 alglib = shared_library(
   'alglib',
   alglib_src,
@@ -37,7 +45,7 @@ alglib = shared_library(
     '-DAE_COMPILE_MINLBFGS',
     '-DAE_COMPILE_PCA',
     '-DAE_COMPILE_MINCG',
-    '-mfpmath=sse',
+    arg_sse,
     # '-Wno-undef',
     # '-Wno-shorten-64-to-32',
     '-Wno-unused-parameter',

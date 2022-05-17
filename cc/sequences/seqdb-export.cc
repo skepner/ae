@@ -38,7 +38,7 @@ std::filesystem::path ae::sequences::Seqdb::filename() const
 
 // ----------------------------------------------------------------------
 
-inline void load_array_of_string(std::vector<std::string>& target, simdjson::simdjson_result<simdjson::fallback::ondemand::field>& field)
+inline void load_array_of_string(std::vector<std::string>& target, simdjson::simdjson_result<simdjson::ondemand::field>& field)
 {
     for (std::string_view value : field.value().get_array())
         target.emplace_back(value);
