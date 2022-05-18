@@ -148,8 +148,10 @@ std::string ae::tree::export_json(const Tree& tree)
         // "H": <true if hidden>,
 
         // debugging set_raxml_ancestral_state_reconstruction_data
+        if (!inode->name.empty())
+            fmt::format_to(std::back_inserter(text), " \"n\": \"{}\",", inode->name);
         if (!inode->raxml_inode_names.empty())
-            fmt::format_to(std::back_inserter(text), "\n\"rx\": [\"{}\"],", fmt::join(inode->raxml_inode_names, "\", \""));
+            fmt::format_to(std::back_inserter(text), "\n{} \"rx\": [\"{}\"],", indent, fmt::join(inode->raxml_inode_names, "\", \""));
 
         fmt::format_to(std::back_inserter(text), "\n{} \"t\": [", indent);
         indent.append(2, ' ');

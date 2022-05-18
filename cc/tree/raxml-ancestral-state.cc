@@ -35,6 +35,31 @@ class RaxmlAncestralState
 
 };
 
+// return {diff_nuc, diff_aa}
+inline std::pair<std::vector<size_t>, std::vector<size_t>> diff(const std::vector<const ae::sequences::sequence_pair_t*>& seqs)
+{
+    std::vector<size_t> diff_nuc, diff_aa;
+    if (!seqs.empty()) {
+        for (size_t pos{0}; pos < seqs[0]->nuc.size(); ++pos) {
+            for (auto seq = std::next(seqs.begin()); seq != seqs.end(); ++seq) {
+                if ((*seq)->nuc[pos] != seqs[0]->nuc[pos]) {
+                    diff_nuc.push_back(pos);
+                    break;
+                }
+            }
+        }
+        for (size_t pos{0}; pos < seqs[0]->aa.size(); ++pos) {
+            for (auto seq = std::next(seqs.begin()); seq != seqs.end(); ++seq) {
+                if ((*seq)->aa[pos] != seqs[0]->aa[pos]) {
+                    diff_aa.push_back(pos);
+                    break;
+                }
+            }
+        }
+    }
+    return {diff_nuc, diff_aa};
+}
+
 // ======================================================================
 
 void ae::tree::Tree::set_raxml_ancestral_state_reconstruction_data(const std::filesystem::path& raxml_tree_file, const std::filesystem::path& raxml_states_file)
@@ -57,7 +82,7 @@ void ae::tree::Tree::set_raxml_ancestral_state_reconstruction_data(const std::fi
         auto* parent = inode_ref.inode();
         for (const auto node_index : parent->children) {
             if (is_leaf(node_index)) {
-                const auto& name = leaf(node_index).name;
+                const auto& name = raxml_tree->leaf(node_index).name;
                 if (const auto found = leaf_name_to_its_parent.find(name); found != leaf_name_to_its_parent.end())
                     found->second->raxml_inode_names.insert(parent->name);
             }
@@ -71,12 +96,13 @@ void ae::tree::Tree::set_raxml_ancestral_state_reconstruction_data(const std::fi
         std::vector<const ae::sequences::sequence_pair_t*> sequences(inode->raxml_inode_names.size());
         std::transform(inode->raxml_inode_names.begin(), inode->raxml_inode_names.end(), sequences.begin(), [&state](std::string_view name) { return &state.get(name); });
         const auto cmp = [](const ae::sequences::sequence_pair_t* e1, const ae::sequences::sequence_pair_t* e2) { return e1->nuc < e2->nuc; };
+        const auto eq = [](const ae::sequences::sequence_pair_t* e1, const ae::sequences::sequence_pair_t* e2) { return e1->nuc == e2->nuc; };
         std::sort(sequences.begin(), sequences.end(), cmp);
-        sequences.erase(std::unique(sequences.begin(), sequences.end(), cmp), sequences.end());
-        // if (sequences.size() > 1) {
-        //     const auto diffs = ae::string::diff(sequences);
-        //     AD_WARNING("diffs {} inode {}", diffs, inode->raxml_inode_names);
-        // }
+        sequences.erase(std::unique(sequences.begin(), sequences.end(), eq), sequences.end());
+        if (sequences.size() > 1) {
+            const auto [diff_nuc, diff_aa] = diff(sequences);
+            AD_WARNING("{} diff nuc {} aa {} inode {}", inode->node_id_, diff_nuc, diff_aa, inode->raxml_inode_names);
+        }
     }
 
 } // ae::tree::Tree::set_raxml_ancestral_state_reconstruction_data

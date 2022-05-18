@@ -55,7 +55,7 @@ namespace ae::tree
         // std::vector<std::string> aa_substs;
 
         // temporary data for raxml ancestral state reconstruction
-        std::unordered_set<std::string_view> raxml_inode_names;
+        std::unordered_set<std::string> raxml_inode_names;
     };
 
     struct Nodes
