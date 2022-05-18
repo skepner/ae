@@ -47,12 +47,13 @@ namespace ae::chart::v3
         std::optional<bool> shown_;
         Color fill_{};
         Color outline_{};
-        std::optional<double> outline_width_; // pixels
-        std::optional<double> size_;          // pixels
-        std::optional<Rotation> rotation_;
-        std::optional<Aspect> aspect_;
-        std::optional<point_shape> shape_;
-        ae::draw::v2::point_label label_;
+        std::optional<double> outline_width_{}; // pixels
+        std::optional<double> size_{};          // pixels
+        std::optional<Rotation> rotation_{};
+        std::optional<Aspect> aspect_{};
+        std::optional<point_shape> shape_{};
+        ae::draw::v2::point_label label_{};
+
     }; // class PointStyle
 } // namespace ae::chart::v3
 
