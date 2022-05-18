@@ -354,6 +354,20 @@ namespace ae::string
 
     // ----------------------------------------------------------------------
 
+    class split_into_lines
+    {
+      public:
+        split_into_lines(std::string_view source, split_emtpy handle_empty = split_emtpy::keep) : source_{source}, handle_empty_{handle_empty} {}
+        auto begin() const { return split_iterator(source_, std::string_view{"\n"}, handle_empty_); }
+        auto end() const { return split_iterator{}; }
+
+      private:
+        const std::string_view source_;
+        const split_emtpy handle_empty_;
+    };
+
+    // ----------------------------------------------------------------------
+
     // changes subsequent spaces into one space
     inline std::string collapse_spaces(std::string_view source)
     {

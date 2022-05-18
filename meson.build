@@ -97,7 +97,8 @@ sources_tree = [
   'cc/tree/tree.cc',
   'cc/tree/tree-iterator.cc',
   'cc/tree/newick.cc',
-  'cc/tree/export.cc'
+  'cc/tree/export.cc',
+  'cc/tree/raxml-ancestral-state.cc',
 ]
 
 sources_sequences = [

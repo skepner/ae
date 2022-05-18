@@ -113,6 +113,7 @@ void ae::py::tree(pybind11::module_& mdl)
         .def(
             "fix_names_by_seqdb", [](Tree& tree, std::string_view subtype) { return tree.fix_names_by_seqdb(virus::type_subtype_t{subtype}); }, "subtype"_a,
             pybind11::doc("fix names not found in the current seqdb using hash, returns list of messages")) //
+        .def("set_raxml_ancestral_state_reconstruction_data", &Tree::set_raxml_ancestral_state_reconstruction_data, "asr_tree"_a, "asr_states"_a) //
         ;
 
     pybind11::class_<Nodes>(tree_submodule, "Nodes")                                                       //

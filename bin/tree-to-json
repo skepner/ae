@@ -63,6 +63,11 @@ def main(args: argparse.Namespace):
         tree.ladderize(ladderize_method)
         print(f">>> ladderized by \"{ladderize_method}\"", file=sys.stderr)
 
+    if args.asr_tree:
+        if not args.asr_states:
+            raise RuntimeError(f"""both --asr-tree and --asr-states must be provided""")
+        tree.set_raxml_ancestral_state_reconstruction_data(asr_tree=args.asr_tree, asr_states=args.asr_states)
+
     if args.remove_leaves_isolated_before:
         print(f">>> removing leaves isolated before {args.remove_leaves_isolated_before}, but keeping tree topology", file=sys.stderr)
         if args.important:
@@ -90,6 +95,8 @@ try:
     parser.add_argument("--ladderize", "-l", action="store_true", default=False)
     parser.add_argument("--remove-leaves-isolated-before", dest="remove_leaves_isolated_before", default=None, help="removes leaves isolated before the date, but keep tree topology")
     parser.add_argument("--important", "-I", help="comma separated list of important strains (seq_id prefixes) to keep in case of --remove-leaves-isolated-before")
+    parser.add_argument("--asr-tree", type=Path, help="raxml --ancestral tree output (*.raxml.ancestralTree)")
+    parser.add_argument("--asr-states", type=Path, help="raxml --ancestral states output (*.raxml.ancestralStates)")
     args = parser.parse_args()
     exit_code = main(args) or 0
 except Exception as err:

@@ -148,6 +148,8 @@ namespace ae::tree
         enum class ladderize_method { none, number_of_leaves, max_edge_length };
         void ladderize(ladderize_method method);
 
+        void set_raxml_ancestral_state_reconstruction_data(const std::filesystem::path& raxml_tree_file, const std::filesystem::path& raxml_states_file);
+
       private:
         virus::type_subtype_t subtype_{};
         sequences::lineage_t lineage_{};
