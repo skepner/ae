@@ -522,4 +522,27 @@ namespace ae::string
 
 } // namespace ae::string
 
-// ----------------------------------------------------------------------
+// ======================================================================
+
+namespace ae::string
+{
+    // strings must be of the same length (e.g. sequences)
+    // returns list of positions where differences were found
+    template <typename S> std::vector<size_t> diff(const std::vector<S>& strings)
+    {
+        std::vector<size_t> diffs;
+        if (!strings.empty()) {
+            for (size_t pos{0}; pos < strings[0].size(); ++pos) {
+                for (auto str = std::next(strings.begin()); str != strings.end(); ++str) {
+                    if ((*str)[pos] != strings[0][pos]) {
+                        diffs.push_back(pos);
+                        break;
+                    }
+                }
+            }
+        }
+        return diffs;
+    }
+}
+
+// ======================================================================

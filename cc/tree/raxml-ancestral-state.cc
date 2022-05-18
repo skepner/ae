@@ -17,6 +17,14 @@ class RaxmlAncestralState
             }
         }
 
+        std::string_view get(std::string_view name) const
+        {
+            if (const auto found = name_to_seq_.find(name); found != name_to_seq_.end())
+                return found->second;
+            else
+                return {};
+        }
+
   private:
     const std::string data_;
     std::unordered_map<std::string_view, std::string_view> name_to_seq_;
@@ -53,6 +61,18 @@ void ae::tree::Tree::set_raxml_ancestral_state_reconstruction_data(const std::fi
     }
 
     RaxmlAncestralState state{raxml_states_file};
+
+    for (auto inode_ref : visit(tree_visiting::inodes)) {
+        auto* inode = inode_ref.inode();
+        std::vector<std::string_view> sequences(inode->raxml_inode_names.size());
+        std::transform(inode->raxml_inode_names.begin(), inode->raxml_inode_names.end(), sequences.begin(), [&state](std::string_view name) { return state.get(name); });
+        std::sort(sequences.begin(), sequences.end());
+        sequences.erase(std::unique(sequences.begin(), sequences.end()), sequences.end());
+        if (sequences.size() > 1) {
+            const auto diffs = ae::string::diff(sequences);
+            AD_WARNING("diffs {} inode {}", diffs, inode->raxml_inode_names);
+        }
+    }
 
 } // ae::tree::Tree::set_raxml_ancestral_state_reconstruction_data
 
