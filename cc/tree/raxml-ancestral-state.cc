@@ -28,9 +28,31 @@ class RaxmlAncestralState
 void ae::tree::Tree::set_raxml_ancestral_state_reconstruction_data(const std::filesystem::path& raxml_tree_file, const std::filesystem::path& raxml_states_file)
 {
     // AD_DEBUG("\"{}\" \"{}\"", raxml_tree_file, raxml_states_file);
-    auto raxml_tree = load(raxml_tree_file);
-    RaxmlAncestralState state{raxml_states_file};
 
+    std::unordered_map<std::string_view, Inode*> leaf_name_to_its_parent;
+    for (auto inode_ref : visit(tree_visiting::inodes)) {
+        auto* parent = inode_ref.inode();
+        for (const auto node_index : parent->children) {
+            if (is_leaf(node_index))
+                leaf_name_to_its_parent.emplace(std::string_view{leaf(node_index).name}, parent);
+        }
+    }
+
+    auto raxml_tree = load(raxml_tree_file);
+
+    // populate raxml_inode_names in this tree
+    for (auto inode_ref : raxml_tree->visit(tree_visiting::inodes)) {
+        auto* parent = inode_ref.inode();
+        for (const auto node_index : parent->children) {
+            if (is_leaf(node_index)) {
+                const auto& name = leaf(node_index).name;
+                if (const auto found = leaf_name_to_its_parent.find(name); found != leaf_name_to_its_parent.end())
+                    found->second->raxml_inode_names.insert(parent->name);
+            }
+        }
+    }
+
+    RaxmlAncestralState state{raxml_states_file};
 
 } // ae::tree::Tree::set_raxml_ancestral_state_reconstruction_data
 

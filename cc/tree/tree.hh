@@ -1,5 +1,7 @@
 #pragma once
 
+#include <unordered_set>
+
 #include "ext/filesystem.hh"
 #include "virus/type-subtype.hh"
 #include "sequences/sequence.hh"
@@ -51,6 +53,9 @@ namespace ae::tree
         std::vector<node_index_t> children{};
         size_t number_of_leaves_{0};
         // std::vector<std::string> aa_substs;
+
+        // temporary data for raxml ancestral state reconstruction
+        std::unordered_set<std::string_view> raxml_inode_names;
     };
 
     struct Nodes

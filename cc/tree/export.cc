@@ -146,8 +146,12 @@ std::string ae::tree::export_json(const Tree& tree)
         }
         // "A": ["aa subst", "N193K"],
         // "H": <true if hidden>,
-        fmt::format_to(std::back_inserter(text), "\n");
-        fmt::format_to(std::back_inserter(text), "{} \"t\": [", indent);
+
+        // debugging set_raxml_ancestral_state_reconstruction_data
+        if (!inode->raxml_inode_names.empty())
+            fmt::format_to(std::back_inserter(text), "\n\"rx\": [\"{}\"]", fmt::join(inode->raxml_inode_names, "\", \""));
+
+        fmt::format_to(std::back_inserter(text), "\n{} \"t\": [", indent);
         indent.append(2, ' ');
         commas.push_back(false);
     };
