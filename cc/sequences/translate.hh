@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 // ======================================================================
 
 namespace ae
@@ -13,6 +15,8 @@ namespace ae::sequences
 
     // returns if sequence was translated
     bool translate(RawSequence& sequence, Messages& messages);
+
+    std::string translate_nucleotides_to_amino_acids(std::string_view nucleotides, size_t offset = 0);
 }
 
 // ======================================================================

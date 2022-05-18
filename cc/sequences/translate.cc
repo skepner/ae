@@ -93,7 +93,7 @@ static const std::unordered_map<std::string_view, char, ae::string_hash_for_unor
 
 #pragma GCC diagnostic pop
 
-std::string translate_nucleotides_to_amino_acids(std::string_view nucleotides, size_t offset)
+std::string ae::sequences::translate_nucleotides_to_amino_acids(std::string_view nucleotides, size_t offset)
 {
     using diff_t = decltype(CODON_TO_PROTEIN)::difference_type;
 
@@ -108,7 +108,7 @@ std::string translate_nucleotides_to_amino_acids(std::string_view nucleotides, s
     result.resize(static_cast<size_t>(result_p - result.begin()));
     return result;
 
-} // translate_nucleotides_to_amino_acids
+} // ae::sequences::translate_nucleotides_to_amino_acids
 
 // ----------------------------------------------------------------------
 

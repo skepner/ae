@@ -2,6 +2,8 @@
 
 #include "utils/file.hh"
 #include "utils/string.hh"
+#include "sequences/sequence.hh"
+#include "sequences/translate.hh"
 #include "tree/tree.hh"
 
 // ======================================================================
@@ -11,23 +13,25 @@ class RaxmlAncestralState
   public:
     RaxmlAncestralState(const std::filesystem::path& filename) : data_{ae::file::read(filename)}
         {
-            for (const auto line : ae::string::split_into_lines(data_)) {
+            using namespace ae::sequences;
+            for (const auto line : ae::string::split_into_lines(data_, ae::string::split_emtpy::strip_remove)) {
                 const auto name_seq = ae::string::split(line, "\t");
-                name_to_seq_.emplace(name_seq[0], name_seq[1]);
+                name_to_seq_.emplace(name_seq[0], sequence_pair_t{sequence_aa_t{translate_nucleotides_to_amino_acids(name_seq[1])}, sequence_nuc_t{name_seq[1]}});
             }
         }
 
-        std::string_view get(std::string_view name) const
+        const ae::sequences::sequence_pair_t& get(std::string_view name) const
         {
             if (const auto found = name_to_seq_.find(name); found != name_to_seq_.end())
                 return found->second;
             else
-                return {};
+                return empty_;
         }
 
   private:
     const std::string data_;
-    std::unordered_map<std::string_view, std::string_view> name_to_seq_;
+    const ae::sequences::sequence_pair_t empty_{};
+    std::unordered_map<std::string_view, ae::sequences::sequence_pair_t> name_to_seq_;
 
 };
 
@@ -64,14 +68,15 @@ void ae::tree::Tree::set_raxml_ancestral_state_reconstruction_data(const std::fi
 
     for (auto inode_ref : visit(tree_visiting::inodes)) {
         auto* inode = inode_ref.inode();
-        std::vector<std::string_view> sequences(inode->raxml_inode_names.size());
-        std::transform(inode->raxml_inode_names.begin(), inode->raxml_inode_names.end(), sequences.begin(), [&state](std::string_view name) { return state.get(name); });
-        std::sort(sequences.begin(), sequences.end());
-        sequences.erase(std::unique(sequences.begin(), sequences.end()), sequences.end());
-        if (sequences.size() > 1) {
-            const auto diffs = ae::string::diff(sequences);
-            AD_WARNING("diffs {} inode {}", diffs, inode->raxml_inode_names);
-        }
+        std::vector<const ae::sequences::sequence_pair_t*> sequences(inode->raxml_inode_names.size());
+        std::transform(inode->raxml_inode_names.begin(), inode->raxml_inode_names.end(), sequences.begin(), [&state](std::string_view name) { return &state.get(name); });
+        const auto cmp = [](const ae::sequences::sequence_pair_t* e1, const ae::sequences::sequence_pair_t* e2) { return e1->nuc < e2->nuc; };
+        std::sort(sequences.begin(), sequences.end(), cmp);
+        sequences.erase(std::unique(sequences.begin(), sequences.end(), cmp), sequences.end());
+        // if (sequences.size() > 1) {
+        //     const auto diffs = ae::string::diff(sequences);
+        //     AD_WARNING("diffs {} inode {}", diffs, inode->raxml_inode_names);
+        // }
     }
 
 } // ae::tree::Tree::set_raxml_ancestral_state_reconstruction_data
