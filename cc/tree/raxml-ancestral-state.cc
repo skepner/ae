@@ -158,14 +158,11 @@ template <typename Seq> std::vector<std::string_view> child_sequences(const ae::
     std::vector<std::string_view> seqs;
     for (const auto child_index : parent.children) {
         const auto& child = tree.node(child_index);
-        if constexpr (std::is_same_v<Seq, ae::sequences::sequence_aa_t>) {
-            if (!child.node()->aa.empty())
-                seqs.push_back(child.node()->aa);
-        }
-        else {
-            static_assert(std::is_same_v<Seq, ae::sequences::sequence_nuc_t>);
-            if (!child.node()->nuc.empty())
-                seqs.push_back(child.node()->nuc);
+        if (const auto& seq = child.node()->get_aa_nuc<Seq>(); !seq.empty())
+            seqs.push_back(seq);
+        else if (!ae::tree::is_leaf(child_index)) {
+            const auto grandchildren = child_sequences<Seq>(tree, tree.inode(child_index));
+            seqs.insert(seqs.end(), grandchildren.begin(), grandchildren.end());
         }
     }
     return seqs;
@@ -179,6 +176,7 @@ inline std::string construct_missing_sequence(std::string_view parent, const std
     // generate sequence by comparing child nodes sequences, for positions where child node sequences are different use parent node aa/nuc
 
     std::string result{children[0]};
+    AD_WARNING(children.size() < 2, "[construct_missing_sequence] too few children: {} diff {}", children.size(), diff(children));
     for (size_t pos : diff(children))
         result[pos] = parent[pos];
     return result;
@@ -191,7 +189,7 @@ void ae::tree::Tree::set_inode_sequences_if_no_ancestral_data()
 
     for (auto inode_ref : visit(tree_visiting::inodes)) {
         if (auto* inode = inode_ref.inode(); inode->aa.empty()) {
-            // AD_WARNING("no inode {} sequences found", inode->node_id_);
+            AD_WARNING("no inode {} sequences found", inode->node_id_);
             if (const auto& parent_inode = this->inode(parent(inode_ref.node_id())); !parent_inode.aa.empty()) {
                 inode->aa = ae::sequences::sequence_aa_t{construct_missing_sequence(parent_inode.aa, child_sequences<ae::sequences::sequence_aa_t>(*this, *inode))};
                 inode->nuc = ae::sequences::sequence_nuc_t{construct_missing_sequence(parent_inode.nuc, child_sequences<ae::sequences::sequence_nuc_t>(*this, *inode))};

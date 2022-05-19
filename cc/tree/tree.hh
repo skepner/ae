@@ -31,6 +31,14 @@ namespace ae::tree
         sequences::sequence_nuc_t nuc{};
         std::vector<std::string> aa_transitions;
         std::vector<std::string> nuc_transitions;
+
+        template <typename Seq> const Seq& get_aa_nuc() const
+        {
+            if constexpr (std::is_same_v<Seq, ae::sequences::sequence_aa_t>)
+                return aa;
+            else
+                return nuc;
+        }
     };
 
     struct Leaf : public Node
@@ -175,7 +183,6 @@ namespace ae::tree
 
         void set_inode_sequences_if_no_ancestral_data();
         void set_transition_labels_by_raxml_ancestral_state_reconstruction_data();
-
     };
 
     // ----------------------------------------------------------------------
