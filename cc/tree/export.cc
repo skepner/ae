@@ -127,33 +127,42 @@ std::string ae::tree::export_json(const Tree& tree)
                 fmt::format_to(std::back_inserter(text), "\n");
         }
 
-        fmt::format_to(std::back_inserter(text), "{}{{\n{} \"I\": {},", indent, indent, node->node_id_.get());
+        fmt::format_to(std::back_inserter(text), "{}{{\n{} \"I\": {}", indent, indent, node->node_id_.get());
         if (node->edge != 0.0)
-            fmt::format_to(std::back_inserter(text), " \"l\": {:.10g},", *node->edge);
+            fmt::format_to(std::back_inserter(text), ", \"l\": {:.10g}", *node->edge);
         if (node->cumulative_edge != 0.0)
-            fmt::format_to(std::back_inserter(text), " \"c\": {:.10g},", *node->cumulative_edge);
+            fmt::format_to(std::back_inserter(text), ", \"c\": {:.10g}", *node->cumulative_edge);
     };
 
-    const auto format_node_end = [&text, &indent]() { fmt::format_to(std::back_inserter(text), "\n{}}}", indent); };
+    const auto format_node_end = [&text, &indent]() {
+        fmt::format_to(std::back_inserter(text), "\n{}}}", indent); };
 
-    const auto format_inode_pre = [&text, &indent, &tree, &commas, format_node_begin](const Inode* inode) {
+    const auto format_node_sequences = [&text, &indent](const Node* node) {
+        if (!node->aa.empty())
+            fmt::format_to(std::back_inserter(text), ",\n{} \"a\": \"{}\"", indent, node->aa);
+        if (!node->nuc.empty())
+            fmt::format_to(std::back_inserter(text), ",\n{} \"N\": \"{}\"", indent, node->nuc);
+    };
+
+    const auto format_inode_pre = [&text, &indent, &tree, &commas, format_node_begin, format_node_sequences](const Inode* inode) {
         format_node_begin(inode);
         if (inode->node_id_ == node_index_t{0}) {
             if (tree.maximum_cumulative() > 0)
-                fmt::format_to(std::back_inserter(text), " \"M\": {:.10g},", tree.maximum_cumulative());
+                fmt::format_to(std::back_inserter(text), ", \"M\": {:.10g}", tree.maximum_cumulative());
             if (inode->number_of_leaves() > 0)
-                fmt::format_to(std::back_inserter(text), " \"L\": {},", inode->number_of_leaves());
+                fmt::format_to(std::back_inserter(text), ", \"L\": {}", inode->number_of_leaves());
         }
+        format_node_sequences(inode);
         // "A": ["aa subst", "N193K"],
         // "H": <true if hidden>,
 
         // debugging set_raxml_ancestral_state_reconstruction_data
-        if (!inode->name.empty())
-            fmt::format_to(std::back_inserter(text), " \"n\": \"{}\",", inode->name);
-        if (!inode->raxml_inode_names.empty())
-            fmt::format_to(std::back_inserter(text), "\n{} \"rx\": [\"{}\"],", indent, fmt::join(inode->raxml_inode_names, "\", \""));
+        // if (!inode->name.empty())
+        //     fmt::format_to(std::back_inserter(text), " \"n\": \"{}\",", inode->name);
+        // if (!inode->raxml_inode_names.empty())
+        //     fmt::format_to(std::back_inserter(text), "\n{} \"rx\": [\"{}\"],", indent, fmt::join(inode->raxml_inode_names, "\", \""));
 
-        fmt::format_to(std::back_inserter(text), "\n{} \"t\": [", indent);
+        fmt::format_to(std::back_inserter(text), ",\n{} \"t\": [", indent);
         indent.append(2, ' ');
         commas.push_back(false);
     };
@@ -165,19 +174,12 @@ std::string ae::tree::export_json(const Tree& tree)
         format_node_end();
     };
 
-    const auto format_leaf = [&text, &indent, format_node_begin, format_node_end](const Leaf* leaf) {
+    const auto format_leaf = [&text, &indent, format_node_begin, format_node_end, format_node_sequences](const Leaf* leaf) {
         format_node_begin(leaf);
-        fmt::format_to(std::back_inserter(text), "\n{} \"n\": \"{}\"", indent, leaf->name);
+        fmt::format_to(std::back_inserter(text), ",\n{} \"n\": \"{}\"", indent, leaf->name);
         if (!leaf->date.empty())
             fmt::format_to(std::back_inserter(text), ", \"d\": \"{}\"", leaf->date);
-        if (!leaf->continent.empty())
-            fmt::format_to(std::back_inserter(text), ", \"C\": \"{}\"", leaf->continent);
-        if (!leaf->country.empty())
-            fmt::format_to(std::back_inserter(text), ", \"D\": \"{}\"", leaf->country);
-        if (!leaf->aa.empty())
-            fmt::format_to(std::back_inserter(text), ",\n{} \"a\": \"{}\"", indent, leaf->aa);
-        if (!leaf->nuc.empty())
-            fmt::format_to(std::back_inserter(text), ",\n{} \"N\": \"{}\"", indent, leaf->nuc);
+        format_node_sequences(leaf);
         if (!leaf->clades.empty())
             fmt::format_to(std::back_inserter(text), ",\n{} \"L\": [\"{}\"]", indent, fmt::join(leaf->clades, "\", \""));
         // "h": ["hi names"],

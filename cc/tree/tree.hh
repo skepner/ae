@@ -27,6 +27,8 @@ namespace ae::tree
         EdgeLength edge{0};
         EdgeLength cumulative_edge{0};
         node_index_t node_id_{0};
+        sequences::sequence_aa_t aa{};
+        sequences::sequence_nuc_t nuc{};
     };
 
     struct Leaf : public Node
@@ -41,8 +43,6 @@ namespace ae::tree
         std::string date{};
         std::string continent{};
         std::string country{};
-        sequences::sequence_aa_t aa{};
-        sequences::sequence_nuc_t nuc{};
         sequences::clades_t clades{};
     };
 

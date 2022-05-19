@@ -15,7 +15,7 @@ LAST_DATE=2021
 # ----------------------------------------------------------------------------------------------------
 
 if [[ ! -f ${SUBTYPE}/${SUBTYPE}.tjz ]]; then
-    ~/ae/bin/tree-to-json -s ${SUBTYPE} --populate --ladderize --print-cumulative 20 --remove-if-cumulative-more-than ${CUMUL[${SUBTYPE}]} $(cat ${SUBTYPE}/garli-best.txt) ${SUBTYPE}/${SUBTYPE}.tjz
+    ${AE_ROOT}/bin/tree-to-json --populate ${SUBTYPE} --ladderize --print-cumulative 20 --remove-if-cumulative-more-than ${CUMUL[${SUBTYPE}]} $(cat ${SUBTYPE}/garli-best.txt) ${SUBTYPE}/${SUBTYPE}.tjz
 fi
 if [[ ! -f ${SUBTYPE}/${SUBTYPE}.pdf ]]; then
     tal -s ${TAL} ${SUBTYPE}/${SUBTYPE}.tjz ${SUBTYPE}/${SUBTYPE}.txt ${SUBTYPE}/${SUBTYPE}.pdf
@@ -24,7 +24,7 @@ fi
 # ----------------------------------------------------------------------------------------------------
 
 if [[ ! -f ${SUBTYPE}/${SUBTYPE}.after-${LAST_DATE}.tjz ]]; then
-    ~/ae/bin/tree-to-json -s ${SUBTYPE} --populate --ladderize --remove-leaves-isolated-before ${LAST_DATE} --remove-if-cumulative-more-than ${CUMUL[${SUBTYPE}]} $(cat ${SUBTYPE}/garli-best.txt) ${SUBTYPE}/${SUBTYPE}.after-${LAST_DATE}.tjz
+    ${AE_ROOT}/bin/tree-to-json --populate ${SUBTYPE} --ladderize --remove-leaves-isolated-before ${LAST_DATE} --remove-if-cumulative-more-than ${CUMUL[${SUBTYPE}]} $(cat ${SUBTYPE}/garli-best.txt) ${SUBTYPE}/${SUBTYPE}.after-${LAST_DATE}.tjz
 fi
 if [[ ! -f ${SUBTYPE}/${SUBTYPE}.after-${LAST_DATE}.pdf ]]; then
     tal -s ${TAL} ${SUBTYPE}/${SUBTYPE}.after-${LAST_DATE}.tjz ${SUBTYPE}/${SUBTYPE}.after-${LAST_DATE}.txt ${SUBTYPE}/${SUBTYPE}.after-${LAST_DATE}.pdf

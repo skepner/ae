@@ -51,7 +51,7 @@ def main(args: argparse.Namespace):
         to_remove.remove()
         print(f">>> number of leaves: {tree.number_of_leaves()}", file=sys.stderr)
 
-    if args.populate:
+    if args.subtype:            # --populate
         subtype = sSubtypes.get(args.subtype.upper(), args.subtype.upper())
         tree.populate_with_duplicates(subtype)
         tree.populate_with_sequences(subtype)
@@ -87,13 +87,12 @@ try:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("input", type=Path)
     parser.add_argument("output", nargs="?", type=Path)
-    parser.add_argument("-s", "--subtype", type=str, default="B")
     parser.add_argument("--print-cumulative", dest="print_cumulative", type=int, default=None)
     parser.add_argument("--remove-if-cumulative-more-than", dest="remove_if_cumulative_more_than", type=float, default=None)
-    parser.add_argument("--remove-seq-id", dest="remove_seq_id", default=None, help="comma separated list of seq_id to remove")
-    parser.add_argument("--populate", "-p", action="store_true", default=False)
+    parser.add_argument("--remove-seq-id", default=None, help="comma separated list of seq_id to remove")
+    parser.add_argument("--populate", "-p", dest="subtype")
     parser.add_argument("--ladderize", "-l", action="store_true", default=False)
-    parser.add_argument("--remove-leaves-isolated-before", dest="remove_leaves_isolated_before", default=None, help="removes leaves isolated before the date, but keep tree topology")
+    parser.add_argument("--remove-leaves-isolated-before", help="removes leaves isolated before the date, but keep tree topology")
     parser.add_argument("--important", "-I", help="comma separated list of important strains (seq_id prefixes) to keep in case of --remove-leaves-isolated-before")
     parser.add_argument("--asr-tree", type=Path, help="raxml --ancestral tree output (*.raxml.ancestralTree)")
     parser.add_argument("--asr-states", type=Path, help="raxml --ancestral states output (*.raxml.ancestralStates)")

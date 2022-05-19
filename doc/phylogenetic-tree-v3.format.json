@@ -7,6 +7,10 @@
         "c": <cumulative-edge-length: double>,
         "M": <max-cumulative: double (ae only)>,
         "L": <number-of-leaves-in-tree: int (ae only)>,
+        "A": ["aa transition",]
+        "B": ["nuc transition",]
+        "a": "aligned aa sequence inferred by e.g. raxml --ancestral",
+        "N": "aligned nuc sequence inferred by e.g. raxml --ancestral",
         "t": [
             {
                 "I": <node-id: int (ae only)>,
