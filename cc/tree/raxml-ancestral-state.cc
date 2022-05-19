@@ -106,6 +106,7 @@ void ae::tree::Tree::set_raxml_ancestral_state_reconstruction_data(const std::fi
 
     RaxmlAncestralState state{raxml_states_file};
 
+    // populate inodes with sequences
     for (auto inode_ref : visit(tree_visiting::inodes)) {
         auto* inode = inode_ref.inode();
         std::vector<std::reference_wrapper<const RaxmlAncestralState::seqpair_t>> sequences;
@@ -117,7 +118,7 @@ void ae::tree::Tree::set_raxml_ancestral_state_reconstruction_data(const std::fi
         }
         switch (sequences.size()) {
             case 0:
-                AD_WARNING("no inode {} sequences found", inode->node_id_);
+                // AD_WARNING("no inode {} sequences found", inode->node_id_);
                 break;
             case 1:
                 inode->aa = sequences[0].get().aa;
@@ -134,6 +135,15 @@ void ae::tree::Tree::set_raxml_ancestral_state_reconstruction_data(const std::fi
         }
     }
 
+    set_transition_labels_by_raxml_ancestral_state_reconstruction_data();
+
 } // ae::tree::Tree::set_raxml_ancestral_state_reconstruction_data
+
+// ----------------------------------------------------------------------
+
+void ae::tree::Tree::set_transition_labels_by_raxml_ancestral_state_reconstruction_data()
+{
+
+} // ae::tree::Tree::set_transition_labels_by_raxml_ancestral_state_reconstruction_data
 
 // ----------------------------------------------------------------------

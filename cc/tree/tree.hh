@@ -164,6 +164,9 @@ namespace ae::tree
         mutable EdgeLength max_cumulative{-1.0};
 
         template <lvalue_reference TREE, pointer LEAF, pointer INODE> friend class tree_iterator_t;
+
+        void set_transition_labels_by_raxml_ancestral_state_reconstruction_data();
+
     };
 
     // ----------------------------------------------------------------------

@@ -358,9 +358,13 @@ namespace ae::tree
                 case 'c': // <cumulative-edge-length: double>,
                     current_node_->cumulative_edge = EdgeLength{static_cast<double>(field.value())};
                     break;
+                case 'a': // "aligned aa sequence",
+                    current_node_->aa = sequences::sequence_aa_t{static_cast<std::string_view>(field.value())};
+                    break;
+                case 'N': // "aligned nuc sequence",
+                    current_node_->nuc = sequences::sequence_nuc_t{static_cast<std::string_view>(field.value())};
+                    break;
                 case 'n':
-                case 'a':
-                case 'N':
                 case 'd':
                 case 'C':
                 case 'D':
@@ -399,12 +403,6 @@ namespace ae::tree
             switch (key[0]) {
                 case 'n': // "seq_id",
                     current_node_->name = static_cast<std::string_view>(field.value());
-                    break;
-                case 'a': // "aligned aa sequence",
-                    current_leaf_->aa = sequences::sequence_aa_t{static_cast<std::string_view>(field.value())};
-                    break;
-                case 'N': // "aligned nuc sequence",
-                    current_leaf_->nuc = sequences::sequence_nuc_t{static_cast<std::string_view>(field.value())};
                     break;
                 case 'd': // "2019-01-01: isolation date",
                     current_leaf_->date = static_cast<std::string_view>(field.value());
@@ -461,6 +459,12 @@ namespace ae::tree
                 case 'M': // max cumulative
                     break;
                 case 'L': // number-of-leaves-in-tree
+                    break;
+                case 'a': // "aa sequence inferred by e.g. raxml --ancestral",
+                    current_node_->aa = sequences::sequence_aa_t{static_cast<std::string_view>(field.value())};
+                    break;
+                case 'N': // "nuc sequence inferred by e.g. raxml --ancestral",
+                    current_node_->nuc = sequences::sequence_nuc_t{static_cast<std::string_view>(field.value())};
                     break;
                 case 't': // subtree
                     push_subtree(field);
