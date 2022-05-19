@@ -52,13 +52,13 @@ void export_inode(fmt::memory_buffer& text, const ae::tree::Inode& inode, const 
     using namespace fmt::literals;
     const auto edge_size = static_cast<size_t>(*inode.edge * edge_step);
     const std::string edge_symbol(edge_size, '=');
-    fmt::format_to(std::back_inserter(text), fmt::runtime("{prefix}{edge_symbol}\\ >>>> leaves: {leaves} <{node_id}>{aa_transitions} edge: {edge} cumul: {cumul}\n"), //
-                   "prefix"_a = fmt::join(prefix, std::string_view{}),                                                                                  //
-                   "edge_symbol"_a = edge_symbol, "edge"_a = inode.edge, "cumul"_a = inode.cumulative_edge,                           //
-                   "leaves"_a = inode.number_of_leaves(),                                                                                                                     // node.number_leaves_in_subtree()),
-                   "node_id"_a = inode.node_id_,                                                                                                        //
-                   "aa_transitions"_a = "" // aa_transitions.empty() ? std::string{} : fmt::format(" [{}]", aa_transitions))
-    );
+    fmt::format_to(std::back_inserter(text), fmt::runtime("{prefix}{edge_symbol}\\ >>>> leaves: {leaves} <{node_id}>{aa_transitions}{nuc_transitions} edge: {edge} cumul: {cumul}\n"), //
+                   "prefix"_a = fmt::join(prefix, std::string_view{}),                                                                                                                 //
+                   "edge_symbol"_a = edge_symbol, "edge"_a = inode.edge, "cumul"_a = inode.cumulative_edge,                                                                            //
+                   "leaves"_a = inode.number_of_leaves(), // node.number_leaves_in_subtree()),
+                   "node_id"_a = inode.node_id_,          //
+                   "aa_transitions"_a = inode.aa_transitions.empty() ? std::string{} : fmt::format(" [{}]", fmt::join(inode.aa_transitions, " ")),
+                   "nuc_transitions"_a = inode.nuc_transitions.empty() ? std::string{} : fmt::format(" [{}]", fmt::join(inode.nuc_transitions, " ")));
     if (!prefix.empty()) {
         if (prefix.back().back() == '\\')
             prefix.back().back() = ' ';
@@ -139,9 +139,9 @@ std::string ae::tree::export_json(const Tree& tree)
 
     const auto format_node_sequences = [&text, &indent](const Node* node) {
         if (!node->aa_transitions.empty())
-            fmt::format_to(std::back_inserter(text), ",{} \"A\": [\"{}\"]", indent, fmt::join(node->aa_transitions, "\", \""));
+            fmt::format_to(std::back_inserter(text), ", \"A\": [\"{}\"]", fmt::join(node->aa_transitions, "\", \""));
         if (!node->nuc_transitions.empty())
-            fmt::format_to(std::back_inserter(text), ",{} \"B\": [\"{}\"]", indent, fmt::join(node->nuc_transitions, "\", \""));
+            fmt::format_to(std::back_inserter(text), ", \"B\": [\"{}\"]", fmt::join(node->nuc_transitions, "\", \""));
         if (!node->aa.empty())
             fmt::format_to(std::back_inserter(text), ",\n{} \"a\": \"{}\"", indent, node->aa);
         if (!node->nuc.empty())
