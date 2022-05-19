@@ -183,6 +183,7 @@ namespace ae::tree
 
         void set_inode_sequences_if_no_ancestral_data();
         void set_transition_labels_by_raxml_ancestral_state_reconstruction_data();
+        void check_transition_label_flip();
     };
 
     // ----------------------------------------------------------------------

@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <unordered_map>
 
 #include "utils/file.hh"
@@ -148,6 +149,7 @@ void ae::tree::Tree::set_raxml_ancestral_state_reconstruction_data(const std::fi
 
     set_inode_sequences_if_no_ancestral_data();
     set_transition_labels_by_raxml_ancestral_state_reconstruction_data();
+    check_transition_label_flip();
 
 } // ae::tree::Tree::set_raxml_ancestral_state_reconstruction_data
 
@@ -189,7 +191,7 @@ void ae::tree::Tree::set_inode_sequences_if_no_ancestral_data()
 
     for (auto inode_ref : visit(tree_visiting::inodes)) {
         if (auto* inode = inode_ref.inode(); inode->aa.empty()) {
-            AD_WARNING("no inode {} sequences found", inode->node_id_);
+            // AD_WARNING("no inode {} sequences found", inode->node_id_);
             if (const auto& parent_inode = this->inode(parent(inode_ref.node_id())); !parent_inode.aa.empty()) {
                 inode->aa = ae::sequences::sequence_aa_t{construct_missing_sequence(parent_inode.aa, child_sequences<ae::sequences::sequence_aa_t>(*this, *inode))};
                 inode->nuc = ae::sequences::sequence_nuc_t{construct_missing_sequence(parent_inode.nuc, child_sequences<ae::sequences::sequence_nuc_t>(*this, *inode))};
@@ -228,5 +230,37 @@ void ae::tree::Tree::set_transition_labels_by_raxml_ancestral_state_reconstructi
     }
 
 } // ae::tree::Tree::set_transition_labels_by_raxml_ancestral_state_reconstruction_data
+
+// ----------------------------------------------------------------------
+
+void ae::tree::Tree::check_transition_label_flip()
+{
+    const auto extract_pos = [](const std::vector<std::string>& transitions) {
+        std::vector<std::string_view> pos;
+        for (const auto& tr : transitions)
+            pos.push_back(std::string_view(tr.data() + 1, tr.size() - 2));
+        return pos;
+    };
+
+    const auto check = [extract_pos](const Inode& parent, const Inode& child) {
+        const auto parent_pos = extract_pos(parent.aa_transitions), child_pos = extract_pos(child.aa_transitions);
+        std::vector<std::string_view> common;
+        std::set_intersection(parent_pos.begin(), parent_pos.end(), child_pos.begin(), child_pos.end(), std::back_inserter(common));
+        if (!common.empty())
+            AD_WARNING("potential aa transition label flip: parent: {} {}   child: {} {}", parent.node_id_, parent.aa_transitions, child.node_id_, child.aa_transitions);
+    };
+
+    for (auto inode_ref : visit(tree_visiting::inodes)) {
+        if (const auto* parent = inode_ref.inode(); !parent->aa_transitions.empty()) {
+            for (const auto child_index : parent->children) {
+                if (!is_leaf(child_index)) {
+                    if (auto& child = inode(child_index); !child.aa_transitions.empty())
+                        check(*parent, child);
+                }
+            }
+        }
+    }
+
+} // ae::tree::Tree::check_transition_label_flip
 
 // ----------------------------------------------------------------------
