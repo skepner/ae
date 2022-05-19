@@ -138,6 +138,10 @@ std::string ae::tree::export_json(const Tree& tree)
         fmt::format_to(std::back_inserter(text), "\n{}}}", indent); };
 
     const auto format_node_sequences = [&text, &indent](const Node* node) {
+        if (!node->aa_transitions.empty())
+            fmt::format_to(std::back_inserter(text), ",{} \"A\": [\"{}\"]", indent, fmt::join(node->aa_transitions, "\", \""));
+        if (!node->nuc_transitions.empty())
+            fmt::format_to(std::back_inserter(text), ",{} \"B\": [\"{}\"]", indent, fmt::join(node->nuc_transitions, "\", \""));
         if (!node->aa.empty())
             fmt::format_to(std::back_inserter(text), ",\n{} \"a\": \"{}\"", indent, node->aa);
         if (!node->nuc.empty())
@@ -153,7 +157,6 @@ std::string ae::tree::export_json(const Tree& tree)
                 fmt::format_to(std::back_inserter(text), ", \"L\": {}", inode->number_of_leaves());
         }
         format_node_sequences(inode);
-        // "A": ["aa subst", "N193K"],
         // "H": <true if hidden>,
 
         // debugging set_raxml_ancestral_state_reconstruction_data
@@ -182,7 +185,6 @@ std::string ae::tree::export_json(const Tree& tree)
         format_node_sequences(leaf);
         if (!leaf->clades.empty())
             fmt::format_to(std::back_inserter(text), ",\n{} \"L\": [\"{}\"]", indent, fmt::join(leaf->clades, "\", \""));
-        // "h": ["hi names"],
         // "A": ["aa subst", "N193K"],
         format_node_end();
     };
@@ -350,7 +352,12 @@ namespace ae::tree
                     //!!! TODO
                     break;
                 case 'A': // ["aa subst", "N193K"],
-                    //!!! TODO
+                    for (auto transition : field.value().get_array())
+                        current_node_->aa_transitions.emplace_back(static_cast<std::string_view>(transition));
+                    break;
+                case 'B': // ["nuc subst", "A193T"],
+                    for (auto transition : field.value().get_array())
+                        current_node_->nuc_transitions.emplace_back(static_cast<std::string_view>(transition));
                     break;
                 case 'l': // <edge-length: double>,
                     current_node_->edge = EdgeLength{static_cast<double>(field.value())};

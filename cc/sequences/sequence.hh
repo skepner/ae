@@ -41,6 +41,37 @@ namespace ae::sequences
     using sequence_nuc_t = basic_sequence_t<struct sequence_nuc_t_tag>;
     using sequence_aa_t = basic_sequence_t<struct sequence_aa_t_tag>;
 
+    // ----------------------------------------------------------------------
+
+    template <typename Tag> class indexed
+    {
+      public:
+        class iterator
+        {
+          public:
+            iterator(const basic_sequence_t<Tag>& seq, pos0_t pos) : seq_{seq}, pos_{pos} {}
+            bool operator==(const iterator& rhs) { return pos_ == rhs.pos_; }
+            std::pair<pos1_t, char> operator*() { return {pos1_t{pos_}, seq_[pos_]}; }
+            iterator& operator++() { ++pos_; return *this; }
+
+          private:
+            const basic_sequence_t<Tag>& seq_;
+            pos0_t pos_;
+        };
+
+        indexed(const basic_sequence_t<Tag>& seq) : seq_{seq} {}
+
+        iterator begin() const { return iterator{seq_, pos0_t{0}}; }
+        iterator end() const { return iterator{seq_, pos0_t{seq_.size()}}; }
+
+      private:
+        const basic_sequence_t<Tag>& seq_;
+    };
+
+    template <typename Tag> indexed(const basic_sequence_t<Tag>& seq) -> indexed<Tag>;
+
+    // ----------------------------------------------------------------------
+
     struct sequence_pair_t
     {
         sequence_aa_t aa;

@@ -29,6 +29,8 @@ namespace ae::tree
         node_index_t node_id_{0};
         sequences::sequence_aa_t aa{};
         sequences::sequence_nuc_t nuc{};
+        std::vector<std::string> aa_transitions;
+        std::vector<std::string> nuc_transitions;
     };
 
     struct Leaf : public Node
@@ -46,13 +48,19 @@ namespace ae::tree
         sequences::clades_t clades{};
     };
 
+    // struct transition_t
+    // {
+    //     char left;
+    //     sequences::pos1_t pos;
+    //     char right;
+    // };
+
     struct Inode : public Node
     {
         size_t number_of_leaves() const { return number_of_leaves_; }
 
         std::vector<node_index_t> children{};
         size_t number_of_leaves_{0};
-        // std::vector<std::string> aa_substs;
 
         // temporary data for raxml ancestral state reconstruction
         std::unordered_set<std::string> raxml_inode_names;

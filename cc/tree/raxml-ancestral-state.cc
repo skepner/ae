@@ -84,9 +84,9 @@ void ae::tree::Tree::set_raxml_ancestral_state_reconstruction_data(const std::fi
     std::unordered_map<std::string_view, Inode*> leaf_name_to_its_parent;
     for (auto inode_ref : visit(tree_visiting::inodes)) {
         auto* parent = inode_ref.inode();
-        for (const auto node_index : parent->children) {
-            if (is_leaf(node_index))
-                leaf_name_to_its_parent.emplace(std::string_view{leaf(node_index).name}, parent);
+        for (const auto child_index : parent->children) {
+            if (is_leaf(child_index))
+                leaf_name_to_its_parent.emplace(std::string_view{leaf(child_index).name}, parent);
         }
     }
 
@@ -95,9 +95,9 @@ void ae::tree::Tree::set_raxml_ancestral_state_reconstruction_data(const std::fi
     // populate raxml_inode_names in this tree
     for (auto inode_ref : raxml_tree->visit(tree_visiting::inodes)) {
         auto* parent = inode_ref.inode();
-        for (const auto node_index : parent->children) {
-            if (is_leaf(node_index)) {
-                const auto& name = raxml_tree->leaf(node_index).name;
+        for (const auto child_index : parent->children) {
+            if (is_leaf(child_index)) {
+                const auto& name = raxml_tree->leaf(child_index).name;
                 if (const auto found = leaf_name_to_its_parent.find(name); found != leaf_name_to_its_parent.end())
                     found->second->raxml_inode_names.insert(parent->name);
             }
@@ -118,7 +118,14 @@ void ae::tree::Tree::set_raxml_ancestral_state_reconstruction_data(const std::fi
         }
         switch (sequences.size()) {
             case 0:
-                // AD_WARNING("no inode {} sequences found", inode->node_id_);
+                // no inode sequences, take from its parent
+                {
+                    const auto& parent_inode = this->inode(parent(inode_ref.node_id()));
+                    AD_WARNING(parent_inode.aa.empty(), "neither inode {} nor its parent {} sequences found", inode->node_id_, parent_inode.node_id_);
+                    inode->aa = parent_inode.aa;
+                    inode->nuc = parent_inode.nuc;
+                    // AD_WARNING("no inode {} sequences found", inode->node_id_);
+                }
                 break;
             case 1:
                 inode->aa = sequences[0].get().aa;
@@ -143,6 +150,25 @@ void ae::tree::Tree::set_raxml_ancestral_state_reconstruction_data(const std::fi
 
 void ae::tree::Tree::set_transition_labels_by_raxml_ancestral_state_reconstruction_data()
 {
+    for (auto inode_ref : visit(tree_visiting::inodes)) {
+        const auto* parent = inode_ref.inode();
+        for (const auto child_index : parent->children) {
+            if (!is_leaf(child_index)) {
+                auto& child = inode(child_index);
+                child.aa_transitions.clear();
+                child.nuc_transitions.clear();
+                for (const auto [pos1, aa] : ae::sequences::indexed(child.aa)) {
+                    if (aa != parent->aa[pos1])
+                        child.aa_transitions.push_back(fmt::format("{}{}{}", parent->aa[pos1], pos1, aa));
+                }
+                AD_DEBUG(!child.aa_transitions.empty(), "{} {}", child.node_id_, child.aa_transitions);
+                for (const auto [pos1, nuc] : ae::sequences::indexed(child.nuc)) {
+                    if (nuc != parent->nuc[pos1])
+                        child.nuc_transitions.push_back(fmt::format("{}{}{}", parent->nuc[pos1], pos1, nuc));
+                }
+            }
+        }
+    }
 
 } // ae::tree::Tree::set_transition_labels_by_raxml_ancestral_state_reconstruction_data
 

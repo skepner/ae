@@ -10,7 +10,6 @@
 
 // ----------------------------------------------------------------------
 
-static std::string translate_nucleotides_to_amino_acids(std::string_view nucleotides, size_t offset);
 namespace ae::sequences
 {
     static void aa_trim_absent(RawSequence& sequence, Messages& messages);

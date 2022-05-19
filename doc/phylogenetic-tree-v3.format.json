@@ -15,10 +15,10 @@
                 "l": 0.001, -- edge length
                 "H": <true if hidden>,
                 "c": 0.001, -- cumulative edge length
-                "A": ["aa transition", "N193K"]
-                "B": ["nuc transition", "A193T"]
                 "a": "aa sequence inferred by e.g. raxml --ancestral",
                 "N": "nuc sequence inferred by e.g. raxml --ancestral",
+                "A": ["aa transition", "N193K"]
+                "B": ["nuc transition", "A193T"]
                 "t": [...]  -- subtree
             },
             {
@@ -34,6 +34,8 @@
                 "D": "country",
                 "h": ["hi names"],
                 "A": ["aa subst", "N193K"],
+                "A": ["aa transition", "N193K"]
+                "B": ["nuc transition", "A193T"]
                 "L": ["clade", "2A1B"]
             }
         ]
