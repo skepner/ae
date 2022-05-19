@@ -50,29 +50,38 @@ inline auto operator==(const RaxmlAncestralState::seqpair_t& s1, const RaxmlAnce
     return s1.nuc == s2.nuc;
 }
 
-// return {diff_nuc, diff_aa}
-inline std::pair<std::vector<size_t>, std::vector<size_t>> diff(const std::vector<std::reference_wrapper<const RaxmlAncestralState::seqpair_t>>& seqs)
+inline std::vector<size_t> diff(const std::vector<std::string_view>& seqs)
 {
-    std::vector<size_t> diff_nuc, diff_aa;
+    std::vector<size_t> diff;
     if (!seqs.empty()) {
-        for (size_t pos{0}; pos < seqs[0].get().nuc.size(); ++pos) {
+        for (size_t pos{0}; pos < seqs[0].size(); ++pos) {
             for (auto seq = std::next(seqs.begin()); seq != seqs.end(); ++seq) {
-                if (seq->get().nuc[pos] != seqs[0].get().nuc[pos]) {
-                    diff_nuc.push_back(pos);
-                    break;
-                }
-            }
-        }
-        for (size_t pos{0}; pos < seqs[0].get().aa.size(); ++pos) {
-            for (auto seq = std::next(seqs.begin()); seq != seqs.end(); ++seq) {
-                if (seq->get().aa[pos] != seqs[0].get().aa[pos]) {
-                    diff_aa.push_back(pos);
+                if ((*seq)[pos] != seqs[0][pos]) {
+                    diff.push_back(pos);
                     break;
                 }
             }
         }
     }
-    return {diff_nuc, diff_aa};
+    return diff;
+}
+
+template <typename Seq> std::vector<std::string_view> sequences(const std::vector<std::reference_wrapper<const RaxmlAncestralState::seqpair_t>>& source)
+{
+    std::vector<std::string_view> seqs;
+    for (const auto& src : source) {
+        if constexpr (std::is_same_v<Seq, ae::sequences::sequence_aa_t>)
+            seqs.emplace_back(src.get().aa);
+        else
+            seqs.emplace_back(src.get().nuc);
+    }
+    return seqs;
+}
+
+// return {diff_nuc, diff_aa}
+inline std::pair<std::vector<size_t>, std::vector<size_t>> diff(const std::vector<std::reference_wrapper<const RaxmlAncestralState::seqpair_t>>& seqs)
+{
+    return {diff(sequences<ae::sequences::sequence_nuc_t>(seqs)), diff(sequences<ae::sequences::sequence_aa_t>(seqs))};
 }
 
 // ======================================================================
@@ -144,27 +153,36 @@ void ae::tree::Tree::set_raxml_ancestral_state_reconstruction_data(const std::fi
 
 // ----------------------------------------------------------------------
 
-template <typename Seq> std::vector<Seq> child_sequences(const ae::tree::Tree& tree, const ae::tree::Inode& parent)
+template <typename Seq> std::vector<std::string_view> child_sequences(const ae::tree::Tree& tree, const ae::tree::Inode& parent)
 {
-    std::vector<Seq> seqs;
+    std::vector<std::string_view> seqs;
     for (const auto child_index : parent.children) {
         const auto& child = tree.node(child_index);
         if constexpr (std::is_same_v<Seq, ae::sequences::sequence_aa_t>) {
-            seqs.push_back(child.node()->aa);
+            if (!child.node()->aa.empty())
+                seqs.push_back(child.node()->aa);
         }
         else {
             static_assert(std::is_same_v<Seq, ae::sequences::sequence_nuc_t>);
-            seqs.push_back(child.node()->nuc);
+            if (!child.node()->nuc.empty())
+                seqs.push_back(child.node()->nuc);
         }
     }
     return seqs;
 }
 
-template <typename Seq> Seq construct_missing_sequence(const Seq& parent, const std::vector<Seq>& children)
+inline std::string construct_missing_sequence(std::string_view parent, const std::vector<std::string_view>& children)
 {
-    return parent;
-}
+    if (children.empty())
+        return std::string{parent};
 
+    // generate sequence by comparing child nodes sequences, for positions where child node sequences are different use parent node aa/nuc
+
+    std::string result{children[0]};
+    for (size_t pos : diff(children))
+        result[pos] = parent[pos];
+    return result;
+}
 
 void ae::tree::Tree::set_inode_sequences_if_no_ancestral_data()
 {
@@ -172,14 +190,15 @@ void ae::tree::Tree::set_inode_sequences_if_no_ancestral_data()
     // generate sequence by comparing child nodes sequences, for positions where child node sequences are different use parent node aa/nuc
 
     for (auto inode_ref : visit(tree_visiting::inodes)) {
-        if (auto& inode = *inode_ref.inode(); inode.aa.empty()) {
-            AD_WARNING("no inode {} sequences found", inode.node_id_);
+        if (auto* inode = inode_ref.inode(); inode->aa.empty()) {
+            // AD_WARNING("no inode {} sequences found", inode->node_id_);
             if (const auto& parent_inode = this->inode(parent(inode_ref.node_id())); !parent_inode.aa.empty()) {
-                inode.aa = construct_missing_sequence(parent_inode.aa, child_sequences<ae::sequences::sequence_aa_t>(*this, inode));
-                inode.nuc = construct_missing_sequence(parent_inode.nuc, child_sequences<ae::sequences::sequence_nuc_t>(*this, inode));
+                inode->aa = ae::sequences::sequence_aa_t{construct_missing_sequence(parent_inode.aa, child_sequences<ae::sequences::sequence_aa_t>(*this, *inode))};
+                inode->nuc = ae::sequences::sequence_nuc_t{construct_missing_sequence(parent_inode.nuc, child_sequences<ae::sequences::sequence_nuc_t>(*this, *inode))};
+                // AD_DEBUG("inode {} seq set [{}]", inode->node_id_, inode->aa);
             }
             else
-                AD_WARNING("neither inode {} nor its parent {} sequences found", inode.node_id_, parent_inode.node_id_);
+                AD_WARNING("neither inode {} nor its parent {} sequences found", inode->node_id_, parent_inode.node_id_);
         }
     }
 
@@ -191,6 +210,7 @@ void ae::tree::Tree::set_transition_labels_by_raxml_ancestral_state_reconstructi
 {
     for (auto inode_ref : visit(tree_visiting::inodes)) {
         const auto* parent = inode_ref.inode();
+        AD_WARNING(parent->aa.empty(), "[set_transition_labels_by_raxml_ancestral_state_reconstruction_data] parent {} has empty sequence", parent->node_id_);
         for (const auto child_index : parent->children) {
             if (!is_leaf(child_index)) {
                 auto& child = inode(child_index);
@@ -200,7 +220,7 @@ void ae::tree::Tree::set_transition_labels_by_raxml_ancestral_state_reconstructi
                     if (aa != parent->aa[pos1])
                         child.aa_transitions.push_back(fmt::format("{}{}{}", parent->aa[pos1], pos1, aa));
                 }
-                AD_DEBUG(!child.aa_transitions.empty(), "{} {}", child.node_id_, child.aa_transitions);
+                // AD_DEBUG(!child.aa_transitions.empty(), "{} {}", child.node_id_, child.aa_transitions);
                 for (const auto [pos1, nuc] : ae::sequences::indexed(child.nuc)) {
                     if (nuc != parent->nuc[pos1])
                         child.nuc_transitions.push_back(fmt::format("{}{}{}", parent->nuc[pos1], pos1, nuc));
