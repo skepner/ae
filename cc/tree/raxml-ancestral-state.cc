@@ -118,14 +118,9 @@ void ae::tree::Tree::set_raxml_ancestral_state_reconstruction_data(const std::fi
         }
         switch (sequences.size()) {
             case 0:
-                // no inode sequences, take from its parent
-                {
-                    const auto& parent_inode = this->inode(parent(inode_ref.node_id()));
-                    AD_WARNING(parent_inode.aa.empty(), "neither inode {} nor its parent {} sequences found", inode->node_id_, parent_inode.node_id_);
-                    inode->aa = parent_inode.aa;
-                    inode->nuc = parent_inode.nuc;
-                    // AD_WARNING("no inode {} sequences found", inode->node_id_);
-                }
+                // no inode sequences
+                // see set_inode_sequences_if_no_ancestral_data()
+                // AD_WARNING("no inode {} sequences found", inode->node_id_);
                 break;
             case 1:
                 inode->aa = sequences[0].get().aa;
@@ -142,9 +137,53 @@ void ae::tree::Tree::set_raxml_ancestral_state_reconstruction_data(const std::fi
         }
     }
 
+    set_inode_sequences_if_no_ancestral_data();
     set_transition_labels_by_raxml_ancestral_state_reconstruction_data();
 
 } // ae::tree::Tree::set_raxml_ancestral_state_reconstruction_data
+
+// ----------------------------------------------------------------------
+
+template <typename Seq> std::vector<Seq> child_sequences(const ae::tree::Tree& tree, const ae::tree::Inode& parent)
+{
+    std::vector<Seq> seqs;
+    for (const auto child_index : parent.children) {
+        const auto& child = tree.node(child_index);
+        if constexpr (std::is_same_v<Seq, ae::sequences::sequence_aa_t>) {
+            seqs.push_back(child.node()->aa);
+        }
+        else {
+            static_assert(std::is_same_v<Seq, ae::sequences::sequence_nuc_t>);
+            seqs.push_back(child.node()->nuc);
+        }
+    }
+    return seqs;
+}
+
+template <typename Seq> Seq construct_missing_sequence(const Seq& parent, const std::vector<Seq>& children)
+{
+    return parent;
+}
+
+
+void ae::tree::Tree::set_inode_sequences_if_no_ancestral_data()
+{
+    // looks like raxml does not put sequence into a inode when node has just inode children
+    // generate sequence by comparing child nodes sequences, for positions where child node sequences are different use parent node aa/nuc
+
+    for (auto inode_ref : visit(tree_visiting::inodes)) {
+        if (auto& inode = *inode_ref.inode(); inode.aa.empty()) {
+            AD_WARNING("no inode {} sequences found", inode.node_id_);
+            if (const auto& parent_inode = this->inode(parent(inode_ref.node_id())); !parent_inode.aa.empty()) {
+                inode.aa = construct_missing_sequence(parent_inode.aa, child_sequences<ae::sequences::sequence_aa_t>(*this, inode));
+                inode.nuc = construct_missing_sequence(parent_inode.nuc, child_sequences<ae::sequences::sequence_nuc_t>(*this, inode));
+            }
+            else
+                AD_WARNING("neither inode {} nor its parent {} sequences found", inode.node_id_, parent_inode.node_id_);
+        }
+    }
+
+} // ae::tree::Tree::set_inode_sequences_if_no_ancestral_data
 
 // ----------------------------------------------------------------------
 

@@ -20,11 +20,12 @@ namespace ae::tree
     inline const node_index_t node_unlinked{std::numeric_limits<node_index_base_t>::max()}; // see Tree::remove
 
     class Tree;
+    struct Node;
     struct Leaf;
     struct Inode;
-    template <lvalue_reference TREE, pointer LEAF, pointer INODE> class tree_iterator_t;
+    template <lvalue_reference TREE, pointer LEAF, pointer INODE, pointer NODE> class tree_iterator_t;
 
-    template <lvalue_reference TREE, pointer LEAF, pointer INODE> class tree_iterator_refence_t
+    template <lvalue_reference TREE, pointer LEAF, pointer INODE, pointer NODE> class tree_iterator_refence_t
     {
       public:
         constexpr bool pre() const { return pre_; }
@@ -60,6 +61,16 @@ namespace ae::tree
             return std::visit(overload{[](LEAF) -> INODE { return nullptr; }, [](INODE inode) -> INODE { return inode; }}, ref_);
         }
 
+        NODE node()
+        {
+            return std::visit([](auto* node) -> NODE { return node; }, ref_);
+        }
+
+        NODE node() const
+        {
+            return std::visit([](auto* node) -> NODE { return node; }, ref_);
+        }
+
       private:
         std::variant<LEAF, INODE> ref_;
         bool pre_{true};
@@ -67,18 +78,18 @@ namespace ae::tree
         constexpr tree_iterator_refence_t(LEAF leaf) : ref_{leaf} {}
         constexpr tree_iterator_refence_t(INODE inode, bool a_pre = true) : ref_{inode}, pre_{a_pre} {}
 
-        friend class tree_iterator_t<TREE, LEAF, INODE>;
+        friend class tree_iterator_t<TREE, LEAF, INODE, NODE>;
         friend std::decay_t<TREE>;
     };
 
     enum class tree_visiting { all, leaves, inodes, inodes_post, all_pre_post, all_post };
 
-    template <lvalue_reference TREE, pointer LEAF, pointer INODE> class tree_iterator_t
+    template <lvalue_reference TREE, pointer LEAF, pointer INODE, pointer NODE> class tree_iterator_t
     {
       public:
         enum _init_end { init_end };
 
-        using reference = tree_iterator_refence_t<TREE, LEAF, INODE>;
+        using reference = tree_iterator_refence_t<TREE, LEAF, INODE, NODE>;
 
         tree_iterator_t(TREE tree, tree_visiting a_visiting);
         tree_iterator_t(TREE tree, tree_visiting a_visiting, _init_end);
@@ -110,16 +121,16 @@ namespace ae::tree
         }
     };
 
-    extern template class tree_iterator_t<Tree&, Leaf*, Inode*>;
-    extern template class tree_iterator_t<const Tree&, const Leaf*, const Inode*>;
+    extern template class tree_iterator_t<Tree&, Leaf*, Inode*, Node*>;
+    extern template class tree_iterator_t<const Tree&, const Leaf*, const Inode*, const Node*>;
 
-    using tree_iterator = tree_iterator_t<Tree&, Leaf*, Inode*>;
-    using const_tree_iterator = tree_iterator_t<const Tree&, const Leaf*, const Inode*>;
+    using tree_iterator = tree_iterator_t<Tree&, Leaf*, Inode*, Node*>;
+    using const_tree_iterator = tree_iterator_t<const Tree&, const Leaf*, const Inode*, const Node*>;
 
-    template <lvalue_reference TREE, pointer LEAF, pointer INODE> class tree_visitor_t
+    template <lvalue_reference TREE, pointer LEAF, pointer INODE, pointer NODE> class tree_visitor_t
     {
       public:
-        using iterator = tree_iterator_t<TREE, LEAF, INODE>;
+        using iterator = tree_iterator_t<TREE, LEAF, INODE, NODE>;
 
         constexpr tree_visitor_t(TREE tree, tree_visiting a_visiting) : tree_{tree}, visiting_{a_visiting} {}
 
@@ -131,8 +142,8 @@ namespace ae::tree
         tree_visiting visiting_;
     };
 
-    using tree_visitor = tree_visitor_t<Tree&, Leaf*, Inode*>;
-    using const_tree_visitor = tree_visitor_t<const Tree&, const Leaf*, const Inode*>;
+    using tree_visitor = tree_visitor_t<Tree&, Leaf*, Inode*, Node*>;
+    using const_tree_visitor = tree_visitor_t<const Tree&, const Leaf*, const Inode*, const Node*>;
 
 } // namespace ae::tree
 

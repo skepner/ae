@@ -3,8 +3,8 @@
 // ======================================================================
 
 // begin
-template <ae::lvalue_reference TREE, ae::pointer LEAF, ae::pointer INODE>
-ae::tree::tree_iterator_t<TREE, LEAF, INODE>::tree_iterator_t(TREE tree, tree_visiting a_visiting) : tree_{tree}, visiting_{a_visiting}
+template <ae::lvalue_reference TREE, ae::pointer LEAF, ae::pointer INODE, ae::pointer NODE>
+ae::tree::tree_iterator_t<TREE, LEAF, INODE, NODE>::tree_iterator_t(TREE tree, tree_visiting a_visiting) : tree_{tree}, visiting_{a_visiting}
 {
     parents_.reserve(tree.depth());
     parents_.emplace_back(node_index_t{0}, parent_itself);
@@ -24,15 +24,15 @@ ae::tree::tree_iterator_t<TREE, LEAF, INODE>::tree_iterator_t(TREE tree, tree_vi
 // ----------------------------------------------------------------------
 
 // end
-template <ae::lvalue_reference TREE, ae::pointer LEAF, ae::pointer INODE>
-ae::tree::tree_iterator_t<TREE, LEAF, INODE>::tree_iterator_t(TREE tree, tree_visiting a_visiting, _init_end) : tree_{tree}, visiting_{a_visiting}
+template <ae::lvalue_reference TREE, ae::pointer LEAF, ae::pointer INODE, ae::pointer NODE>
+ae::tree::tree_iterator_t<TREE, LEAF, INODE, NODE>::tree_iterator_t(TREE tree, tree_visiting a_visiting, _init_end) : tree_{tree}, visiting_{a_visiting}
 {
     parents_.emplace_back(node_index_t{0}, iteration_end);
 }
 
 // ----------------------------------------------------------------------
 
-template <ae::lvalue_reference TREE, ae::pointer LEAF, ae::pointer INODE> ae::tree::tree_iterator_t<TREE, LEAF, INODE>& ae::tree::tree_iterator_t<TREE, LEAF, INODE>::operator++()
+template <ae::lvalue_reference TREE, ae::pointer LEAF, ae::pointer INODE, ae::pointer NODE> ae::tree::tree_iterator_t<TREE, LEAF, INODE, NODE>& ae::tree::tree_iterator_t<TREE, LEAF, INODE, NODE>::operator++()
 {
     // returns if suitable node found after diving
     const auto dive = [this](size_t child_no) -> bool {
@@ -109,7 +109,7 @@ template <ae::lvalue_reference TREE, ae::pointer LEAF, ae::pointer INODE> ae::tr
 
 // ----------------------------------------------------------------------
 
-template <ae::lvalue_reference TREE, ae::pointer LEAF, ae::pointer INODE> typename ae::tree::tree_iterator_t<TREE, LEAF, INODE>::reference ae::tree::tree_iterator_t<TREE, LEAF, INODE>::operator*()
+template <ae::lvalue_reference TREE, ae::pointer LEAF, ae::pointer INODE, ae::pointer NODE> typename ae::tree::tree_iterator_t<TREE, LEAF, INODE, NODE>::reference ae::tree::tree_iterator_t<TREE, LEAF, INODE, NODE>::operator*()
 {
     auto& [parent_index, child_no] = parents_.back();
     auto& parent = tree_.inode(parent_index);
@@ -125,7 +125,7 @@ template <ae::lvalue_reference TREE, ae::pointer LEAF, ae::pointer INODE> typena
 
 // ======================================================================
 
-template class ae::tree::tree_iterator_t<ae::tree::Tree&, ae::tree::Leaf*, ae::tree::Inode*>;
-template class ae::tree::tree_iterator_t<const ae::tree::Tree&, const ae::tree::Leaf*, const ae::tree::Inode*>;
+template class ae::tree::tree_iterator_t<ae::tree::Tree&, ae::tree::Leaf*, ae::tree::Inode*, ae::tree::Node*>;
+template class ae::tree::tree_iterator_t<const ae::tree::Tree&, const ae::tree::Leaf*, const ae::tree::Inode*, const ae::tree::Node*>;
 
 // ======================================================================
