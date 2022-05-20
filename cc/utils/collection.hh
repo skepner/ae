@@ -126,6 +126,8 @@ namespace ae
                             return content.has_key(val);
                         else if constexpr (std::is_same_v<C, array>)
                             return content.contains(value{val});
+                        else if constexpr (std::is_same_v<C, null>)
+                            return false;
                         else
                             throw invalid_value{fmt::format("dynamic::value::contains() cannot be used with variant value of type {}", typeid(content).name())};
                     },

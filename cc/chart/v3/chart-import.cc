@@ -83,16 +83,6 @@ inline void read_semantic_attributes(ae::chart::v3::SemanticAttributes& target, 
 {
     ae::load(target.data(), source);
     AD_DEBUG("read_semantic_attributes: {} has:{}", target, target.has_clade("V1A.1"));
-
-   //  for (auto field : source) {
-   //      if (const std::string_view key = field.unescaped_key(); key == "C") { // clades
-   //          for (auto ann : field.value().get_array())
-   //              target.clades.insert_if_not_present(static_cast<std::string_view>(ann));
-   //      }
-   //      else {
-   //          unhandled_key({"c", "a/s", "T", key});
-   //      }
-   // }
 }
 
 // ----------------------------------------------------------------------
