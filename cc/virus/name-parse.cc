@@ -501,7 +501,7 @@ namespace ae::virus::name::inline v1
         struct parts
         {
             static constexpr auto rule =
-                ((dsl::p<reassortant> >> (dsl::opt(dsl::peek(OPT_SPACES + OPEN2) >> (OPT_SPACES + OPEN2 + dsl::p<virus_name> + dsl::if_(CLOSE2)))))
+                ((dsl::p<reassortant> >> (dsl::opt(dsl::peek(OPT_SPACES + OPEN2) >> (OPT_SPACES + OPEN2 + OPT_SPACES + dsl::p<virus_name> + dsl::if_(CLOSE2)))))
                  | (dsl::else_ >> (dsl::p<virus_name> + dsl::opt(dsl::p<reassortant>) + dsl::p<rest>)))
                 + dsl::eof;
             static constexpr auto value = lexy::callback<parts_t>(
