@@ -151,7 +151,7 @@ const auto put_semantic = [](fmt::memory_buffer& out, const ae::chart::v3::Seman
     if (condition(value)) {
         comma = put_comma_key(out, comma, key, after_comma);
         fmt::format_to(std::back_inserter(out), "{{");
-        [[maybe_unused]] auto comma_inside = put_array_str(out, value.clades, not_empty, "C", false);
+        // [[maybe_unused]] auto comma_inside = put_array_str(out, value.clades, not_empty, "C", false);
         fmt::format_to(std::back_inserter(out), "}}");
     }
     return comma;

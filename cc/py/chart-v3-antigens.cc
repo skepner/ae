@@ -219,7 +219,7 @@ void ae::py::chart_v3_antigens(pybind11::module_& chart_v3_submodule)
         .def_property_readonly(
             "antigen", [](const SelectionData<Antigen>& sd) -> const Antigen& { return sd.ag_sr; }, pybind11::return_value_policy::reference_internal)             //
         .def_property_readonly("aa", [](const SelectionData<Antigen>& sd) { return sd.ag_sr.aa(); })                                                               //
-        .def("has_clade", [](const SelectionData<Antigen>& sd, std::string_view clade) { return sd.ag_sr.semantic().clades.contains(clade); })                     //
+        .def("has_clade", [](const SelectionData<Antigen>& sd, std::string_view clade) { return sd.ag_sr.semantic().has_clade(clade); })                     //
         .def("layers", [](const SelectionData<Antigen>& sd) -> std::vector<size_t> { return to_vector_base_t(sd.chart->titers().layers_with_antigen(sd.index)); }) //
         ;
 
@@ -229,14 +229,14 @@ void ae::py::chart_v3_antigens(pybind11::module_& chart_v3_submodule)
         .def_property_readonly(
             "serum", [](const SelectionData<Serum>& sd) -> const Serum& { return sd.ag_sr; }, pybind11::return_value_policy::reference_internal)               //
         .def_property_readonly("aa", [](const SelectionData<Serum>& sd) { return sd.ag_sr.aa(); })                                                             //
-        .def("has_clade", [](const SelectionData<Serum>& sd, std::string_view clade) { return sd.ag_sr.semantic().clades.contains(clade); })                   //
+        .def("has_clade", [](const SelectionData<Serum>& sd, std::string_view clade) { return sd.ag_sr.semantic().has_clade(clade); })                   //
         .def("layers", [](const SelectionData<Serum>& sd) -> std::vector<size_t> { return to_vector_base_t(sd.chart->titers().layers_with_serum(sd.index)); }) //
         ;
 
     // ----------------------------------------------------------------------
 
     pybind11::class_<SemanticAttributes>(chart_v3_submodule, "SemanticAttributes")
-        .def("add_clade", [](SemanticAttributes& semantic, std::string_view clade) { semantic.clades.insert_if_not_present(clade); }) //
+        .def("add_clade", [](SemanticAttributes& semantic, std::string_view clade) { semantic.add_clade(clade); }) //
         ;
 
     // ----------------------------------------------------------------------

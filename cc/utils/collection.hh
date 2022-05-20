@@ -6,7 +6,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include "ext/simdjson.hh"
 #include "utils/string-hash.hh"
 
 // ----------------------------------------------------------------------
@@ -20,14 +19,18 @@ namespace ae
 
         class null
         {
+          public:
+            null() = default;
+            bool operator==(const null&) const = default;
         };
 
-        using value = std::variant<int, double, bool, std::string, object, array, null>;
+        using value = std::variant<long, double, bool, std::string, object, array, null>;
 
         class object
         {
           public:
             object() = default;
+            bool operator==(const object&) const;
 
           private:
             std::unordered_map<std::string, value, string_hash_for_unordered_map, std::equal_to<>> data_;
@@ -37,10 +40,13 @@ namespace ae
         {
           public:
             array() = default;
+            bool operator==(const array&) const = default;
 
           private:
             std::vector<value> data_;
         };
+
+        inline bool object::operator==(const object& rhs) const { return data_ == rhs.data_; }
 
     } // namespace dynamic
 
@@ -50,10 +56,14 @@ namespace ae
     {
       public:
         DynamicCollection() = default;
-        DynamicCollection(simdjson::ondemand::value source);
+        bool operator==(const DynamicCollection&) const = default;
+
+        bool empty() const { return std::holds_alternative<dynamic::null>(data_); }
 
       private:
-        dynamic::value data_;
+        dynamic::value data_{dynamic::null{}};
+
+        friend class DynamicCollectionJsonLoader;
     };
 
 } // namespace ae
