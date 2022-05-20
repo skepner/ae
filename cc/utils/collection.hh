@@ -28,6 +28,22 @@ namespace ae
             bool operator==(const null&) const = default;
         };
 
+        class string
+        {
+          public:
+            string() = default;
+            string(const string&) = default;
+            string(std::string_view src) : data_{src} {}
+            string& operator=(const string&) = default;
+            string& operator=(std::string_view src) { data_ = std::string{src}; return *this; }
+
+            bool operator==(const string&) const = default;
+            operator std::string_view() const { return data_; }
+
+          private:
+            std::string data_{};
+        };
+
         class object
         {
           public:
@@ -71,7 +87,8 @@ namespace ae
             value(value&& arg): data_{std::move(arg.data_)} {}
             value(const value& arg) : data_{arg.data_} {}
             template <typename T> requires (!std::is_same_v<T, value>) value(T&& arg) : data_{std::move(arg)} {}
-            value(std::string_view arg) : data_{std::string{arg}} {}
+            value(std::string_view arg) : data_{string{arg}} {}
+            value(const std::string& arg) : data_{string{arg}} {}
             value& operator=(value&& arg) = default; // { data_ = std::move(arg.data_); return *this; }
             value& operator=(const value& arg) = default;
             template <typename T> requires (!std::is_same_v<T, value>) value& operator=(T&& arg) { data_ = arg; return *this; }
@@ -79,7 +96,7 @@ namespace ae
             bool empty() const { return std::holds_alternative<null>(data_); }
             bool is_null() const { return std::holds_alternative<null>(data_); }
 
-            using value_t = std::variant<long, double, bool, std::string, object, array, null>;
+            using value_t = std::variant<long, double, bool, string, object, array, null>;
 
             value& operator[](std::string_view key)
             {
@@ -212,7 +229,7 @@ template <> struct fmt::formatter<ae::dynamic::array> : fmt::formatter<ae::fmt_h
 {
     template <typename FormatCtx> auto format(const ae::dynamic::array& arr, FormatCtx& ctx)
     {
-        return format_to(ctx.out(), fmt::runtime("[{}]"), arr.data());
+        return format_to(ctx.out(), fmt::runtime("{}"), arr.data());
     }
 };
 
@@ -221,6 +238,14 @@ template <> struct fmt::formatter<ae::dynamic::null> : fmt::formatter<ae::fmt_he
     template <typename FormatCtx> constexpr auto format(const ae::dynamic::null&, FormatCtx& ctx)
     {
         return format_to(ctx.out(), "null");
+    }
+};
+
+template <> struct fmt::formatter<ae::dynamic::string> : fmt::formatter<ae::fmt_helper::default_formatter>
+{
+    template <typename FormatCtx> constexpr auto format(const ae::dynamic::string& str, FormatCtx& ctx)
+    {
+        return format_to(ctx.out(), "\"{}\"", static_cast<std::string_view>(str));
     }
 };
 
