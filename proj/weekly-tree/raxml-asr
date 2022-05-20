@@ -1,0 +1,116 @@
+#! /usr/bin/env python3
+
+import sys, os, re, argparse, logging, datetime, subprocess, random, traceback
+from pathlib import Path
+
+sRandomGen = random.SystemRandom()
+
+# ======================================================================
+
+def main(args: argparse.Namespace):
+    argv = '"' + '" "'.join(sys.argv) + '"'
+    working_dir = Path(args.subdir).resolve()
+    source_fas = working_dir.joinpath("source.fas")
+    source_tree = Path(working_dir.joinpath("raxml-best.txt").open().read().strip()).resolve()
+    if os.fork():
+        # parent
+        exit(0)
+    # child
+    try:
+        raxml_ng_asr(working_dir=working_dir, source_fas=source_fas, source_tree=source_tree, slurm_nodelist=args.slurm_nodelist, slurm_exclude_nodes=args.slurm_exclude_nodes)
+        subprocess.run(["/usr/bin/mail", "-s", f"completed {sys.argv[0]} {working_dir}", "eu@antigenic-cartography.org"], input=f"cd {working_dir}\n{argv}", text=True)
+        return 0
+    except Exception as err:
+        subprocess.run(["/usr/bin/mail", "-s", f"FAILED {sys.argv[0]} {working_dir}", "eu@antigenic-cartography.org"], input=f"cd {working_dir}\n{argv}\n\n{traceback.format_exc()}\n", text=True)
+        raise
+
+# ----------------------------------------------------------------------
+
+def raxml_ng_asr(working_dir: Path, source_fas: Path, source_tree: Path, slurm_nodelist: str, slurm_exclude_nodes: str):
+
+    output_dir = get_output_dir(working_dir, "raxml-ng-asr.")
+
+    raxml_cmd = [
+        "/syn/bin/raxml-ng",
+        "--ancestral",
+        "--model", "GTR+G+I", # raxml: -m GTRGAMMAI -c 4
+        "--msa", str(source_fas),
+        "--msa-format", "FASTA",
+        "--tree", str(source_tree),
+        "--log", "PROGRESS", # VERBOSE, DEBUG
+        "--threads", "1",
+    ]
+    # "--silent", "--no-seq-check"
+
+    # ----------------------------------------------------------------------
+
+    def run_raxml_ng():
+        prefix = output_dir.joinpath('asr')
+        cmd = (srun_cmd()
+               + [f"--job-name=raxml-ng-asr {working_dir.name}", f"--output={prefix.with_suffix('.stdout')}", f"--error={prefix.with_suffix('.stderr')}"]
+               + raxml_cmd
+               + ["--prefix", prefix, "--seed", str(sRandomGen.randint(1, 0xFFFFFFF))])
+        with output_dir.joinpath("commands.txt").open("a") as commands_txt:
+            print(" ".join(cmd), file=commands_txt)
+        # print(cmd)
+        subprocess.check_call(cmd)
+
+    def srun_cmd():
+        cmd = [
+            "srun",
+            "--cpus-per-task=4",
+            "--ntasks=1",
+            "--threads=1",
+            f"--nodelist={slurm_nodelist}",
+        ]
+        if slurm_exclude_nodes:
+            cmd.append(f"--exclude={slurm_exclude_nodes}")
+        return cmd
+
+    # ----------------------------------------------------------------------
+
+    def results_available():
+        return len(list(output_dir.glob("*.raxml.ancestralTree"))) > 0
+
+    # ----------------------------------------------------------------------
+
+    def find_best_result():
+        output_dir.parent.joinpath("raxml-asr-best.txt").open("w").write(list(output_dir.glob("*.raxml.ancestralTree"))[0].resolve())
+
+    # ----------------------------------------------------------------------
+
+    if not results_available():
+        start = datetime.datetime.now()
+        run_raxml_ng()
+        logging.info(f"raxml-ng-asr elapsed: {datetime.datetime.now() - start}")
+    find_best_result()
+
+# ----------------------------------------------------------------------
+
+def get_output_dir(working_dir, prefix):
+    output_dirs = list(working_dir.glob(prefix + "*"))
+    if output_dirs:
+        output_dir = max(output_dirs)
+    else:
+        output_dir = working_dir.joinpath(prefix + datetime.datetime.now().strftime('%Y-%m%d-%H%M%S'))
+        output_dir.mkdir()
+        output_dir.chmod(0o777)
+    return output_dir
+
+# ======================================================================
+
+try:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("subdir")
+    # parser.add_argument("outgroup")
+    parser.add_argument("--node", dest="slurm_nodelist", default="i22")
+    parser.add_argument("--exclude-nodes", dest="slurm_exclude_nodes", default=None)
+    args = parser.parse_args()
+    logging.basicConfig(level=logging.DEBUG, format="%(levelname)s %(asctime)s: %(message)s")
+    exit_code = main(args) or 0
+except Exception as err:
+    logging.error(f"> {err}\n{traceback.format_exc()}")
+    exit_code = 1
+exit(exit_code)
+
+# ======================================================================
