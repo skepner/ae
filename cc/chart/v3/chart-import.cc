@@ -82,6 +82,7 @@ inline void read_info(ae::chart::v3::Info& info, ::simdjson::ondemand::object so
 inline void read_semantic_attributes(ae::chart::v3::SemanticAttributes& target, ::simdjson::ondemand::value source)
 {
     ae::load(target.data(), source);
+    AD_DEBUG("read_semantic_attributes: {} has:{}", target, target.has_clade("V1A.1"));
 
    //  for (auto field : source) {
    //      if (const std::string_view key = field.unescaped_key(); key == "C") { // clades

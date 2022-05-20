@@ -3,36 +3,49 @@
 
 // ----------------------------------------------------------------------
 
-namespace ae
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wexit-time-destructors"
+#pragma GCC diagnostic ignored "-Wglobal-constructors"
+
+ae::dynamic::value_null ae::dynamic::static_null{};
+
+#pragma GCC diagnostic pop
+
+// ----------------------------------------------------------------------
+
+namespace ae::dynamic
 {
     class DynamicCollectionJsonLoader
     {
       public:
-        static void load(DynamicCollection& collection, simdjson::ondemand::value source) { load(collection.data_, source); }
-
-        static void load(ae::dynamic::value& target, simdjson::ondemand::value source)
+        static value load(simdjson::ondemand::value source)
         {
             switch (source.type()) {
-                case simdjson::ondemand::json_type::array:
-                    break;
-                case simdjson::ondemand::json_type::object:
-                    break;
+                case simdjson::ondemand::json_type::array: {
+                    array target{};
+                    for (simdjson::ondemand::value elt : source.get_array())
+                        target.add(load(elt));
+                    return target;
+                }
+                case simdjson::ondemand::json_type::object: {
+                    object target{};
+                    for (auto field : source.get_object())
+                        target.add(static_cast<std::string_view>(field.unescaped_key()), load(field.value()));
+                    return target;
+                }
                 case simdjson::ondemand::json_type::number:
                     if (source.is_integer())
-                        target = source.get_int64();
+                        return source.get_int64();
                     else
-                        target = source.get_double();
-                    break;
+                        return source.get_double();
                 case simdjson::ondemand::json_type::string:
-                    target = std::string{static_cast<std::string_view>(source.get_string())};
-                    break;
+                    return std::string{static_cast<std::string_view>(source.get_string())};
                 case simdjson::ondemand::json_type::boolean:
-                    target = source.get_bool();
-                    break;
+                    return source.get_bool();
                 case simdjson::ondemand::json_type::null:
-                    target = ae::dynamic::null{};
-                    break;
+                    return null{};
             }
+            return null{};
         }
     };
 
@@ -40,9 +53,9 @@ namespace ae
 
 // ----------------------------------------------------------------------
 
-void ae::load(DynamicCollection& collection, simdjson::ondemand::value source)
+void ae::load(dynamic::value& collection, simdjson::ondemand::value source)
 {
-    DynamicCollectionJsonLoader::load(collection, source);
+    collection = dynamic::DynamicCollectionJsonLoader::load(source);
 
 } // ae::load
 

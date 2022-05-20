@@ -6,9 +6,12 @@
 
 namespace ae
 {
-    class DynamicCollection;
+    namespace dynamic
+    {
+        class value;
+    }
 
-    void load(DynamicCollection& collection, simdjson::ondemand::value source);
+    void load(dynamic::value& collection, simdjson::ondemand::value source);
 
 }
 
