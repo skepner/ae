@@ -133,7 +133,8 @@ sources_utils = [
   'cc/utils/file.cc',
   'cc/utils/log.cc',
   'cc/utils/messages.cc',
-  'cc/ext/date.cc'
+  'cc/ext/date.cc',
+  'cc/utils/collection.cc',
 ]
 
 # ----------------------------------------------------------------------
