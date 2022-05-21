@@ -41,7 +41,7 @@ namespace ae::chart::v3
         }
 
       private:
-        DynamicCollection data_;
+        DynamicCollection data_{};
     };
 
 } // namespace ae::chart::v3
