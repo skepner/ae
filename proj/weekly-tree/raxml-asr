@@ -49,7 +49,7 @@ def raxml_ng_asr(working_dir: Path, source_fas: Path, source_tree: Path, slurm_n
         cmd = (srun_cmd()
                + [f"--job-name=raxml-ng-asr {working_dir.name}", f"--output={prefix.with_suffix('.stdout')}", f"--error={prefix.with_suffix('.stderr')}"]
                + raxml_cmd
-               + ["--prefix", prefix, "--seed", str(sRandomGen.randint(1, 0xFFFFFFF))])
+               + ["--prefix", str(prefix), "--seed", str(sRandomGen.randint(1, 0xFFFFFFF))])
         with output_dir.joinpath("commands.txt").open("a") as commands_txt:
             print(" ".join(cmd), file=commands_txt)
         # print(cmd)
