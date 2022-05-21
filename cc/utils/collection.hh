@@ -47,7 +47,7 @@ namespace ae
         class object
         {
           public:
-            // object() = default;
+            object();
             bool operator==(const object&) const;
             void add(std::string&& key, value&& val);
             void add(std::string_view key, value&& val);
@@ -61,7 +61,7 @@ namespace ae
             const value& operator[](std::string_view key) const;
 
           private:
-            std::unordered_map<std::string, value, string_hash_for_unordered_map, std::equal_to<>> data_{};
+            std::unordered_map<std::string, value, string_hash_for_unordered_map, std::equal_to<>> data_;
         };
 
         class array
@@ -173,6 +173,7 @@ namespace ae
 
         // ----------------------------------------------------------------------
 
+        inline object::object() : data_{} {} // g++11 wants this
         inline bool object::operator==(const object& rhs) const { return data_ == rhs.data_; }
         inline void object::add(std::string&& key, value&& val) { data_.insert_or_assign(std::move(key), std::move(val)); }
         inline void object::add(std::string_view key, value&& val) { data_.insert_or_assign(std::string{key}, std::move(val)); }

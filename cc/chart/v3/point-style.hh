@@ -44,7 +44,7 @@ namespace ae::chart::v3
         ae::draw::v2::point_label& label() noexcept { return label_; }
 
       private:
-        std::optional<bool> shown_;
+        std::optional<bool> shown_{true};
         Color fill_{};
         Color outline_{};
         std::optional<double> outline_width_{}; // pixels

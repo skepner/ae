@@ -125,7 +125,7 @@ namespace ae::draw::v2
         text_and_offset(offset_t&& offs) : offset{std::move(offs)} {}
         bool operator==(const text_and_offset&) const = default;
 
-        offset_t offset;
+        offset_t offset{};
     };
 
     inline bool is_default(const text_and_offset& to) { return to == text_and_offset{}; }

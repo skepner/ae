@@ -26,7 +26,7 @@ namespace ae::draw::v2
         const auto& blocks() const { return blocks_; }
 
       private:
-        std::vector<std::string> blocks_;
+        std::vector<std::string> blocks_{};
     };
 
 } // namespace ae::draw::v2

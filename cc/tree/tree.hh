@@ -29,8 +29,8 @@ namespace ae::tree
         node_index_t node_id_{0};
         sequences::sequence_aa_t aa{};
         sequences::sequence_nuc_t nuc{};
-        std::vector<std::string> aa_transitions;
-        std::vector<std::string> nuc_transitions;
+        std::vector<std::string> aa_transitions{};
+        std::vector<std::string> nuc_transitions{};
 
         template <typename Seq> const Seq& get_aa_nuc() const
         {

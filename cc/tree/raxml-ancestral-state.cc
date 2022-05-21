@@ -38,7 +38,7 @@ class RaxmlAncestralState
   private:
     const std::string data_;
     const seqpair_t empty_{};
-    std::unordered_map<std::string_view, seqpair_t> name_to_seq_;
+    std::unordered_map<std::string_view, seqpair_t> name_to_seq_{};
 };
 
 inline auto operator<=>(const RaxmlAncestralState::seqpair_t& s1, const RaxmlAncestralState::seqpair_t& s2)
