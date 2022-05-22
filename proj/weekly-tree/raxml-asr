@@ -75,7 +75,7 @@ def raxml_ng_asr(working_dir: Path, source_fas: Path, source_tree: Path, slurm_n
     # ----------------------------------------------------------------------
 
     def find_best_result():
-        output_dir.parent.joinpath("raxml-asr-best.txt").open("w").write(list(output_dir.glob("*.raxml.ancestralTree"))[0].resolve())
+        output_dir.parent.joinpath("raxml-asr-best.txt").open("w").write(str(list(output_dir.glob("*.raxml.ancestralTree"))[0].resolve()))
 
     # ----------------------------------------------------------------------
 
