@@ -3,11 +3,9 @@
 // Dynamic data collection which can be read from json and exported to json
 
 #include <variant>
-#include <unordered_map>
 #include <vector>
 
 #include "ext/fmt.hh"
-#include "utils/string-hash.hh"
 
 // ----------------------------------------------------------------------
 
@@ -49,19 +47,23 @@ namespace ae
           public:
             object();
             bool operator==(const object&) const;
-            void add(std::string&& key, value&& val);
-            void add(std::string_view key, value&& val);
+            void add(std::string_view key, value&& val) { insert_or_assign(key, std::move(val)); }
             bool has_key(std::string_view key) const;
 
             auto begin() const { return data_.begin(); }
             auto end() const { return data_.end(); }
             const auto& data() const { return data_; }
 
-            value& operator[](std::string_view key) { return data_[std::string{key}]; }
-            const value& operator[](std::string_view key) const;
+            value& operator[](std::string_view key) { return find_or_add(key); }
+            const value& operator[](std::string_view key) const { return find_or_null(key); }
 
           private:
-            std::unordered_map<std::string, value, string_hash_for_unordered_map, std::equal_to<>> data_;
+            // std::unordered_map<std::string, value, string_hash_for_unordered_map, std::equal_to<>> data_; // g++11 cannot handle value declared after this line
+            std::vector<std::pair<std::string, value>> data_;
+
+            value& find_or_add(std::string_view key);
+            const value& find_or_null(std::string_view key) const;
+            void insert_or_assign(std::string_view key, value&& val);
         };
 
         class array
@@ -175,16 +177,31 @@ namespace ae
 
         inline object::object() : data_{} {} // g++11 wants this
         inline bool object::operator==(const object& rhs) const { return data_ == rhs.data_; }
-        inline void object::add(std::string&& key, value&& val) { data_.insert_or_assign(std::move(key), std::move(val)); }
-        inline void object::add(std::string_view key, value&& val) { data_.insert_or_assign(std::string{key}, std::move(val)); }
-        inline bool object::has_key(std::string_view key) const { return data_.find(key) != data_.end(); }
 
-        inline const value& object::operator[](std::string_view key) const
+        inline bool object::has_key(std::string_view key) const
         {
-            if (const auto found = data_.find(key); found != data_.end())
-                return found->second;
-            else
-                return static_null;
+            return std::find_if(std::begin(data_), std::end(data_), [key](const auto& en) { return en.first == key; }) != std::end(data_);
+        }
+
+        inline value& object::find_or_add(std::string_view key)
+                {
+                    if (const auto found = std::find_if(std::begin(data_), std::end(data_), [key](const auto& en) { return en.first == key; }); found != std::end(data_))
+                        return found->second;
+                    return data_.emplace_back(key, null{}).second;
+                }
+
+        inline const value& object::find_or_null(std::string_view key) const
+                {
+                    if (const auto found = std::find_if(std::begin(data_), std::end(data_), [key](const auto& en) { return en.first == key; }); found != std::end(data_))
+                        return found->second;
+                    return static_null;
+                }
+
+        inline void object::insert_or_assign(std::string_view key, value&& val)
+        {
+            if (const auto found = std::find_if(std::begin(data_), std::end(data_), [key](const auto& en) { return en.first == key; }); found != std::end(data_))
+                found->second = std::move(val);
+            data_.emplace_back(key, std::move(val));
         }
 
         // inline array::array() {}
@@ -216,10 +233,10 @@ template <> struct fmt::formatter<ae::dynamic::object> : fmt::formatter<ae::fmt_
         bool comma = false;
         for (const auto& field : obj) {
             if (comma)
-                format_to(ctx.out(), ", ");
+                format_to(ctx.out(), ",");
             else
                 comma = true;
-            format_to(ctx.out(), "\"{}\": {}", field.first, field.second);
+            format_to(ctx.out(), "\"{}\":{}", field.first, field.second);
         }
         format_to(ctx.out(), "}}");
         return ctx.out();
@@ -230,7 +247,7 @@ template <> struct fmt::formatter<ae::dynamic::array> : fmt::formatter<ae::fmt_h
 {
     template <typename FormatCtx> auto format(const ae::dynamic::array& arr, FormatCtx& ctx)
     {
-        return format_to(ctx.out(), fmt::runtime("{}"), arr.data());
+        return format_to(ctx.out(), fmt::runtime("[{}]"), fmt::join(arr.data(), ","));
     }
 };
 
