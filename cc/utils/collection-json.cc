@@ -4,8 +4,10 @@
 // ----------------------------------------------------------------------
 
 #pragma GCC diagnostic push
+#ifdef __clang__
 #pragma GCC diagnostic ignored "-Wexit-time-destructors"
 #pragma GCC diagnostic ignored "-Wglobal-constructors"
+#endif
 
 ae::dynamic::value_null ae::dynamic::static_null{};
 

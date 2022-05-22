@@ -52,12 +52,12 @@ namespace ae::chart::v3::semantic
 
     struct text_t
     {
-        std::optional<std::string> text;
+        std::optional<std::string> text{};
         std::optional<std::string> font_face{};
         std::optional<std::string> font_weight{};
         std::optional<std::string> font_slant{};
         std::optional<double> font_size{};
-        std::optional<color_t> color;
+        std::optional<color_t> color{};
         std::optional<double> interline{};
 
         bool operator==(const text_t&) const = default;

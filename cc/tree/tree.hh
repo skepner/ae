@@ -71,7 +71,7 @@ namespace ae::tree
         size_t number_of_leaves_{0};
 
         // temporary data for raxml ancestral state reconstruction
-        std::unordered_set<std::string> raxml_inode_names;
+        std::unordered_set<std::string> raxml_inode_names{};
     };
 
     struct Nodes
