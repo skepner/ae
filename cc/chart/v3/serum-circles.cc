@@ -1,3 +1,5 @@
+#include <tuple>
+
 #include "chart/v3/serum-circles.hh"
 
 // ----------------------------------------------------------------------
@@ -93,20 +95,53 @@ ae::chart::v3::serum_circle_for_multiple_sera_t ae::chart::v3::serum_circle_for_
     }
     data.center /= static_cast<double>(num_connected_sera);
 
-    antigen_indexes ags_protected, ags_not_protected;
+    std::vector<std::tuple<antigen_index, bool, double>> antigen_distances; // if protected, distances to data.center
+    size_t num_protected{0};
     for (const auto ag_no : titers.number_of_antigens()) {
-        if (ag_protected[*ag_no] == protectd::no)
-            ags_not_protected.insert(ag_no);
-        else if (ag_protected[*ag_no] == protectd::yes)
-            ags_protected.insert(ag_no);
+        const auto dist = ae::chart::v3::distance(layout[ag_no], data.center);
+        if (ag_protected[*ag_no] == protectd::yes) {
+            antigen_distances.emplace_back(ag_no, true, dist);
+            ++num_protected;
+        }
+        else if (ag_protected[*ag_no] == protectd::no)
+            antigen_distances.emplace_back(ag_no, false, dist);
     }
-    if (!ags_protected.empty() && !ags_not_protected.empty()) {
-        fmt::print("protected: {}  not_protected: {}\n", ags_protected, ags_not_protected);
+    if (num_protected > 0 && num_protected < antigen_distances.size()) {
+        std::sort(std::begin(antigen_distances), std::end(antigen_distances), [](const auto& e1, const auto& e2) { return std::get<double>(e1) < std::get<double>(e2); });
+
+        constexpr const size_t None = static_cast<size_t>(-1);
+        size_t best_sum = None;
+        double previous_dist = -1.0;
+        double sum_radii = 0;
+        size_t num_radii = 0;
+        for (const auto& en : antigen_distances) {
+            const auto dist0 = std::get<double>(en);
+            const double radius = previous_dist < 0.0 ? dist0 : (dist0 + previous_dist) / 2.0;
+            size_t protected_outside{0}, not_protected_inside{0};
+            for (const auto& [ag_no, prot, dist] : antigen_distances) {
+                if (const bool inside = dist <= radius; prot && !inside)
+                    ++protected_outside;
+                else if (!prot && inside)
+                    ++not_protected_inside;
+            }
+            if (const size_t summa = protected_outside + not_protected_inside; best_sum == None || best_sum >= summa) { // if sums are the same, choose the smaller radius (found earlier)
+                if (best_sum == summa) {
+                    sum_radii += radius;
+                    ++num_radii;
+                }
+                else {
+                    sum_radii = radius;
+                    num_radii = 1;
+                    best_sum = summa;
+                }
+            }
+            previous_dist = dist0;
+        }
+        data.empirical = sum_radii / static_cast<double>(num_radii);
     }
     else
         AD_WARNING("serum_circle_for_multiple_sera {}: protects everything or nothing", sera);
 
-    AD_WARNING("serum_circle_for_multiple_sera NOT IMPLEMENTED sera:{}", sera);
     return data;
 
 } // ae::chart::v3::serum_circle_for_multiple_sera

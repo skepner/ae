@@ -149,6 +149,10 @@ void ae::py::chart_v3_tests(pybind11::module_& chart_v3_submodule)
         .def_readonly("center", &serum_circle_for_multiple_sera_t::center)                                          //
         .def_readonly("theoretical", &serum_circle_for_multiple_sera_t::theoretical)                                //
         .def_readonly("empirical", &serum_circle_for_multiple_sera_t::empirical)                                    //
+        .def("__str__",
+             [](const serum_circle_for_multiple_sera_t& cs) {
+                 return fmt::format("SerumCircleForMultipleSera(sr: {}, fold: {}, center: {}, empirical: {})", cs.serum_no, cs.fold, cs.center, *cs.empirical);
+             }) //
         ;
 
     // ----------------------------------------------------------------------
