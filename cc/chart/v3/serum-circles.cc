@@ -65,51 +65,46 @@ ae::chart::v3::serum_circle_for_multiple_sera_t ae::chart::v3::serum_circle_for_
             for (const auto homol_ag_no : chart.antigens().homologous(chart.sera()[serum_no])) {
                 const auto homol_titer = chart.titers().titer(homol_ag_no, serum_no);
                 if (layout.point_has_coordinates(homol_ag_no) && !homol_titer.is_dont_care()) {
-                    const double protection_boundary_titer = std::min(column_bases[serum_no], homol_titer.logged_for_column_bases()) - *fold;
-                    for (const auto ag_no : titers.number_of_antigens()) {
-                        if (ag_protected[*ag_no] != protectd::mixed) {
-                            const auto titer = chart.titers().titer(ag_no, serum_no);
-                            const auto final_similarity = std::min(titer.is_dont_care() ? 0.0 : titer.logged_for_column_bases(), column_bases[serum_no]);
-                            const auto prot = (titer.is_regular() ? final_similarity >= protection_boundary_titer : final_similarity > protection_boundary_titer) ? protectd::yes : protectd::no;
-                            if (ag_protected[*ag_no] == protectd::unknown)
-                                ag_protected[*ag_no] = prot;
-                            else if (ag_protected[*ag_no] != prot)
-                                ag_protected[*ag_no] = protectd::mixed;
+                    if (const double protection_boundary_titer = std::min(column_bases[serum_no], homol_titer.logged_for_column_bases()) - *fold; protection_boundary_titer >= 1.0) {
+                        for (const auto ag_no : titers.number_of_antigens()) {
+                            if (ag_protected[*ag_no] != protectd::mixed) {
+                                const auto titer = chart.titers().titer(ag_no, serum_no);
+                                const auto final_similarity = std::min(titer.is_dont_care() ? 0.0 : titer.logged_for_column_bases(), column_bases[serum_no]);
+                                const auto prot = (titer.is_regular() ? final_similarity >= protection_boundary_titer : final_similarity > protection_boundary_titer) ? protectd::yes : protectd::no;
+                                if (ag_protected[*ag_no] == protectd::unknown)
+                                    ag_protected[*ag_no] = prot;
+                                else if (ag_protected[*ag_no] != prot)
+                                    ag_protected[*ag_no] = protectd::mixed;
+                            }
                         }
+                        break; // consider just first suitable homologous antigen
                     }
-                    break; // consider just first suitable homologous antigen
                 }
             }
 
             ++num_connected_sera;
-        if (first_serum) {
-            data.center = serum_coord;
-            first_serum = false;
-        }
-        else {
-            data.center += serum_coord;
-        }
+            if (first_serum) {
+                data.center = serum_coord;
+                first_serum = false;
+            }
+            else
+                data.center += serum_coord;
         }
     }
     data.center /= static_cast<double>(num_connected_sera);
 
+    antigen_indexes ags_protected, ags_not_protected;
     for (const auto ag_no : titers.number_of_antigens()) {
-        switch (ag_protected[*ag_no]) {
-            case protectd::unknown:
-                fmt::print("  u");
-                break;
-            case protectd::no:
-                fmt::print("  N");
-                break;
-            case protectd::yes:
-                fmt::print("  Y");
-                break;
-            case protectd::mixed:
-                fmt::print("  M");
-                break;
-        }
+        if (ag_protected[*ag_no] == protectd::no)
+            ags_not_protected.insert(ag_no);
+        else if (ag_protected[*ag_no] == protectd::yes)
+            ags_protected.insert(ag_no);
     }
-    fmt::print("\n");
+    if (!ags_protected.empty() && !ags_not_protected.empty()) {
+        fmt::print("protected: {}  not_protected: {}\n", ags_protected, ags_not_protected);
+    }
+    else
+        AD_WARNING("serum_circle_for_multiple_sera {}: protects everything or nothing", sera);
 
     AD_WARNING("serum_circle_for_multiple_sera NOT IMPLEMENTED sera:{}", sera);
     return data;
