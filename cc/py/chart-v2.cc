@@ -526,19 +526,19 @@ Usage:
 
     using namespace acmacs;
 
-    pybind11::class_<PointStyle>(chart_v2_submodule, "PointStyle")                         //
-        .def("shown", pybind11::overload_cast<>(&PointStyle::shown, pybind11::const_))     //
-        .def("fill", pybind11::overload_cast<>(&PointStyle::fill, pybind11::const_))       //
-        .def("outline", pybind11::overload_cast<>(&PointStyle::outline, pybind11::const_)) //
-        .def("outline_width", [](const PointStyle& ps) { return *ps.outline_width(); })    //
-        .def("size", [](const PointStyle& ps) { return *ps.size(); })                      //
-        .def("diameter", [](const PointStyle& ps) { return *ps.diameter(); })              //
-        .def("rotation", [](const PointStyle& ps) { return *ps.rotation(); })              //
-        .def("aspect", [](const PointStyle& ps) { return *ps.aspect(); })                  //
-        .def("shape", [](const PointStyle& ps) { return fmt::format("{}", ps.shape()); })  //
-        // .def("label", pybind11::overload_cast<>(&PointStyle::label, pybind11::const_)) //
-        .def("label_text", pybind11::overload_cast<>(&PointStyle::label_text, pybind11::const_)) //
-        ;
+    // pybind11::class_<PointStyle>(chart_v2_submodule, "PointStyle")                         //
+    //     .def("shown", pybind11::overload_cast<>(&PointStyle::shown, pybind11::const_))     //
+    //     .def("fill", pybind11::overload_cast<>(&PointStyle::fill, pybind11::const_))       //
+    //     .def("outline", pybind11::overload_cast<>(&PointStyle::outline, pybind11::const_)) //
+    //     .def("outline_width", [](const PointStyle& ps) { return *ps.outline_width(); })    //
+    //     .def("size", [](const PointStyle& ps) { return *ps.size(); })                      //
+    //     .def("diameter", [](const PointStyle& ps) { return *ps.diameter(); })              //
+    //     .def("rotation", [](const PointStyle& ps) { return *ps.rotation(); })              //
+    //     .def("aspect", [](const PointStyle& ps) { return *ps.aspect(); })                  //
+    //     .def("shape", [](const PointStyle& ps) { return fmt::format("{}", ps.shape()); })  //
+    //     // .def("label", pybind11::overload_cast<>(&PointStyle::label, pybind11::const_)) //
+    //     .def("label_text", pybind11::overload_cast<>(&PointStyle::label_text, pybind11::const_)) //
+    //     ;
 
     // ======================================================================
 
