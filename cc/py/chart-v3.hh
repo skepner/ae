@@ -45,7 +45,7 @@ namespace ae::py
         }
 
         auto serum_circles(double fold) const { return ae::chart::v3::serum_circles(*chart, projection, ae::chart::v3::serum_circle_fold{fold}); }
-        auto serum_circle_for_multiple_sera(const serum_indexes& sera, double fold) const { return ae::chart::v3::serum_circle_for_multiple_sera(*chart, projection, sera, ae::chart::v3::serum_circle_fold{fold}); }
+        auto serum_circle_for_multiple_sera(const serum_indexes& sera, double fold, bool conservative) const { return ae::chart::v3::serum_circle_for_multiple_sera(*chart, projection, sera, ae::chart::v3::serum_circle_fold{fold}, conservative); }
     };
 }
 

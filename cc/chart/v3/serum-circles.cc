@@ -50,15 +50,22 @@ std::vector<ae::chart::v3::serum_circles_for_serum_t> ae::chart::v3::serum_circl
 
 // ----------------------------------------------------------------------
 
-ae::chart::v3::serum_circle_for_multiple_sera_t ae::chart::v3::serum_circle_for_multiple_sera(const Chart& chart, const Projection& projection, const serum_indexes& sera, serum_circle_fold fold)
+ae::chart::v3::serum_circle_for_multiple_sera_t ae::chart::v3::serum_circle_for_multiple_sera(const Chart& chart, const Projection& projection, const serum_indexes& sera, serum_circle_fold fold, bool conservative)
 {
     const auto column_bases = chart.column_bases(projection.minimum_column_basis());
     const auto& layout = projection.layout();
     const auto& titers = chart.titers();
 
-    enum class protectd { unknown, no, yes, mixed };
+    struct Protected
+    {
+        size_t yes{0};
+        size_t no{0};
+        bool perfect() const { return yes == 0 || no == 0; }
+        bool dominates() const { return yes != no; }
+        bool prot() const { return yes > no; }
+    };
 
-    std::vector<protectd> ag_protected(*chart.antigens().size(), protectd::unknown); // ag_no -> sr_no -> if antigen protected by serum
+    std::vector<Protected> ag_protected(*chart.antigens().size());
     serum_circle_for_multiple_sera_t data{.serum_no = sera, .fold = fold};
     bool first_serum{true};
     size_t num_connected_sera{0};
@@ -69,15 +76,12 @@ ae::chart::v3::serum_circle_for_multiple_sera_t ae::chart::v3::serum_circle_for_
                 if (layout.point_has_coordinates(homol_ag_no) && !homol_titer.is_dont_care()) {
                     if (const double protection_boundary_titer = std::min(column_bases[serum_no], homol_titer.logged_for_column_bases()) - *fold; protection_boundary_titer >= 1.0) {
                         for (const auto ag_no : titers.number_of_antigens()) {
-                            if (ag_protected[*ag_no] != protectd::mixed) {
                                 const auto titer = chart.titers().titer(ag_no, serum_no);
                                 const auto final_similarity = std::min(titer.is_dont_care() ? 0.0 : titer.logged_for_column_bases(), column_bases[serum_no]);
-                                const auto prot = (titer.is_regular() ? final_similarity >= protection_boundary_titer : final_similarity > protection_boundary_titer) ? protectd::yes : protectd::no;
-                                if (ag_protected[*ag_no] == protectd::unknown)
-                                    ag_protected[*ag_no] = prot;
-                                else if (ag_protected[*ag_no] != prot)
-                                    ag_protected[*ag_no] = protectd::mixed;
-                            }
+                                if (titer.is_regular() ? final_similarity >= protection_boundary_titer : final_similarity > protection_boundary_titer)
+                                    ++ag_protected[*ag_no].yes;
+                                else
+                                    ++ag_protected[*ag_no].no;
                         }
                         break; // consider just first suitable homologous antigen
                     }
@@ -98,13 +102,11 @@ ae::chart::v3::serum_circle_for_multiple_sera_t ae::chart::v3::serum_circle_for_
     std::vector<std::tuple<antigen_index, bool, double>> antigen_distances; // if protected, distances to data.center
     size_t num_protected{0};
     for (const auto ag_no : titers.number_of_antigens()) {
-        const auto dist = ae::chart::v3::distance(layout[ag_no], data.center);
-        if (ag_protected[*ag_no] == protectd::yes) {
-            antigen_distances.emplace_back(ag_no, true, dist);
-            ++num_protected;
+        if (const auto& ag_data = ag_protected[*ag_no]; ag_data.dominates() && (!conservative || ag_data.perfect())) {
+            antigen_distances.emplace_back(ag_no, ag_data.prot(), ae::chart::v3::distance(layout[ag_no], data.center));
+            if (ag_data.prot())
+                ++num_protected;
         }
-        else if (ag_protected[*ag_no] == protectd::no)
-            antigen_distances.emplace_back(ag_no, false, dist);
     }
     if (num_protected > 0 && num_protected < antigen_distances.size()) {
         std::sort(std::begin(antigen_distances), std::end(antigen_distances), [](const auto& e1, const auto& e2) { return std::get<double>(e1) < std::get<double>(e2); });

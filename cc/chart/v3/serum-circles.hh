@@ -51,7 +51,7 @@ namespace ae::chart::v3
         bool valid_empirical() const { return empirical.has_value(); }
     };
 
-    serum_circle_for_multiple_sera_t serum_circle_for_multiple_sera(const Chart& chart, const Projection& projection, const serum_indexes& sera, serum_circle_fold fold);
+    serum_circle_for_multiple_sera_t serum_circle_for_multiple_sera(const Chart& chart, const Projection& projection, const serum_indexes& sera, serum_circle_fold fold, bool conservative);
 
     // ----------------------------------------------------------------------
 

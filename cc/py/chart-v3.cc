@@ -495,8 +495,8 @@ void ae::py::chart_v3(pybind11::module_& mdl)
             "relax", [](ProjectionRef& projection, bool rough) { return projection.relax(rough ? optimization_precision::rough : optimization_precision::fine); }, "rough"_a = false) //
         .def("avidity_test", &ProjectionRef::avidity_test, "adjust_step"_a, "min_adjust"_a, "max_adjust"_a, "rough"_a)                                                                //
         .def("serum_circles", &ProjectionRef::serum_circles, "fold"_a = 2.0)                                                                                                          //
-        .def("serum_circle_for_multiple_sera", [](const ProjectionRef& projection, const std::vector<size_t>& serum_no, double fold) {
-            return projection.serum_circle_for_multiple_sera(make_serum_indexes(serum_no), fold); }, "sera"_a, "fold"_a = 2.0)                                                                                                          //
+        .def("serum_circle_for_multiple_sera", [](const ProjectionRef& projection, const std::vector<size_t>& serum_no, double fold, bool conservative) {
+            return projection.serum_circle_for_multiple_sera(make_serum_indexes(serum_no), fold, conservative); }, "sera"_a, "fold"_a = 2.0, "conservative"_a = false)                                                                                                          //
         ;
 
     pybind11::class_<Layout>(chart_v3_submodule, "Layout")                                                          //
