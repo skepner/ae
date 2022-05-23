@@ -39,6 +39,19 @@ namespace ae::chart::v3
 
     std::vector<serum_circles_for_serum_t> serum_circles(const Chart& chart, const Projection& projection, serum_circle_fold fold);
 
+    struct serum_circle_for_multiple_sera_t
+    {
+        serum_indexes serum_no{};
+        serum_circle_fold fold{2.0};
+        std::optional<double> theoretical{};
+        std::optional<double> empirical{};
+
+        bool valid_theoretical() const { return theoretical.has_value(); }
+        bool valid_empirical() const { return empirical.has_value(); }
+    };
+
+    serum_circle_for_multiple_sera_t serum_circle_for_multiple_sera(const Chart& chart, const Projection& projection, const serum_indexes& sera, serum_circle_fold fold);
+
     // ----------------------------------------------------------------------
 
     struct serum_coverage_serum_t

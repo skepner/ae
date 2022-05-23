@@ -145,6 +145,14 @@ namespace ae::py
         return ae::chart::v3::procrustes(proj1.projection, proj2.projection, common, scaling ? ae::chart::v3::procrustes_scaling_t::yes : ae::chart::v3::procrustes_scaling_t::no);
     }
 
+    static inline serum_indexes make_serum_indexes(const std::vector<size_t>& indexes)
+    {
+        serum_indexes sera;
+        for (const auto sr_no : indexes)
+            sera.push_back(serum_index{sr_no});
+        return sera;
+    }
+
 } // namespace ae::py
 
 // ======================================================================
@@ -487,6 +495,8 @@ void ae::py::chart_v3(pybind11::module_& mdl)
             "relax", [](ProjectionRef& projection, bool rough) { return projection.relax(rough ? optimization_precision::rough : optimization_precision::fine); }, "rough"_a = false) //
         .def("avidity_test", &ProjectionRef::avidity_test, "adjust_step"_a, "min_adjust"_a, "max_adjust"_a, "rough"_a)                                                                //
         .def("serum_circles", &ProjectionRef::serum_circles, "fold"_a = 2.0)                                                                                                          //
+        .def("serum_circle_for_multiple_sera", [](const ProjectionRef& projection, const std::vector<size_t>& serum_no, double fold) {
+            return projection.serum_circle_for_multiple_sera(make_serum_indexes(serum_no), fold); }, "sera"_a, "fold"_a = 2.0)                                                                                                          //
         ;
 
     pybind11::class_<Layout>(chart_v3_submodule, "Layout")                                                          //

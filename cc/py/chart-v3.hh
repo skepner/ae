@@ -1,5 +1,6 @@
 #include "chart/v3/chart.hh"
 #include "chart/v3/avidity-test.hh"
+#include "chart/v3/selected-antigens-sera.hh"
 #include "chart/v3/serum-circles.hh"
 
 // ----------------------------------------------------------------------
@@ -7,6 +8,7 @@
 namespace ae::py
 {
     using Chart = ae::chart::v3::Chart;
+
 
     struct ProjectionRef
     {
@@ -42,7 +44,8 @@ namespace ae::py
                                                      ae::chart::v3::avidity_test::settings_t{.adjust_step = adjust_step, .min_adjust = min_adjust, .max_adjust = max_adjust, .rough = rough});
         }
 
-        auto serum_circles(double fold) { return ae::chart::v3::serum_circles(*chart, projection, ae::chart::v3::serum_circle_fold{fold}); }
+        auto serum_circles(double fold) const { return ae::chart::v3::serum_circles(*chart, projection, ae::chart::v3::serum_circle_fold{fold}); }
+        auto serum_circle_for_multiple_sera(const serum_indexes& sera, double fold) const { return ae::chart::v3::serum_circle_for_multiple_sera(*chart, projection, sera, ae::chart::v3::serum_circle_fold{fold}); }
     };
 }
 
