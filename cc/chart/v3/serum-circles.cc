@@ -51,7 +51,7 @@ std::vector<ae::chart::v3::serum_circles_for_serum_t> ae::chart::v3::serum_circl
 ae::chart::v3::serum_circle_for_multiple_sera_t ae::chart::v3::serum_circle_for_multiple_sera(const Chart& chart, const Projection& projection, const serum_indexes& sera, serum_circle_fold fold)
 {
     serum_circle_for_multiple_sera_t data{.serum_no = sera, .fold = fold};
-    AD_DEBUG("serum_circle_for_multiple_sera {}", sera);
+    AD_WARNING("serum_circle_for_multiple_sera NOT IMPLEMENTED sera:{}", sera);
     return data;
 
 } // ae::chart::v3::serum_circle_for_multiple_sera
