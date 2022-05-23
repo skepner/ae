@@ -22,7 +22,7 @@ PYBIND11_MODULE(ae_backend, mdl)
     ae::py::virus(mdl);
     ae::py::whocc(mdl);
     ae::py::chart_v3(mdl);
-    ae::py::chart_v2(mdl);
+    // ae::py::chart_v2(mdl);
     ae::py::utils(mdl);
 
     // ----------------------------------------------------------------------
