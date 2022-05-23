@@ -4,7 +4,8 @@
          "?report-cumulative-output": "-", "report-cumulative-max": 30,
          "gap-bvic-after-3del-bar": 0.025,
          "?canvas-height": 4000,
-         "ladderize-method": "none"
+         "ladderize-method": "none",
+         "aa-transitions-method": "eu-20210503"
         }
     ],
 
@@ -76,7 +77,7 @@
 
     "eu-aa-transitions": [
         {"N": "draw-aa-transitions",
-         "?method": "eu-20200915", "?method": ["eu-20210503", "eu-20200915", "eu-20200909", "derek-20200907", "derek-2016", "eu-20200514"],
+         "method": "$aa-transitions-method", "?method": ["imported", "eu-20210503", "eu-20200915", "eu-20200909", "derek-20200907", "derek-2016", "eu-20200514"],
          "minimum-number-leaves-in-subtree": 0.00767,
          "all-nodes": {"label": {"color": "grey30"}}
         }

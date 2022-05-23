@@ -23,6 +23,16 @@ fi
 
 # ----------------------------------------------------------------------------------------------------
 
+if [[ ! -f ${SUBTYPE}/${SUBTYPE}.asr.tjz ]]; then
+    ASR_STATES=$(cat ${SUBTYPE}/raxml-asr-best.txt | sed 's/ancestralTree/ancestralStates/')
+    ${AE_ROOT}/bin/tree-to-json --populate ${SUBTYPE} --asr-tree $(cat ${SUBTYPE}/raxml-asr-best.txt) --asr-states ${ASR_STATES} --ladderize --print-cumulative 20 --remove-if-cumulative-more-than ${CUMUL[${SUBTYPE}]} $(cat ${SUBTYPE}/garli-best.txt) ${SUBTYPE}/${SUBTYPE}.asr.tjz
+fi
+if [[ ! -f ${SUBTYPE}/${SUBTYPE}.asr.pdf ]]; then
+    tal -s ${TAL} -D aa-transitions-method=imported ${SUBTYPE}/${SUBTYPE}.asr.tjz ${SUBTYPE}/${SUBTYPE}.asr.txt ${SUBTYPE}/${SUBTYPE}.asr.pdf
+fi
+
+# ----------------------------------------------------------------------------------------------------
+
 if [[ ! -f ${SUBTYPE}/${SUBTYPE}.after-${LAST_DATE}.tjz ]]; then
     ${AE_ROOT}/bin/tree-to-json --populate ${SUBTYPE} --ladderize --remove-leaves-isolated-before ${LAST_DATE} --remove-if-cumulative-more-than ${CUMUL[${SUBTYPE}]} $(cat ${SUBTYPE}/garli-best.txt) ${SUBTYPE}/${SUBTYPE}.after-${LAST_DATE}.tjz
 fi

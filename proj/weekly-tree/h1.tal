@@ -3,7 +3,8 @@
         {"? N": "set", "whocc": true},
         {"N": "set", "?report-cumulative-output": "-", "report-cumulative-max": 30,
          "?canvas-height": 10000,
-         "ladderize-method": "none"
+         "ladderize-method": "none",
+         "aa-transitions-method": "eu-20200915"
         }
     ],
 
@@ -93,7 +94,7 @@
 
     "eu-aa-transitions": [
         {"N": "draw-aa-transitions", "?minimum_number_leaves_in_subtree": 0.0001,
-         "method": "eu-20200915", "?method": ["eu-20210503", "eu-20200915", "eu-20200909", "derek-20200907", "derek-2016", "eu-20200514"],
+         "method": "$aa-transitions-method", "?method": ["eu-20210503", "eu-20200915", "eu-20200909", "derek-20200907", "derek-2016", "eu-20200514"],
          "report": false, "debug": false, "debug-pos": 183,
          "?non-common-tolerance-per-pos": {"183": 0.7},
          "?show-same-left-right-for-pos": 183,
