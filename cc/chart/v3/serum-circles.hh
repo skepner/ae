@@ -43,6 +43,7 @@ namespace ae::chart::v3
     {
         serum_indexes serum_no{};
         serum_circle_fold fold{2.0};
+        point_coordinates center{number_of_dimensions_t{2}};
         std::optional<double> theoretical{};
         std::optional<double> empirical{};
 

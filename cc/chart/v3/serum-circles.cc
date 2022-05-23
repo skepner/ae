@@ -54,43 +54,63 @@ ae::chart::v3::serum_circle_for_multiple_sera_t ae::chart::v3::serum_circle_for_
     const auto& layout = projection.layout();
     const auto& titers = chart.titers();
 
-    enum class protectd { unknown, no, yes };
+    enum class protectd { unknown, no, yes, mixed };
 
-    std::vector<std::vector<protectd>> ag_protected(*chart.antigens().size(), std::vector<protectd>(*chart.sera().size(), protectd::unknown)); // ag_no -> sr_no -> if antigen protected by serum
+    std::vector<protectd> ag_protected(*chart.antigens().size(), protectd::unknown); // ag_no -> sr_no -> if antigen protected by serum
     serum_circle_for_multiple_sera_t data{.serum_no = sera, .fold = fold};
+    bool first_serum{true};
+    size_t num_connected_sera{0};
     for (const auto serum_no : sera) {
-        if (layout.point_has_coordinates(titers.number_of_antigens() + serum_no)) {
+        if (const auto serum_coord = layout[titers.number_of_antigens() + serum_no]; serum_coord.exists()) {
             for (const auto homol_ag_no : chart.antigens().homologous(chart.sera()[serum_no])) {
                 const auto homol_titer = chart.titers().titer(homol_ag_no, serum_no);
                 if (layout.point_has_coordinates(homol_ag_no) && !homol_titer.is_dont_care()) {
                     const double protection_boundary_titer = std::min(column_bases[serum_no], homol_titer.logged_for_column_bases()) - *fold;
                     for (const auto ag_no : titers.number_of_antigens()) {
-                        const auto titer = chart.titers().titer(ag_no, serum_no);
-                        const auto final_similarity = std::min(titer.is_dont_care() ? 0.0 : titer.logged_for_column_bases(), column_bases[serum_no]);
-                        ag_protected[*ag_no][*serum_no] =
-                            (titer.is_regular() ? final_similarity >= protection_boundary_titer : final_similarity > protection_boundary_titer) ? protectd::yes : protectd::no;
+                        if (ag_protected[*ag_no] != protectd::mixed) {
+                            const auto titer = chart.titers().titer(ag_no, serum_no);
+                            const auto final_similarity = std::min(titer.is_dont_care() ? 0.0 : titer.logged_for_column_bases(), column_bases[serum_no]);
+                            const auto prot = (titer.is_regular() ? final_similarity >= protection_boundary_titer : final_similarity > protection_boundary_titer) ? protectd::yes : protectd::no;
+                            if (ag_protected[*ag_no] == protectd::unknown)
+                                ag_protected[*ag_no] = prot;
+                            else if (ag_protected[*ag_no] != prot)
+                                ag_protected[*ag_no] = protectd::mixed;
+                        }
                     }
                     break; // consider just first suitable homologous antigen
                 }
             }
-        }
 
-        fmt::print("{:3d}  ", serum_no);
-        for (const auto ag_no : titers.number_of_antigens()) {
-            switch (ag_protected[*ag_no][*serum_no]) {
-                case protectd::unknown:
-                    fmt::print("  u");
-                    break;
-                case protectd::no:
-                    fmt::print("  N");
-                    break;
-                case protectd::yes:
-                    fmt::print("  Y");
-                    break;
-            }
+            ++num_connected_sera;
+        if (first_serum) {
+            data.center = serum_coord;
+            first_serum = false;
         }
-        fmt::print("\n");
+        else {
+            data.center += serum_coord;
+        }
+        }
     }
+    data.center /= static_cast<double>(num_connected_sera);
+
+    for (const auto ag_no : titers.number_of_antigens()) {
+        switch (ag_protected[*ag_no]) {
+            case protectd::unknown:
+                fmt::print("  u");
+                break;
+            case protectd::no:
+                fmt::print("  N");
+                break;
+            case protectd::yes:
+                fmt::print("  Y");
+                break;
+            case protectd::mixed:
+                fmt::print("  M");
+                break;
+        }
+    }
+    fmt::print("\n");
+
     AD_WARNING("serum_circle_for_multiple_sera NOT IMPLEMENTED sera:{}", sera);
     return data;
 
