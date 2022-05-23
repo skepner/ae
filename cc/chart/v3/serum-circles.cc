@@ -50,7 +50,47 @@ std::vector<ae::chart::v3::serum_circles_for_serum_t> ae::chart::v3::serum_circl
 
 ae::chart::v3::serum_circle_for_multiple_sera_t ae::chart::v3::serum_circle_for_multiple_sera(const Chart& chart, const Projection& projection, const serum_indexes& sera, serum_circle_fold fold)
 {
+    const auto column_bases = chart.column_bases(projection.minimum_column_basis());
+    const auto& layout = projection.layout();
+    const auto& titers = chart.titers();
+
+    enum class protectd { unknown, no, yes };
+
+    std::vector<std::vector<protectd>> ag_protected(*chart.antigens().size(), std::vector<protectd>(*chart.sera().size(), protectd::unknown)); // ag_no -> sr_no -> if antigen protected by serum
     serum_circle_for_multiple_sera_t data{.serum_no = sera, .fold = fold};
+    for (const auto serum_no : sera) {
+        if (layout.point_has_coordinates(titers.number_of_antigens() + serum_no)) {
+            for (const auto homol_ag_no : chart.antigens().homologous(chart.sera()[serum_no])) {
+                const auto homol_titer = chart.titers().titer(homol_ag_no, serum_no);
+                if (layout.point_has_coordinates(homol_ag_no) && !homol_titer.is_dont_care()) {
+                    const double protection_boundary_titer = std::min(column_bases[serum_no], homol_titer.logged_for_column_bases()) - *fold;
+                    for (const auto ag_no : titers.number_of_antigens()) {
+                        const auto titer = chart.titers().titer(ag_no, serum_no);
+                        const auto final_similarity = std::min(titer.is_dont_care() ? 0.0 : titer.logged_for_column_bases(), column_bases[serum_no]);
+                        ag_protected[*ag_no][*serum_no] =
+                            (titer.is_regular() ? final_similarity >= protection_boundary_titer : final_similarity > protection_boundary_titer) ? protectd::yes : protectd::no;
+                    }
+                    break; // consider just first suitable homologous antigen
+                }
+            }
+        }
+
+        fmt::print("{:3d}  ", serum_no);
+        for (const auto ag_no : titers.number_of_antigens()) {
+            switch (ag_protected[*ag_no][*serum_no]) {
+                case protectd::unknown:
+                    fmt::print("  u");
+                    break;
+                case protectd::no:
+                    fmt::print("  N");
+                    break;
+                case protectd::yes:
+                    fmt::print("  Y");
+                    break;
+            }
+        }
+        fmt::print("\n");
+    }
     AD_WARNING("serum_circle_for_multiple_sera NOT IMPLEMENTED sera:{}", sera);
     return data;
 
@@ -159,14 +199,14 @@ void ae::chart::v3::set_empirical(serum_circles_for_serum_t& serum_data, const L
         }
         else {
             std::vector<titer_distance_t> titers_and_distances(*titers.number_of_antigens());
-            antigen_index max_titer_for_serum_ag_no{0};
+            // antigen_index max_titer_for_serum_ag_no{0};
             for (const auto ag_no : titers.number_of_antigens()) {
                 const auto titer = titers.titer(ag_no, serum_data.serum_no);
                 if (!titer.is_dont_care()) {
                     // TODO: antigensSeraTitersMultipliers (acmacs/plot/serum_circle.py:113)
                     titers_and_distances[*ag_no] = titer_distance_t{titer, serum_data.column_basis, layout.distance(to_point_index(ag_no), titers.number_of_antigens() + serum_data.serum_no)};
-                    if (max_titer_for_serum_ag_no != ag_no && titers_and_distances[*max_titer_for_serum_ag_no].final_similarity < titers_and_distances[*ag_no].final_similarity)
-                        max_titer_for_serum_ag_no = ag_no;
+                    // if (max_titer_for_serum_ag_no != ag_no && titers_and_distances[*max_titer_for_serum_ag_no].final_similarity < titers_and_distances[*ag_no].final_similarity)
+                    //     max_titer_for_serum_ag_no = ag_no;
                 }
                 // else if (ag_no == antigen_data.antigen_no)
                 //     throw serum_circle_radius_calculation_error("no homologous titer");
