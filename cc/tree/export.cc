@@ -182,6 +182,10 @@ std::string ae::tree::export_json(const Tree& tree)
         fmt::format_to(std::back_inserter(text), ",\n{} \"n\": \"{}\"", indent, leaf->name);
         if (!leaf->date.empty())
             fmt::format_to(std::back_inserter(text), ", \"d\": \"{}\"", leaf->date);
+        if (!leaf->continent.empty())
+            fmt::format_to(std::back_inserter(text), ", \"C\": \"{}\"", leaf->continent);
+        if (!leaf->country.empty())
+            fmt::format_to(std::back_inserter(text), ", \"D\": \"{}\"", leaf->country);
         format_node_sequences(leaf);
         if (!leaf->clades.empty())
             fmt::format_to(std::back_inserter(text), ",\n{} \"L\": [\"{}\"]", indent, fmt::join(leaf->clades, "\", \""));
