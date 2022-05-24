@@ -50,6 +50,30 @@ std::vector<ae::chart::v3::serum_circles_for_serum_t> ae::chart::v3::serum_circl
 
 // ----------------------------------------------------------------------
 
+// If there are many sera made from the same or similar viruses, we
+// can try to draw just one circle for them.
+//
+// Center of the circle is an average point of the sera.
+//
+// We split antigens into two groups (protected by the sera and not
+// protected) and then find circle radius that keeps most of the
+// proteced antigens within circle and most of the not proteced
+// antigens outside circle, i.e. figure circle radius approximately
+// the same way as we do for a single serum circle.
+//
+// First built a table with cells for each antigen and serum stating
+// if that antigen is protected by that serum. Then if conservative is
+// true, we exclude from consideration antigens that are protected by
+// few sera and not protected by other sera, and then we have two
+// groups of antigens but not all antigens are in those groups. If
+// conservative is false, antigens with mixed protection status are
+// assigned by majority of their statuses (i.e. if most of the sera
+// protects that antigen, antigen is considered protected), if numbers
+// of sera with protected and not protected status are equal, antigen
+// is excluded.
+//
+// The the radius is determined in the same way as in set_empirical() below.
+
 ae::chart::v3::serum_circle_for_multiple_sera_t ae::chart::v3::serum_circle_for_multiple_sera(const Chart& chart, const Projection& projection, const serum_indexes& sera, serum_circle_fold fold, bool conservative)
 {
     const auto column_bases = chart.column_bases(projection.minimum_column_basis());
