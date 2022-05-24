@@ -15,24 +15,19 @@ namespace ae::chart::v3
 
         bool empty() const { return data_.empty(); }
 
-        // sequences::clades_t clades;
-
         const auto& data() const { return data_; }
         auto& data() { return data_; }
 
         void clades(const sequences::clades_t& clades)
         {
-            data_["C"] = ae::dynamic::array{};
+            auto& clds = data_.as_array("C");
             for (const auto& clade : clades)
-                data_["C"].add(clade);
+                clds.add(clade);
         }
 
         void add_clade(std::string_view clade)
         {
-            auto& clades = data_["C"];
-            if (clades.is_null())
-                clades = ae::dynamic::array{};
-            clades.add(clade);
+            data_.as_array("C").add(clade);
         }
 
         bool has_clade(std::string_view clade) const
@@ -55,3 +50,5 @@ template <> struct fmt::formatter<ae::chart::v3::SemanticAttributes> : fmt::form
         return format_to(ctx.out(), "{}", attr.data());
     }
 };
+
+// ======================================================================

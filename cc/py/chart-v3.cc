@@ -319,8 +319,6 @@ void ae::py::chart_v3(pybind11::module_& mdl)
 
         // ----------------------------------------------------------------------
 
-        //         .def("populate_from_seqdb", &ae::py::populate_from_seqdb, "remove_old_sequences_clades"_a = false, pybind11::doc("populate with sequences from seqdb")) //
-
         .def("remove_all_projections",                                      //
              [](Chart& chart) { return chart.projections().remove_all(); }) //
                                                                             //         .def(

@@ -13,7 +13,13 @@ namespace ae
 {
     namespace dynamic
     {
-        struct invalid_value : public std::runtime_error { using std::runtime_error::runtime_error; };
+        struct invalid_value : public std::runtime_error
+        {
+            invalid_value(std::string_view text) : std::runtime_error{std::string{text}} {}
+            invalid_value(const std::string& text) : std::runtime_error{text} {}
+            invalid_value(std::string&& text) : std::runtime_error{std::move(text)} {}
+            template <typename... Ts> invalid_value(fmt::format_string<Ts...> format, Ts&&... ts) : std::runtime_error{fmt::format(format, std::forward<Ts>(ts)...)} {}
+        };
 
         class value;
         class object;
@@ -33,7 +39,11 @@ namespace ae
             string(const string&) = default;
             string(std::string_view src) : data_{src} {}
             string& operator=(const string&) = default;
-            string& operator=(std::string_view src) { data_ = std::string{src}; return *this; }
+            string& operator=(std::string_view src)
+            {
+                data_ = std::string{src};
+                return *this;
+            }
 
             bool operator==(const string&) const = default;
             operator std::string_view() const { return data_; }
@@ -86,19 +96,62 @@ namespace ae
         {
           public:
             value() noexcept : data_{null{}} {}
-            value(value&& arg): data_{std::move(arg.data_)} {}
+            value(value&& arg) : data_{std::move(arg.data_)} {}
             value(const value& arg) : data_{arg.data_} {}
-            template <typename T> requires (!std::is_same_v<T, value>) value(T&& arg) : data_{std::move(arg)} {}
+            template <typename T>
+            requires(!std::is_same_v<T, value>) value(T&& arg) : data_{std::move(arg)} {}
             value(std::string_view arg) : data_{string{arg}} {}
             value(const std::string& arg) : data_{string{arg}} {}
             value& operator=(value&& arg) = default; // { data_ = std::move(arg.data_); return *this; }
             value& operator=(const value& arg) = default;
-            template <typename T> requires (!std::is_same_v<T, value>) value& operator=(T&& arg) { data_ = arg; return *this; }
+            template <typename T>
+            requires(!std::is_same_v<T, value>) value& operator=(T&& arg)
+            {
+                data_ = arg;
+                return *this;
+            }
             bool operator==(const value&) const = default;
             bool empty() const { return std::holds_alternative<null>(data_); }
             bool is_null() const { return std::holds_alternative<null>(data_); }
+            bool is_object() const { return std::holds_alternative<object>(data_); }
+            bool is_array() const { return std::holds_alternative<array>(data_); }
+            const char* typeid_content() const { return std::visit([](auto&& content) { return typeid(content).name(); }, data_); }
 
             using value_t = std::variant<long, double, bool, string, object, array, null>;
+
+            // if this is null, make it object and add array under key
+            // if this[key] is null, make it array
+            // if this is neither null nor object or this[key] is neither null nor array, throw invalid_value
+            value& as_array(std::string_view key)
+            {
+                if (is_null())
+                    data_ = object{};
+                else if (!is_object())
+                    throw invalid_value{"dynamic::value::as_array requires this to be object or null, but this is {}", typeid_content()};
+                auto& val = operator[](key);
+                if (val.is_null())
+                    val = array{};
+                else if (!val.is_array())
+                    throw invalid_value{"dynamic::value::as_array requires this[\"{}\"] to be array or null, but this[\"{}\"] is {}", key, key, val.typeid_content()};
+                return val;
+            }
+
+            // if this is null, make it object and add array under key
+            // if this[key] is null, make it object
+            // if this is neither null nor object or this[key] is neither null nor object, throw invalid_value
+            value& as_object(std::string_view key)
+            {
+                if (is_null())
+                    data_ = object{};
+                else if (!is_object())
+                    throw invalid_value{"dynamic::value::as_object requires this to be object or null, but this is {}", typeid_content()};
+                auto& val = operator[](key);
+                if (val.is_null())
+                    val = object{};
+                else if (!val.is_object())
+                    throw invalid_value{"dynamic::value::as_object requires this[\"{}\"] to be object or null, but this[\"{}\"] is {}", key, key, val.typeid_content()};
+                return val;
+            }
 
             value& operator[](std::string_view key)
             {
@@ -108,7 +161,7 @@ namespace ae
                             // throw dynamic::invalid_value{fmt::format("dynamic::value::operator[] cannot be used with variant value of type {}", typeid(content).name())};
                             return content[key];
                         else
-                            throw invalid_value{fmt::format("dynamic::value::operator[] cannot be used with variant value of type {}", typeid(content).name())};
+                            throw invalid_value{"dynamic::value::operator[] cannot be used with variant value of type {}", typeid(content).name()};
                     },
                     data_);
             }
@@ -120,7 +173,7 @@ namespace ae
                         if constexpr (std::is_same_v<T, object>)
                             return content[key];
                         else
-                            throw invalid_value{fmt::format("dynamic::value::operator[] cannot be used with variant value of type {}", typeid(content).name())};
+                            throw invalid_value{"dynamic::value::operator[] const cannot be used with variant value of type {}", typeid(content).name()};
                     },
                     data_);
             }
@@ -132,13 +185,13 @@ namespace ae
                         if constexpr (std::is_same_v<T, array>)
                             return content.add(std::move(to_add));
                         else
-                            throw invalid_value{fmt::format("dynamic::value::add(value) cannot be used with variant value of type {}", typeid(content).name())};
+                            throw invalid_value{"dynamic::value::add(value) cannot be used with variant value of type {}", typeid(content).name()};
                     },
                     data_);
             }
 
             template <typename T> bool contains(const T& val) const
-                {
+            {
                 return std::visit(
                     [&val]<typename C>(const C& content) -> bool {
                         if constexpr (std::is_same_v<C, object>)
@@ -148,11 +201,10 @@ namespace ae
                         else if constexpr (std::is_same_v<C, null>)
                             return false;
                         else
-                            throw invalid_value{fmt::format("dynamic::value::contains() cannot be used with variant value of type {}", typeid(content).name())};
+                            throw invalid_value{"dynamic::value::contains() const cannot be used with variant value of type {}", typeid(content).name()};
                     },
                     data_);
-
-                }
+            }
 
             const value_t& data() const { return data_; }
             operator const value_t&() const { return data_; }
@@ -184,18 +236,18 @@ namespace ae
         }
 
         inline value& object::find_or_add(std::string_view key)
-                {
-                    if (const auto found = std::find_if(std::begin(data_), std::end(data_), [key](const auto& en) { return en.first == key; }); found != std::end(data_))
-                        return found->second;
-                    return data_.emplace_back(key, null{}).second;
-                }
+        {
+            if (const auto found = std::find_if(std::begin(data_), std::end(data_), [key](const auto& en) { return en.first == key; }); found != std::end(data_))
+                return found->second;
+            return data_.emplace_back(key, null{}).second;
+        }
 
         inline const value& object::find_or_null(std::string_view key) const
-                {
-                    if (const auto found = std::find_if(std::begin(data_), std::end(data_), [key](const auto& en) { return en.first == key; }); found != std::end(data_))
-                        return found->second;
-                    return static_null;
-                }
+        {
+            if (const auto found = std::find_if(std::begin(data_), std::end(data_), [key](const auto& en) { return en.first == key; }); found != std::end(data_))
+                return found->second;
+            return static_null;
+        }
 
         inline void object::insert_or_assign(std::string_view key, value&& val)
         {
