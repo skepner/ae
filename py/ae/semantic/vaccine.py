@@ -75,7 +75,7 @@ def vaccines(chart: ae_backend.chart_v3.Chart, entries: list) -> Result:
 
 # ----------------------------------------------------------------------
 
-def vaccines_and_plot_style(chart: ae_backend.chart_v3.Chart, entries: list, modifier: dict = {"outline": "black", "rais": True, "size": 100, "only": "antigens"}, report: bool = True) -> str:
+def vaccines_and_plot_style(chart: ae_backend.chart_v3.Chart, entries: list, modifier: dict = {"outline": "black", "rais": True, "size": 60, "only": "antigens"}, report: bool = True) -> str:
     if result := vaccines(chart=chart, entries=entries):
         style_name = "-vaccines"
         style = chart.styles()[style_name]
