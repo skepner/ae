@@ -1,4 +1,4 @@
-# Time-stamp: <2022-05-10 09:02:28 eu>
+# Time-stamp: <2022-05-24 09:24:11 eu>
 * acmacs-ace-v1 format to store chart data
 
 fields with names starting with ? are ignored
@@ -217,10 +217,15 @@ Possible values:
 * semantic attributes by group
 
 Group name (key in the key-value pair) is a unique string, few predefined groups
-"C": ["clade", "clade"]
+- clades
+  "C": ["clade", "clade"]
+- vaccine
+  "V": "<year>[s]"
+  year is either 2019 or 2019-02
+  s is for surrogate
+
 ? "continent": "ASIA"
 ? "country": "UNITED KINGDOM"
-"V": "p(revious)", "c(urrent)", "s(urrogate)"
 "NT": total number of tables from hidb
 "RT": "CDC:HI:guinea-pig:20141009" - the most recent table id from hidb
 "TS": "2021-12" time series

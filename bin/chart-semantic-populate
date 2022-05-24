@@ -61,7 +61,7 @@ def add_style(chart: ae_backend.chart_v3.Chart, style_name: str, style_data: lis
                 clade = extra_clade
             style.add_modifier(selector=["C", clade], fill=modifier["fill"], outline="black", rais=True, only="antigens", legend=modifier["legend"], legend_priority=legend_priority)
         elif style_name == "vaccines":
-            pass
+            set_semantic_vaccine(chart, modifier)
         else:
             print(f">> unsupported style \"{style_name}\"", file=sys.stderr)
         legend_priority -= 1
@@ -89,6 +89,15 @@ def add_extra_clades(chart: ae_backend.chart_v3.Chart, clades_to_add: dict):
                 ag_sr.semantic.add_clade(name)
 
 # ----------------------------------------------------------------------
+
+def set_semantic_vaccine(chart: ae_backend.chart_v3.Chart, modifier: dict):
+    vac_name = f"{chart.info().type_subtype()}/{modifier['name']}"
+    antigens = chart.select_antigens(lambda ag: ag.name == vac_name)
+    if antigens:
+        print(f"vaccine \"{modifier['name']}\" antigens: {antigens}")
+
+# ----------------------------------------------------------------------
+
 
 # class StyleMetadata:
 

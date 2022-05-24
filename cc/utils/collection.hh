@@ -119,20 +119,26 @@ namespace ae
 
             using value_t = std::variant<long, double, bool, string, object, array, null>;
 
+            value& as_object()
+            {
+                if (is_null())
+                    data_ = object{};
+                else if (!is_object())
+                    throw invalid_value{"dynamic::value::as_object() requires this to be object or null, but this is {}", typeid_content()};
+                return *this;
+            }
+
             // if this is null, make it object and add array under key
             // if this[key] is null, make it array
             // if this is neither null nor object or this[key] is neither null nor array, throw invalid_value
             value& as_array(std::string_view key)
             {
-                if (is_null())
-                    data_ = object{};
-                else if (!is_object())
-                    throw invalid_value{"dynamic::value::as_array requires this to be object or null, but this is {}", typeid_content()};
+                as_object();
                 auto& val = operator[](key);
                 if (val.is_null())
                     val = array{};
                 else if (!val.is_array())
-                    throw invalid_value{"dynamic::value::as_array requires this[\"{}\"] to be array or null, but this[\"{}\"] is {}", key, key, val.typeid_content()};
+                    throw invalid_value{"dynamic::value::as_array(key) requires this[\"{}\"] to be array or null, but this[\"{}\"] is {}", key, key, val.typeid_content()};
                 return val;
             }
 
@@ -141,24 +147,21 @@ namespace ae
             // if this is neither null nor object or this[key] is neither null nor object, throw invalid_value
             value& as_object(std::string_view key)
             {
-                if (is_null())
-                    data_ = object{};
-                else if (!is_object())
-                    throw invalid_value{"dynamic::value::as_object requires this to be object or null, but this is {}", typeid_content()};
+                as_object();
                 auto& val = operator[](key);
                 if (val.is_null())
                     val = object{};
                 else if (!val.is_object())
-                    throw invalid_value{"dynamic::value::as_object requires this[\"{}\"] to be object or null, but this[\"{}\"] is {}", key, key, val.typeid_content()};
+                    throw invalid_value{"dynamic::value::as_object(key) requires this[\"{}\"] to be object or null, but this[\"{}\"] is {}", key, key, val.typeid_content()};
                 return val;
             }
 
             value& operator[](std::string_view key)
             {
+                as_object();
                 return std::visit(
                     [key]<typename T>(T& content) -> value& {
                         if constexpr (std::is_same_v<T, object>)
-                            // throw dynamic::invalid_value{fmt::format("dynamic::value::operator[] cannot be used with variant value of type {}", typeid(content).name())};
                             return content[key];
                         else
                             throw invalid_value{"dynamic::value::operator[] cannot be used with variant value of type {}", typeid(content).name()};
@@ -169,9 +172,11 @@ namespace ae
             const value& operator[](std::string_view key) const
             {
                 return std::visit(
-                    [key]<typename T>(const T& content) -> const value& {
+                    [key, this]<typename T>(const T& content) -> const value& {
                         if constexpr (std::is_same_v<T, object>)
                             return content[key];
+                        else if constexpr (std::is_same_v<T, null>)
+                            return *this;
                         else
                             throw invalid_value{"dynamic::value::operator[] const cannot be used with variant value of type {}", typeid(content).name()};
                     },
@@ -205,6 +210,20 @@ namespace ae
                     },
                     data_);
             }
+
+            std::string_view as_string_or_empty() const
+                {
+                return std::visit(
+                    []<typename C>(const C& content) -> std::string_view {
+                        if constexpr (std::is_same_v<C, string>)
+                            return content;
+                        else if constexpr (std::is_same_v<C, null>)
+                            return std::string_view{};
+                        else
+                            throw invalid_value{"dynamic::value::as_string_or_empty() const cannot be used with variant value of type {}", typeid(content).name()};
+                    },
+                    data_);
+                }
 
             const value_t& data() const { return data_; }
             operator const value_t&() const { return data_; }

@@ -10,6 +10,10 @@ namespace ae::chart::v3
 {
     class SemanticAttributes
     {
+      private:
+        static inline std::string_view _clades_key{"C"};
+        static inline std::string_view _vaccine_key{"V"};
+
       public:
         bool operator==(const SemanticAttributes&) const = default;
 
@@ -18,22 +22,38 @@ namespace ae::chart::v3
         const auto& data() const { return data_; }
         auto& data() { return data_; }
 
+        // ----------------------------------------------------------------------
+
         void clades(const sequences::clades_t& clades)
         {
-            auto& clds = data_.as_array("C");
+            auto& clds = data_.as_array(_clades_key);
             for (const auto& clade : clades)
                 clds.add(clade);
         }
 
         void add_clade(std::string_view clade)
         {
-            data_.as_array("C").add(clade);
+            data_.as_array(_clades_key).add(clade);
         }
 
         bool has_clade(std::string_view clade) const
         {
-            return data_["C"].contains(clade);
+            return data_[_clades_key].contains(clade);
         }
+
+        // ----------------------------------------------------------------------
+
+        void vaccine(std::string_view vac)
+            {
+                data_[_vaccine_key] = vac;
+            }
+
+        std::string_view vaccine() const
+            {
+                return data_[_vaccine_key].as_string_or_empty();
+            }
+
+        // ----------------------------------------------------------------------
 
       private:
         DynamicCollection data_{};

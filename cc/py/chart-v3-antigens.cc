@@ -153,7 +153,6 @@ void ae::py::chart_v3_antigens(pybind11::module_& chart_v3_submodule)
         //     pybind11::doc("deselect not sequenced"))                                                                                   //
         // .def("report", &SelectedAntigens::report, "format"_a = "{no0},")                                                         //
         // .def("report_list", &SelectedAntigens::report_list, "format"_a = "{name}")                                               //
-        // .def("__repr__", [](const SelectedAntigens& selected) { return fmt::format("SelectedAntigens ({})", selected.size()); }) //
         // .def("empty", &SelectedAntigens::empty)                                                                                  //
         // .def("size", &SelectedAntigens::size)                                                                                    //
         .def("__len__", &SelectedAntigens::size)                                                              //
@@ -172,6 +171,15 @@ void ae::py::chart_v3_antigens(pybind11::module_& chart_v3_submodule)
         //     pybind11::doc("return boundaries of the selected points (transformed)")) //
         // .def("for_each", &SelectedAntigens::for_each, "modifier"_a,
         //      pybind11::doc("modifier(ag_no, antigen) is called for each selected antigen, antigen fields, e.g. name, can be modified in the function.")) //
+        .def("__repr__",
+             [](const SelectedAntigens& selected) {
+                 if (selected.size() == 0)
+                     return std::string{"SelectedAntigens:none"};
+                 else if (selected.size() < 20)
+                     return fmt::format("SelectedAntigens ({}): {}", selected.size(), selected.indexes);
+                 else
+                     return fmt::format("SelectedAntigens ({})", selected.size());
+             }) //
         ;
 
     pybind11::class_<SelectedSera, std::shared_ptr<SelectedSera>>(chart_v3_submodule, "SelectedSera")
@@ -200,7 +208,6 @@ void ae::py::chart_v3_antigens(pybind11::module_& chart_v3_submodule)
         //     pybind11::doc("deselect not sequenced"))                                                                           //
         // .def("report", &SelectedSera::report, "format"_a = "{no0},")                                                     //
         // .def("report_list", &SelectedSera::report_list, "format"_a = "{name}")                                           //
-        // .def("__repr__", [](const SelectedSera& selected) { return fmt::format("SelectedSera ({})", selected.size()); }) //
         // .def("empty", &SelectedSera::empty)                                                                              //
         // .def("size", &SelectedSera::size)                                                                                //
         .def("__len__", &SelectedSera::size)                                                              //
@@ -211,6 +218,15 @@ void ae::py::chart_v3_antigens(pybind11::module_& chart_v3_submodule)
         // .def("indexes", [](const SelectedSera& selected) { return *selected.indexes; })                                                     //
         // .def("for_each", &SelectedSera::for_each, "modifier"_a,
         //      pybind11::doc("modifier(sr_no, serum) is called for each selected serum, serum fields, e.g. name, can be modified in the function.")) //
+        .def("__repr__",
+             [](const SelectedSera& selected) {
+                 if (selected.size() == 0)
+                     return std::string{"SelectedSera:none"};
+                 else if (selected.size() < 20)
+                     return fmt::format("SelectedSera ({}): {}", selected.size(), selected.indexes);
+                 else
+                     return fmt::format("SelectedSera ({})", selected.size());
+             }) //
         ;
 
     pybind11::class_<SelectionData<Antigen>>(chart_v3_submodule, "SelectionData_Antigen")
@@ -218,8 +234,9 @@ void ae::py::chart_v3_antigens(pybind11::module_& chart_v3_submodule)
         .def_property_readonly("point_no", [](const SelectionData<Antigen>& sd) -> size_t { return *sd.index; })
         .def_property_readonly(
             "antigen", [](const SelectionData<Antigen>& sd) -> const Antigen& { return sd.ag_sr; }, pybind11::return_value_policy::reference_internal)             //
+        .def_property_readonly("name", [](const SelectionData<Antigen>& sd) { return *sd.ag_sr.name(); })                                                          //
         .def_property_readonly("aa", [](const SelectionData<Antigen>& sd) { return sd.ag_sr.aa(); })                                                               //
-        .def("has_clade", [](const SelectionData<Antigen>& sd, std::string_view clade) { return sd.ag_sr.semantic().has_clade(clade); })                     //
+        .def("has_clade", [](const SelectionData<Antigen>& sd, std::string_view clade) { return sd.ag_sr.semantic().has_clade(clade); })                           //
         .def("layers", [](const SelectionData<Antigen>& sd) -> std::vector<size_t> { return to_vector_base_t(sd.chart->titers().layers_with_antigen(sd.index)); }) //
         ;
 
@@ -228,15 +245,17 @@ void ae::py::chart_v3_antigens(pybind11::module_& chart_v3_submodule)
         .def_property_readonly("point_no", [](const SelectionData<Serum>& sd) -> size_t { return *(sd.chart->antigens().size() + sd.index); })
         .def_property_readonly(
             "serum", [](const SelectionData<Serum>& sd) -> const Serum& { return sd.ag_sr; }, pybind11::return_value_policy::reference_internal)               //
+        .def_property_readonly("name", [](const SelectionData<Serum>& sd) { return *sd.ag_sr.name(); })                                                        //
         .def_property_readonly("aa", [](const SelectionData<Serum>& sd) { return sd.ag_sr.aa(); })                                                             //
-        .def("has_clade", [](const SelectionData<Serum>& sd, std::string_view clade) { return sd.ag_sr.semantic().has_clade(clade); })                   //
+        .def("has_clade", [](const SelectionData<Serum>& sd, std::string_view clade) { return sd.ag_sr.semantic().has_clade(clade); })                         //
         .def("layers", [](const SelectionData<Serum>& sd) -> std::vector<size_t> { return to_vector_base_t(sd.chart->titers().layers_with_serum(sd.index)); }) //
         ;
 
     // ----------------------------------------------------------------------
 
     pybind11::class_<SemanticAttributes>(chart_v3_submodule, "SemanticAttributes")
-        .def("add_clade", [](SemanticAttributes& semantic, std::string_view clade) { semantic.add_clade(clade); }) //
+        .def("add_clade", &SemanticAttributes::add_clade, "clade"_a)                                       //
+        .def("vaccine", pybind11::overload_cast<std::string_view>(&SemanticAttributes::vaccine), "year"_a) //
         ;
 
     // ----------------------------------------------------------------------
