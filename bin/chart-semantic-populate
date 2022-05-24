@@ -19,6 +19,7 @@ import sys, os, pprint
 from pathlib import Path
 import ae_backend
 import ae.utils.load_module
+from ae.utils.num_digits import num_digits
 
 # ======================================================================
 
@@ -94,20 +95,28 @@ def add_extra_clades(chart: ae_backend.chart_v3.Chart, clades_to_add: dict):
 def set_semantic_vaccine(chart: ae_backend.chart_v3.Chart, name: str, year: str = None, passage: str = None, surrogate: bool = False, **rest) -> str:
     """passage: "egg", "cell", "reassortant" """
     vac_name = f"{chart.info().type_subtype()}/{name}"
-    antigens = chart.select_antigens(lambda ag: ag.name == vac_name and ag.passage_is(passage))
+    passages = ["egg", "cell", "reassortant"] if passage is None else [passage]
+    ag_num_digits  = num_digits(chart.number_of_antigens())
     report = ""
-    if len(antigens):
-        has_layers = chart.titers().number_of_layers() > 0
-        report = f"vaccines \"{name}\" {passage or ''}{' surrogate' if surrogate else ''} -> {len(antigens)}"
-        for no, ag in antigens:
-            if has_layers:
-                layers = chart.titers().layers_with_antigen(no)
-                layers_s = f" layers: ({len(layers)}){layers}"
-            else:
-                layers = []
-                layers_s = ""
-            report += f"\n  AG {no:4d} {ag.designation()}{layers_s}"
-    return report
+    for psg in passages:
+        antigens = chart.select_antigens(lambda ag: ag.name == vac_name and ag.passage_is(psg))
+        subreport = None
+        if len(antigens):
+            has_layers = chart.titers().number_of_layers() > 0
+            subreport = f"  {psg}: {len(antigens)}\n"
+            for no, ag in antigens:
+                if has_layers:
+                    layers = chart.titers().layers_with_antigen(no)
+                    layers_s = f" layers: ({len(layers)}){layers}"
+                else:
+                    layers = []
+                    layers_s = ""
+                subreport += f"    AG {no:{ag_num_digits}d} {ag.designation()}{layers_s}\n"
+        if subreport:
+            if not report:
+                report = f"vaccines \"{name}\" {passage or ''}{' surrogate' if surrogate else ''}\n"
+            report += subreport
+    return report.rstrip()
 
 # ----------------------------------------------------------------------
 
