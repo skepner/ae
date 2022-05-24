@@ -10,7 +10,6 @@ Add semantic plot styles to charts
 # continent
 # time series
 # bold outline for new
-# vaccines
 # serum circles
 # serum coverage
 # procrustes
@@ -37,7 +36,7 @@ def main(args):
         added_back_styles = set()
         for style_name, style in styles.items():
             added_back_styles |= add_back_style(chart, style_name=style_name, style_data=style)
-        print("add_back_styles:", added_back_styles)
+        add_front_styles(chart=chart, back_styles=added_back_styles)
         output(chart, source_filename=filename, output_filename=args.output, output_must_be_dir=len(args.source) > 1)
 
 # ----------------------------------------------------------------------
@@ -57,51 +56,21 @@ def add_back_style(chart: ae_backend.chart_v3.Chart, style_name: str, style_data
     elif style_name.startswith("clades"):
         return set([ae.semantic.clades(chart=chart, style_name=style_name, entries=style_data)])
 
-        # # pprint.pprint(style_data)
-        # # metadata = style_metadata(style_name)
-        # sname = f"-{style_name}"
-        # style = chart.styles()[sname]
-        # style.priority = 1000
-        # legend_priority = 99
-        # map_type_suffix = ""
-        # style_modifier_added = False
-        # for modifier in style_data:
-        #     if style_name.startswith("clades") and (clade := modifier.get("clade")):
-        #         map_type_suffix = " by clade"
-        #         if aa := modifier.get("aa"):
-        #             extra_clade = f"{clade} {aa}"
-        #             extra_clades[extra_clade] = {"base_clade": clade, "aa": aa}
-        #             clade = extra_clade
-        #         style.add_modifier(selector=["C", clade], fill=modifier["fill"], outline="black", rais=True, only="antigens", legend=modifier["legend"], legend_priority=legend_priority)
-        #     else:
-        #         print(f">> unsupported style \"{style_name}\"", file=sys.stderr)
-        #     legend_priority -= 1
-        # style.plot_title.text.text = f"{chart.info().lab()} {chart.info().type_subtype()} {chart.info().assay_HI_or_Neut()}{map_type_suffix}"
-        # style.legend.add_counter = True
-        # return set([sname])
-
-    # for style_name, style in style_desc.items():
-    #     if priority := style.get("priority"):
-    #         styles[style_name].priority = priority
-    #     if parent := style.get("parent"):
-    #         styles[style_name].add_modifier(parent=parent)
-    #     legend_priority = 99
-    #     for modifier in style.get("modifiers", []):
-    #         if modifier.get("clade"):
-    #             selector = ["C", modifier["clade"]]
-    #         styles[style_name].add_modifier(selector=selector, fill=modifier["fill"], outline="black", rais=True, only="antigens", legend=modifier["legend"], legend_priority=legend_priority)
-    #         legend_priority -= 1
-
 # ----------------------------------------------------------------------
 
-# def add_extra_clades(chart: ae_backend.chart_v3.Chart, clades_to_add: dict):
-#     for name, data in clades_to_add.items():
-#         for selector in [chart.select_antigens, chart.select_sera]:
-#             for no, ag_sr in selector(lambda en: en.has_clade(data["base_clade"]) and en.aa[data["aa"]]):
-#                 ag_sr.semantic.add_clade(name)
+def add_front_styles(chart: ae_backend.chart_v3.Chart, back_styles: set):
+    style_priorty = 1
+    for back_style in sorted(back_styles):
+        if back_style.startswith("-clades"):
+            style = chart.styles()[back_style[1:]]
+            style.priority = style_priorty
+            style.add_modifier(parent=back_style)
+            if "-vaccines" in back_styles:
+                style.add_modifier(parent="-vaccines")
+            style.plot_title.text.text = f"{chart.info().lab()} {chart.info().type_subtype()} {chart.info().assay_HI_or_Neut()} by clade"
+        style_priorty += 1
 
 # ----------------------------------------------------------------------
-
 
 # class StyleMetadata:
 

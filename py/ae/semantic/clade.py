@@ -19,8 +19,6 @@ def clades(chart: ae_backend.chart_v3.Chart, style_name: str, entries: list, mod
         else:
             print(f">> clades: unsupported style \"{style_name}\": {entries}", file=sys.stderr)
         legend_priority -= 1
-    # map_type_suffix = " by clade"
-    # style.plot_title.text.text = f"{chart.info().lab()} {chart.info().type_subtype()} {chart.info().assay_HI_or_Neut()}{map_type_suffix}"
     style.legend.add_counter = add_counter
 
     for clade_name, data in extra_clades.items():
