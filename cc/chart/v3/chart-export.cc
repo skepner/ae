@@ -161,7 +161,7 @@ static inline bool export_shown(fmt::memory_buffer& out, std::optional<bool> sho
 {
     if (shown.has_value()) {
         comma = put_comma_key(out, comma, "-");
-        fmt::format_to(std::back_inserter(out), "{}", *shown);
+        fmt::format_to(std::back_inserter(out), "{}", !*shown);
     }
     return comma;
 }

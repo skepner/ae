@@ -64,10 +64,14 @@ def add_front_styles(chart: ae_backend.chart_v3.Chart, back_styles: set):
         if back_style.startswith("-clades"):
             style = chart.styles()[back_style[1:]]
             style.priority = style_priorty
+            # if "-reset" in back_styles:
+            #     style.add_modifier(parent="-reset")
             style.add_modifier(parent=back_style)
             if "-vaccines" in back_styles:
                 style.add_modifier(parent="-vaccines")
             style.plot_title.text.text = f"{chart.info().lab()} {chart.info().type_subtype()} {chart.info().assay_HI_or_Neut()} by clade"
+            style.legend.shown = True
+            style.legend.add_counter = True
         style_priorty += 1
 
 # ----------------------------------------------------------------------
