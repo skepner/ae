@@ -520,6 +520,8 @@ void ae::py::chart_v3(pybind11::module_& mdl)
             },
             "index"_a, pybind11::doc("negative index counts from the layout end")) //
         .def("minmax", &Layout::minmax)                                            //
+        .def(
+            "connected", [](const Layout& layout, size_t index) { return layout.point_has_coordinates(point_index{index}); }, "index"_a) //
         // .def("__str__", [](const Layout& layout) { return fmt::format("{}", layout); }) //
         ;
 

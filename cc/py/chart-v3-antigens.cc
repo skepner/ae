@@ -87,7 +87,7 @@ namespace ae::py
         if (const std::string pt = pybind11::str(egg_cell); pt == "reassortant")
             return !sd.ag_sr.reassortant().empty();
         else if (pt == "egg")
-            return sd.ag_sr.passage().is_egg();
+            return sd.ag_sr.passage().is_egg() && sd.ag_sr.reassortant().empty();
         else if (pt == "cell")
             return sd.ag_sr.passage().is_cell();
         else
@@ -185,6 +185,7 @@ void ae::py::chart_v3_antigens(pybind11::module_& chart_v3_submodule)
         //     pybind11::doc("return boundaries of the selected points (transformed)")) //
         // .def("for_each", &SelectedAntigens::for_each, "modifier"_a,
         //      pybind11::doc("modifier(ag_no, antigen) is called for each selected antigen, antigen fields, e.g. name, can be modified in the function.")) //
+        .def("sort_by_number_of_layers_descending", &SelectedAntigens::sort_by_number_of_layers_descending) //
         .def("__repr__",
              [](const SelectedAntigens& selected) {
                  if (selected.size() == 0)
@@ -232,6 +233,7 @@ void ae::py::chart_v3_antigens(pybind11::module_& chart_v3_submodule)
         // .def("indexes", [](const SelectedSera& selected) { return *selected.indexes; })                                                     //
         // .def("for_each", &SelectedSera::for_each, "modifier"_a,
         //      pybind11::doc("modifier(sr_no, serum) is called for each selected serum, serum fields, e.g. name, can be modified in the function.")) //
+        .def("sort_by_number_of_layers_descending", &SelectedSera::sort_by_number_of_layers_descending) //
         .def("__repr__",
              [](const SelectedSera& selected) {
                  if (selected.size() == 0)

@@ -115,6 +115,23 @@ namespace ae::chart::v3
 
         // void exclude(const Selected<AgSr>& to_exclude) { indexes.remove(ReverseSortedIndexes{*to_exclude.indexes}); }
 
+        // if indexes have the same number of layers, first comes with the bigger layer no
+        // if the biggest layers nos are the same, first comes the bigger index
+        void sort_by_number_of_layers_descending()
+            {
+                const auto& titers = chart->titers();
+                std::sort(std::begin(indexes), std::end(indexes), [&titers](auto i1, auto i2) {
+                    if (const auto ln1 = titers.layers_with(i1), ln2 = titers.layers_with(i2); ln1.size() == ln2.size()) {
+                        if (ln1.back() == ln2.back())
+                            return i1 > i2;
+                        else
+                            return ln1.back() > ln2.back();
+                    }
+                    else
+                        return ln1.size() > ln2.size();
+                });
+            }
+
         SelectedIterator<AgSr> begin();
         SelectedIterator<AgSr> end();
 

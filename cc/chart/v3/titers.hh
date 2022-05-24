@@ -338,6 +338,7 @@ namespace ae::chart::v3
                                              include_dotcare inc = include_dotcare::no) const; // returns list of non-dont-care titers in layers, may throw data_not_available
         layer_indexes layers_with_antigen(antigen_index aAntigenNo) const; // returns list of layer indexes that have non-dont-care titers for the antigen, may throw data_not_available
         layer_indexes layers_with_serum(serum_index aSerumNo) const;       // returns list of layer indexes that have non-dont-care titers for the serum, may throw data_not_available
+        template <typename Ind> layer_indexes layers_with(Ind no) const { if constexpr (std::is_same_v<Ind, antigen_index>) return layers_with_antigen(no); else return layers_with_serum(no); }
         void create_layers(layer_index num_layers, antigen_index num_antigens);
         titer_merge_report set_from_layers(Chart& chart);
         titer_merge_report set_from_layers_report(more_than_thresholded mtt = more_than_thresholded::to_dont_care) const;

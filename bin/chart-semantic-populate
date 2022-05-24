@@ -94,15 +94,17 @@ def add_extra_clades(chart: ae_backend.chart_v3.Chart, clades_to_add: dict):
 
 def set_semantic_vaccine(chart: ae_backend.chart_v3.Chart, name: str, year: str = None, passage: str = None, surrogate: bool = False, **rest) -> str:
     """passage: "egg", "cell", "reassortant" """
-    vac_name = f"{chart.info().type_subtype()}/{name}"
-    passages = ["egg", "cell", "reassortant"] if passage is None else [passage]
     ag_num_digits  = num_digits(chart.number_of_antigens())
+    layout = chart.projection().layout() if chart.number_of_projections() else None
+    vac_name = f"{chart.info().type_subtype()}/{name}"
     report = ""
-    for psg in passages:
-        antigens = chart.select_antigens(lambda ag: ag.name == vac_name and ag.passage_is(psg))
+    for psg in ["egg", "cell", "reassortant"] if passage is None else [passage]:
+        antigens = chart.select_antigens(lambda ag: ag.name == vac_name and ag.passage_is(psg) and layout.connected(ag.point_no))
         subreport = None
         if len(antigens):
             has_layers = chart.titers().number_of_layers() > 0
+            if has_layers and len(antigens) > 1:
+                antigens.sort_by_number_of_layers_descending()
             subreport = f"  {psg}: {len(antigens)}\n"
             for no, ag in antigens:
                 if has_layers:
