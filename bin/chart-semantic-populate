@@ -48,14 +48,16 @@ def process_module(chart: ae_backend.chart_v3.Chart, module_filename: Path):
 # ----------------------------------------------------------------------
 
 def add_style(chart: ae_backend.chart_v3.Chart, style_name: str, style_data: list, extra_clades: dict):
+    print(f"add_style {style_name}")
     # metadata = style_metadata(style_name)
     style = chart.styles()[f"-{style_name}"]
     style.priority = 1000
     legend_priority = 99
     map_type_suffix = ""
+    style_modifier_added = False
     for modifier in style_data:
         if style_name.startswith("clades") and (clade := modifier.get("clade")):
-            map_type_suffix = "by clade"
+            map_type_suffix = " by clade"
             if aa := modifier.get("aa"):
                 extra_clade = f"{clade} {aa}"
                 extra_clades[extra_clade] = {"base_clade": clade, "aa": aa}
@@ -63,11 +65,14 @@ def add_style(chart: ae_backend.chart_v3.Chart, style_name: str, style_data: lis
             style.add_modifier(selector=["C", clade], fill=modifier["fill"], outline="black", rais=True, only="antigens", legend=modifier["legend"], legend_priority=legend_priority)
         elif style_name == "vaccines":
             if report := set_semantic_vaccine(chart, **modifier):
+                if not style_modifier_added:
+                    style.add_modifier(selector=["V", ""], outline="black", rais=True, size=100, only="antigens")
+                    style_modifier_added = True
                 print(report)
         else:
             print(f">> unsupported style \"{style_name}\"", file=sys.stderr)
         legend_priority -= 1
-    style.plot_title.text.text = f"{chart.info().lab()} {chart.info().type_subtype()} {chart.info().assay_HI_or_Neut()} {map_type_suffix}"
+    style.plot_title.text.text = f"{chart.info().lab()} {chart.info().type_subtype()} {chart.info().assay_HI_or_Neut()}{map_type_suffix}"
     style.legend.add_counter = True
 
     # for style_name, style in style_desc.items():
