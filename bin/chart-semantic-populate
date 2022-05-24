@@ -19,7 +19,8 @@ import sys, os, pprint
 from pathlib import Path
 import ae_backend
 import ae.utils.load_module
-from ae.utils.num_digits import num_digits
+import ae.semantic
+# from ae.utils.num_digits import num_digits
 
 # ======================================================================
 
@@ -34,8 +35,10 @@ def main(args):
             styles.update(process_module(chart, mod))
         # pprint.pprint(styles, width=200)
         extra_clades = {}
+        added_back_styles = set()
         for style_name, style in styles.items():
-            add_style(chart, style_name=style_name, style_data=style, extra_clades=extra_clades)
+            added_back_styles |= add_back_style(chart, style_name=style_name, style_data=style, extra_clades=extra_clades)
+        print("add_back_styles:", added_back_styles)
         add_extra_clades(chart, extra_clades)
         output(chart, source_filename=filename, output_filename=args.output, output_must_be_dir=len(args.source) > 1)
 
@@ -47,33 +50,36 @@ def process_module(chart: ae_backend.chart_v3.Chart, module_filename: Path):
 
 # ----------------------------------------------------------------------
 
-def add_style(chart: ae_backend.chart_v3.Chart, style_name: str, style_data: list, extra_clades: dict):
+def add_back_style(chart: ae_backend.chart_v3.Chart, style_name: str, style_data: list, extra_clades: dict):
     print(f"add_style {style_name}")
-    # metadata = style_metadata(style_name)
-    style = chart.styles()[f"-{style_name}"]
-    style.priority = 1000
-    legend_priority = 99
-    map_type_suffix = ""
-    style_modifier_added = False
-    for modifier in style_data:
-        if style_name.startswith("clades") and (clade := modifier.get("clade")):
-            map_type_suffix = " by clade"
-            if aa := modifier.get("aa"):
-                extra_clade = f"{clade} {aa}"
-                extra_clades[extra_clade] = {"base_clade": clade, "aa": aa}
-                clade = extra_clade
-            style.add_modifier(selector=["C", clade], fill=modifier["fill"], outline="black", rais=True, only="antigens", legend=modifier["legend"], legend_priority=legend_priority)
-        elif style_name == "vaccines":
-            if report := set_semantic_vaccine(chart, **modifier):
-                if not style_modifier_added:
-                    style.add_modifier(selector=["V", ""], outline="black", rais=True, size=100, only="antigens")
-                    style_modifier_added = True
-                print(report)
+    if style_name == "vaccines":
+        if added_style_name := ae.semantic.vaccines_and_plot_style(chart=chart, entries=style_data):
+            return set([added_style_name])
         else:
-            print(f">> unsupported style \"{style_name}\"", file=sys.stderr)
-        legend_priority -= 1
-    style.plot_title.text.text = f"{chart.info().lab()} {chart.info().type_subtype()} {chart.info().assay_HI_or_Neut()}{map_type_suffix}"
-    style.legend.add_counter = True
+            return set()
+    elif style_name.startswith("clades"):
+        # pprint.pprint(style_data)
+        # metadata = style_metadata(style_name)
+        sname = f"-{style_name}"
+        style = chart.styles()[sname]
+        style.priority = 1000
+        legend_priority = 99
+        map_type_suffix = ""
+        style_modifier_added = False
+        for modifier in style_data:
+            if style_name.startswith("clades") and (clade := modifier.get("clade")):
+                map_type_suffix = " by clade"
+                if aa := modifier.get("aa"):
+                    extra_clade = f"{clade} {aa}"
+                    extra_clades[extra_clade] = {"base_clade": clade, "aa": aa}
+                    clade = extra_clade
+                style.add_modifier(selector=["C", clade], fill=modifier["fill"], outline="black", rais=True, only="antigens", legend=modifier["legend"], legend_priority=legend_priority)
+            else:
+                print(f">> unsupported style \"{style_name}\"", file=sys.stderr)
+            legend_priority -= 1
+        style.plot_title.text.text = f"{chart.info().lab()} {chart.info().type_subtype()} {chart.info().assay_HI_or_Neut()}{map_type_suffix}"
+        style.legend.add_counter = True
+        return set([sname])
 
     # for style_name, style in style_desc.items():
     #     if priority := style.get("priority"):
@@ -94,37 +100,6 @@ def add_extra_clades(chart: ae_backend.chart_v3.Chart, clades_to_add: dict):
         for selector in [chart.select_antigens, chart.select_sera]:
             for no, ag_sr in selector(lambda en: en.has_clade(data["base_clade"]) and en.aa[data["aa"]]):
                 ag_sr.semantic.add_clade(name)
-
-# ----------------------------------------------------------------------
-
-def set_semantic_vaccine(chart: ae_backend.chart_v3.Chart, name: str, year: str = None, passage: str = None, surrogate: bool = False, **rest) -> str:
-    """passage: "egg", "cell", "reassortant" """
-    ag_num_digits  = num_digits(chart.number_of_antigens())
-    layout = chart.projection().layout() if chart.number_of_projections() else None
-    vac_name = f"{chart.info().type_subtype()}/{name}"
-    report = ""
-    for psg in ["egg", "cell", "reassortant"] if passage is None else [passage]:
-        antigens = chart.select_antigens(lambda ag: ag.name == vac_name and ag.passage_is(psg) and layout.connected(ag.point_no))
-        subreport = None
-        if len(antigens):
-            has_layers = chart.titers().number_of_layers() > 0
-            if has_layers and len(antigens) > 1:
-                antigens.sort_by_number_of_layers_descending()
-            antigens[0][1].semantic.vaccine((year or "") + ("s" if surrogate else ""))
-            subreport = f"  {psg}: {len(antigens)}\n"
-            for no, ag in antigens:
-                if has_layers:
-                    layers = chart.titers().layers_with_antigen(no)
-                    layers_s = f" layers: ({len(layers)}){layers}"
-                else:
-                    layers = []
-                    layers_s = ""
-                subreport += f"    AG {no:{ag_num_digits}d} {ag.designation()}{layers_s}\n"
-        if subreport:
-            if not report:
-                report = f"vaccines \"{name}\" {passage or ''}{' surrogate' if surrogate else ''} \"{year}\"\n"
-            report += subreport
-    return report.rstrip()
 
 # ----------------------------------------------------------------------
 
