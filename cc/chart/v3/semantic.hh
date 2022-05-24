@@ -28,12 +28,12 @@ namespace ae::chart::v3
         {
             auto& clds = data_.as_array(_clades_key);
             for (const auto& clade : clades)
-                clds.add(clade);
+                clds.add_if_not_present(clade);
         }
 
         void add_clade(std::string_view clade)
         {
-            data_.as_array(_clades_key).add(clade);
+            data_.as_array(_clades_key).add_if_not_present(clade);
         }
 
         bool has_clade(std::string_view clade) const

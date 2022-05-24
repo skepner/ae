@@ -105,6 +105,7 @@ def set_semantic_vaccine(chart: ae_backend.chart_v3.Chart, name: str, year: str 
             has_layers = chart.titers().number_of_layers() > 0
             if has_layers and len(antigens) > 1:
                 antigens.sort_by_number_of_layers_descending()
+            antigens[0][1].semantic.vaccine((year or "") + ("s" if surrogate else ""))
             subreport = f"  {psg}: {len(antigens)}\n"
             for no, ag in antigens:
                 if has_layers:
@@ -116,7 +117,7 @@ def set_semantic_vaccine(chart: ae_backend.chart_v3.Chart, name: str, year: str 
                 subreport += f"    AG {no:{ag_num_digits}d} {ag.designation()}{layers_s}\n"
         if subreport:
             if not report:
-                report = f"vaccines \"{name}\" {passage or ''}{' surrogate' if surrogate else ''}\n"
+                report = f"vaccines \"{name}\" {passage or ''}{' surrogate' if surrogate else ''} \"{year}\"\n"
             report += subreport
     return report.rstrip()
 

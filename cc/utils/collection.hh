@@ -82,7 +82,9 @@ namespace ae
             array() = default;
             bool operator==(const array&) const = default;
             void add(value&& src) { data_.push_back(std::move(src)); }
+            void add_if_not_present(value&& src) { if (!contains(src)) data_.push_back(std::move(src)); }
             bool contains(const value& val) const;
+            // void sort_unique();
 
             auto begin() const { return data_.begin(); }
             auto end() const { return data_.end(); }
@@ -195,6 +197,18 @@ namespace ae
                     data_);
             }
 
+            void add_if_not_present(value&& to_add)
+            {
+                std::visit(
+                    [&to_add]<typename T>(T& content) {
+                        if constexpr (std::is_same_v<T, array>)
+                            return content.add_if_not_present(std::move(to_add));
+                        else
+                            throw invalid_value{"dynamic::value::add_if_not_present(value) cannot be used with variant value of type {}", typeid(content).name()};
+                    },
+                    data_);
+            }
+
             template <typename T> bool contains(const T& val) const
             {
                 return std::visit(
@@ -277,6 +291,8 @@ namespace ae
 
         // inline array::array() {}
         inline bool array::contains(const value& val) const { return std::find(data_.begin(), data_.end(), val) != data_.end(); }
+
+        // inline void array::sort_unique() { std::sort(data_.begin(), data_.end()); data_.erase(std::unique(data_.begin(), data_.end()), data_.end()); }
 
     } // namespace dynamic
 
