@@ -61,7 +61,8 @@ def add_style(chart: ae_backend.chart_v3.Chart, style_name: str, style_data: lis
                 clade = extra_clade
             style.add_modifier(selector=["C", clade], fill=modifier["fill"], outline="black", rais=True, only="antigens", legend=modifier["legend"], legend_priority=legend_priority)
         elif style_name == "vaccines":
-            set_semantic_vaccine(chart, modifier)
+            if report := set_semantic_vaccine(chart, **modifier):
+                print(report)
         else:
             print(f">> unsupported style \"{style_name}\"", file=sys.stderr)
         legend_priority -= 1
@@ -90,11 +91,23 @@ def add_extra_clades(chart: ae_backend.chart_v3.Chart, clades_to_add: dict):
 
 # ----------------------------------------------------------------------
 
-def set_semantic_vaccine(chart: ae_backend.chart_v3.Chart, modifier: dict):
-    vac_name = f"{chart.info().type_subtype()}/{modifier['name']}"
-    antigens = chart.select_antigens(lambda ag: ag.name == vac_name)
-    if antigens:
-        print(f"vaccine \"{modifier['name']}\" antigens: {antigens}")
+def set_semantic_vaccine(chart: ae_backend.chart_v3.Chart, name: str, year: str = None, passage: str = None, surrogate: bool = False, **rest) -> str:
+    """passage: "egg", "cell", "reassortant" """
+    vac_name = f"{chart.info().type_subtype()}/{name}"
+    antigens = chart.select_antigens(lambda ag: ag.name == vac_name and ag.passage_is(passage))
+    report = ""
+    if len(antigens):
+        has_layers = chart.titers().number_of_layers() > 0
+        report = f"vaccines \"{name}\" {passage or ''}{' surrogate' if surrogate else ''} -> {len(antigens)}"
+        for no, ag in antigens:
+            if has_layers:
+                layers = chart.titers().layers_with_antigen(no)
+                layers_s = f" layers: ({len(layers)}){layers}"
+            else:
+                layers = []
+                layers_s = ""
+            report += f"\n  AG {no:4d} {ag.designation()}{layers_s}"
+    return report
 
 # ----------------------------------------------------------------------
 

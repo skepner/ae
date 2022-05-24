@@ -80,7 +80,21 @@ namespace ae::py
             throw std::invalid_argument{R"(use "antigens" or "sera")"};
     }
 
-}
+    template <typename AgSr> inline bool passage_is(const chart::v3::SelectionData<AgSr>& sd, pybind11::object egg_cell)
+    {
+        if (egg_cell.is_none())
+            return true;
+        if (const std::string pt = pybind11::str(egg_cell); pt == "reassortant")
+            return !sd.ag_sr.reassortant().empty();
+        else if (pt == "egg")
+            return sd.ag_sr.passage().is_egg();
+        else if (pt == "cell")
+            return sd.ag_sr.passage().is_cell();
+        else
+            throw std::invalid_argument{fmt::format("unrecognized passage: \"{}\"", pt)};
+    }
+
+} // namespace ae::py
 
 // ----------------------------------------------------------------------
 
@@ -238,6 +252,7 @@ void ae::py::chart_v3_antigens(pybind11::module_& chart_v3_submodule)
         .def_property_readonly("aa", [](const SelectionData<Antigen>& sd) { return sd.ag_sr.aa(); })                                                               //
         .def("has_clade", [](const SelectionData<Antigen>& sd, std::string_view clade) { return sd.ag_sr.semantic().has_clade(clade); })                           //
         .def("layers", [](const SelectionData<Antigen>& sd) -> std::vector<size_t> { return to_vector_base_t(sd.chart->titers().layers_with_antigen(sd.index)); }) //
+        .def("passage_is", &passage_is<Antigen>, "passage_type"_a, pybind11::doc("if passage_type=None, returns True"))                                            //
         ;
 
     pybind11::class_<SelectionData<Serum>>(chart_v3_submodule, "SelectionData_Serum")
@@ -249,6 +264,7 @@ void ae::py::chart_v3_antigens(pybind11::module_& chart_v3_submodule)
         .def_property_readonly("aa", [](const SelectionData<Serum>& sd) { return sd.ag_sr.aa(); })                                                             //
         .def("has_clade", [](const SelectionData<Serum>& sd, std::string_view clade) { return sd.ag_sr.semantic().has_clade(clade); })                         //
         .def("layers", [](const SelectionData<Serum>& sd) -> std::vector<size_t> { return to_vector_base_t(sd.chart->titers().layers_with_serum(sd.index)); }) //
+        .def("passage_is", &passage_is<Antigen>, "passage_type"_a, pybind11::doc("if passage_type=None, returns True"))                                            //
         ;
 
     // ----------------------------------------------------------------------
