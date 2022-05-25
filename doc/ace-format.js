@@ -36,6 +36,7 @@
                     "C9": "ASIA",                      // continent: "ASIA", "AUSTRALIA-OCEANIA", "NORTH-AMERICA", "EUROPE", "RUSSIA", "AFRICA", "MIDDLE-EAST", "SOUTH-AMERICA", "CENTRAL-AMERICA"
                     "c9": "USA",                       // country: "UNITED KINGDOM"
 
+                    "P": "egg|cell|reassortant",       // passage type
                     "serology": "", //
                     "new": 1, // new since last tc, 2 tc ago
 
@@ -101,7 +102,10 @@
             "A": { // modifiers to apply
                 "R": "-clades", // name ("N") of another plot spec to use (inherited from), applied before adding other changes provided by this object
                 "T": { // to select antigens/sera, if value is en empty string, it means ag/sr selected if they have that semantic attribute with any value
-                        <name of semantic attribute>: <value>
+                    "<name of semantic attribute>": <value>,
+                    "!D": ["date-first", "date-last"]               // select antigens with isolation date in range, if antigen date is absent, it is ""
+                                                                    // if date-last is "", it means until now
+                    "!i": 0,                                        // antigen/serum index, i.e. individual selection
                 },
                 "A": 1, // true or 1: select antigens only, false or 0: select sera only, absent or -1: select antigens and sera
                 "S": "C", // shape: "C[IRCLE]" (default), "B[OX]", "T[RIANGLE]", "E[GG]", "U[GLYEGG]"
