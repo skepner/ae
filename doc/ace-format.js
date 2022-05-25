@@ -45,7 +45,7 @@
                 "L": "V", //  lineage: "Y[AMAGATA]" or "V[ICTORIA]"
                 "P": "MDCK2/SIAT1 (2016-05-12)", //  passage
                 "R": "NYMC-51C", //  reassortant
-                "I": "CDC 2016-045", // serum id, e.g "CDC 2016-045"                                                                                                                                              |
+                "I": "CDC 2016-045", // serum id, e.g "CDC 2016-045"
                 "A": "QKIPGNDNSTATLCLG...", //  aligned amino-acid sequence
                 "B": "CAAAAAATTCCTGGAAAT...", //  aligned nucleotide sequence
                 "Ai": [[pos1, "aas"]] //  insertions at the aa level
@@ -82,5 +82,130 @@
                 "u": [198, 199] // list of indices of points unmovable in the last dimension (antigen/serum attribute for stress evaluation)
             }
         ],
+        "R": { // sematic attributes based plot specifications, key: name of the style, value: style object
+            "z": 0,           // priority order when showing in GUI
+            "t": "",           // title
+            "V": [-5.0, -5.0, 10.0, 10.0],  // viewport
+            "A": { // modifiers to apply
+                "R": str, // name ("N") of another plot spec to use (inherited from), applied before adding other changes provided by this object
+                "T": object, // {<name of semantic attribute>: <value>} to select antigens/sera, if value is en empty string, it means ag/sr selected if they have that semantic attribute with any value
+                "A": 1, // true or 1: select antigens only, false or 0: select sera only, absent or -1: select antigens and sera
+                "S": "C", // shape: "C[IRCLE]" (default), "B[OX]", "T[RIANGLE]", "E[GG]", "U[GLYEGG]"
+                "F": "transparent", // fill color
+                "O": "black", // outline color
+                "o": 1.0, // outline width
+                "s": 1.0, // size, default 1.0
+                "r": 0.0, // rotation in radians, default 0.0
+                "a": 1.0, // aspect ratio, default 1.0
+                "-": false, // hide point and its label
+                "D": "r", // drawing order: raise, lower, absent: no change
+                "l": { // |     | object             |               |                | label style -> Offset + TextData
+                    "-": false, //         |                | if label is hidden
+                    "p":  [0, 1], // [x, y]: label offset (2D only), list of two doubles, default is [0, 1] means under point
+                    "t": "label", // label text if forced by user
+                    "f": "helvetica",, // font face
+                    "S": "normal", // font slant: "normal" (default), "italic"
+                    "W": "normal", // font weight: "normal" (default), "bold"
+                    "s": 1.0, // label size, default 1.0
+                    "c": "black",, // label color, default: "black"
+                    "r": 0.0, // label rotation, default 0.0
+                    "i": 0.2 //          |                | addtional interval between lines as a fraction of line height
+                },
+                "L" { //legend row
+                    "p": 0, // priority
+                    "t": "legend row"
+                }
+            },
+            "T" { // Title
+                "-": false, // hidden
+                "B": { //  box area
+                    "o":  "tl", //          | :box-rel:      | origin
+                    "p": {}, //  :box-padding:  | padding
+                    "O": [10, 10], // offset relative to origin (pixels)
+                    "B": "black", // border color
+                    "W":  0.0, // border width, 0 - no border
+                    "F": "transparent", // background
+                },
+                "T": { // :text:         | style of text
+                    "t": "line\nline", //  multi-line text, lines are separated by \n
+                    "f": "helvetica", // font face
+                    "S": "normal", // font slant: "normal" (default), "italic"
+                    "W": "bold", // font weight: "normal" (default), "bold"
+                    "s":  16.0, // font size
+                    "c": "black", // text color
+                    "i":  0.2 // addtional interval between lines as a fraction of line height
+                }
+            },
+            "L": { //  legend data
+                "-": false, // bool               | false         |                | hidden
+                "C": true, // bool               |               |                | add counter
+                "S": 10.0, //               |               |                | point size
+                "z": true, //               |               |                | show rows with zero count
+                "B": { //  :box:          | box area
+                    "o":  "tl", //          | :box-rel:      | origin
+                    "p": {}, // object             |               | :box-padding:  | padding
+                    "O": [10, 10], //      |                | offset relative to origin (pixels)
+                    "B": "black", //       | Color          | border color
+                    "W": 0.0, //           |                | border width, 0 - no border
+                    "F": "transparent", // | Color          | background
+                },
+                "t": { //      | object             |               | :text:         | style of text in a legend row
+                    "f": "helvetica" //  | :font-face:    | font face
+                    "S": "normal"    //  |                | font slant: "normal" (default), "italic"
+                    "W": "normal"    //  |                | font weight: "normal" (default), "bold"
+                    "s": 1.0, //              |               |                | label size, default 1.0
+                    "c": "black", //  label color, default: "black"
+                    "i":  0.2 //           |                | addtional interval between lines as a fraction of line height
+                },
+                "T": { //      | object             |               | :text:         | title and its style
+                    "t": "title text", // title text, title is not shown if text is empty, text may include newlines
+                    "f": "helvetica", // font face
+                    "S": "normal", // font slant: "normal" (default), "italic"
+                    "W": "bold", // font weight: "normal" (default), "bold"
+                    "s": 1.0, // label size, default 1.0
+                    "c": "black", // label color, default: "black"
+                    "i": 0.2 //addtional interval between lines as a fraction of line height
+                }
+            },
+        },
+
+
+        "p": { //legacy lispmds stype plot specification
+            "d": [0, 1, 2, 3], // drawing order, point indices
+            "E": {"c": "blue"}, // error line positive, default: {"c": "blue"}
+            "e": {"c": "red"}, // error line negative, default: {"c": "red"}
+            "g": {}, // ? grid data
+            "P": [ // list of plot styles
+                {
+                    "+": true, // if point is shown, default is true, disconnected points are usually not shown and having NaN coordinates in layout
+                    "F": "transparent", // fill color: #FF0000 or T[RANSPARENT] or color name (red, green, blue, etc.), default is transparent
+                    "O": "black", // outline color: #000000 or T[RANSPARENT] or color name (red, green, blue, etc.), default is black
+                    "o": 1.0, // outline width, default 1.0
+                    "S": "C", // shape: "C[IRCLE]" (default), "B[OX]", "T[RIANGLE]", "E[GG]", "U[GLYEGG]"
+                    "s": 1.0, // size, default 1.0
+                    "r": 0.0, // rotation in radians, default 0.0
+                    "a": 1.0, // aspect ratio, default 1.0
+                    "l": { // label style  -> Offset + TextData
+                        "+": boolean, //               |                | if label is shown
+                        "p": [0.0, 1.0], //               |                | label position (2D only), list of two doubles, default is [0, 1] means under point
+                        "t": "label text", //               |                | label text if forced by user
+                        "f": "helvetica", // font face
+                        "S": "normal", //               |                | font slant: "normal" (default), "italic"
+                        "W": "normal", //               |                | font weight: "normal" (default), "bold"
+                        "s": 1.0, //               |                | label size, default 1.0
+                        "c": "black", // label color
+                        "r": 0.0, // label rotation
+                        "i": 0.2, // addtional interval between lines as a fraction of line height
+                    }
+                }
+            ],
+            "p": [0, 0, 0], // index in "P" for each point, antigens followed by sera
+            "l": [0, 0], // ? for each procrustes line, index in the "L" list
+            "L": [], // ? list of procrustes lines styles
+            "s": [0, 1], // list of point indices for point shown on all maps in the time series
+            "t": {} // ? title style
+        },
+        "x": { // extensions not used by acmacs
+        }
     }
 }
