@@ -33,7 +33,9 @@ def main(args):
         added_back_styles = set()
         for key, data in semantic_data.items():
             if key == "vaccines":
-                add_vaccine_semantic_attributes(chart=chart, data=data)
+                add_vaccine_semantic_attributes(chart=chart, data=data, report=False)
+        ae.semantic.continent(chart=chart) # Set continent ("C9") and country ("c9") semantic attributes for all antigens and sera
+
         #     added_back_styles |= add_back_style(chart, style_name=style_name, style_data=style)
         # add_front_styles(chart=chart, back_styles=added_back_styles)
         output(chart, source_filename=filename, output_filename=args.output, output_must_be_dir=len(args.source) > 1)
