@@ -99,8 +99,8 @@
                 "a": 1.0, // aspect ratio, default 1.0
                 "-": false, // hide point and its label
                 "D": "r", // drawing order: raise, lower, absent: no change
-                "l": { // |     | object             |               |                | label style -> Offset + TextData
-                    "-": false, //         |                | if label is hidden
+                "l": { // object label style -> Offset + TextData
+                    "-": false, // if label is hidden
                     "p":  [0, 1], // [x, y]: label offset (2D only), list of two doubles, default is [0, 1] means under point
                     "t": "label", // label text if forced by user
                     "f": "helvetica",, // font face
@@ -109,7 +109,7 @@
                     "s": 1.0, // label size, default 1.0
                     "c": "black",, // label color, default: "black"
                     "r": 0.0, // label rotation, default 0.0
-                    "i": 0.2 //          |                | addtional interval between lines as a fraction of line height
+                    "i": 0.2 // addtional interval between lines as a fraction of line height
                 },
                 "L" { //legend row
                     "p": 0, // priority
@@ -119,16 +119,28 @@
             "T" { // Title
                 "-": false, // hidden
                 "B": { //  box area
-                    "o":  "tl", //          | :box-rel:      | origin
-                    "p": {}, //  :box-padding:  | padding
+                    "o":  "tl", // box relative to, two letter code
+                                                 // first letter is for vertical position:
+                                                 //   T - origin is bottom of the box relative to the top of the plot, i.e. box is above the plot
+                                                 //   t - origin is top of the box relative to the top of the plot, i.e. box is within the plot
+                                                 //   c - box is centered vertically
+                                                 //   B - origin is bottom of the box relative to the bottom of the plot, i.e. box is within the plot
+                                                 //   b - origin is top of the box relative to the bottom of the plot, i.e. box is above the plot
+                                                 // second letter is for horizontal position:
+                                                 //   L - origin is right of the box relative to the left of the plot, i.e. box is to the left of the plot
+                                                 //   l - origin is left of the box relative to the left of the plot, i.e. box is within the plot
+                                                 //   c - box is centered horizontally
+                                                 //   R - origin is right of the box relative to the right of the plot, i.e. box is within the plot
+                                                 //   r - origin is left of the box relative to the right of the plot, i.e. box is to the right of the plot
+                    "p": {"t": 0.0, "b": 0.0, "l": 0.0, "r": 0.0}, //  padding
                     "O": [10, 10], // offset relative to origin (pixels)
                     "B": "black", // border color
                     "W":  0.0, // border width, 0 - no border
                     "F": "transparent", // background
                 },
-                "T": { // :text:         | style of text
+                "T": { // :text: style of text
                     "t": "line\nline", //  multi-line text, lines are separated by \n
-                    "f": "helvetica", // font face
+                    "f": "helvetica", // font face, "monospace", "sansserif", "serif", "helvetica", "courier", "times"
                     "S": "normal", // font slant: "normal" (default), "italic"
                     "W": "bold", // font weight: "normal" (default), "bold"
                     "s":  16.0, // font size
@@ -137,29 +149,29 @@
                 }
             },
             "L": { //  legend data
-                "-": false, // bool               | false         |                | hidden
-                "C": true, // bool               |               |                | add counter
-                "S": 10.0, //               |               |                | point size
-                "z": true, //               |               |                | show rows with zero count
-                "B": { //  :box:          | box area
-                    "o":  "tl", //          | :box-rel:      | origin
-                    "p": {}, // object             |               | :box-padding:  | padding
-                    "O": [10, 10], //      |                | offset relative to origin (pixels)
-                    "B": "black", //       | Color          | border color
-                    "W": 0.0, //           |                | border width, 0 - no border
-                    "F": "transparent", // | Color          | background
+                "-": false, // hidden
+                "C": true, // add counter
+                "S": 10.0, // point size
+                "z": true, // show rows with zero count
+                "B": { //  :box: box area
+                    "o":  "tl", // box relative to, two letter code (see above)
+                    "p": {"t": 0.0, "b": 0.0, "l": 0.0, "r": 0.0}, // padding
+                    "O": [10, 10], // offset relative to origin (pixels)
+                    "B": "black", // Color border color
+                    "W": 0.0, // border width, 0 - no border
+                    "F": "transparent", // Color background
                 },
-                "t": { //      | object             |               | :text:         | style of text in a legend row
-                    "f": "helvetica" //  | :font-face:    | font face
-                    "S": "normal"    //  |                | font slant: "normal" (default), "italic"
-                    "W": "normal"    //  |                | font weight: "normal" (default), "bold"
-                    "s": 1.0, //              |               |                | label size, default 1.0
+                "t": { // object :text: style of text in a legend row
+                    "f": "helvetica" // "monospace", "sansserif", "serif", "helvetica", "courier", "times"
+                    "S": "normal"    // font slant: "normal" (default), "italic"
+                    "W": "normal"    // font weight: "normal" (default), "bold"
+                    "s": 1.0, // label size, default 1.0
                     "c": "black", //  label color, default: "black"
-                    "i":  0.2 //           |                | addtional interval between lines as a fraction of line height
+                    "i":  0.2 // addtional interval between lines as a fraction of line height
                 },
-                "T": { //      | object             |               | :text:         | title and its style
+                "T": { // object :text: title and its style
                     "t": "title text", // title text, title is not shown if text is empty, text may include newlines
-                    "f": "helvetica", // font face
+                    "f": "helvetica", // font face, "monospace", "sansserif", "serif", "helvetica", "courier", "times"
                     "S": "normal", // font slant: "normal" (default), "italic"
                     "W": "bold", // font weight: "normal" (default), "bold"
                     "s": 1.0, // label size, default 1.0
@@ -186,13 +198,13 @@
                     "r": 0.0, // rotation in radians, default 0.0
                     "a": 1.0, // aspect ratio, default 1.0
                     "l": { // label style  -> Offset + TextData
-                        "+": boolean, //               |                | if label is shown
-                        "p": [0.0, 1.0], //               |                | label position (2D only), list of two doubles, default is [0, 1] means under point
-                        "t": "label text", //               |                | label text if forced by user
+                        "+": boolean, // if label is shown
+                        "p": [0.0, 1.0], // label position (2D only), list of two doubles, default is [0, 1] means under point
+                        "t": "label text", // label text if forced by user
                         "f": "helvetica", // font face
-                        "S": "normal", //               |                | font slant: "normal" (default), "italic"
-                        "W": "normal", //               |                | font weight: "normal" (default), "bold"
-                        "s": 1.0, //               |                | label size, default 1.0
+                        "S": "normal", // font slant: "normal" (default), "italic"
+                        "W": "normal", // font weight: "normal" (default), "bold"
+                        "s": 1.0, // label size, default 1.0
                         "c": "black", // label color
                         "r": 0.0, // label rotation
                         "i": 0.2, // addtional interval between lines as a fraction of line height
