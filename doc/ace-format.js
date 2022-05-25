@@ -87,8 +87,10 @@
             "t": "",           // title
             "V": [-5.0, -5.0, 10.0, 10.0],  // viewport
             "A": { // modifiers to apply
-                "R": str, // name ("N") of another plot spec to use (inherited from), applied before adding other changes provided by this object
-                "T": object, // {<name of semantic attribute>: <value>} to select antigens/sera, if value is en empty string, it means ag/sr selected if they have that semantic attribute with any value
+                "R": "-clades", // name ("N") of another plot spec to use (inherited from), applied before adding other changes provided by this object
+                "T": { // to select antigens/sera, if value is en empty string, it means ag/sr selected if they have that semantic attribute with any value
+                        <name of semantic attribute>: <value>
+                },
                 "A": 1, // true or 1: select antigens only, false or 0: select sera only, absent or -1: select antigens and sera
                 "S": "C", // shape: "C[IRCLE]" (default), "B[OX]", "T[RIANGLE]", "E[GG]", "U[GLYEGG]"
                 "F": "transparent", // fill color
