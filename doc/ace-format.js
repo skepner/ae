@@ -31,14 +31,14 @@
                 "Ai": [[pos1, "aas"]] //  insertions at the aa level
                 "Bi": [[pos1, "nucs"]] // insertions at the nucleotide level
                 "T": { //  semantic attributes by group
-                    "C": ["3C" "3C.2a" "3C.2a1b.2a"], // clades
-                    "V": "es201902", // vaccine: egg/cell/reassortant, surrogate, year[month]
+                    "C": ["3C" "3C.2a" "3C.2a1b.2a"],  // clades
+                    "V": "es201902",                   // vaccine: egg/cell/reassortant, surrogate, year[month]
+                    "C9": "ASIA",                      // continent: "ASIA", "AUSTRALIA-OCEANIA", "NORTH-AMERICA", "EUROPE", "RUSSIA", "AFRICA", "MIDDLE-EAST", "SOUTH-AMERICA", "CENTRAL-AMERICA"
+                    "c9": "USA",                       // country: "UNITED KINGDOM"
 
                     "serology": "", //
                     "new": 1, // new since last tc, 2 tc ago
 
-                    "C9": "ASIA", // continent: "ASIA", "AUSTRALIA-OCEANIA", "NORTH-AMERICA", "EUROPE", "RUSSIA", "AFRICA", "MIDDLE-EAST", "SOUTH-AMERICA", "CENTRAL-AMERICA"
-                    "c9": "USA", // country: "UNITED KINGDOM"
                                    // "NT": total number of tables from hidb
                                    // "RT": "CDC:HI:guinea-pig:20141009" - the most recent table id from hidb
                                    // "TS": "2021-12" time series
