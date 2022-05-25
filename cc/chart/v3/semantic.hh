@@ -55,6 +55,11 @@ namespace ae::chart::v3
 
         // ----------------------------------------------------------------------
 
+        void set(std::string_view key, std::string_view value)
+            {
+                data_[key] = value;
+            }
+
       private:
         DynamicCollection data_{};
     };

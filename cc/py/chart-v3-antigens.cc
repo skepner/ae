@@ -266,14 +266,15 @@ void ae::py::chart_v3_antigens(pybind11::module_& chart_v3_submodule)
         .def_property_readonly("aa", [](const SelectionData<Serum>& sd) { return sd.ag_sr.aa(); })                                                             //
         .def("has_clade", [](const SelectionData<Serum>& sd, std::string_view clade) { return sd.ag_sr.semantic().has_clade(clade); })                         //
         .def("layers", [](const SelectionData<Serum>& sd) -> std::vector<size_t> { return to_vector_base_t(sd.chart->titers().layers_with_serum(sd.index)); }) //
-        .def("passage_is", &passage_is<Antigen>, "passage_type"_a, pybind11::doc("if passage_type=None, returns True"))                                            //
+        .def("passage_is", &passage_is<Antigen>, "passage_type"_a, pybind11::doc("if passage_type=None, returns True"))                                        //
         ;
 
     // ----------------------------------------------------------------------
 
     pybind11::class_<SemanticAttributes>(chart_v3_submodule, "SemanticAttributes")
-        .def("add_clade", &SemanticAttributes::add_clade, "clade"_a)                                       //
-        .def("vaccine", pybind11::overload_cast<std::string_view>(&SemanticAttributes::vaccine), "year"_a) //
+        .def("add_clade", &SemanticAttributes::add_clade, "clade"_a)                                                           //
+        .def("vaccine", pybind11::overload_cast<std::string_view>(&SemanticAttributes::vaccine), "year"_a)                     //
+        .def("set", pybind11::overload_cast<std::string_view, std::string_view>(&SemanticAttributes::set), "key"_a, "value"_a) //
         ;
 
     // ----------------------------------------------------------------------
