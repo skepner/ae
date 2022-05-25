@@ -32,7 +32,7 @@
                 "Bi": [[pos1, "nucs"]] // insertions at the nucleotide level
                 "T": { //  semantic attributes by group
                     "C": ["3C" "3C.2a" "3C.2a1b.2a"], // clades
-                    "V": "201902es", // vaccine: year[month] egg/cell/reassortant, surrogate
+                    "V": "es201902", // vaccine: egg/cell/reassortant, surrogate, year[month]
 
                     "serology": "", //
                     "new": 1, // new since last tc, 2 tc ago

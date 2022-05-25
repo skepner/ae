@@ -1,4 +1,4 @@
-import pprint
+import sys, pprint
 import ae_backend
 from ..utils.num_digits import num_digits
 from .. import virus
@@ -44,22 +44,29 @@ class Result:
 
 # ----------------------------------------------------------------------
 
-def vaccine(chart: ae_backend.chart_v3.Chart, name: str, year: str = None, passage: str = None, surrogate: bool = False, result: Result = None, **ignored) -> Result:
-    """Add "V" semantic attribute to the vaccine antigens.
-    passage: "egg", "cell", "reassortant"
+def semantic(chart: ae_backend.chart_v3.Chart, entries: list):
+    """entries are returned by acmacs-data/semantic-vaccines semantic_data_for_subtype(subtype).
+    {"name": "MALAYSIA/2506/2004", "passage": "egg|cell|reassortant", "surrogate": False, "year": "2006", "clade": "V1", "comment": ""}
     """
-    # print(f"> {name} {passage} [{year}]")
-    layout = chart.projection().layout() if chart.number_of_projections() else None
+    result = Result(chart)
+    for en in entries:
+        _semantic_entry(chart=chart, result=result, **en)
+    return result
+
+# ----------------------------------------------------------------------
+
+def _semantic_entry(chart: ae_backend.chart_v3.Chart, name: str, year: str = None, passage: str = None, surrogate: bool = False, result: Result = None, **ignored) -> Result:
+    layout = chart.projection().layout() if chart.number_of_projections() else None # avoid disconnected if projection present
     vac_name = virus.add_subtype_prefix(chart, name)
     if result is None:
         result = Result(chart)
     subreport = {}
-    for psg in (sPassages if passage is None else [passage]):
+    for psg in _passages(passage):
         antigens = chart.select_antigens(lambda ag: ag.name == vac_name and ag.passage_is(psg) and layout.connected(ag.point_no))
         if len(antigens):
             if result._has_layers and len(antigens) > 1:
                 antigens.sort_by_number_of_layers_descending()
-            antigens[0][1].semantic.vaccine((year or "") + ("s" if surrogate else ""))
+            antigens[0][1].semantic.vaccine(_make_attribute_value(year=year, passage=passage, surrogate=surrogate, antigen=antigens[0][1]))
             subreport[psg] = antigens
     if subreport:
         result.data[name] = {"year": year, "surrogate": surrogate, **subreport}
@@ -67,24 +74,73 @@ def vaccine(chart: ae_backend.chart_v3.Chart, name: str, year: str = None, passa
 
 # ----------------------------------------------------------------------
 
-def vaccines(chart: ae_backend.chart_v3.Chart, entries: list) -> Result:
-    result = Result(chart)
-    for en in entries:
-        vaccine(chart=chart, result=result, **en)
-    return result
+def _make_attribute_value(year: str, passage: str, surrogate: bool, antigen: ae_backend.chart_v3.Antigen):
+    val = ""
+    if not passage:
+        if antigen.reassortant():
+            passage = "reassortant"
+        elif antigen.passage().is_egg():
+            passage = "egg"
+        elif antigen.passage().is_cell():
+            passage = "cell"
+    if passage:
+        val += passage[0]
+    if surrogate:
+        val += "s"
+    val += year or ""
+    return val
 
 # ----------------------------------------------------------------------
 
-def vaccines_and_plot_style(chart: ae_backend.chart_v3.Chart, entries: list, modifier: dict = {"outline": "black", "rais": True, "size": 70, "only": "antigens"}, report: bool = True) -> str:
-    if result := vaccines(chart=chart, entries=entries):
-        style_name = "-vaccines"
-        style = chart.styles()[style_name]
-        style.priority = 1000
-        style.add_modifier(selector=["V", ""], **modifier)
-        if report:
-            print(result.report())
-        return style_name
+def _passages(passage_type: str):
+    if passage_type:
+        return [passage_type]
     else:
-        return None
+        return sPassages
+
+# ----------------------------------------------------------------------
+
+# def vaccine(chart: ae_backend.chart_v3.Chart, name: str, year: str = None, passage: str = None, surrogate: bool = False, result: Result = None, **ignored) -> Result:
+#     """Add "V" semantic attribute to the vaccine antigens.
+#     passage: "egg", "cell", "reassortant"
+#     """
+#     # print(f"> {name} {passage} [{year}]")
+#     layout = chart.projection().layout() if chart.number_of_projections() else None
+#     vac_name = virus.add_subtype_prefix(chart, name)
+#     if result is None:
+#         result = Result(chart)
+#     subreport = {}
+#     for psg in (sPassages if passage is None else [passage]):
+#         antigens = chart.select_antigens(lambda ag: ag.name == vac_name and ag.passage_is(psg) and layout.connected(ag.point_no))
+#         if len(antigens):
+#             if result._has_layers and len(antigens) > 1:
+#                 antigens.sort_by_number_of_layers_descending()
+#             antigens[0][1].semantic.vaccine((year or "") + ("s" if surrogate else ""))
+#             subreport[psg] = antigens
+#     if subreport:
+#         result.data[name] = {"year": year, "surrogate": surrogate, **subreport}
+#     return result
+
+# # ----------------------------------------------------------------------
+
+# def vaccines(chart: ae_backend.chart_v3.Chart, entries: list) -> Result:
+#     result = Result(chart)
+#     for en in entries:
+#         vaccine(chart=chart, result=result, **en)
+#     return result
+
+# ----------------------------------------------------------------------
+
+# def vaccines_and_plot_style(chart: ae_backend.chart_v3.Chart, entries: list, modifier: dict = {"outline": "black", "rais": True, "size": 70, "only": "antigens"}, report: bool = True) -> str:
+#     if result := vaccines(chart=chart, entries=entries):
+#         style_name = "-vaccines"
+#         style = chart.styles()[style_name]
+#         style.priority = 1000
+#         style.add_modifier(selector=["V", ""], **modifier)
+#         if report:
+#             print(result.report(), file=sys.stderr)
+#         return style_name
+#     else:
+#         return None
 
 # ======================================================================

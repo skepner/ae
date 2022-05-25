@@ -1,2 +1,2 @@
-from .vaccine import vaccine, vaccines, vaccines_and_plot_style
+from .vaccine import semantic as vaccines
 from .clade import clades

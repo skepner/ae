@@ -29,62 +29,60 @@ def main(args):
         chart.populate_from_seqdb()
         if not args.keep_old_spec:
             chart.styles().remove()
-        styles = {}
-        for mod in args.processing_modules:
-            styles.update(process_module(chart, mod))
-        # pprint.pprint(styles, width=200)
+        semantic_data = load_modules(chart=chart, module_filenames=args.processing_modules)
         added_back_styles = set()
-        for style_name, style in styles.items():
-            added_back_styles |= add_back_style(chart, style_name=style_name, style_data=style)
-        add_front_styles(chart=chart, back_styles=added_back_styles)
+        for key, data in semantic_data.items():
+            if key == "vaccines":
+                add_vaccine_semantic_attributes(chart=chart, data=data)
+        #     added_back_styles |= add_back_style(chart, style_name=style_name, style_data=style)
+        # add_front_styles(chart=chart, back_styles=added_back_styles)
         output(chart, source_filename=filename, output_filename=args.output, output_must_be_dir=len(args.source) > 1)
 
 # ----------------------------------------------------------------------
 
-def process_module(chart: ae_backend.chart_v3.Chart, module_filename: Path):
-    mod = ae.utils.load_module.load(module_filename)
-    return mod.semantic_data_for_subtype(f"{chart.info().type_subtype()}{chart.lineage()}")
+def load_modules(chart: ae_backend.chart_v3.Chart, module_filenames: list[Path]):
+    semantic_data = {}
+    for module_filename in module_filenames:
+        mod = ae.utils.load_module.load(module_filename)
+        semantic_data.update(mod.semantic_data_for_subtype(f"{chart.info().type_subtype()}{chart.lineage()}"))
+    # pprint.pprint(semantic_data, width=200)
+    return semantic_data
 
 # ----------------------------------------------------------------------
 
-def add_back_style(chart: ae_backend.chart_v3.Chart, style_name: str, style_data: list):
-    if style_name == "vaccines":
-        if added_style_name := ae.semantic.vaccines_and_plot_style(chart=chart, entries=style_data):
-            return set([added_style_name])
-        else:
-            return set()
-    elif style_name.startswith("clades"):
-        return set([ae.semantic.clades(chart=chart, style_name=style_name, entries=style_data)])
+def add_vaccine_semantic_attributes(chart: ae_backend.chart_v3.Chart, data: list, report: bool = True):
+    result = ae.semantic.vaccines(chart=chart, entries=data)
+    if report:
+        print(result.report(), file=sys.stderr)
 
 # ----------------------------------------------------------------------
 
-def add_front_styles(chart: ae_backend.chart_v3.Chart, back_styles: set):
-    style_priorty = 1
-    for back_style in sorted(back_styles):
-        if back_style.startswith("-clades"):
-            style = chart.styles()[back_style[1:]]
-            style.priority = style_priorty
-            # if "-reset" in back_styles:
-            #     style.add_modifier(parent="-reset")
-            style.add_modifier(parent=back_style)
-            if "-vaccines" in back_styles:
-                style.add_modifier(parent="-vaccines")
-            style.plot_title.text.text = f"{chart.info().lab()} {chart.info().type_subtype()} {chart.info().assay_HI_or_Neut()} by clade"
-            style.legend.shown = True
-            style.legend.add_counter = True
-        style_priorty += 1
+# def add_back_style(chart: ae_backend.chart_v3.Chart, style_name: str, style_data: list):
+#     if style_name == "vaccines":
+#         if added_style_name := ae.semantic.vaccine.semantic(chart=chart, entries=style_data, report=False):
+#             return set([added_style_name])
+#         else:
+#             return set()
+#     elif style_name.startswith("clades"):
+#         return set([ae.semantic.clades(chart=chart, style_name=style_name, entries=style_data)])
 
-# ----------------------------------------------------------------------
+# # ----------------------------------------------------------------------
 
-# class StyleMetadata:
-
-#     def __int__(self, style_name: str):
-
-# def style_metadata(style_name: str) -> dict:
-#     metadata = {"priority": 1000, "prefix": "-"}
-#     if style_name.startswith("clades"):
-#         metadata["priority"
-#     return metadata
+# def add_front_styles(chart: ae_backend.chart_v3.Chart, back_styles: set):
+#     style_priorty = 1
+#     for back_style in sorted(back_styles):
+#         if back_style.startswith("-clades"):
+#             style = chart.styles()[back_style[1:]]
+#             style.priority = style_priorty
+#             if "-reset" in back_styles:
+#                 style.add_modifier(parent="-reset")
+#             style.add_modifier(parent=back_style)
+#             if "-vaccines" in back_styles:
+#                 style.add_modifier(parent="-vaccines")
+#             style.plot_title.text.text = f"{chart.info().lab()} {chart.info().type_subtype()} {chart.info().assay_HI_or_Neut()} by clade"
+#             style.legend.shown = True
+#             style.legend.add_counter = True
+#         style_priorty += 1
 
 # ----------------------------------------------------------------------
 
@@ -92,7 +90,7 @@ def output(chart: ae_backend.chart_v3.Chart, source_filename: Path, output_filen
     if not output_filename:
         output_filename = source_filename
     else:
-        if not output_filename.exists() and (output_must_be_dir or output_filename.suffix != ".ace"):
+        if not output_filename.exists() and str(output_filename) not in ["-", "="] and (output_must_be_dir or output_filename.suffix != ".ace"):
             output_filename.mkdir(parents=True)
         if output_filename.is_dir():
             output_filename = output_filename.joinpath(source_filename.name)
