@@ -31,6 +31,21 @@
                 "Ai": [[pos1, "aas"]] //  insertions at the aa level
                 "Bi": [[pos1, "nucs"]] // insertions at the nucleotide level
                 "T": { //  semantic attributes by group
+                                   // Group name (key in the key-value pair) is a unique string, few predefined groups
+                                   // - clades
+                                   //   "C": ["clade", "clade"]
+                                   // - vaccine
+                                   //   "V": "<year>[s]"
+                                   //   year is either 2019 or 2019-02
+                                   //   s is for surrogate
+
+                                   // ? "continent": "ASIA"
+                                   // ? "country": "UNITED KINGDOM"
+                                   // "NT": total number of tables from hidb
+                                   // "RT": "CDC:HI:guinea-pig:20141009" - the most recent table id from hidb
+                                   // "TS": "2021-12" time series
+                                   // ? "layer": 1 - table series
+                                   // "SC": [] - serum coverage data, N-fold for each serum
                 },
                 "C": "DEPRECATED: use s, ASIA", //  (DEPRECATED, use "s") continent: "ASIA", "AUSTRALIA-OCEANIA", "NORTH-AMERICA", "EUROPE", "RUSSIA", "AFRICA", "MIDDLE-EAST", "SOUTH-AMERICA", "CENTRAL-AMERICA"
                 "c": ["DEPRECATED: use s"], //  (DEPRECATED, use "s") clades, e.g. ["5.2.1"]
@@ -50,8 +65,7 @@
                 "B": "CAAAAAATTCCTGGAAAT...", //  aligned nucleotide sequence
                 "Ai": [[pos1, "aas"]] //  insertions at the aa level
                 "Bi": [[pos1, "nucs"]] // insertions at the nucleotide level
-                "T": { //  semantic attributes by group
-                },
+                "T": {}, //  semantic attributes by group (see above for antigen)
                 "C": "DEPRECATED: use s, ASIA", //  (DEPRECATED, use "s") continent: "ASIA", "AUSTRALIA-OCEANIA", "NORTH-AMERICA", "EUROPE", "RUSSIA", "AFRICA", "MIDDLE-EAST", "SOUTH-AMERICA", "CENTRAL-AMERICA"
                 "c": ["DEPRECATED: use s"], //  (DEPRECATED, use "s") clades, e.g. ["5.2.1"]
                 "S": "DEPRECATED: use s", //  (DEPRECATED, use "s") single letter semantic boolean attributes: R - reference, E - egg, V - current vaccine, v - previous vaccine, S - vaccine surrogate
