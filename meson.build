@@ -85,6 +85,7 @@ sources_py = [
   'cc/py/sequences.cc',
   'cc/py/tree.cc',
   'cc/py/whocc.cc',
+  'cc/py/locdb-v3.cc',
   'cc/py/chart-v3.cc',
   'cc/py/chart-v3-antigens.cc',
   'cc/py/chart-v3-plot-spec.cc',
