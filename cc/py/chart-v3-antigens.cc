@@ -1,4 +1,5 @@
 #include "py/module.hh"
+#include "py/dynamic.hh"
 #include "chart/v3/selected-antigens-sera.hh"
 #include "chart/v3/merge.hh"
 
@@ -275,6 +276,8 @@ void ae::py::chart_v3_antigens(pybind11::module_& chart_v3_submodule)
         .def("add_clade", &SemanticAttributes::add_clade, "clade"_a)                                                           //
         .def("vaccine", pybind11::overload_cast<std::string_view>(&SemanticAttributes::vaccine), "year"_a)                     //
         .def("set", pybind11::overload_cast<std::string_view, std::string_view>(&SemanticAttributes::set), "key"_a, "value"_a) //
+        .def(
+            "get", [](const SemanticAttributes& attrs, std::string_view key) { return to_py_object(attrs.get(key)); }, "key"_a) //
         ;
 
     // ----------------------------------------------------------------------

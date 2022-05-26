@@ -60,6 +60,11 @@ namespace ae::chart::v3
                 data_[key] = value;
             }
 
+        const auto& get(std::string_view key) const
+            {
+                return data_[key];
+            }
+
       private:
         DynamicCollection data_{};
     };

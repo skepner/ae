@@ -1,4 +1,5 @@
 #include "py/module.hh"
+#include "py/dynamic.hh"
 #include "chart/v3/chart.hh"
 #include "chart/v3/styles.hh"
 
@@ -6,20 +7,6 @@
 
 namespace ae::py
 {
-    inline ae::dynamic::value to_dynamic_value(pybind11::handle handle)
-    {
-        if (pybind11::isinstance<pybind11::bool_>(handle))
-            return ae::dynamic::value{handle.cast<bool>()};
-        else if (pybind11::isinstance<pybind11::str>(handle))
-            return ae::dynamic::value{handle.cast<std::string_view>()};
-        else if (pybind11::isinstance<pybind11::int_>(handle))
-            return ae::dynamic::value{handle.cast<long>()};
-        else if (pybind11::isinstance<pybind11::float_>(handle))
-            return ae::dynamic::value{handle.cast<double>()};
-        else
-            throw std::runtime_error{fmt::format("ae::py::to_dynamic_value: unsupported value: {}", pybind11::repr(handle).cast<std::string_view>())};
-    }
-
     // static inline std::vector<double> get(const ae::draw::v2::offset_t& offset)
     // {
     //     return std::vector<double>{offset.x, offset.y};
