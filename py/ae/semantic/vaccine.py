@@ -106,6 +106,9 @@ def plot_style(chart: ae_backend.chart_v3.Chart, name: str = "-vaccines") -> set
     style = chart.styles()[name]
     style.priority = 1000
     style.add_modifier(selector={"V": True}, **modifier)
+    # individual vaccine modifiers with label data
+    antigens = chart.select_antigens(lambda ag: bool(ag.antigen.semantic.get("V")))
+    print(antigens)
     return set([name])
 
 # ----------------------------------------------------------------------
