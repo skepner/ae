@@ -102,13 +102,14 @@ def _passages(passage_type: str):
 
 def plot_style(chart: ae_backend.chart_v3.Chart, name: str = "-vaccines") -> set[str]:
     """Add "-vaccines" plot style"""
-    modifier = {"outline": "black", "rais": True, "size": 70, "only": "antigens"}
+    modifier = {"outline": "black", "raise": True, "size": 70, "only": "antigens"}
     style = chart.styles()[name]
     style.priority = 1000
     style.add_modifier(selector={"V": True}, **modifier)
     # individual vaccine modifiers with label data
-    antigens = chart.select_antigens(lambda ag: bool(ag.antigen.semantic.get("V")))
-    print(antigens)
+    for no, antigen in chart.select_antigens(lambda ag: bool(ag.antigen.semantic.get("V"))):
+        style.add_modifier(selector={"!i": no}, outline_width=4.0, label={"offset": [0, 1], "text": "AA/99", "slant": "normal", "weight": "normal", "size": 16.0, "color": "black"})
+        print(f">>>> {no} {antigen.designation()}", file=sys.stderr)
     return set([name])
 
 # ----------------------------------------------------------------------

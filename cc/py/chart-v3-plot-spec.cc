@@ -42,6 +42,19 @@ namespace ae::py
 
     // ----------------------------------------------------------------------
 
+    static inline void add_modifier_label(ae::draw::v2::point_label& target, const pybind11::dict& source)
+    {
+        // {"offset": [0, 1], "shown": True, "text": "AA/99", "slant": "normal", "weight": "normal", "size": 16.0, "color": "black", "rotation": 0.0}
+        for (const auto [key_raw, value] : source) {
+            if (const std::string_view key = key_raw.cast<std::string_view>(); key == "offset") {
+                const auto val = value.cast<std::vector<double>>();
+                target.offset = ae::draw::v2::offset_t{val[0], val[1]};
+            }
+        }
+    }
+
+    // ----------------------------------------------------------------------
+
     static inline ae::chart::v3::semantic::StyleModifier& add_modifier(ae::chart::v3::semantic::Style& style, const pybind11::kwargs& kwargs)
     {
         auto& modifier = style.modifiers.emplace_back();
@@ -92,6 +105,9 @@ namespace ae::py
                 else if (keyword == "legend_priority") {
                     modifier.legend.priority = value.cast<int>();
                 }
+                else if (keyword == "label") {
+                    add_modifier_label(modifier.point_style.label(), value.cast<pybind11::dict>());
+                }
                 else
                     throw std::runtime_error("Style.add_modifier: unrecognized arg"); // fmt::format("Style.add_modifier: unrecognized arg \"{}\"", keyword));
             }
@@ -129,7 +145,7 @@ void ae::py::chart_v3_plot_spec(pybind11::module_& chart_v3_submodule)
         .def(
             "add_modifier", &ae::py::add_modifier,
             pybind11::doc(
-                R"(kwargs: parent="another-style", selector={"C": "clade"}, hide=False, fill="transparent", outline="black", outline_width=1.0, size=5.0, rotation=0.0, aspect=1.0, shape="C|B|E|U|T", rais=True, raise_=True, lower=True, only="a|s", legend="text", legend_priority=0)")) //
+                R"(kwargs: parent="another-style", selector={"C": "clade"}, hide=False, fill="transparent", outline="black", outline_width=1.0, size=5.0, rotation=0.0, aspect=1.0, shape="C|B|E|U|T", rais=True, raise_=True, lower=True, only="a|s", label={"offset": [0, 1], "shown": True, "text": "AA/99", "slant": "normal", "weight": "normal", "size": 16.0, "color": "black", "rotation": 0.0}, legend="text", legend_priority=0)")) //
         .def(
             "viewport",
             [](semantic::Style& style, double x, double y, double width, double height) {
