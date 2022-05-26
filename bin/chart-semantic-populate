@@ -30,7 +30,7 @@ def main(args):
         if not args.keep_old_spec:
             chart.styles().remove()
         semantic_data = load_modules(chart=chart, module_filenames=args.processing_modules)
-        add_semantic_attributes(chart=chart, attributes=semantic_data["attributes"], report=True)
+        add_semantic_attributes(chart=chart, attributes=semantic_data["attributes"], report=False)
         add_plot_styles(chart=chart, semantic_data=semantic_data["styles"])
         output(chart, source_filename=filename, output_filename=args.output, output_must_be_dir=len(args.source) > 1)
 
@@ -69,6 +69,10 @@ def add_semantic_attributes(chart: ae_backend.chart_v3.Chart, attributes: dict, 
 def add_plot_styles(chart: ae_backend.chart_v3.Chart, semantic_data: dict):
     added_styles = set()
     added_styles |= ae.semantic.vaccine_plot_style(chart=chart)
+    for name, data in semantic_data.items():
+        if name[:6] == "clades":
+            ae.semantic.clade_plot_style(chart=chart, name=name, data=data)
+
     # add_front_styles(chart=chart, back_styles=added_styles)
 
 # def add_back_style(chart: ae_backend.chart_v3.Chart, style_name: str, style_data: list):
