@@ -34,6 +34,7 @@ def main(args):
         for key, data in semantic_data.items():
             if key == "vaccines":
                 add_vaccine_semantic_attributes(chart=chart, data=data, report=False)
+        ae.semantic.passage(chart=chart) # Set passage type ("p") semantic attributes for all antigens and sera
         ae.semantic.continent(chart=chart) # Set continent ("C9") and country ("c9") semantic attributes for all antigens and sera
 
         #     added_back_styles |= add_back_style(chart, style_name=style_name, style_data=style)

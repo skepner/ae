@@ -18,25 +18,25 @@
             }
         },
         "a": [
-            {                           //  Antigen list
+            {                                          //  Antigen list
                 "N": "A(H3N2)/CAMBODIA/E0826360/2020", //  name: TYPE(SUBTYPE)/[HOST/]LOCATION/ISOLATION/YEAR or CDC_ABBR NAME or UNRECOGNIZED NAME
-                "a": ["DISTINCT", "TC"], // annotations that distinguish antigens (prevent from merging): ["DISTINCT"], mutation information, unrecognized extra data
-                "D": "2021-04-23", //  YYYY[-]MM[-]DD | isolation date
-                "L": "V", //  lineage: "Y[AMAGATA]" or "V[ICTORIA]"
-                "P": "MDCK2/SIAT1 (2016-05-12)", //  passage
-                "R": "NYMC-51C", //  reassortant
-                "l": ["CDC#2013706008"], //  lab ids ([lab#id])
-                "A": "QKIPGNDNSTATLCLG...", //  aligned amino-acid sequence
-                "B": "CAAAAAATTCCTGGAAAT...", //  aligned nucleotide sequence
-                "Ai": [[pos1, "aas"]] //  insertions at the aa level
-                "Bi": [[pos1, "nucs"]] // insertions at the nucleotide level
-                "T": { //  semantic attributes by group
+                "a": ["DISTINCT", "TC"],               // annotations that distinguish antigens (prevent from merging): ["DISTINCT"], mutation information, unrecognized extra data
+                "D": "2021-04-23",                     //  YYYY[-]MM[-]DD | isolation date
+                "L": "V",                              //  lineage: "Y[AMAGATA]" or "V[ICTORIA]"
+                "P": "MDCK2/SIAT1 (2016-05-12)",       //  passage
+                "R": "NYMC-51C",                       //  reassortant
+                "l": ["CDC#2013706008"],               //  lab ids ([lab#id])
+                "A": "QKIPGNDNSTATLCLG...",            //  aligned amino-acid sequence
+                "B": "CAAAAAATTCCTGGAAAT...",          //  aligned nucleotide sequence
+                "Ai": [[pos1, "aas"]]                  //  insertions at the aa level
+                "Bi": [[pos1, "nucs"]]                 // insertions at the nucleotide level
+                "T": {                                 //  semantic attributes by group
                     "C": ["3C" "3C.2a" "3C.2a1b.2a"],  // clades
                     "V": "es201902",                   // vaccine: egg/cell/reassortant, surrogate, year[month]
                     "C9": "ASIA",                      // continent: "ASIA", "AUSTRALIA-OCEANIA", "NORTH-AMERICA", "EUROPE", "RUSSIA", "AFRICA", "MIDDLE-EAST", "SOUTH-AMERICA", "CENTRAL-AMERICA"
                     "c9": "USA",                       // country: "UNITED KINGDOM"
+                    "P": "e|c|r",                      // passage type: egg|cell|reassortant
 
-                    "P": "egg|cell|reassortant",       // passage type
                     "serology": "", //
                     "new": 1, // new since last tc, 2 tc ago
 
@@ -47,12 +47,12 @@
                                    // "SC": [] - serum coverage data, N-fold for each serum
                 },
                 "C": "DEPRECATED: use s, ASIA", //  (DEPRECATED, use "s") continent: "ASIA", "AUSTRALIA-OCEANIA", "NORTH-AMERICA", "EUROPE", "RUSSIA", "AFRICA", "MIDDLE-EAST", "SOUTH-AMERICA", "CENTRAL-AMERICA"
-                "c": ["DEPRECATED: use s"], //  (DEPRECATED, use "s") clades, e.g. ["5.2.1"]
-                "S": "DEPRECATED: use s" //  (DEPRECATED, use "s") single letter semantic boolean attributes: R - reference, E - egg, V - current vaccine, v - previous vaccine, S - vaccine surrogate
+                "c": ["DEPRECATED: use s"],     //  (DEPRECATED, use "s") clades, e.g. ["5.2.1"]
+                "S": "DEPRECATED: use s"        //  (DEPRECATED, use "s") single letter semantic boolean attributes: R - reference, E - egg, V - current vaccine, v - previous vaccine, S - vaccine surrogate
             }
         ],
         "s": [
-            {                           //  Serum list
+            {                                          //  Serum list
                 "N": "A(H3N2)/CAMBODIA/E0826360/2020", //  name: TYPE(SUBTYPE)/[HOST/]LOCATION/ISOLATION/YEAR or CDC_ABBR NAME or UNRECOGNIZED NAME
                 "a": ["DISTINCT", "TC"], // annotations that distinguish antigens (prevent from merging): ["DISTINCT"], mutation information, unrecognized extra data
                 "s": "FERRET", // serum species
