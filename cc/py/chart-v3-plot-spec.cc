@@ -50,6 +50,22 @@ namespace ae::py
                 const auto val = value.cast<std::vector<double>>();
                 target.offset = ae::draw::v2::offset_t{val[0], val[1]};
             }
+            else if (key == "text")
+                target.text = value.cast<std::string>();
+            else if (key == "size")
+                target.size = value.cast<double>();
+            else if (key == "color")
+                target.color = ae::draw::v2::Color{value.cast<std::string_view>()};
+            else if (key == "rotation")
+                target.rotation = ae::chart::v3::Rotation{value.cast<double>()};
+            else if (key == "shown")
+                target.shown = value.cast<bool>();
+            else if (key == "slant")
+                target.slant = ae::draw::v2::font_slant_t{value.cast<std::string_view>()};
+            else if (key == "weight")
+                target.weight = ae::draw::v2::font_weight_t{value.cast<std::string_view>()};
+            else
+                AD_WARNING("unrecognized semantic style label modifier key \"{}\" in {}", key, pybind11::repr(source).cast<std::string_view>());
         }
     }
 

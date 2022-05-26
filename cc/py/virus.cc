@@ -95,6 +95,7 @@ void ae::py::virus(pybind11::module_& mdl)
         .def("number_of_elements", &ae::virus::Passage::number_of_elements) //
         .def("is_egg", &ae::virus::Passage::is_egg)                         //
         .def("is_cell", &ae::virus::Passage::is_cell)                       //
+        .def("passage_type", &ae::virus::Passage::passage_type)             //
         .def("without_date", &ae::virus::Passage::without_date)             //
         ;
 }

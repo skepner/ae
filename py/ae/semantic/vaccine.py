@@ -107,9 +107,18 @@ def plot_style(chart: ae_backend.chart_v3.Chart, name: str = "-vaccines") -> set
     style.priority = 1000
     style.add_modifier(selector={"V": True}, **modifier)
     # individual vaccine modifiers with label data
+    locdb = ae_backend.locdb_v3.locdb()
     for no, antigen in chart.select_antigens(lambda ag: bool(ag.antigen.semantic.get("V"))):
-        style.add_modifier(selector={"!i": no}, outline_width=4.0, label={"offset": [0, 1], "text": "AA/99", "slant": "normal", "weight": "normal", "size": 16.0, "color": "black"})
-        print(f">>>> {no} {antigen.designation()}", file=sys.stderr)
+        if reassortant := antigen.reassortant():
+            passage_type = f"{reassortant}-egg"
+        else:
+            passage_type = antigen.passage().passage_type()
+        if name_parsing_result := ae_backend.virus.name_parse(antigen.name()):
+            name = f"{locdb.abbreviation(name_parsing_result.parts.location)}/{name_parsing_result.parts.year[2:]}"
+        else:
+            name = antigen.name()
+        style.add_modifier(selector={"!i": no}, outline_width=4.0, label={"offset": [0, -1], "text": f"{name}-{passage_type}", "slant": "italic", "weight": "bold", "size": 19.0, "color": "red"})
+        # print(f">>>> {no} {antigen.designation()}", file=sys.stderr)
     return set([name])
 
 # ----------------------------------------------------------------------
