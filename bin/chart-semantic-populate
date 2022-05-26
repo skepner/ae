@@ -30,19 +30,8 @@ def main(args):
         if not args.keep_old_spec:
             chart.styles().remove()
         semantic_data = load_modules(chart=chart, module_filenames=args.processing_modules)
-        added_back_styles = set()
-        for key, data in semantic_data["attributes"].items():
-            if key == "vaccines":
-                add_vaccine_semantic_attributes(chart=chart, data=data, report=False)
-            elif key[:6] == "clades":
-                add_clade_semantic_attributes(chart=chart, data=data, report=False)
-            else:
-                print(f">> unrecognized key \"{key}\" in semantic attribute data", file=sys.stderr)
-        ae.semantic.passage_attributes(chart=chart) # Set passage type ("p") semantic attributes for all antigens and sera
-        ae.semantic.continent_attributes(chart=chart) # Set continent ("C9") and country ("c9") semantic attributes for all antigens and sera
-
-        #     added_back_styles |= add_back_style(chart, style_name=style_name, style_data=style)
-        # add_front_styles(chart=chart, back_styles=added_back_styles)
+        add_semantic_attributes(chart=chart, attributes=semantic_data["attributes"], report=True)
+        add_plot_styles(chart=chart, semantic_data=semantic_data["styles"])
         output(chart, source_filename=filename, output_filename=args.output, output_must_be_dir=len(args.source) > 1)
 
 # ----------------------------------------------------------------------
@@ -56,23 +45,31 @@ def load_modules(chart: ae_backend.chart_v3.Chart, module_filenames: list[Path])
         semantic_attribute_data.update(mod.semantic_attribute_data_for_subtype(subtype))
         semantic_plot_spec_data.update(mod.semantic_plot_spec_data_for_subtype(subtype))
     # pprint.pprint(semantic_data, width=200)
-    return {"attributes": semantic_attribute_data, "plot_spec": semantic_plot_spec_data}
+    return {"attributes": semantic_attribute_data, "styles": semantic_plot_spec_data}
 
 # ----------------------------------------------------------------------
 
-def add_vaccine_semantic_attributes(chart: ae_backend.chart_v3.Chart, data: list, report: bool = True):
-    """expected data: [{"name": "MALAYSIA/2506/2004", "passage": "egg", "surrogate": False, "year": "2006", **ignored}]"""
-    result = ae.semantic.vaccine_attributes(chart=chart, entries=data)
-    if report:
-        print(result.report(), file=sys.stderr)
+def add_semantic_attributes(chart: ae_backend.chart_v3.Chart, attributes: dict, report: bool):
+    for key, data in attributes.items():
+        if key == "vaccines":
+            # expected data: [{"name": "MALAYSIA/2506/2004", "passage": "egg", "surrogate": False, "year": "2006", **ignored}]
+            result = ae.semantic.vaccine_attributes(chart=chart, entries=data)
+            if report:
+                print(result.report(), file=sys.stderr)
+        elif key[:6] == "clades":
+            # expected data: [{"name": "3C.2a1b.2a.2 156S", "clade": "3C.2a1b.2a.2", "aa": "156S", **ignored}]
+            ae.semantic.clade_attributes(chart=chart, entries=data)
+        else:
+            print(f">> unrecognized key \"{key}\" in semantic attribute data", file=sys.stderr)
+    ae.semantic.passage_attributes(chart=chart) # Set passage type ("p") semantic attributes for all antigens and sera
+    ae.semantic.continent_attributes(chart=chart) # Set continent ("C9") and country ("c9") semantic attributes for all antigens and sera
 
 # ----------------------------------------------------------------------
 
-def add_clade_semantic_attributes(chart: ae_backend.chart_v3.Chart, data: list, report: bool = True):
-    """expected data: [{"name": "3C.2a1b.2a.2 156S", "clade": "3C.2a1b.2a.2", "aa": "156S", **ignored}]"""
-    result = ae.semantic.clade_attributes(chart=chart, entries=data)
-
-# ----------------------------------------------------------------------
+def add_plot_styles(chart: ae_backend.chart_v3.Chart, semantic_data: dict):
+    added_styles = set()
+    added_styles |= ae.semantic.vaccine_plot_style(chart=chart)
+    # add_front_styles(chart=chart, back_styles=added_styles)
 
 # def add_back_style(chart: ae_backend.chart_v3.Chart, style_name: str, style_data: list):
 #     if style_name == "vaccines":

@@ -98,6 +98,16 @@ def _passages(passage_type: str):
     else:
         return sPassages
 
+# ======================================================================
+
+def plot_style(chart: ae_backend.chart_v3.Chart, name: str = "-vaccines") -> set[str]:
+    """Add "-vaccines" plot style"""
+    modifier = {"outline": "black", "rais": True, "size": 70, "only": "antigens"}
+    style = chart.styles()[name]
+    style.priority = 1000
+    style.add_modifier(selector=["V", ""], **modifier)
+    return set([name])
+
 # ----------------------------------------------------------------------
 
 # def vaccine(chart: ae_backend.chart_v3.Chart, name: str, year: str = None, passage: str = None, surrogate: bool = False, result: Result = None, **ignored) -> Result:
