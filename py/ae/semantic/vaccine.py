@@ -46,7 +46,7 @@ class Result:
 
 def semantic(chart: ae_backend.chart_v3.Chart, entries: list):
     """entries are returned by acmacs-data/semantic-vaccines semantic_data_for_subtype(subtype).
-    {"name": "MALAYSIA/2506/2004", "passage": "egg|cell|reassortant", "surrogate": False, "year": "2006", "clade": "V1", "comment": ""}
+    [{"name": "MALAYSIA/2506/2004", "passage": "egg|cell|reassortant", "surrogate": False, "year": "2006", **ignored}]
     """
     result = Result(chart)
     for en in entries:

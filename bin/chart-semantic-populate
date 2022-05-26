@@ -31,11 +31,15 @@ def main(args):
             chart.styles().remove()
         semantic_data = load_modules(chart=chart, module_filenames=args.processing_modules)
         added_back_styles = set()
-        for key, data in semantic_data.items():
+        for key, data in semantic_data["attributes"].items():
             if key == "vaccines":
                 add_vaccine_semantic_attributes(chart=chart, data=data, report=False)
-        ae.semantic.passage(chart=chart) # Set passage type ("p") semantic attributes for all antigens and sera
-        ae.semantic.continent(chart=chart) # Set continent ("C9") and country ("c9") semantic attributes for all antigens and sera
+            elif key[:6] == "clades":
+                add_clade_semantic_attributes(chart=chart, data=data, report=False)
+            else:
+                print(f">> unrecognized key \"{key}\" in semantic attribute data", file=sys.stderr)
+        ae.semantic.passage_attributes(chart=chart) # Set passage type ("p") semantic attributes for all antigens and sera
+        ae.semantic.continent_attributes(chart=chart) # Set continent ("C9") and country ("c9") semantic attributes for all antigens and sera
 
         #     added_back_styles |= add_back_style(chart, style_name=style_name, style_data=style)
         # add_front_styles(chart=chart, back_styles=added_back_styles)
@@ -43,20 +47,30 @@ def main(args):
 
 # ----------------------------------------------------------------------
 
-def load_modules(chart: ae_backend.chart_v3.Chart, module_filenames: list[Path]):
-    semantic_data = {}
+def load_modules(chart: ae_backend.chart_v3.Chart, module_filenames: list[Path]) -> dict:
+    semantic_attribute_data = {}
+    semantic_plot_spec_data = {}
+    subtype = f"{chart.info().type_subtype()}{chart.lineage()}"
     for module_filename in module_filenames:
         mod = ae.utils.load_module.load(module_filename)
-        semantic_data.update(mod.semantic_data_for_subtype(f"{chart.info().type_subtype()}{chart.lineage()}"))
+        semantic_attribute_data.update(mod.semantic_attribute_data_for_subtype(subtype))
+        semantic_plot_spec_data.update(mod.semantic_plot_spec_data_for_subtype(subtype))
     # pprint.pprint(semantic_data, width=200)
-    return semantic_data
+    return {"attributes": semantic_attribute_data, "plot_spec": semantic_plot_spec_data}
 
 # ----------------------------------------------------------------------
 
 def add_vaccine_semantic_attributes(chart: ae_backend.chart_v3.Chart, data: list, report: bool = True):
-    result = ae.semantic.vaccines(chart=chart, entries=data)
+    """expected data: [{"name": "MALAYSIA/2506/2004", "passage": "egg", "surrogate": False, "year": "2006", **ignored}]"""
+    result = ae.semantic.vaccine_attributes(chart=chart, entries=data)
     if report:
         print(result.report(), file=sys.stderr)
+
+# ----------------------------------------------------------------------
+
+def add_clade_semantic_attributes(chart: ae_backend.chart_v3.Chart, data: list, report: bool = True):
+    """expected data: [{"name": "3C.2a1b.2a.2 156S", "clade": "3C.2a1b.2a.2", "aa": "156S", **ignored}]"""
+    result = ae.semantic.clade_attributes(chart=chart, entries=data)
 
 # ----------------------------------------------------------------------
 
