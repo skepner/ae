@@ -8,6 +8,7 @@
 #include "utils/float.hh"
 #include "utils/log.hh"
 #include "utils/named-type.hh"
+#include "utils/collection.hh"
 #include "draw/v2/viewport.hh"
 #include "chart/v3/point-style.hh"
 
@@ -18,13 +19,7 @@ namespace ae::chart::v3::semantic
     enum class DrawingOrderModifier { no_change, raise, lower };
     enum class SelectAntigensSera { all, antigens_only, sera_only };
 
-    struct Selector
-    {
-        std::string attribute{};
-        std::string value{};
-
-        bool empty() const { return attribute.empty(); }
-    };
+    using Selector = ae::dynamic::value; // object
 
     struct LegendRow
     {

@@ -6,6 +6,20 @@
 
 namespace ae::py
 {
+    inline ae::dynamic::value to_dynamic_value(pybind11::handle handle)
+    {
+        if (pybind11::isinstance<pybind11::bool_>(handle))
+            return ae::dynamic::value{handle.cast<bool>()};
+        else if (pybind11::isinstance<pybind11::str>(handle))
+            return ae::dynamic::value{handle.cast<std::string_view>()};
+        else if (pybind11::isinstance<pybind11::int_>(handle))
+            return ae::dynamic::value{handle.cast<long>()};
+        else if (pybind11::isinstance<pybind11::float_>(handle))
+            return ae::dynamic::value{handle.cast<double>()};
+        else
+            throw std::runtime_error{fmt::format("ae::py::to_dynamic_value: unsupported value: {}", pybind11::repr(handle).cast<std::string_view>())};
+    }
+
     // static inline std::vector<double> get(const ae::draw::v2::offset_t& offset)
     // {
     //     return std::vector<double>{offset.x, offset.y};
@@ -50,8 +64,10 @@ namespace ae::py
                 if (keyword == "parent")
                     modifier.parent.assign(value.cast<std::string_view>());
                 else if (keyword == "selector") {
-                    const auto vals = value.cast<pybind11::list>();
-                    modifier.selector = ae::chart::v3::semantic::Selector{.attribute = vals[0].cast<std::string>(), .value = vals[1].cast<std::string>()};
+                    auto& target = modifier.selector.as_object();
+                    for (const auto [selector_key, selector_value] : value.cast<pybind11::dict>()) {
+                        target[selector_key.cast<std::string_view>()] = to_dynamic_value(selector_value);
+                    }
                 }
                 else if (keyword == "hide")
                     modifier.point_style.shown(!value.cast<bool>());

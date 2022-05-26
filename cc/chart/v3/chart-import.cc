@@ -21,7 +21,7 @@ inline void unhandled_key(std::initializer_list<std::string_view> keys)
 // ----------------------------------------------------------------------
 
 // returns if key was handled
-inline bool read_table_source(ae::chart::v3::TableSource& target, std::string_view key, ::simdjson::ondemand::value value)
+inline bool read_table_source(ae::chart::v3::TableSource& target, std::string_view key, simdjson::ondemand::value value)
 {
     bool handled{true};
     if (key.size() == 1) {
@@ -60,7 +60,7 @@ inline bool read_table_source(ae::chart::v3::TableSource& target, std::string_vi
     return handled;
 }
 
-inline void read_info(ae::chart::v3::Info& info, ::simdjson::ondemand::object source)
+inline void read_info(ae::chart::v3::Info& info, simdjson::ondemand::object source)
 {
     for (auto field : source) {
         if (const std::string_view key = field.unescaped_key(); !read_table_source(info, key, field.value())) {
@@ -79,7 +79,7 @@ inline void read_info(ae::chart::v3::Info& info, ::simdjson::ondemand::object so
 
 // ----------------------------------------------------------------------
 
-inline void read_semantic_attributes(ae::chart::v3::SemanticAttributes& target, ::simdjson::ondemand::value source)
+inline void read_semantic_attributes(ae::chart::v3::SemanticAttributes& target, simdjson::ondemand::value source)
 {
     ae::load(target.data(), source);
     // AD_DEBUG("read_semantic_attributes: {} has:{}", target, target.has_clade("V1A.1"));
@@ -87,9 +87,9 @@ inline void read_semantic_attributes(ae::chart::v3::SemanticAttributes& target, 
 
 // ----------------------------------------------------------------------
 
-inline ae::sequences::insertions_t read_inserions(::simdjson::ondemand::array source) {
+inline ae::sequences::insertions_t read_inserions(simdjson::ondemand::array source) {
     ae::sequences::insertions_t insertions;
-    for (::simdjson::ondemand::array en : source) {
+    for (simdjson::ondemand::array en : source) {
         auto it = en.begin();
         const ae::sequences::pos1_t pos{static_cast<uint64_t>(*it)};
         ++it;
@@ -100,7 +100,7 @@ inline ae::sequences::insertions_t read_inserions(::simdjson::ondemand::array so
 
 // ----------------------------------------------------------------------
 
-inline bool read_antigen_serum(ae::chart::v3::AntigenSerum& target, std::string_view key, ::simdjson::ondemand::value value)
+inline bool read_antigen_serum(ae::chart::v3::AntigenSerum& target, std::string_view key, simdjson::ondemand::value value)
 {
     bool handled{true};
     if (key.size() == 1) {
@@ -157,7 +157,7 @@ inline bool read_antigen_serum(ae::chart::v3::AntigenSerum& target, std::string_
 
 // ----------------------------------------------------------------------
 
-inline void read_antigens(ae::chart::v3::Antigens& target, ::simdjson::ondemand::array source)
+inline void read_antigens(ae::chart::v3::Antigens& target, simdjson::ondemand::array source)
 {
     for (auto en : source) {
         auto& antigen = target.add();
@@ -179,7 +179,7 @@ inline void read_antigens(ae::chart::v3::Antigens& target, ::simdjson::ondemand:
 
 // ----------------------------------------------------------------------
 
-inline void read_sera(ae::chart::v3::Sera& target, ::simdjson::ondemand::array source)
+inline void read_sera(ae::chart::v3::Sera& target, simdjson::ondemand::array source)
 {
     for (auto en : source) {
         auto& serum = target.add();
@@ -204,7 +204,7 @@ inline void read_sera(ae::chart::v3::Sera& target, ::simdjson::ondemand::array s
 // ----------------------------------------------------------------------
 
 // returns number of sera (max serum index + 1)
-inline ae::serum_index read_sparse(ae::chart::v3::Titers::sparse_t& target, ::simdjson::ondemand::array source)
+inline ae::serum_index read_sparse(ae::chart::v3::Titers::sparse_t& target, simdjson::ondemand::array source)
 {
     ae::serum_index number_of_sera{0};
     // ae::antigen_index ag_no{0};
@@ -223,7 +223,7 @@ inline ae::serum_index read_sparse(ae::chart::v3::Titers::sparse_t& target, ::si
 
 // ----------------------------------------------------------------------
 
-inline void read_titers(ae::chart::v3::Titers& target, ::simdjson::ondemand::object source)
+inline void read_titers(ae::chart::v3::Titers& target, simdjson::ondemand::object source)
 {
     for (auto field : source) {
         if (const std::string_view key = field.unescaped_key(); key == "l") { // dense matrix
@@ -257,7 +257,7 @@ inline void read_titers(ae::chart::v3::Titers& target, ::simdjson::ondemand::obj
 
 // ----------------------------------------------------------------------
 
-inline void read_layout(ae::chart::v3::Layout& layout, ::simdjson::ondemand::array source)
+inline void read_layout(ae::chart::v3::Layout& layout, simdjson::ondemand::array source)
 {
     size_t point_no{0};
     for (auto point : source) {
@@ -284,7 +284,7 @@ inline void read_layout(ae::chart::v3::Layout& layout, ::simdjson::ondemand::arr
 
 // ----------------------------------------------------------------------
 
-inline void read_projections(ae::chart::v3::Projections& target, ::simdjson::ondemand::array source)
+inline void read_projections(ae::chart::v3::Projections& target, simdjson::ondemand::array source)
 {
     for (auto source_proj : source) {
         auto& projection = target.add();
@@ -346,7 +346,7 @@ inline void read_projections(ae::chart::v3::Projections& target, ::simdjson::ond
 
 // ----------------------------------------------------------------------
 
-inline void read_offset(ae::draw::v2::offset_t& target, ::simdjson::ondemand::array source)
+inline void read_offset(ae::draw::v2::offset_t& target, simdjson::ondemand::array source)
 {
     auto it = source.begin();
     target.x = *it;
@@ -356,7 +356,7 @@ inline void read_offset(ae::draw::v2::offset_t& target, ::simdjson::ondemand::ar
 
 // ----------------------------------------------------------------------
 
-inline bool read_text_and_offset(ae::draw::v2::text_and_offset& target, std::string_view key, ::simdjson::ondemand::value value)
+inline bool read_text_and_offset(ae::draw::v2::text_and_offset& target, std::string_view key, simdjson::ondemand::value value)
 {
     if (key == "-") {
         target.shown = !value;
@@ -396,7 +396,7 @@ inline bool read_text_and_offset(ae::draw::v2::text_and_offset& target, std::str
 // ----------------------------------------------------------------------
 
 // returns if key/value was processed
-inline bool read_point_style_field(ae::chart::v3::PointStyle& target, std::string_view key, ::simdjson::simdjson_result<::simdjson::ondemand::value> value)
+inline bool read_point_style_field(ae::chart::v3::PointStyle& target, std::string_view key, simdjson::ondemand::value value)
 {
     if (key.size() == 1) {
         switch (key[0]) {
@@ -444,11 +444,11 @@ inline bool read_point_style_field(ae::chart::v3::PointStyle& target, std::strin
 
 // ----------------------------------------------------------------------
 
-inline void read_legacy_point_style(ae::chart::v3::PointStyle& target, ::simdjson::ondemand::object source)
+inline void read_legacy_point_style(ae::chart::v3::PointStyle& target, simdjson::ondemand::object source)
 {
     for (auto field : source) {
         const std::string_view key = field.unescaped_key();
-        auto value = field.value();
+        simdjson::ondemand::value value = field.value();
         if (!read_point_style_field(target, key, value)) {
             if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
                 unhandled_key({"c", "p", "P", key});
@@ -458,7 +458,7 @@ inline void read_legacy_point_style(ae::chart::v3::PointStyle& target, ::simdjso
 
 // ----------------------------------------------------------------------
 
-inline void read_legacy_plot_specification(ae::chart::v3::legacy::PlotSpec& target, ::simdjson::ondemand::object source)
+inline void read_legacy_plot_specification(ae::chart::v3::legacy::PlotSpec& target, simdjson::ondemand::object source)
 {
     for (auto field : source) {
         if (const std::string_view key = field.unescaped_key(); key == "d") {  // drawing order, point indices
@@ -512,11 +512,11 @@ inline void read_legacy_plot_specification(ae::chart::v3::legacy::PlotSpec& targ
 
 // ----------------------------------------------------------------------
 
-inline void read_semantic_plot_style_modifier(ae::chart::v3::semantic::StyleModifier& target, ::simdjson::ondemand::object source)
+inline void read_semantic_plot_style_modifier(ae::chart::v3::semantic::StyleModifier& target, simdjson::ondemand::object source)
 {
     for (auto field : source) {
         const std::string_view key = field.unescaped_key();
-        auto value = field.value();
+        simdjson::ondemand::value value = field.value();
         if (read_point_style_field(target.point_style, key, value)) {
             // pass
         }
@@ -524,13 +524,15 @@ inline void read_semantic_plot_style_modifier(ae::chart::v3::semantic::StyleModi
             target.parent.assign(static_cast<std::string_view>(value));
         }
         else if (key == "T") { // selector: {"C":"3C.2a"}
-            for (auto selector_field : value.get_object()) {
-                if (target.selector.empty())
-                    target.selector = ae::chart::v3::semantic::Selector{.attribute = std::string{static_cast<std::string_view>(selector_field.unescaped_key())},
-                                                                              .value = std::string{static_cast<std::string_view>(selector_field.value())}};
-                else
-                    AD_WARNING("[chart semantic plot spec]: unhandled additional modifier selector {}: {}", static_cast<std::string_view>(selector_field.unescaped_key()), selector_field.value());
-            }
+            ae::load(target.selector, value);
+            // for (auto selector_field : value.get_object()) {
+            //     if (target.selector.empty())
+
+            //         target.selector = ae::chart::v3::semantic::Selector{.attribute = std::string{static_cast<std::string_view>(selector_field.unescaped_key())},
+            //                                                                   .value = std::string{static_cast<std::string_view>(selector_field.value())}};
+            //     else
+            //         AD_WARNING("[chart semantic plot spec]: unhandled additional modifier selector {}: {}", static_cast<std::string_view>(selector_field.unescaped_key()), selector_field.value());
+            // }
         }
         else if (key == "A") { // antigens only or sera only (bool or int)
             bool val;
@@ -566,7 +568,7 @@ inline void read_semantic_plot_style_modifier(ae::chart::v3::semantic::StyleModi
 
 // ----------------------------------------------------------------------
 
-inline ae::chart::v3::semantic::box_t read_semantic_box(::simdjson::ondemand::object source)
+inline ae::chart::v3::semantic::box_t read_semantic_box(simdjson::ondemand::object source)
 {
     ae::chart::v3::semantic::box_t box;
     for (auto field : source) {
@@ -616,7 +618,7 @@ inline ae::chart::v3::semantic::box_t read_semantic_box(::simdjson::ondemand::ob
     return box;
 }
 
-inline ae::chart::v3::semantic::text_t read_semantic_text(::simdjson::ondemand::object source)
+inline ae::chart::v3::semantic::text_t read_semantic_text(simdjson::ondemand::object source)
 {
     ae::chart::v3::semantic::text_t text;
     for (auto field : source) {
@@ -647,7 +649,7 @@ inline ae::chart::v3::semantic::text_t read_semantic_text(::simdjson::ondemand::
     return text;
 }
 
-inline void read_semantic_plot_style_title(ae::chart::v3::semantic::Title& target, ::simdjson::ondemand::object source)
+inline void read_semantic_plot_style_title(ae::chart::v3::semantic::Title& target, simdjson::ondemand::object source)
 {
     for (auto field : source) {
         if (const std::string_view key = field.unescaped_key(); key == "-") {
@@ -666,7 +668,7 @@ inline void read_semantic_plot_style_title(ae::chart::v3::semantic::Title& targe
 
 // ----------------------------------------------------------------------
 
-inline void read_semantic_plot_style_legend(ae::chart::v3::semantic::Legend& target, ::simdjson::ondemand::object source)
+inline void read_semantic_plot_style_legend(ae::chart::v3::semantic::Legend& target, simdjson::ondemand::object source)
 {
     for (auto field : source) {
         if (const std::string_view key = field.unescaped_key(); key == "-") {
@@ -697,7 +699,7 @@ inline void read_semantic_plot_style_legend(ae::chart::v3::semantic::Legend& tar
 
 // ----------------------------------------------------------------------
 
-inline void read_semantic_plot_style(ae::chart::v3::semantic::Style& target, ::simdjson::ondemand::object source)
+inline void read_semantic_plot_style(ae::chart::v3::semantic::Style& target, simdjson::ondemand::object source)
 {
     for (auto field : source) {
         if (const std::string_view key = field.unescaped_key(); key == "z") {
@@ -735,7 +737,7 @@ inline void read_semantic_plot_style(ae::chart::v3::semantic::Style& target, ::s
 
 // ----------------------------------------------------------------------
 
-inline void read_semantic_plot_specification(ae::chart::v3::semantic::Styles& target, ::simdjson::ondemand::object source)
+inline void read_semantic_plot_specification(ae::chart::v3::semantic::Styles& target, simdjson::ondemand::object source)
 {
     for (auto field : source)
         read_semantic_plot_style(target.find(field.unescaped_key()), field.value());

@@ -105,7 +105,7 @@ def plot_style(chart: ae_backend.chart_v3.Chart, name: str = "-vaccines") -> set
     modifier = {"outline": "black", "rais": True, "size": 70, "only": "antigens"}
     style = chart.styles()[name]
     style.priority = 1000
-    style.add_modifier(selector=["V", ""], **modifier)
+    style.add_modifier(selector={"V": True}, **modifier)
     return set([name])
 
 # ----------------------------------------------------------------------

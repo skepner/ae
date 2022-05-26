@@ -341,7 +341,7 @@ static inline bool export_semantic_plot_spec_modifiers(fmt::memory_buffer& out, 
             auto comma_R4 = put_str(out, modifier.parent, not_empty, "R", false);
             if (!modifier.selector.empty()) {
                 comma_R4 = put_comma(out, comma_R4);
-                fmt::format_to(std::back_inserter(out), "\"T\":{{\"{}\":\"{}\"}}", modifier.selector.attribute, modifier.selector.value);
+                fmt::format_to(std::back_inserter(out), "\"T\":{}", modifier.selector);
             }
             comma_R4 = export_point_style(out, modifier.point_style, true, comma_R4);
             switch (modifier.order) {
