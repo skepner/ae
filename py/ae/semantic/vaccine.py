@@ -100,12 +100,14 @@ def _passages(passage_type: str):
 
 # ======================================================================
 
+sModifier = {"outline": "black", "raise": True, "size": 70, "only": "antigens"}
+sLabelModifier = {"offset": [0, 1], "slant": "normal", "weight": "normal", "size": 36.0, "color": "red"}
+
 def plot_style(chart: ae_backend.chart_v3.Chart, name: str = "-vaccines") -> set[str]:
     """Add "-vaccines" plot style"""
-    modifier = {"outline": "black", "raise": True, "size": 70, "only": "antigens"}
     style = chart.styles()[name]
     style.priority = 1000
-    style.add_modifier(selector={"V": True}, **modifier)
+    style.add_modifier(selector={"V": True}, **sModifier)
     # individual vaccine modifiers with label data
     locdb = ae_backend.locdb_v3.locdb()
     for no, antigen in chart.select_antigens(lambda ag: bool(ag.antigen.semantic.get("V"))):
@@ -117,7 +119,7 @@ def plot_style(chart: ae_backend.chart_v3.Chart, name: str = "-vaccines") -> set
             name = f"{locdb.abbreviation(name_parsing_result.parts.location)}/{name_parsing_result.parts.year[2:]}"
         else:
             name = antigen.name()
-        style.add_modifier(selector={"!i": no}, outline_width=4.0, label={"offset": [0, -1], "text": f"{name}-{passage_type}", "slant": "italic", "weight": "bold", "size": 19.0, "color": "red"})
+        style.add_modifier(selector={"!i": no}, outline_width=4.0, label={**sLabelModifier, "offset": [0, -1], "text": f"{name}-{passage_type}"})
         # print(f">>>> {no} {antigen.designation()}", file=sys.stderr)
     return set([name])
 
