@@ -121,12 +121,12 @@
                     "-": false,                       // if label is hidden
                     "p":  [0, 1],                      // [x, y]: label offset (2D only), list of two doubles, default is [0, 1] means under point
                     "t": "label",                     // label text if forced by user
-                    "f": "helvetica",,                // font face
+                    "f": "helvetica",                 // font face
                     "S": "normal",                    // font slant: "normal" (default), "italic"
                     "W": "normal",                    // font weight: "normal" (default), "bold"
-                    "s": 1.0,                         // label size, default 1.0
-                    "c": "black",,                    // label color, default: "black"
-                    "r": 0.0,                         // label rotation, default 0.0
+                    "s": 16.0,                        // label size
+                    "c": "black",                     // label color
+                    "r": 0.0,                         // label rotation
                     "i": 0.2                          // addtional interval between lines as a fraction of line height
                 },
                 "L" {                                 //legend row
