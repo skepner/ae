@@ -3,7 +3,7 @@ import ae_backend
 
 # ======================================================================
 
-def semantic(chart: ae_backend.chart_v3.Chart, entries: list):
+def attributes(chart: ae_backend.chart_v3.Chart, entries: list):
     """expected entries: [{"name": "3C.2a1b.2a.2 156S", "clade": "3C.2a1b.2a.2", "aa": "156S", **ignored}]"""
 
     def set_by_clade_aa(name: str, clade: str, aa: str):
@@ -24,7 +24,7 @@ def semantic(chart: ae_backend.chart_v3.Chart, entries: list):
 
 # ======================================================================
 
-def plot_style(chart: ae_backend.chart_v3.Chart, name: str, data: list, add_counter: bool = True) -> set[str]:
+def style(chart: ae_backend.chart_v3.Chart, name: str, data: list, add_counter: bool = True) -> set[str]:
     """expected data: [{"name": "3C.2a1b.2a.2 156S", "legend": "2a1b.2a.2 156S", "color": "red", **ignored}]"""
     snames = set()
 

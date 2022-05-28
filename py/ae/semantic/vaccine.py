@@ -44,7 +44,7 @@ class Result:
 
 # ----------------------------------------------------------------------
 
-def semantic(chart: ae_backend.chart_v3.Chart, entries: list):
+def attributes(chart: ae_backend.chart_v3.Chart, entries: list):
     """entries are returned by acmacs-data/semantic-vaccines semantic_data_for_subtype(subtype).
     [{"name": "MALAYSIA/2506/2004", "passage": "egg|cell|reassortant", "surrogate": False, "year": "2006", **ignored}]
     """
@@ -101,9 +101,9 @@ def _passages(passage_type: str):
 # ======================================================================
 
 sModifier = {"outline": "black", "raise": True, "size": 70, "only": "antigens"}
-sLabelModifier = {"offset": [0, 1], "slant": "normal", "weight": "normal", "size": 36.0, "color": "red"}
+sLabelModifier = {"offset": [0, 1], "slant": "normal", "weight": "normal", "size": 36.0, "color": "black"}
 
-def plot_style(chart: ae_backend.chart_v3.Chart, name: str = "-vaccines") -> set[str]:
+def style(chart: ae_backend.chart_v3.Chart, name: str = "-vaccines") -> set[str]:
     """Add "-vaccines" plot style"""
     style = chart.styles()[name]
     style.priority = 1000
@@ -119,7 +119,7 @@ def plot_style(chart: ae_backend.chart_v3.Chart, name: str = "-vaccines") -> set
             name = f"{locdb.abbreviation(name_parsing_result.parts.location)}/{name_parsing_result.parts.year[2:]}"
         else:
             name = antigen.name()
-        style.add_modifier(selector={"!i": no}, outline_width=4.0, label={**sLabelModifier, "offset": [0, -1], "text": f"{name}-{passage_type}"})
+        style.add_modifier(selector={"!i": no}, outline_width=4.0, label={**sLabelModifier, "text": f"{name}-{passage_type}"})
         # print(f">>>> {no} {antigen.designation()}", file=sys.stderr)
     return set([name])
 

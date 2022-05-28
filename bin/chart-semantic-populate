@@ -54,25 +54,25 @@ def add_semantic_attributes(chart: ae_backend.chart_v3.Chart, attributes: dict, 
     for key, data in attributes.items():
         if key == "vaccines":
             # expected data: [{"name": "MALAYSIA/2506/2004", "passage": "egg", "surrogate": False, "year": "2006", **ignored}]
-            result = ae.semantic.vaccine_attributes(chart=chart, entries=data)
+            result = ae.semantic.vaccine.attributes(chart=chart, entries=data)
             if report:
                 print(result.report(), file=sys.stderr)
         elif key[:6] == "clades":
             # expected data: [{"name": "3C.2a1b.2a.2 156S", "clade": "3C.2a1b.2a.2", "aa": "156S", **ignored}]
-            ae.semantic.clade_attributes(chart=chart, entries=data)
+            ae.semantic.clade.attributes(chart=chart, entries=data)
         else:
             print(f">> unrecognized key \"{key}\" in semantic attribute data", file=sys.stderr)
-    ae.semantic.passage_attributes(chart=chart) # Set passage type ("p") semantic attributes for all antigens and sera
-    ae.semantic.continent_attributes(chart=chart) # Set continent ("C9") and country ("c9") semantic attributes for all antigens and sera
+    ae.semantic.passage.attributes(chart=chart) # Set passage type ("p") semantic attributes for all antigens and sera
+    ae.semantic.continent.attributes(chart=chart) # Set continent ("C9") and country ("c9") semantic attributes for all antigens and sera
 
 # ----------------------------------------------------------------------
 
 def add_plot_styles(chart: ae_backend.chart_v3.Chart, semantic_data: dict):
     added_styles = set()
-    added_styles |= ae.semantic.vaccine_plot_style(chart=chart)
+    added_styles |= ae.semantic.vaccine.style(chart=chart)
     for name, data in semantic_data.items():
         if name[:6] == "clades":
-            ae.semantic.clade_plot_style(chart=chart, name=name, data=data)
+            ae.semantic.clade.style(chart=chart, name=name, data=data)
 
     # add_front_styles(chart=chart, back_styles=added_styles)
 
