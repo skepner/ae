@@ -36,8 +36,8 @@
                     "C9": "ASIA",                      // continent: "ASIA", "AUSTRALIA-OCEANIA", "NORTH-AMERICA", "EUROPE", "RUSSIA", "AFRICA", "MIDDLE-EAST", "SOUTH-AMERICA", "CENTRAL-AMERICA"
                     "c9": "USA",                       // country: "UNITED KINGDOM"
                     "P": "e|c|r",                      // passage type: egg|cell|reassortant
+                    "serology": true,                  // serology
 
-                    "serology": "", //
                     "new": 1, // new since last tc, 2 tc ago
 
                                    // "NT": total number of tables from hidb

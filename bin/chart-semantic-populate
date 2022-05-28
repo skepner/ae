@@ -31,7 +31,7 @@ def main(args):
         if not args.keep_old_spec:
             chart.styles().remove()
         semantic_data = load_modules(chart=chart, module_filenames=args.processing_modules)
-        add_semantic_attributes(chart=chart, attributes=semantic_data["attributes"], report=False)
+        add_semantic_attributes(chart=chart, attributes=semantic_data["attributes"], report=True)
         add_plot_styles(chart=chart, semantic_data=semantic_data["styles"])
         output(chart, source_filename=filename, output_filename=args.output, output_must_be_dir=len(args.source) > 1)
 
@@ -60,6 +60,10 @@ def add_semantic_attributes(chart: ae_backend.chart_v3.Chart, attributes: dict, 
         elif key[:6] == "clades":
             # expected data: [{"name": "3C.2a1b.2a.2 156S", "clade": "3C.2a1b.2a.2", "aa": "156S", **ignored}]
             ae.semantic.clade.attributes(chart=chart, entries=data)
+        elif key == "serology":
+            result = ae.semantic.name_passage.attributes(chart=chart, semantic_key="serology", entries=data)
+            if report:
+                print(result.report(header_prefix="Serology "), file=sys.stderr)
         else:
             print(f">> unrecognized key \"{key}\" in semantic attribute data", file=sys.stderr)
     ae.semantic.passage.attributes(chart=chart) # Set passage type ("p") semantic attributes for all antigens and sera
@@ -73,6 +77,11 @@ def add_plot_styles(chart: ae_backend.chart_v3.Chart, semantic_data: dict):
     for name, data in semantic_data.items():
         if name[:6] == "clades":
             ae.semantic.clade.style(chart=chart, name=name, data=data)
+        elif name == "serology":
+            print(f">> \"{name}\" style is not implemented", file=sys.stderr)
+        else:
+            print(f">> unrecognized key \"{name}\" in semantic style data", file=sys.stderr)
+
 
     # add_front_styles(chart=chart, back_styles=added_styles)
 

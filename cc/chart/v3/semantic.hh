@@ -55,7 +55,7 @@ namespace ae::chart::v3
 
         // ----------------------------------------------------------------------
 
-        void set(std::string_view key, std::string_view value)
+        template <typename Val> void set(std::string_view key, Val value)
             {
                 data_[key] = value;
             }

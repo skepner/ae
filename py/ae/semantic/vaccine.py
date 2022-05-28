@@ -2,45 +2,50 @@ import sys, pprint
 import ae_backend
 from ..utils.num_digits import num_digits
 from .. import virus
+from . import name_passage
 
 # ======================================================================
 
 sPassages = ["cell", "egg", "reassortant"]
 
-class Result:
+class Result (name_passage.Result):
 
-    def __init__(self, chart: ae_backend.chart_v3.Chart):
-        self.data = {}        # {name: {"year": year, "surrogate": False, passage: [antigens]}}
-        self.chart = chart
-        self._ag_no_num_digits = num_digits(self.chart.number_of_antigens())
-        self._has_layers = self.chart.titers().number_of_layers() > 0
-
-    def __bool__(self):
-        return bool(self.data)
-
-    def report(self) -> str:
-        if not self.data:
-            return ""
-        return "\n".join(self._format_entry(name) for name in sorted(self.data, key=self._sorting_key))
+    def _format_header(self, name: str, en: dict, **args):
+        surrogate = " surrogate" if en.get("surrogate") else ""
+        return f"Vaccine {name}{surrogate} [{en['year']}]"
 
     def _sorting_key(self, name: str):
         return self.data[name]["year"]
 
-    def _format_entry(self, name: str):
-        en = self.data[name]
-        surrogate = " surrogate" if en["surrogate"] else ""
-        subentries = "\n  ".join(f"{passage[:3]} " + "\n      ".join(self._format_subentry(passage=passage, antigens=en[passage])) for passage in sPassages if passage in en)
-        return f"Vaccine {name}{surrogate} [{en['year']}]\n  {subentries}"
+    # def __init__(self, chart: ae_backend.chart_v3.Chart):
+    #     self.data = {}        # {name: {"year": year, "surrogate": False, passage: [antigens]}}
+    #     self.chart = chart
+    #     self._ag_no_num_digits = num_digits(self.chart.number_of_antigens())
+    #     self._has_layers = self.chart.titers().number_of_layers() > 0
 
-    def _format_subentry(self, passage: str, antigens: list):
-        for no, ag in antigens:
-            if self._has_layers:
-                layers = self.chart.titers().layers_with_antigen(no)
-                layers_s = f" layers: ({len(layers)}){layers}"
-            else:
-                layers = []
-                layers_s = ""
-            yield f"AG {no:{self._ag_no_num_digits}d} {ag.designation()}{layers_s}"
+    # def __bool__(self):
+    #     return bool(self.data)
+
+    # def report(self) -> str:
+    #     if not self.data:
+    #         return ""
+    #     return "\n".join(self._format_entry(name) for name in sorted(self.data, key=self._sorting_key))
+
+    # def _format_entry(self, name: str):
+    #     en = self.data[name]
+    #     surrogate = " surrogate" if en["surrogate"] else ""
+    #     subentries = "\n  ".join(f"{passage[:3]} " + "\n      ".join(self._format_subentry(passage=passage, antigens=en[passage])) for passage in sPassages if passage in en)
+    #     return f"Vaccine {name}{surrogate} [{en['year']}]\n  {subentries}"
+
+    # def _format_subentry(self, passage: str, antigens: list):
+    #     for no, ag in antigens:
+    #         if self._has_layers:
+    #             layers = self.chart.titers().layers_with_antigen(no)
+    #             layers_s = f" layers: ({len(layers)}){layers}"
+    #         else:
+    #             layers = []
+    #             layers_s = ""
+    #         yield f"AG {no:{self._ag_no_num_digits}d} {ag.designation()}{layers_s}"
 
 # ----------------------------------------------------------------------
 
