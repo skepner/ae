@@ -54,7 +54,7 @@ def add_semantic_attributes(chart: ae_backend.chart_v3.Chart, attributes: dict, 
     for key, data in attributes.items():
         if key == "vaccines":
             # expected data: [{"name": "MALAYSIA/2506/2004", "passage": "egg", "surrogate": False, "year": "2006", **ignored}]
-            result = ae.semantic.vaccine.attributes(chart=chart, entries=data)
+            result = ae.semantic.vaccine.attributes(chart=chart, entries=data, current_vaccine_years=["202102", "202109", "202202"])
             if report:
                 print(result.report(), file=sys.stderr)
         elif key[:6] == "clades":
@@ -107,7 +107,7 @@ def add_plot_styles(chart: ae_backend.chart_v3.Chart, semantic_data: dict):
         if added.startswith("-clades") and "sera" not in added:
             add_front_style(style_name=added[1:], references=["-reset", added, "-vaccines"], title=f"{title_prefix} by clade", show_legend=True, legend_counter=True)
         elif added == "-serology":
-            add_front_style(style_name=added[1:], references=["-reset", "-clades", "-clades-v1", "-pale", added, "-vaccines"], title=f"{title_prefix} with serology antigens", show_legend=True, legend_counter=True)
+            add_front_style(style_name=added[1:], references=["-reset", "-clades", "-clades-v1", "-pale", added, "-vaccines-blue"], title=f"{title_prefix} with serology antigens", show_legend=True, legend_counter=True)
 
 # ----------------------------------------------------------------------
 
