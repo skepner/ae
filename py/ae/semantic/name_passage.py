@@ -2,6 +2,7 @@ import sys, pprint
 import ae_backend
 from ..utils.num_digits import num_digits
 from .. import virus
+from .name_generator import NameGenerator
 
 # ======================================================================
 
@@ -84,27 +85,16 @@ def _passages(passage_type: str):
 
 # ======================================================================
 
-# sModifier = {"outline": "black", "raise": True, "size": 70, "only": "antigens"}
-# sLabelModifier = {"offset": [0, 1], "slant": "normal", "weight": "normal", "size": 36.0, "color": "black"}
-
 def style(chart: ae_backend.chart_v3.Chart, style_name: str, semantic_key: str, point_style: dict, label_style: dict) -> set[str]:
     """Add plot style"""
     style = chart.styles()[style_name]
     style.priority = 1000
     style.add_modifier(selector={semantic_key: True}, **point_style)
     # individual point modifiers with label data
-    locdb = ae_backend.locdb_v3.locdb()
+    name_generator = NameGenerator()
     for no, antigen in chart.select_antigens(lambda ag: bool(ag.antigen.semantic.get(semantic_key))):
-        if reassortant := antigen.reassortant():
-            passage_type = f"{reassortant}-egg"
-        else:
-            passage_type = antigen.passage().passage_type()
-        if name_parsing_result := ae_backend.virus.name_parse(antigen.name()):
-            name = f"{locdb.abbreviation(name_parsing_result.parts.location)}/{name_parsing_result.parts.year[2:]}"
-        else:
-            name = antigen.name()
-        style.add_modifier(selector={"!i": no}, outline_width=4.0, label={**label_style, "text": f"{name}-{passage_type}"})
+        style.add_modifier(selector={"!i": no}, outline_width=4.0, label={**label_style, "text": name_generator.location_isolation_year2_passaga_type(antigen)})
         # print(f">>>> {no} {antigen.designation()}", file=sys.stderr)
-    return set([name])
+    return set([style_name])
 
 # ======================================================================

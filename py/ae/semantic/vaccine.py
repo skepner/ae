@@ -3,6 +3,7 @@ import ae_backend
 from ..utils.num_digits import num_digits
 from .. import virus
 from . import name_passage
+from .name_generator import NameGenerator
 
 # ======================================================================
 
@@ -78,24 +79,16 @@ def _passages(passage_type: str):
 sModifier = {"outline": "black", "raise": True, "size": 70, "only": "antigens"}
 sLabelModifier = {"offset": [0, 1], "slant": "normal", "weight": "normal", "size": 36.0, "color": "black"}
 
-def style(chart: ae_backend.chart_v3.Chart, name: str = "-vaccines") -> set[str]:
+def style(chart: ae_backend.chart_v3.Chart, style_name: str = "-vaccines") -> set[str]:
     """Add "-vaccines" plot style"""
-    style = chart.styles()[name]
+    style = chart.styles()[style_name]
     style.priority = 1000
     style.add_modifier(selector={"V": True}, **sModifier)
     # individual vaccine modifiers with label data
+    name_generator = NameGenerator()
     locdb = ae_backend.locdb_v3.locdb()
     for no, antigen in chart.select_antigens(lambda ag: bool(ag.antigen.semantic.get("V"))):
-        if reassortant := antigen.reassortant():
-            passage_type = f"{reassortant}-egg"
-        else:
-            passage_type = antigen.passage().passage_type()
-        if name_parsing_result := ae_backend.virus.name_parse(antigen.name()):
-            name = f"{locdb.abbreviation(name_parsing_result.parts.location)}/{name_parsing_result.parts.year[2:]}"
-        else:
-            name = antigen.name()
-        style.add_modifier(selector={"!i": no}, outline_width=4.0, label={**sLabelModifier, "text": f"{name}-{passage_type}"})
-        # print(f">>>> {no} {antigen.designation()}", file=sys.stderr)
-    return set([name])
+        style.add_modifier(selector={"!i": no}, outline_width=4.0, label={**sLabelModifier, "text": name_generator.location_year2_passaga_type(antigen)})
+    return set([style_name])
 
 # ======================================================================
