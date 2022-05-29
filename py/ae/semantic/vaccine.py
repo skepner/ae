@@ -76,7 +76,7 @@ def _passages(passage_type: str):
 
 # ======================================================================
 
-sModifier = {"outline": "black", "raise": True, "size": 70, "only": "antigens"}
+sModifier = {"outline": "black", "fill": ":bright", "raise": True, "size": 70, "only": "antigens"}
 sLabelModifier = {"offset": [0, 1], "slant": "normal", "weight": "normal", "size": 36.0, "color": "black"}
 
 def style(chart: ae_backend.chart_v3.Chart, style_name: str = "-vaccines") -> set[str]:
