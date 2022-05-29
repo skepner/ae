@@ -5,8 +5,10 @@ Add semantic plot styles to charts
 """
 
 # pale clades
-# sequenced
 # serology
+# vaccines in blue/red/green
+# -reset: all grey, viewport
+# sequenced
 # continent
 # time series
 # bold outline for new
@@ -75,7 +77,6 @@ def add_plot_styles(chart: ae_backend.chart_v3.Chart, semantic_data: dict):
     # back styles
     added_styles = set()
     # TODO -reset style
-    added_styles |= ae.semantic.vaccine.style(chart=chart)
     for name, data in semantic_data.items():
         if name[:6] == "clades":
             added_styles |= ae.semantic.clade.style(chart=chart, name=name, data=data)
@@ -83,7 +84,8 @@ def add_plot_styles(chart: ae_backend.chart_v3.Chart, semantic_data: dict):
             added_styles |= ae.semantic.name_passage.style(chart=chart, style_name="-" + name, semantic_key=name, point_style=data["point_style"], label_style=data["label_style"])
         else:
             print(f">> unrecognized key \"{name}\" in semantic style data", file=sys.stderr)
-    print(added_styles)
+    added_styles |= ae.semantic.vaccine.style(chart=chart)
+    added_styles |= ae.semantic.pale.style(chart=chart)
 
     # front styles
     front_style_order = ["clades", "clades-v1", "clades-v2", "serology"]
