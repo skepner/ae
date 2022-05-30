@@ -4,7 +4,6 @@
 Add semantic plot styles to charts
 """
 
-# vaccines in blue/red/green
 # -reset: all grey, viewport
 # sequenced
 # continent
@@ -66,6 +65,7 @@ def add_semantic_attributes(chart: ae_backend.chart_v3.Chart, attributes: dict, 
                 print(result.report(header_prefix="Serology "), file=sys.stderr)
         else:
             print(f">> unrecognized key \"{key}\" in semantic attribute data", file=sys.stderr)
+    ae.semantic.reference.attributes(chart=chart) # Set reference ("R") semantic attribute for reference antigens
     ae.semantic.passage.attributes(chart=chart) # Set passage type ("p") semantic attributes for all antigens and sera
     ae.semantic.continent.attributes(chart=chart) # Set continent ("C9") and country ("c9") semantic attributes for all antigens and sera
 

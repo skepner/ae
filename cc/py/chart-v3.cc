@@ -289,6 +289,10 @@ void ae::py::chart_v3(pybind11::module_& mdl)
                 return new SelectedAntigens{chart, SelectedAntigens::None};
             },                                                                            //
             pybind11::doc(R"(Selects no antigens and returns SelectedAntigens object.)")) //
+        .def(
+            "select_reference_antigens",                                                         //
+            [](std::shared_ptr<Chart> chart) { return new SelectedAntigens{chart, chart->reference()}; },      //
+            pybind11::doc(R"(Selects reference antigens and returns SelectedAntigens object.)")) //
 
         // .def("antigens_by_aa_at_pos", &ae::py::antigens_sera_by_aa_at_pos<SelectedAntigens>, "pos"_a,
         //      pybind11::doc(R"(Returns dict with AA at passed pos as keys and SelectedAntigens as values.)")) //

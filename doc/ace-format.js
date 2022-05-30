@@ -32,6 +32,7 @@
                 "Bi": [[pos1, "nucs"]]                 // insertions at the nucleotide level
                 "T": {                                 //  semantic attributes by group
                     "C": ["3C" "3C.2a" "3C.2a1b.2a"],  // clades
+                    "R": true,                         // reference antigen
                     "V": "es201902",                   // vaccine: egg/cell/reassortant, surrogate, year[month]
                     "C9": "ASIA",                      // continent: "ASIA", "AUSTRALIA-OCEANIA", "NORTH-AMERICA", "EUROPE", "RUSSIA", "AFRICA", "MIDDLE-EAST", "SOUTH-AMERICA", "CENTRAL-AMERICA"
                     "c9": "USA",                       // country: "UNITED KINGDOM"
@@ -103,9 +104,10 @@
                 "R": "-clades",                       // name ("N") of another plot spec to use (inherited from), applied before adding other changes provided by this object
                 "T": {                                // to select antigens/sera, if value is en empty string, it means ag/sr selected if they have that semantic attribute with any value
                     "<name of semantic attribute>": <value>,
-                    "!D": ["date-first", "date-last"] // select antigens with isolation date in range, if antigen date is absent, it is ""
-                                                      // if date-last is "", it means until now
                     "!i": 0,                          // antigen/serum index, i.e. individual selection
+
+                    "!D": ["date-first", "date-last"] // ? select antigens with isolation date in range, if antigen date is absent, it is ""
+                                                      // if date-last is "", it means until now
                 },
                 "A": 1,                               // true or 1: select antigens only, false or 0: select sera only, absent or -1: select antigens and sera
                 "S": "C",                             // shape: "C[IRCLE]" (default), "B[OX]", "T[RIANGLE]", "E[GG]", "U[GLYEGG]"

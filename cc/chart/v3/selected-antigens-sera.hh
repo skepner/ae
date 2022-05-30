@@ -25,7 +25,8 @@ namespace ae::chart::v3
     template <typename AgSr> struct Selected
     {
         using AntigensSeraType = AgSr;
-        using index_tt = typename AgSr::index_t;
+        using index_t = typename AgSr::index_t;
+        using indexes_t = typename AgSr::indexes_t;
 
         enum None { None };
 
@@ -37,6 +38,8 @@ namespace ae::chart::v3
         }
         // no antigens/sera
         Selected(std::shared_ptr<Chart> a_chart, enum None) : chart{a_chart}, indexes{} {}
+        // specified indexes
+        Selected(std::shared_ptr<Chart> a_chart, const indexes_t& a_indexes) : chart{a_chart}, indexes{a_indexes} {}
         // call func for each antigen/serum and select ag/sr if func returns true
         template <typename F> Selected(std::shared_ptr<Chart> a_chart, F&& func, projection_index projection_no) : chart{a_chart}, indexes{}
         {
@@ -47,17 +50,16 @@ namespace ae::chart::v3
             // }
 
             const auto call = [&](auto no, const typename AgSr::element_t& ref) -> bool {
-                    return func(
-                        SelectionData<typename AgSr::element_t>{.chart = a_chart, .index = no, .projection_no = projection_no, .ag_sr = ref});
-                    // if constexpr (std::is_invocable_v<F, const typename AgSr::element_t&>)
-                    //     return func(ref);
-                    // else if constexpr (std::is_invocable_v<F, size_t, const typename AgSr::element_t&>)
-                    //     return func(no, ref);
-                    // else if constexpr (std::is_invocable_v<F, const SelectionData<typename AgSr::element_t>&>)
-                    //     return func(
-                    //         SelectionData<typename AgSr::element_t>>{.chart = a_chart, .index = no, .projection_no = projection_no, .ag_sr = ref});
-                    // else
-                    //     static_assert(std::is_invocable_v<F, void, int>, "unsupported filter function signature");
+                return func(SelectionData<typename AgSr::element_t>{.chart = a_chart, .index = no, .projection_no = projection_no, .ag_sr = ref});
+                // if constexpr (std::is_invocable_v<F, const typename AgSr::element_t&>)
+                //     return func(ref);
+                // else if constexpr (std::is_invocable_v<F, size_t, const typename AgSr::element_t&>)
+                //     return func(no, ref);
+                // else if constexpr (std::is_invocable_v<F, const SelectionData<typename AgSr::element_t>&>)
+                //     return func(
+                //         SelectionData<typename AgSr::element_t>>{.chart = a_chart, .index = no, .projection_no = projection_no, .ag_sr = ref});
+                // else
+                //     static_assert(std::is_invocable_v<F, void, int>, "unsupported filter function signature");
             };
 
             const auto& ag_sr = a_chart->antigens_sera<AgSr>();
@@ -118,19 +120,19 @@ namespace ae::chart::v3
         // if indexes have the same number of layers, first comes with the bigger layer no
         // if the biggest layers nos are the same, first comes the bigger index
         void sort_by_number_of_layers_descending()
-            {
-                const auto& titers = chart->titers();
-                std::sort(std::begin(indexes), std::end(indexes), [&titers](auto i1, auto i2) {
-                    if (const auto ln1 = titers.layers_with(i1), ln2 = titers.layers_with(i2); ln1.size() == ln2.size()) {
-                        if (ln1.back() == ln2.back())
-                            return i1 > i2;
-                        else
-                            return ln1.back() > ln2.back();
-                    }
+        {
+            const auto& titers = chart->titers();
+            std::sort(std::begin(indexes), std::end(indexes), [&titers](auto i1, auto i2) {
+                if (const auto ln1 = titers.layers_with(i1), ln2 = titers.layers_with(i2); ln1.size() == ln2.size()) {
+                    if (ln1.back() == ln2.back())
+                        return i1 > i2;
                     else
-                        return ln1.size() > ln2.size();
-                });
-            }
+                        return ln1.back() > ln2.back();
+                }
+                else
+                    return ln1.size() > ln2.size();
+            });
+        }
 
         SelectedIterator<AgSr> begin();
         SelectedIterator<AgSr> end();
@@ -139,7 +141,7 @@ namespace ae::chart::v3
         SelectedIterator<AgSr> end() const;
 
         std::shared_ptr<Chart> chart;
-        typename AgSr::indexes_t indexes;
+        indexes_t indexes;
     };
 
     template <typename AgSr> struct SelectedIterator
@@ -147,19 +149,19 @@ namespace ae::chart::v3
       public:
         SelectedIterator(const Selected<AgSr>& parent, typename AgSr::indexes_t::const_iterator current) : parent_{parent}, current_{current} {}
 
-          SelectedIterator& operator++()
-          {
-              ++current_;
-              return *this;
-          }
+        SelectedIterator& operator++()
+        {
+            ++current_;
+            return *this;
+        }
 
-          auto operator*() { return parent_[current_ - parent_.indexes.begin()]; }
+        auto operator*() { return parent_[current_ - parent_.indexes.begin()]; }
 
-          bool operator==(const SelectedIterator& rhs) const { return current_ == rhs.current_; }
+        bool operator==(const SelectedIterator& rhs) const { return current_ == rhs.current_; }
 
-        private:
-          Selected<AgSr> parent_;
-          typename AgSr::indexes_t::const_iterator current_;
+      private:
+        Selected<AgSr> parent_;
+        typename AgSr::indexes_t::const_iterator current_;
     };
 
     template <typename AgSr> SelectedIterator<AgSr> Selected<AgSr>::begin() { return SelectedIterator<AgSr>{*this, indexes.begin()}; }
