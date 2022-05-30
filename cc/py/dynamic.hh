@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ext/pybind11.hh"
+#include "utils/log.hh"
 #include "utils/overload.hh"
 #include "utils/collection.hh"
 
@@ -18,6 +19,12 @@ namespace ae::py
             return ae::dynamic::value{handle.cast<long>()};
         else if (pybind11::isinstance<pybind11::float_>(handle))
             return ae::dynamic::value{handle.cast<double>()};
+        else if (pybind11::isinstance<pybind11::list>(handle)) {
+            ae::dynamic::array arr;
+            for (auto elt : handle)
+                arr.add(to_dynamic_value(elt));
+            return ae::dynamic::value{std::move(arr)};
+        }
         else
             throw std::runtime_error{fmt::format("ae::py::to_dynamic_value: unsupported value: {}", pybind11::repr(handle).cast<std::string_view>())};
     }
