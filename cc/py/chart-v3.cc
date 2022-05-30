@@ -271,6 +271,10 @@ void ae::py::chart_v3(pybind11::module_& mdl)
             "serum", [](Chart& chart, size_t serum_no) { return chart.sera()[serum_index{serum_no}]; }, "serum_no"_a, pybind11::return_value_policy::reference_internal) //
 
         .def(
+            "antigen_date_range", [](const Chart& chart, bool test_only) { return chart.antigens().date_range(test_only, chart.reference()); }, "test_only"_a = true,
+            pybind11::doc("returns pair of dates (str), date range is inclusive!")) //
+
+        .def(
             "select_antigens", //
             [](std::shared_ptr<Chart> chart, const std::function<bool(const SelectionData<Antigen>&)>& func, size_t projection_no) {
                 return new SelectedAntigens{chart, func, projection_index{projection_no}};
@@ -290,8 +294,10 @@ void ae::py::chart_v3(pybind11::module_& mdl)
             },                                                                            //
             pybind11::doc(R"(Selects no antigens and returns SelectedAntigens object.)")) //
         .def(
-            "select_reference_antigens",                                                         //
-            [](std::shared_ptr<Chart> chart) { return new SelectedAntigens{chart, chart->reference()}; },      //
+            "select_reference_antigens", //
+            [](std::shared_ptr<Chart> chart) {
+                return new SelectedAntigens{chart, chart->reference()};
+            },                                                                                   //
             pybind11::doc(R"(Selects reference antigens and returns SelectedAntigens object.)")) //
 
         // .def("antigens_by_aa_at_pos", &ae::py::antigens_sera_by_aa_at_pos<SelectedAntigens>, "pos"_a,

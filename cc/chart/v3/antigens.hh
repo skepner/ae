@@ -236,6 +236,9 @@ namespace ae::chart::v3
         bool operator==(const Antigens&) const = default;
 
         antigen_indexes homologous(const Serum& serum) const;
+
+        // returns INCLUSIVE date range of all or test antigens
+        std::pair<std::string_view, std::string_view> date_range(bool test_only, const indexes_t& reference_indexes) const;
     };
 
     // ----------------------------------------------------------------------

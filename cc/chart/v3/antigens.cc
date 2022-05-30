@@ -112,3 +112,22 @@ ae::antigen_indexes ae::chart::v3::Antigens::homologous(const Serum& serum) cons
 } // ae::chart::v3::Antigens::homologous
 
 // ----------------------------------------------------------------------
+
+std::pair<std::string_view, std::string_view> ae::chart::v3::Antigens::date_range(bool test_only, const indexes_t& reference_indexes) const
+{
+    std::string_view first{}, last{};
+    for (const auto ag_no : size()) {
+        if (!test_only || reference_indexes.contains(ag_no)) {
+            if (const auto& antigen = operator[](ag_no); !antigen.date().empty()) {
+                if (first.empty() || first > *antigen.date())
+                    first = *antigen.date();
+                if (last.empty() || last < *antigen.date())
+                    last = *antigen.date();
+            }
+        }
+    }
+    return {first, last};
+
+} // ae::chart::v3::Antigens::date_range
+
+// ----------------------------------------------------------------------
