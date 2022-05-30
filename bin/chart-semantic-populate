@@ -82,6 +82,7 @@ def add_plot_styles(chart: ae_backend.chart_v3.Chart, semantic_data: dict):
             added_styles |= ae.semantic.name_passage.style(chart=chart, style_name="-" + name, semantic_key=name, point_style=data["point_style"], label_style=data["label_style"])
         else:
             print(f">> unrecognized key \"{name}\" in semantic style data", file=sys.stderr)
+    added_styles |= ae.semantic.continent.style(chart=chart)
     added_styles |= ae.semantic.vaccine.style(chart=chart)
     added_styles |= ae.semantic.pale.style(chart=chart)
 

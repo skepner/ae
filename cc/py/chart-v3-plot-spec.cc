@@ -101,10 +101,14 @@ namespace ae::py
                     modifier.point_style.aspect(ae::chart::v3::Aspect{value.cast<double>()});
                 else if (keyword == "shape")
                     modifier.point_style.shape(ae::chart::v3::point_shape{value.cast<std::string_view>()});
-                else if ((keyword == "raise" || keyword == "rais" || keyword == "raise_") && value.cast<bool>())
-                    modifier.order = ae::chart::v3::semantic::DrawingOrderModifier::raise;
-                else if (keyword == "lower" && value.cast<bool>())
-                    modifier.order = ae::chart::v3::semantic::DrawingOrderModifier::lower;
+                else if (keyword == "raise" || keyword == "rais" || keyword == "raise_") {
+                    if (value.cast<bool>())
+                        modifier.order = ae::chart::v3::semantic::DrawingOrderModifier::raise;
+                }
+                else if (keyword == "lower" || keyword == "lower_") {
+                    if (value.cast<bool>())
+                        modifier.order = ae::chart::v3::semantic::DrawingOrderModifier::lower;
+                }
                 else if (keyword == "only") {
                     switch (std::tolower(value.cast<std::string_view>()[0])) {
                         case 'a':
@@ -125,7 +129,7 @@ namespace ae::py
                     add_modifier_label(modifier.point_style.label(), value.cast<pybind11::dict>());
                 }
                 else
-                    throw std::runtime_error("Style.add_modifier: unrecognized arg"); // fmt::format("Style.add_modifier: unrecognized arg \"{}\"", keyword));
+                    throw std::runtime_error{fmt::format("Style.add_modifier: unrecognized \"{}\": {}", keyword, static_cast<std::string>(pybind11::repr(value)))};
             }
         }
         return modifier;

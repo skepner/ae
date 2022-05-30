@@ -102,8 +102,8 @@
             "V": [-5.0, -5.0, 10.0, 10.0],            // viewport
             "A": {                                    // modifiers to apply
                 "R": "-clades",                       // name ("N") of another plot spec to use (inherited from), applied before adding other changes provided by this object
-                "T": {                                // to select antigens/sera, if value is en empty string, it means ag/sr selected if they have that semantic attribute with any value
-                    "<name of semantic attribute>": <value>,
+                "T": {                                // select antigens/sera
+                    "<name of semantic attribute>": <value>, // if value is true, ag/sr selected if they have that semantic attribute with any value, if value is false, select only if attribute is absent or false
                     "!i": 0,                          // antigen/serum index, i.e. individual selection
 
                     "!D": ["date-first", "date-last"] // ? select antigens with isolation date in range, if antigen date is absent, it is ""
