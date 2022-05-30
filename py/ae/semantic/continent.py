@@ -68,7 +68,7 @@ def style(chart: ae_backend.chart_v3.Chart, name: str = "-continent", test_only:
     else:
         reference_selector = {}
     for modifier in sContinentStyle[style_type]:
-        style.add_modifier(selector={"C9": modifier["continent"], **reference_selector}, fill=modifier["color"], raise_=raise_, only="antigens")
+        style.add_modifier(selector={"C9": modifier["continent"], **reference_selector}, fill=modifier["color"], outline="black", raise_=raise_, only="antigens")
     return set([name])
 
 # ======================================================================
