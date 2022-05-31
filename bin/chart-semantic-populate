@@ -6,7 +6,6 @@ Add semantic plot styles to charts
 
 # -reset: all grey, viewport
 # sequenced
-# bold outline for new
 # bigger for new (time series)
 # serum circles
 # serum coverage
@@ -86,7 +85,7 @@ def add_plot_styles(chart: ae_backend.chart_v3.Chart, semantic_data: dict, numbe
     added_styles |= ae.semantic.vaccine.style(chart=chart)
     added_styles |= ae.semantic.pale.style(chart=chart)
     added_styles |= ae.semantic.time_series.style(chart=chart)
-    added_styles |= ae.semantic.new_compared_to.style(chart=chart, number_of_previous_charts=number_of_previous_charts, modifiers=[{"outline": "black", "outline_width": 6, "raise": True}, {"outline": "black", "outline_width": 3, "raise": True}])
+    added_styles |= ae.semantic.new_compared_to.style(chart=chart, number_of_previous_charts=number_of_previous_charts)
 
     # front styles
     front_style_order = ["clades", "clades-v1", "clades-v2", "serology"]
@@ -113,7 +112,7 @@ def add_plot_styles(chart: ae_backend.chart_v3.Chart, semantic_data: dict, numbe
             add_front_style(style_name=added[1:], references=["-reset", "-clades", "-clades-v1", "-pale", added, "-vaccines-blue"], title=f"{title_prefix} with serology antigens", show_legend=True, legend_counter=True)
     # add last 6 ts
     for style_priority, added in enumerate(sorted(added for added in added_styles if added[:4] == "-ts-")[-6:], start=20):
-        add_front_style(style_name=added[1:], references=["-reset", "-continent", added, "-vaccines-blue"], title=f"{title_prefix} {added[4:]}", show_legend=False, style_priority=style_priority)
+        add_front_style(style_name=added[1:], references=["-reset", "-continent", added, "-new-big", "-vaccines-blue"], title=f"{title_prefix} {added[4:]}", show_legend=False, style_priority=style_priority)
 
 # ----------------------------------------------------------------------
 
