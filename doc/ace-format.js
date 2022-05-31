@@ -38,8 +38,7 @@
                     "c9": "USA",                       // country: "UNITED KINGDOM"
                     "P": "e|c|r",                      // passage type: egg|cell|reassortant
                     "serology": true,                  // serology
-
-                    "new": 1, // new since last tc, 2 tc ago
+                    "new": 1,                          // new since last tc, 2 tc ago
 
                                    // "NT": total number of tables from hidb
                                    // "RT": "CDC:HI:guinea-pig:20141009" - the most recent table id from hidb

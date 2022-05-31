@@ -6,7 +6,6 @@ Add semantic plot styles to charts
 
 # -reset: all grey, viewport
 # sequenced
-# time series
 # bold outline for new
 # bigger for new (time series)
 # serum circles
@@ -29,7 +28,7 @@ def main(args):
         if not args.keep_old_spec:
             chart.styles().remove()
         semantic_data = load_modules(chart=chart, module_filenames=args.processing_modules)
-        add_semantic_attributes(chart=chart, attributes=semantic_data["attributes"], report=False)
+        add_semantic_attributes(chart=chart, attributes=semantic_data["attributes"], report=False, previous_charts=[ae_backend.chart_v3.Chart(pfn) for pfn in args.previous])
         add_plot_styles(chart=chart, semantic_data=semantic_data["styles"])
         output(chart, source_filename=filename, output_filename=args.output, output_must_be_dir=len(args.source) > 1)
 
@@ -48,7 +47,7 @@ def load_modules(chart: ae_backend.chart_v3.Chart, module_filenames: list[Path])
 
 # ----------------------------------------------------------------------
 
-def add_semantic_attributes(chart: ae_backend.chart_v3.Chart, attributes: dict, report: bool):
+def add_semantic_attributes(chart: ae_backend.chart_v3.Chart, attributes: dict, report: bool, previous_charts: list[ae_backend.chart_v3.Chart] = None):
     for key, data in attributes.items():
         if key == "vaccines":
             # expected data: [{"name": "MALAYSIA/2506/2004", "passage": "egg", "surrogate": False, "year": "2006", **ignored}]
@@ -67,6 +66,8 @@ def add_semantic_attributes(chart: ae_backend.chart_v3.Chart, attributes: dict, 
     ae.semantic.reference.attributes(chart=chart) # Set reference ("R") semantic attribute for reference antigens
     ae.semantic.passage.attributes(chart=chart) # Set passage type ("p") semantic attributes for all antigens and sera
     ae.semantic.continent.attributes(chart=chart) # Set continent ("C9") and country ("c9") semantic attributes for all antigens and sera
+    for previous_chart_no, previous_chart in enumerate(previous_charts or [], start=1):
+        ae.semantic.new_compared_to.attributes(chart=chart, previous_chart=previous_chart, new_attribute_value=previous_chart_no)
 
 # ----------------------------------------------------------------------
 
@@ -137,6 +138,7 @@ try:
     parser.add_argument("-o", "--output", type=Path, help="if there is just one source, output can be a file name, otherwise output must be direcory, if ommited source is replaced.")
     parser.add_argument("-s", dest="processing_modules", action="append", default=[], type=Path)
     parser.add_argument("--keep-old-spec", action="store_true", default=False, help="do not remove existing semantic plot styles")
+    parser.add_argument("-p", "--previous", action="append", type=Path, help="previous merges for bolder outline of new antigens")
 
     args = parser.parse_args()
     exit_code = main(args) or 0

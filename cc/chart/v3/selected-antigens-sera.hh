@@ -1,5 +1,7 @@
 #pragma once
 
+#include <unordered_set>
+
 #include "utils/string.hh"
 #include "chart/v3/chart.hh"
 // #include "chart/v3/name-format.hh"
@@ -132,6 +134,16 @@ namespace ae::chart::v3
                 else
                     return ln1.size() > ln2.size();
             });
+        }
+
+        void filter_new(const Antigens& compare_to)
+        {
+            std::unordered_set<std::string> designations;
+            for (const auto& ag : compare_to)
+                designations.insert(ag.designation());
+            indexes.get().erase(
+                std::remove_if(std::begin(indexes), std::end(indexes), [this, &designations](const auto& index) { return designations.contains(chart->antigens()[index].designation()); }),
+                indexes.end());
         }
 
         SelectedIterator<AgSr> begin();
