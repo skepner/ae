@@ -64,7 +64,17 @@
                 "B": "CAAAAAATTCCTGGAAAT...",          //  aligned nucleotide sequence
                 "Ai": [[pos1, "aas"]]                  // insertions at the aa level
                 "Bi": [[pos1, "nucs"]]                 // insertions at the nucleotide level
-                "T": {},                               //  semantic attributes by group (see above for antigen)
+                "T": {                                 //  semantic attributes by group
+                    "C": [],                           // clades
+                    "C9": "ASIA",                      // continent
+                    "c9": "USA",                       // country
+                    "P": "e|c|r",                      // passage type: egg|cell|reassortant
+                    "CI2": {                           // serum circle for fold 2
+                        "e": 4.1,                      // empirical
+                        "t": 3.0,                      // theoretical
+                        "cb": 6.0,                     // column basis
+                    }
+                },
                 "C": "DEPRECATED: use s, ASIA",        //  (DEPRECATED, use "s") continent: "ASIA", "AUSTRALIA-OCEANIA", "NORTH-AMERICA", "EUROPE", "RUSSIA", "AFRICA", "MIDDLE-EAST", "SOUTH-AMERICA", "CENTRAL-AMERICA"
                 "c": ["DEPRECATED: use s"],            //  (DEPRECATED, use "s") clades, e.g. ["5.2.1"]
                 "S": "DEPRECATED: use s",              //  (DEPRECATED, use "s") single letter semantic boolean attributes: R - reference, E - egg, V - current vaccine, v - previous vaccine, S - vaccine surrogate

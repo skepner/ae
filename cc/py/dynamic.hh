@@ -25,6 +25,12 @@ namespace ae::py
                 arr.add(to_dynamic_value(elt));
             return ae::dynamic::value{std::move(arr)};
         }
+        else if (pybind11::isinstance<pybind11::object>(handle)) {
+            ae::dynamic::object obj;
+            for (auto key : handle)
+                obj[key.cast<std::string_view>()] = to_dynamic_value(handle[key]);
+            return ae::dynamic::value{std::move(obj)};
+        }
         else
             throw std::runtime_error{fmt::format("ae::py::to_dynamic_value: unsupported value: {}", pybind11::repr(handle).cast<std::string_view>())};
     }

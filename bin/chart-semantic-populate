@@ -6,7 +6,6 @@ Add semantic plot styles to charts
 
 # -reset: all grey, viewport
 # sequenced
-# bigger for new (time series)
 # serum circles
 # serum coverage
 # procrustes
@@ -27,8 +26,8 @@ def main(args):
         if not args.keep_old_spec:
             chart.styles().remove()
         semantic_data = load_modules(chart=chart, module_filenames=args.processing_modules)
-        add_semantic_attributes(chart=chart, attributes=semantic_data["attributes"], report=False, previous_charts=[ae_backend.chart_v3.Chart(pfn) for pfn in args.previous])
-        add_plot_styles(chart=chart, semantic_data=semantic_data["styles"], number_of_previous_charts=len(args.previous))
+        add_semantic_attributes(chart=chart, attributes=semantic_data["attributes"], report=False, previous_charts=[ae_backend.chart_v3.Chart(pfn) for pfn in (args.previous or [])])
+        add_plot_styles(chart=chart, semantic_data=semantic_data["styles"], number_of_previous_charts=len(args.previous or []))
         output(chart, source_filename=filename, output_filename=args.output, output_must_be_dir=len(args.source) > 1)
 
 # ----------------------------------------------------------------------
@@ -67,6 +66,7 @@ def add_semantic_attributes(chart: ae_backend.chart_v3.Chart, attributes: dict, 
     ae.semantic.continent.attributes(chart=chart) # Set continent ("C9") and country ("c9") semantic attributes for all antigens and sera
     for previous_chart_no, previous_chart in reversed(list(enumerate(previous_charts or [], start=1))): # first mark previous-previous, then override with previous
         ae.semantic.new_compared_to.attributes(chart=chart, previous_chart=previous_chart, new_attribute_value=previous_chart_no)
+    ae.semantic.serum_circle.attributes(chart=chart)
 
 # ----------------------------------------------------------------------
 
