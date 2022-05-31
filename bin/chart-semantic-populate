@@ -66,7 +66,7 @@ def add_semantic_attributes(chart: ae_backend.chart_v3.Chart, attributes: dict, 
     ae.semantic.reference.attributes(chart=chart) # Set reference ("R") semantic attribute for reference antigens
     ae.semantic.passage.attributes(chart=chart) # Set passage type ("p") semantic attributes for all antigens and sera
     ae.semantic.continent.attributes(chart=chart) # Set continent ("C9") and country ("c9") semantic attributes for all antigens and sera
-    for previous_chart_no, previous_chart in enumerate(previous_charts or [], start=1):
+    for previous_chart_no, previous_chart in reversed(list(enumerate(previous_charts or [], start=1))): # first mark previous-previous, then override with previous
         ae.semantic.new_compared_to.attributes(chart=chart, previous_chart=previous_chart, new_attribute_value=previous_chart_no)
 
 # ----------------------------------------------------------------------

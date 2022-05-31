@@ -277,6 +277,7 @@ void ae::py::chart_v3_antigens(pybind11::module_& chart_v3_submodule)
         .def("vaccine", pybind11::overload_cast<std::string_view>(&SemanticAttributes::vaccine), "year"_a)                                       //
         .def("set", pybind11::overload_cast<std::string_view, std::string_view>(&SemanticAttributes::set<std::string_view>), "key"_a, "value"_a) //
         .def("set", pybind11::overload_cast<std::string_view, bool>(&SemanticAttributes::set<bool>), "key"_a, "value"_a)                         //
+        .def("set", pybind11::overload_cast<std::string_view, long>(&SemanticAttributes::set<long>), "key"_a, "value"_a)                         //
         .def(
             "get", [](const SemanticAttributes& attrs, std::string_view key) { return to_py_object(attrs.get(key)); }, "key"_a) //
         ;
