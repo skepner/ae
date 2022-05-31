@@ -117,7 +117,7 @@ std::pair<std::string_view, std::string_view> ae::chart::v3::Antigens::date_rang
 {
     std::string_view first{}, last{};
     for (const auto ag_no : size()) {
-        if (!test_only || reference_indexes.contains(ag_no)) {
+        if (!test_only || !reference_indexes.contains(ag_no)) {
             if (const auto& antigen = operator[](ag_no); !antigen.date().empty()) {
                 if (first.empty() || first > *antigen.date())
                     first = *antigen.date();

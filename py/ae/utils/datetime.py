@@ -36,7 +36,7 @@ def get_antigen_date_range(chart: ae_backend.chart_v3.Chart, first: datetime.dat
         last = parse_date(last)
         if last > chart_last:
             last = chart_last
-    # print(f">>>> antigen_date_range {repr(first)} {repr(last)}", file=sys.stderr)
+    # print(f">>>> antigen_date_range {repr(first)} {repr(last)} -- chart: {chart_first} {chart_last}", file=sys.stderr)
     return [first, last]
 
 # ======================================================================

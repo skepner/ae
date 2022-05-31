@@ -58,7 +58,7 @@ def attributes(chart: ae_backend.chart_v3.Chart, semantic_key: str, entries: lis
 
 # ----------------------------------------------------------------------
 
-def _semantic_entry(chart: ae_backend.chart_v3.Chart, semantic_key: str, name: str, passage: str, make_attribute_value: callable, result: Result = None, **args) -> Result:
+def _semantic_entry(chart: ae_backend.chart_v3.Chart, semantic_key: str, name: str, make_attribute_value: callable, passage: str = None, result: Result = None, **args) -> Result:
     layout = chart.projection().layout() if chart.number_of_projections() else None # avoid disconnected if projection present
     antigen_name = virus.add_subtype_prefix(chart, name.upper())
     if result is None:
