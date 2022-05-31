@@ -4,6 +4,7 @@
 #include <string_view>
 
 #include "ext/fmt.hh"
+#include "utils/log.hh"
 
 // ======================================================================
 
@@ -29,7 +30,7 @@ namespace ae
         {
             if (report_ == report_time::yes) {
                 if (const auto elap = elapsed(start_); elap >= threshold_)
-                    fmt::print(">>> {}: {:%H:%M:%S}\n", message_, elap);
+                    AD_PRINT(">>> {}: {:%H:%M:%S}\n", message_, elap);
                 report_ = report_time::no;
             }
         }
