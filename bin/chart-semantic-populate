@@ -29,7 +29,7 @@ def main(args):
             chart.styles().remove()
         semantic_data = load_modules(chart=chart, module_filenames=args.processing_modules)
         add_semantic_attributes(chart=chart, attributes=semantic_data["attributes"], report=False, previous_charts=[ae_backend.chart_v3.Chart(pfn) for pfn in args.previous])
-        add_plot_styles(chart=chart, semantic_data=semantic_data["styles"])
+        add_plot_styles(chart=chart, semantic_data=semantic_data["styles"], number_of_previous_charts=len(args.previous))
         output(chart, source_filename=filename, output_filename=args.output, output_must_be_dir=len(args.source) > 1)
 
 # ----------------------------------------------------------------------
@@ -71,7 +71,7 @@ def add_semantic_attributes(chart: ae_backend.chart_v3.Chart, attributes: dict, 
 
 # ----------------------------------------------------------------------
 
-def add_plot_styles(chart: ae_backend.chart_v3.Chart, semantic_data: dict):
+def add_plot_styles(chart: ae_backend.chart_v3.Chart, semantic_data: dict, number_of_previous_charts: int):
     # back styles
     added_styles = set()
     # TODO -reset style
@@ -86,6 +86,7 @@ def add_plot_styles(chart: ae_backend.chart_v3.Chart, semantic_data: dict):
     added_styles |= ae.semantic.vaccine.style(chart=chart)
     added_styles |= ae.semantic.pale.style(chart=chart)
     added_styles |= ae.semantic.time_series.style(chart=chart)
+    added_styles |= ae.semantic.new_compared_to.style(chart=chart, number_of_previous_charts=number_of_previous_charts, modifiers=[{"outline": "black", "outline_width": 6, "raise": True}, {"outline": "black", "outline_width": 3, "raise": True}])
 
     # front styles
     front_style_order = ["clades", "clades-v1", "clades-v2", "serology"]
@@ -107,7 +108,7 @@ def add_plot_styles(chart: ae_backend.chart_v3.Chart, semantic_data: dict):
     title_prefix = f"{chart.info().lab()} {chart.info().type_subtype()} {chart.info().assay_HI_or_Neut()}"
     for added in added_styles:
         if added.startswith("-clades") and "sera" not in added:
-            add_front_style(style_name=added[1:], references=["-reset", added, "-vaccines"], title=f"{title_prefix} by clade", show_legend=True, legend_counter=True)
+            add_front_style(style_name=added[1:], references=["-reset", added, "-new-2", "-new-1", "-vaccines"], title=f"{title_prefix} by clade", show_legend=True, legend_counter=True)
         elif added == "-serology":
             add_front_style(style_name=added[1:], references=["-reset", "-clades", "-clades-v1", "-pale", added, "-vaccines-blue"], title=f"{title_prefix} with serology antigens", show_legend=True, legend_counter=True)
     # add last 6 ts
