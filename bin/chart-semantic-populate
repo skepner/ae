@@ -109,6 +109,9 @@ def add_plot_styles(chart: ae_backend.chart_v3.Chart, semantic_data: dict):
             add_front_style(style_name=added[1:], references=["-reset", added, "-vaccines"], title=f"{title_prefix} by clade", show_legend=True, legend_counter=True)
         elif added == "-serology":
             add_front_style(style_name=added[1:], references=["-reset", "-clades", "-clades-v1", "-pale", added, "-vaccines-blue"], title=f"{title_prefix} with serology antigens", show_legend=True, legend_counter=True)
+    # add last 6 ts
+    for style_priority, added in enumerate(sorted(added for added in added_styles if added[:4] == "-ts-")[-6:], start=20):
+        add_front_style(style_name=added[1:], references=["-reset", "-continent", added, "-vaccines-blue"], title=f"{title_prefix} {added[4:]}", show_legend=False, style_priority=style_priority)
 
 # ----------------------------------------------------------------------
 
