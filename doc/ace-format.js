@@ -129,6 +129,11 @@
                 "r": 0.0,                             // rotation in radians, default 0.0
                 "a": 1.0,                             // aspect ratio, default 1.0
                 "-": false,                           // hide point and its label
+                "CI": {                               // draw serum circle based on the corresponding "CI" semantic attribute
+                    "F": 2,                           // fold
+                    "T": true,                        // false or absent: draw empirical (if available), true: draw theoretical
+                    "f": true,                        // draw fallback if radius is not available
+                },
                 "D": "r",                             // drawing order: raise, lower, absent: no change
                 "l": {                                // object label style -> Offset + TextData
                     "-": false,                       // if label is hidden
