@@ -137,7 +137,7 @@
                     "o": 1.0,                         // outline width
                     "d": 0,                           // dash
                     "a": [0, 30],                     // angles for radius lines
-                    "r": {"O": "blue", "o": 1.0},     // radius lines
+                    "r": {"O": "blue", "o": 1.0< "d": 0},     // radius lines
                 },
                 "D": "r",                             // drawing order: raise, lower, absent: no change
                 "l": {                                // object label style -> Offset + TextData

@@ -43,7 +43,7 @@ namespace ae::dynamic
                 case simdjson::ondemand::json_type::string:
                     return static_cast<std::string_view>(source.get_string());
                 case simdjson::ondemand::json_type::boolean:
-                    return source.get_bool();
+                    return bool{source.get_bool()};
                 case simdjson::ondemand::json_type::null:
                     return null{};
             }

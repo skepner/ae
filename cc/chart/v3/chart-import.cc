@@ -520,10 +520,8 @@ inline void read_semantic_plot_style_serum_circle(ae::chart::v3::semantic::Style
         const std::string_view key = field.unescaped_key();
         simdjson::ondemand::value value = field.value();
 
-        // "a": [0, 30],                     // angles for radius lines
         // "r": {"O": "blue", "o": 1.0},     // radius lines
 
-        // std::optional<std::pair<double, double>> angles{}; // angles for radius lines
         // std::optional<std::string> radius_outline{};
         // std::optional<double> radius_outline_width{};
         // std::optional<long> radius_dash{};
@@ -542,6 +540,26 @@ inline void read_semantic_plot_style_serum_circle(ae::chart::v3::semantic::Style
             target.outline_width = value;
         else if (key == "d") // dash
             target.dash = static_cast<int64_t>(value);
+        else if (key == "a") { // angles
+            std::vector<double> angles;
+            for (auto val : value.get_array())
+                angles.push_back(val);
+            target.angles = std::pair{angles[0], angles[1]};
+        }
+        else if (key == "r") { // radius lines
+            for (auto rf : value.get_object()) {
+                const std::string_view rk = rf.unescaped_key();
+                simdjson::ondemand::value rv = rf.value();
+                if (rk == "O") // outline
+                    target.radius_outline = std::string{static_cast<std::string_view>(rv)};
+                else if (rk == "o") // outline_width
+                    target.radius_outline_width = static_cast<double>(rv);
+                else if (rk == "d") // dash
+                    target.radius_dash = static_cast<int64_t>(rv);
+                else if (rk[0] != '?' && rk[0] != ' ' && rk[0] != '_')
+                    unhandled_key({"c", "R", "<name>", "A", "[index]", "CI", "r", rk});
+            }
+        }
         else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
             unhandled_key({"c", "R", "<name>", "A", "[index]", "CI", key});
     }
