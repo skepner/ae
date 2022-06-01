@@ -74,6 +74,8 @@
                         "t": 3.0,                      // theoretical
                         "cb": 6.0,                     // column basis
                     }
+                    "CI4": {},                           // serum circle for fold 4
+                    "CI8": {},                           // serum circle for fold 8
                 },
                 "C": "DEPRECATED: use s, ASIA",        //  (DEPRECATED, use "s") continent: "ASIA", "AUSTRALIA-OCEANIA", "NORTH-AMERICA", "EUROPE", "RUSSIA", "AFRICA", "MIDDLE-EAST", "SOUTH-AMERICA", "CENTRAL-AMERICA"
                 "c": ["DEPRECATED: use s"],            //  (DEPRECATED, use "s") clades, e.g. ["5.2.1"]
