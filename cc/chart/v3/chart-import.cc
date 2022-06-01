@@ -512,6 +512,43 @@ inline void read_legacy_plot_specification(ae::chart::v3::legacy::PlotSpec& targ
 
 // ----------------------------------------------------------------------
 
+inline void read_semantic_plot_style_serum_circle(ae::chart::v3::semantic::StyleModifier& modifier, simdjson::ondemand::object source)
+{
+    modifier.serum_circle = ae::chart::v3::semantic::serum_circle_style_t{};
+    auto& target = *modifier.serum_circle;
+    for (auto field : source) {
+        const std::string_view key = field.unescaped_key();
+        simdjson::ondemand::value value = field.value();
+
+        // "a": [0, 30],                     // angles for radius lines
+        // "r": {"O": "blue", "o": 1.0},     // radius lines
+
+        // std::optional<std::pair<double, double>> angles{}; // angles for radius lines
+        // std::optional<std::string> radius_outline{};
+        // std::optional<double> radius_outline_width{};
+        // std::optional<long> radius_dash{};
+
+        if (key == "u") // fold
+            target.fold = value;
+        else if (key == "T") // theoretical(true)/empirical(false)
+            target.theoretical = value;
+        else if (key == "f") // fallback
+            target.fallback = value;
+        else if (key == "O") // outline
+            target.outline.assign(static_cast<std::string_view>(value));
+        else if (key == "F") // fill
+            target.fill.assign(static_cast<std::string_view>(value));
+        else if (key == "o") // outline_width
+            target.outline_width = value;
+        else if (key == "d") // dash
+            target.dash = static_cast<int64_t>(value);
+        else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
+            unhandled_key({"c", "R", "<name>", "A", "[index]", "CI", key});
+    }
+}
+
+// ----------------------------------------------------------------------
+
 inline void read_semantic_plot_style_modifier(ae::chart::v3::semantic::StyleModifier& target, simdjson::ondemand::object source)
 {
     for (auto field : source) {
@@ -560,6 +597,9 @@ inline void read_semantic_plot_style_modifier(ae::chart::v3::semantic::StyleModi
                 else
                     AD_WARNING("[chart semantic plot spec]: unrecognized legend row field \"{}\"", legend_field_key);
             }
+        }
+        else if (key == "CI") {  // serum circle
+            read_semantic_plot_style_serum_circle(target, value.get_object());
         }
         else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
             unhandled_key({"c", "R", "<name>", "A", "[index]", key});
