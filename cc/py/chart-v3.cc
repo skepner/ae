@@ -266,9 +266,9 @@ void ae::py::chart_v3(pybind11::module_& mdl)
         // ----------------------------------------------------------------------
 
         .def(
-            "antigen", [](Chart& chart, size_t antigen_no) { return chart.antigens()[antigen_index{antigen_no}]; }, "antigen_no"_a, pybind11::return_value_policy::reference_internal) //
+            "antigen", [](Chart& chart, size_t antigen_no) -> Antigen& { return chart.antigens()[antigen_index{antigen_no}]; }, "antigen_no"_a, pybind11::return_value_policy::reference_internal) //
         .def(
-            "serum", [](Chart& chart, size_t serum_no) { return chart.sera()[serum_index{serum_no}]; }, "serum_no"_a, pybind11::return_value_policy::reference_internal) //
+            "serum", [](Chart& chart, size_t serum_no) -> Serum& { return chart.sera()[serum_index{serum_no}]; }, "serum_no"_a, pybind11::return_value_policy::reference_internal) //
 
         .def(
             "antigen_date_range", [](const Chart& chart, bool test_only) { return chart.antigens().date_range(test_only, chart.reference()); }, "test_only"_a = true,

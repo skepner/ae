@@ -12,6 +12,6 @@ def attributes(chart: ae_backend.chart_v3.Chart, fold: float = 2.0):
         if theoretical := circle_data.theoretical():
             attr["t"] = theoretical
         chart.serum(circle_data.serum_no).semantic.set(f"CI{int(fold)}", attr)
-        print(f">>>> SR {circle_data.serum_no:3d} {chart.serum(circle_data.serum_no).designation():40s} {attr}", file=sys.stderr)
+        # print(f">>>> SR {circle_data.serum_no:3d} {chart.serum(circle_data.serum_no).designation():40s} {chart.serum(circle_data.serum_no).semantic}", file=sys.stderr)
 
 # ======================================================================
