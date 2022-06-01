@@ -61,6 +61,21 @@ namespace ae::chart::v3::semantic
         void set_font_slant(std::string_view value);
     };
 
+    struct serum_circle_style_t
+    {
+        double fold{2.0};
+        bool theoretical{false};                           // false: draw empirical (if available), true: draw theoretical
+        bool fallback{true};                               // draw fallback if radius is not available
+        std::string outline{"blue"};                       // outline color
+        std::string fill{"transparent"};                   // fill color
+        double outline_width{1.0};                         // outline width
+        long dash{0};                                      // dash
+        std::optional<std::pair<double, double>> angles{}; // angles for radius lines
+        std::optional<std::string> radius_outline{};
+        std::optional<double> radius_outline_width{};
+        std::optional<long> radius_dash{};
+    };
+
     // ----------------------------------------------------------------------
 
     struct Title
@@ -97,6 +112,7 @@ namespace ae::chart::v3::semantic
         PointStyle point_style{};
         DrawingOrderModifier order{DrawingOrderModifier::no_change};
         LegendRow legend{};
+        std::optional<serum_circle_style_t> serum_circle;
     };
 
     struct Style
@@ -130,6 +146,6 @@ namespace ae::chart::v3::semantic
       private:
         std::vector<Style> styles_{};
     };
-}
+} // namespace ae::chart::v3::semantic
 
 // ----------------------------------------------------------------------

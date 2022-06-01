@@ -69,13 +69,12 @@
                     "C9": "ASIA",                      // continent
                     "c9": "USA",                       // country
                     "P": "e|c|r",                      // passage type: egg|cell|reassortant
-                    "CI2": {                           // serum circle for fold 2
+                    "CI2": {                           // serum circle for 4fold
                         "e": 4.1,                      // empirical
                         "t": 3.0,                      // theoretical
                         "cb": 6.0,                     // column basis
                     }
-                    "CI4": {},                           // serum circle for fold 4
-                    "CI8": {},                           // serum circle for fold 8
+                    "CI3": {},                           // serum circle for 8fold
                 },
                 "C": "DEPRECATED: use s, ASIA",        //  (DEPRECATED, use "s") continent: "ASIA", "AUSTRALIA-OCEANIA", "NORTH-AMERICA", "EUROPE", "RUSSIA", "AFRICA", "MIDDLE-EAST", "SOUTH-AMERICA", "CENTRAL-AMERICA"
                 "c": ["DEPRECATED: use s"],            //  (DEPRECATED, use "s") clades, e.g. ["5.2.1"]
@@ -133,11 +132,17 @@
                     "F": 2,                           // fold
                     "T": true,                        // false or absent: draw empirical (if available), true: draw theoretical
                     "f": true,                        // draw fallback if radius is not available
+                    "O": "blue",                      // outline color
+                    "F": "transparent",               // fill color
+                    "o": 1.0,                         // outline width
+                    "d": 0,                           // dash
+                    "a": [0, 30],                     // angles for radius lines
+                    "r": {"O": "blue", "o": 1.0},     // radius lines
                 },
                 "D": "r",                             // drawing order: raise, lower, absent: no change
                 "l": {                                // object label style -> Offset + TextData
                     "-": false,                       // if label is hidden
-                    "p":  [0, 1],                      // [x, y]: label offset (2D only), list of two doubles, default is [0, 1] means under point
+                    "p":  [0, 1],                     // [x, y]: label offset (2D only), list of two doubles, default is [0, 1] means under point
                     "t": "label",                     // label text if forced by user
                     "f": "helvetica",                 // font face
                     "S": "normal",                    // font slant: "normal" (default), "italic"

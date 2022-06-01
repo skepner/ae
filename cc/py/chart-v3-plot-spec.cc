@@ -71,6 +71,58 @@ namespace ae::py
 
     // ----------------------------------------------------------------------
 
+    static inline void set_serum_circle_style(ae::chart::v3::semantic::serum_circle_style_t& target, const pybind11::dict& source)
+    {
+        for (const auto [key_raw, value] : source) {
+            if (const std::string_view key = key_raw.cast<std::string_view>(); key == "outline")
+                target.outline.assign(value.cast<std::string_view>());
+            else if (key == "fill")
+                target.fill.assign(value.cast<std::string_view>());
+            else if (key == "outline_width")
+                target.outline_width = value.cast<double>();
+            else if (key == "dash")
+                target.dash = value.cast<long>();
+            else if (key == "angles") {
+                const auto val = value.cast<std::vector<double>>();
+                target.angles = std::pair{val[0], val[1]};
+            }
+            else if (key == "radius_lines") {
+                for (const auto [key2_raw, value2] : value.cast<pybind11::dict>()) {
+                    if (const std::string_view key2 = key2_raw.cast<std::string_view>(); key2 == "outline")
+                        target.radius_outline = std::string{value2.cast<std::string_view>()};
+                    else if (key2 == "outline_width")
+                        target.radius_outline_width = value2.cast<double>();
+                    else if (key2 == "dash")
+                        target.radius_dash = value2.cast<long>();
+                    else
+                        AD_WARNING("unrecognized semantic style serum circle style radius_lines key \"{}\" in {}", key2, pybind11::repr(value2).cast<std::string_view>());
+                }
+            }
+            else
+                AD_WARNING("unrecognized semantic style serum circle style key \"{}\" in {}", key, pybind11::repr(source).cast<std::string_view>());
+        }
+    }
+
+    static inline void add_modifier_serum_circle(ae::chart::v3::semantic::StyleModifier& modifier, const pybind11::dict& source)
+    {
+        modifier.serum_circle = ae::chart::v3::semantic::serum_circle_style_t{};
+        auto& target = *modifier.serum_circle;
+        for (const auto [key_raw, value] : source) {
+            if (const std::string_view key = key_raw.cast<std::string_view>(); key == "fold")
+                target.fold = value.cast<double>();
+            else if (key == "theoretical")
+                target.theoretical = value.cast<bool>();
+            else if (key == "fallback")
+                target.fallback = value.cast<bool>();
+            else if (key == "style")
+                set_serum_circle_style(target, value.cast<pybind11::dict>());
+            else
+                AD_WARNING("unrecognized semantic style serum circle modifier key \"{}\" in {}", key, pybind11::repr(source).cast<std::string_view>());
+        }
+    }
+
+    // ----------------------------------------------------------------------
+
     static inline ae::chart::v3::semantic::StyleModifier& add_modifier(ae::chart::v3::semantic::Style& style, const pybind11::kwargs& kwargs)
     {
         auto& modifier = style.modifiers.emplace_back();
@@ -128,6 +180,9 @@ namespace ae::py
                 else if (keyword == "label") {
                     add_modifier_label(modifier.point_style.label(), value.cast<pybind11::dict>());
                 }
+                else if (keyword == "serum_circle") {
+                    add_modifier_serum_circle(modifier, value.cast<pybind11::dict>());
+                }
                 else
                     throw std::runtime_error{fmt::format("Style.add_modifier: unrecognized \"{}\": {}", keyword, static_cast<std::string>(pybind11::repr(value)))};
             }
@@ -139,6 +194,8 @@ namespace ae::py
     {
         style.modifiers.clear();
     }
+
+    // ----------------------------------------------------------------------
 
 } // namespace ae::py
 
