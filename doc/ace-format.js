@@ -135,9 +135,9 @@
                     "O": "blue",                      // outline color
                     "F": "transparent",               // fill color
                     "o": 1.0,                         // outline width
-                    "d": 0,                           // dash
+                    "d": 0,                           // number of dashes in circle, reasonable value: 100
                     "a": [0, 30],                     // angles for radius lines
-                    "r": {"O": "blue", "o": 1.0< "d": 0},     // radius lines
+                    "r": {"O": "blue", "o": 1.0< "d": 0},     // radius lines, "d" - number of dashes in radius line, reasonable value: 16 (100 / 2 / pi)
                 },
                 "D": "r",                             // drawing order: raise, lower, absent: no change
                 "l": {                                // object label style -> Offset + TextData
