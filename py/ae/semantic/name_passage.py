@@ -93,7 +93,7 @@ def style(chart: ae_backend.chart_v3.Chart, style_name: str, semantic_key: str, 
     # individual point modifiers with label data
     name_generator = NameGenerator()
     for no, antigen in chart.select_antigens(lambda ag: bool(ag.antigen.semantic.get(semantic_key))):
-        style.add_modifier(selector={"!i": no}, outline_width=4.0, label={**label_style, "text": name_generator.location_isolation_year2_passaga_type(antigen)})
+        style.add_modifier(selector={"!i": no}, only="antigens", outline_width=4.0, label={**label_style, "text": name_generator.location_isolation_year2_passaga_type(antigen)})
         # print(f">>>> {no} {antigen.designation()}", file=sys.stderr)
     return set([style_name])
 

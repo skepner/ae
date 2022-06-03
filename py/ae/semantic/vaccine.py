@@ -96,7 +96,7 @@ def style(chart: ae_backend.chart_v3.Chart, style_name: str = "-vaccines") -> se
     # individual vaccine modifiers with label data
     for no, antigen in chart.select_antigens(lambda ag: bool(ag.antigen.semantic.get("V"))):
         for style in styles:
-            style.add_modifier(selector={"!i": no}, outline_width=4.0, label={**sLabelModifier, "text": name_generator.location_year2_passaga_type(antigen)})
+            style.add_modifier(selector={"!i": no}, only="antigens", outline_width=4.0, label={**sLabelModifier, "text": name_generator.location_year2_passaga_type(antigen)})
 
     def is_current_vaccine(ag):
         if vaccine_attribute := ag.antigen.semantic.get("V"):
@@ -106,7 +106,7 @@ def style(chart: ae_backend.chart_v3.Chart, style_name: str = "-vaccines") -> se
 
     for no, antigen in chart.select_antigens(lambda ag: is_current_vaccine(ag)):
         fill = "green" if antigen.reassortant() else "red"
-        styles[1].add_modifier(selector={"!i": no}, fill=fill)
+        styles[1].add_modifier(selector={"!i": no}, only="antigens", fill=fill)
 
     return set([style_name, style_name + "-blue"])
 

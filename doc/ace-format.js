@@ -114,7 +114,7 @@
                 "R": "-clades",                       // name ("N") of another plot spec to use (inherited from), applied before adding other changes provided by this object
                 "T": {                                // select antigens/sera
                     "<name of semantic attribute>": <value>, // if value is true, ag/sr selected if they have that semantic attribute with any value, if value is false, select only if attribute is absent or false
-                    "!i": 0,                          // antigen/serum index, i.e. individual selection
+                    "!i": 0,                          // antigen/serum index, i.e. individual selection (must use "A" below as well!)
 
                     "!D": ["date-first", "date-last"] // ? select antigens with isolation date in range, if antigen date is absent, it is ""
                                                       // if date-last is "", it means until now

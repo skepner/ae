@@ -42,7 +42,7 @@ def style(chart: ae_backend.chart_v3.Chart, style_name: str, priority: int = 100
             this_circle_style["fill"] = this_circle_style["fill"][serum_passage_type]
         if isinstance(this_circle_style.get("radius_lines", {}).get("outline"), dict):
             this_circle_style["radius_lines"]["outline"] = this_circle_style["radius_lines"]["outline"][serum_passage_type]
-        style.add_modifier(selector={"!i": serum_no}, serum_circle={"fold": fold, "theoretical": theoretical, "fallback": fallback, "style": this_circle_style}, only="sera")
+        style.add_modifier(selector={"!i": serum_no}, only="sera", serum_circle={"fold": fold, "theoretical": theoretical, "fallback": fallback, "style": this_circle_style})
     return set([style_name])
 
 # ======================================================================
