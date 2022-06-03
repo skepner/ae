@@ -86,6 +86,15 @@ def add_plot_styles(chart: ae_backend.chart_v3.Chart, semantic_data: dict, numbe
     added_styles |= ae.semantic.time_series.style(chart=chart)
     added_styles |= ae.semantic.new_compared_to.style(chart=chart, number_of_previous_charts=number_of_previous_charts)
 
+    sera_for_coverage = [8, 9, 10, 11, 16, 17] # for bvic-hi-turkey-cnic
+    priority = 4000
+    for serum_no in sera_for_coverage:
+        for theoretical in [True, False]:
+            et = 't' if theoretical else 'e'
+            ae.semantic.serum_circle.style(chart=chart, style_name=f"-ci-{serum_no}-{et}", sera=[serum_no], theoretical=theoretical, priority=priority)
+            ae.semantic.serum_coverage.style(chart=chart, style_name=f"-sc-{serum_no}-{et}", serum_no=serum_no, theoretical=theoretical, priority=priority)
+        priority += 1
+
     # front styles
     front_style_order = ["clades", "clades-v1", "clades-v2", "serology"]
     def add_front_style(style_name: str, references: list[str], title: str, show_legend: bool, legend_counter: bool = True, style_priority: int = None):

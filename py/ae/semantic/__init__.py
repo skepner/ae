@@ -6,5 +6,6 @@ from . import pale
 from . import passage
 from . import reference
 from . import serum_circle
+from . import serum_coverage
 from . import time_series
 from . import vaccine

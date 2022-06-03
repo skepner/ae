@@ -32,17 +32,21 @@ def style(chart: ae_backend.chart_v3.Chart, style_name: str, priority: int = 100
     """
     style = chart.styles()[style_name]
     style.priority = priority
-    sera = sera if sera is not None else list(range(chart.number_of_sera()))
+    num_sera = chart.number_of_sera()
+    sera = sera if sera is not None else list(range(num_sera))
     for serum_no in sera:
-        serum_passage_type = chart.serum(serum_no).passage().passage_type()
-        this_circle_style = {**circle_style}
-        if isinstance(this_circle_style.get("outline"), dict):
-            this_circle_style["outline"] = this_circle_style["outline"][serum_passage_type]
-        if isinstance(this_circle_style.get("fill"), dict):
-            this_circle_style["fill"] = this_circle_style["fill"][serum_passage_type]
-        if isinstance(this_circle_style.get("radius_lines", {}).get("outline"), dict):
-            this_circle_style["radius_lines"]["outline"] = this_circle_style["radius_lines"]["outline"][serum_passage_type]
-        style.add_modifier(selector={"!i": serum_no}, only="sera", serum_circle={"fold": fold, "theoretical": theoretical, "fallback": fallback, "style": this_circle_style})
+        if serum_no >= 0 and serum_no < num_sera:
+            serum_passage_type = chart.serum(serum_no).passage().passage_type()
+            this_circle_style = {**circle_style}
+            if isinstance(this_circle_style.get("outline"), dict):
+                this_circle_style["outline"] = this_circle_style["outline"][serum_passage_type]
+            if isinstance(this_circle_style.get("fill"), dict):
+                this_circle_style["fill"] = this_circle_style["fill"][serum_passage_type]
+            if isinstance(this_circle_style.get("radius_lines", {}).get("outline"), dict):
+                this_circle_style["radius_lines"]["outline"] = this_circle_style["radius_lines"]["outline"][serum_passage_type]
+            style.add_modifier(selector={"!i": serum_no}, only="sera", serum_circle={"fold": fold, "theoretical": theoretical, "fallback": fallback, "style": this_circle_style})
+        else:
+            print(f">> serum_circle.style: invalid serum no {serum_no}, number of sera in the chart: {num_sera}", file=sys.stderr)
     return set([style_name])
 
 # ======================================================================
