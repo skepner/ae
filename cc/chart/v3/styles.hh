@@ -61,19 +61,31 @@ namespace ae::chart::v3::semantic
         void set_font_slant(std::string_view value);
     };
 
-    struct serum_circle_style_t
+    struct point_style_fow_t
+    {
+        std::string outline{"blue"};                       // outline color
+        std::string fill{"transparent"};                   // fill color
+        double outline_width{1.0};                         // outline width
+    };
+
+    struct serum_circle_style_t : public point_style_fow_t
     {
         double fold{2.0};
         bool theoretical{false};                           // false: draw empirical (if available), true: draw theoretical
         bool fallback{true};                               // draw fallback if radius is not available
-        std::string outline{"blue"};                       // outline color
-        std::string fill{"transparent"};                   // fill color
-        double outline_width{1.0};                         // outline width
         long dash{0};                                      // dash
         std::optional<std::pair<double, double>> angles{}; // angles for radius lines
         std::optional<std::string> radius_outline{};
         std::optional<double> radius_outline_width{};
         std::optional<long> radius_dash{};
+    };
+
+    struct serum_coverage_style_t
+    {
+        double fold{2.0};
+        bool theoretical{false};                           // false: draw empirical (if available), true: draw theoretical
+        point_style_fow_t within{};
+        point_style_fow_t outside{};
     };
 
     // ----------------------------------------------------------------------
@@ -113,6 +125,7 @@ namespace ae::chart::v3::semantic
         DrawingOrderModifier order{DrawingOrderModifier::no_change};
         LegendRow legend{};
         std::optional<serum_circle_style_t> serum_circle;
+        std::optional<serum_coverage_style_t> serum_coverage;
     };
 
     struct Style

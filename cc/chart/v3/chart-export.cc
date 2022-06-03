@@ -369,20 +369,29 @@ static inline bool export_semantic_plot_spec_modifiers(fmt::memory_buffer& out, 
                 fmt::format_to(std::back_inserter(out), "\"L\":{{\"p\":{},\"t\":\"{}\"}}", modifier.legend.priority, modifier.legend.text);
             }
             if (modifier.serum_circle.has_value()) {
+                const auto& serum_circle = *modifier.serum_circle;
                 comma_R4 = put_comma(out, comma_R4);
-                fmt::format_to(std::back_inserter(out), "\"CI\":{{\"u\":{},\"T\":{},\"f\":{},\"O\":\"{}\",\"F\":\"{}\",\"o\":{},\"d\":{}", ae::format_double(modifier.serum_circle->fold),
-                               modifier.serum_circle->theoretical, modifier.serum_circle->fallback, modifier.serum_circle->outline, modifier.serum_circle->fill,
-                               ae::format_double(modifier.serum_circle->outline_width), modifier.serum_circle->dash);
-                if (modifier.serum_circle->angles.has_value())
-                    fmt::format_to(std::back_inserter(out), ",\"a\":[{}, {}]", ae::format_double(modifier.serum_circle->angles->first), ae::format_double(modifier.serum_circle->angles->second));
-                if (modifier.serum_circle->radius_outline.has_value()) {
-                    fmt::format_to(std::back_inserter(out), ",\"r\":{{\"O\":\"{}\"", *modifier.serum_circle->radius_outline);
-                    if (modifier.serum_circle->radius_outline_width.has_value())
-                        fmt::format_to(std::back_inserter(out), ",\"o\":{}", ae::format_double(*modifier.serum_circle->radius_outline_width));
-                    if (modifier.serum_circle->radius_dash.has_value())
-                        fmt::format_to(std::back_inserter(out), ",\"d\":{}", *modifier.serum_circle->radius_dash);
+                fmt::format_to(std::back_inserter(out), "\"CI\":{{\"u\":{},\"T\":{},\"f\":{},\"O\":\"{}\",\"F\":\"{}\",\"o\":{},\"d\":{}", ae::format_double(serum_circle.fold),
+                               serum_circle.theoretical, serum_circle.fallback, serum_circle.outline, serum_circle.fill, ae::format_double(serum_circle.outline_width), serum_circle.dash);
+                if (serum_circle.angles.has_value())
+                    fmt::format_to(std::back_inserter(out), ",\"a\":[{}, {}]", ae::format_double(serum_circle.angles->first), ae::format_double(serum_circle.angles->second));
+                if (serum_circle.radius_outline.has_value()) {
+                    fmt::format_to(std::back_inserter(out), ",\"r\":{{\"O\":\"{}\"", *serum_circle.radius_outline);
+                    if (serum_circle.radius_outline_width.has_value())
+                        fmt::format_to(std::back_inserter(out), ",\"o\":{}", ae::format_double(*serum_circle.radius_outline_width));
+                    if (serum_circle.radius_dash.has_value())
+                        fmt::format_to(std::back_inserter(out), ",\"d\":{}", *serum_circle.radius_dash);
                     fmt::format_to(std::back_inserter(out), "}}");
                 }
+                fmt::format_to(std::back_inserter(out), "}}");
+            }
+            if (modifier.serum_coverage.has_value()) {
+                const auto& serum_coverage = *modifier.serum_coverage;
+                comma_R4 = put_comma(out, comma_R4);
+                fmt::format_to(std::back_inserter(out), "\"SC\":{{\"u\":{},\"T\":{},\"I\":{{\"O\":\"{}\",\"F\":\"{}\",\"o\":{}}},\"O\":{{\"O\":\"{}\",\"F\":\"{}\",\"o\":{}}}",
+                               ae::format_double(serum_coverage.fold), serum_coverage.theoretical, serum_coverage.within.outline, serum_coverage.within.fill,
+                               ae::format_double(serum_coverage.within.outline_width), serum_coverage.outside.outline, serum_coverage.outside.fill,
+                               ae::format_double(serum_coverage.outside.outline_width));
                 fmt::format_to(std::back_inserter(out), "}}");
             }
             fmt::format_to(std::back_inserter(out), "}}");

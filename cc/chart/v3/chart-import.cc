@@ -512,6 +512,22 @@ inline void read_legacy_plot_specification(ae::chart::v3::legacy::PlotSpec& targ
 
 // ----------------------------------------------------------------------
 
+inline bool read_semantic_plot_style_point_fow(ae::chart::v3::semantic::point_style_fow_t& target, std::string_view key, simdjson::ondemand::value value)
+{
+    bool handled{true};
+    if (key == "O") // outline
+        target.outline.assign(static_cast<std::string_view>(value));
+    else if (key == "F") // fill
+        target.fill.assign(static_cast<std::string_view>(value));
+    else if (key == "o") // outline_width
+        target.outline_width = value;
+    else
+        handled = false;
+    return handled;
+}
+
+// ----------------------------------------------------------------------
+
 inline void read_semantic_plot_style_serum_circle(ae::chart::v3::semantic::StyleModifier& modifier, simdjson::ondemand::object source)
 {
     modifier.serum_circle = ae::chart::v3::semantic::serum_circle_style_t{};
@@ -519,25 +535,14 @@ inline void read_semantic_plot_style_serum_circle(ae::chart::v3::semantic::Style
     for (auto field : source) {
         const std::string_view key = field.unescaped_key();
         simdjson::ondemand::value value = field.value();
-
-        // "r": {"O": "blue", "o": 1.0},     // radius lines
-
-        // std::optional<std::string> radius_outline{};
-        // std::optional<double> radius_outline_width{};
-        // std::optional<long> radius_dash{};
-
-        if (key == "u") // fold
+        if (read_semantic_plot_style_point_fow(target, key, value))
+            ;                   // handled by fow
+        else if (key == "u") // fold
             target.fold = value;
         else if (key == "T") // theoretical(true)/empirical(false)
             target.theoretical = value;
         else if (key == "f") // fallback
             target.fallback = value;
-        else if (key == "O") // outline
-            target.outline.assign(static_cast<std::string_view>(value));
-        else if (key == "F") // fill
-            target.fill.assign(static_cast<std::string_view>(value));
-        else if (key == "o") // outline_width
-            target.outline_width = value;
         else if (key == "d") // dash
             target.dash = static_cast<int64_t>(value);
         else if (key == "a") { // angles
@@ -562,6 +567,38 @@ inline void read_semantic_plot_style_serum_circle(ae::chart::v3::semantic::Style
         }
         else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
             unhandled_key({"c", "R", "<name>", "A", "[index]", "CI", key});
+    }
+}
+
+// ----------------------------------------------------------------------
+
+inline void read_semantic_plot_style_serum_coverage(ae::chart::v3::semantic::StyleModifier& modifier, simdjson::ondemand::object source)
+{
+    modifier.serum_coverage = ae::chart::v3::semantic::serum_coverage_style_t{};
+    auto& target = *modifier.serum_coverage;
+    for (auto field : source) {
+        const std::string_view key = field.unescaped_key();
+        simdjson::ondemand::value value = field.value();
+        if (key == "u") // fold
+            target.fold = value;
+        else if (key == "T") // theoretical(true)/empirical(false)
+            target.theoretical = value;
+        else if (key == "O") { // outside
+            for (auto f2 : value.get_object()) {
+                const std::string_view k2 = f2.unescaped_key();
+                if (!read_semantic_plot_style_point_fow(target.outside, k2, f2.value()) && k2[0] != '?' && k2[0] != ' ' && k2[0] != '_')
+                    unhandled_key({"c", "R", "<name>", "A", "[index]", "SC", "O", k2});
+            }
+        }
+        else if (key == "I") { // within
+            for (auto f2 : value.get_object()) {
+                const std::string_view k2 = f2.unescaped_key();
+                if (!read_semantic_plot_style_point_fow(target.within, k2, f2.value()) && k2[0] != '?' && k2[0] != ' ' && k2[0] != '_')
+                    unhandled_key({"c", "R", "<name>", "A", "[index]", "SC", "I", k2});
+            }
+        }
+        else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
+            unhandled_key({"c", "R", "<name>", "A", "[index]", "SC", key});
     }
 }
 
@@ -618,6 +655,9 @@ inline void read_semantic_plot_style_modifier(ae::chart::v3::semantic::StyleModi
         }
         else if (key == "CI") {  // serum circle
             read_semantic_plot_style_serum_circle(target, value.get_object());
+        }
+        else if (key == "SC") {  // serum coverage
+            read_semantic_plot_style_serum_coverage(target, value.get_object());
         }
         else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
             unhandled_key({"c", "R", "<name>", "A", "[index]", key});
