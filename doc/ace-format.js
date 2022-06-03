@@ -36,7 +36,7 @@
                     "V": "es201902",                               // vaccine: egg/cell/reassortant, surrogate, year[month]
                     "C9": "ASIA",                                  // continent: "ASIA", "AUSTRALIA-OCEANIA", "NORTH-AMERICA", "EUROPE", "RUSSIA", "AFRICA", "MIDDLE-EAST", "SOUTH-AMERICA", "CENTRAL-AMERICA"
                     "c9": "USA",                                   // country: "UNITED KINGDOM"
-                    "P": "e|c|r",                                  // passage type: egg|cell|reassortant
+                    "p": "e|c|r",                                  // passage type: egg|cell|reassortant
                     "serology": true,                              // serology
                     "new": 1,                                      // new since last tc, 2 tc ago
 
@@ -68,7 +68,7 @@
                     "C": [],                                       // clades
                     "C9": "ASIA",                                  // continent
                     "c9": "USA",                                   // country
-                    "P": "e|c|r",                                  // passage type: egg|cell|reassortant
+                    "p": "e|c|r",                                  // passage type: egg|cell|reassortant
                     "CI2": {                                       // serum circle for 4fold
                         "e": 4.1,                                  // empirical
                         "t": 3.0,                                  // theoretical
