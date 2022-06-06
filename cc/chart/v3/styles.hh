@@ -83,7 +83,6 @@ namespace ae::chart::v3::semantic
     struct serum_coverage_style_t
     {
         double fold{2.0};
-        bool theoretical{false};                           // false: draw empirical (if available), true: draw theoretical
         point_style_fow_t within{};
         point_style_fow_t outside{};
     };

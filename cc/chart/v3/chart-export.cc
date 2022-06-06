@@ -388,8 +388,8 @@ static inline bool export_semantic_plot_spec_modifiers(fmt::memory_buffer& out, 
             if (modifier.serum_coverage.has_value()) {
                 const auto& serum_coverage = *modifier.serum_coverage;
                 comma_R4 = put_comma(out, comma_R4);
-                fmt::format_to(std::back_inserter(out), "\"SC\":{{\"u\":{},\"T\":{},\"I\":{{\"O\":\"{}\",\"F\":\"{}\",\"o\":{}}},\"O\":{{\"O\":\"{}\",\"F\":\"{}\",\"o\":{}}}",
-                               ae::format_double(serum_coverage.fold), serum_coverage.theoretical, serum_coverage.within.outline, serum_coverage.within.fill,
+                fmt::format_to(std::back_inserter(out), "\"SC\":{{\"u\":{},\"I\":{{\"O\":\"{}\",\"F\":\"{}\",\"o\":{}}},\"O\":{{\"O\":\"{}\",\"F\":\"{}\",\"o\":{}}}",
+                               ae::format_double(serum_coverage.fold), serum_coverage.within.outline, serum_coverage.within.fill,
                                ae::format_double(serum_coverage.within.outline_width), serum_coverage.outside.outline, serum_coverage.outside.fill,
                                ae::format_double(serum_coverage.outside.outline_width));
                 fmt::format_to(std::back_inserter(out), "}}");

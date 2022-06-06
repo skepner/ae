@@ -92,7 +92,7 @@ def add_plot_styles(chart: ae_backend.chart_v3.Chart, semantic_data: dict, numbe
         for theoretical in [True, False]:
             et = 't' if theoretical else 'e'
             ae.semantic.serum_circle.style(chart=chart, style_name=f"-ci-{serum_no}-{et}", sera=[serum_no], theoretical=theoretical, priority=priority)
-            ae.semantic.serum_coverage.style(chart=chart, style_name=f"-sc-{serum_no}-{et}", serum_no=serum_no, theoretical=theoretical, priority=priority)
+        ae.semantic.serum_coverage.style(chart=chart, style_name=f"-sc-{serum_no}", serum_no=serum_no, priority=priority)
         priority += 1
 
     # front styles

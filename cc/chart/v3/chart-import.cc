@@ -581,8 +581,6 @@ inline void read_semantic_plot_style_serum_coverage(ae::chart::v3::semantic::Sty
         simdjson::ondemand::value value = field.value();
         if (key == "u") // fold
             target.fold = value;
-        else if (key == "T") // theoretical(true)/empirical(false)
-            target.theoretical = value;
         else if (key == "O") { // outside
             for (auto f2 : value.get_object()) {
                 const std::string_view k2 = f2.unescaped_key();

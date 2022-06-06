@@ -144,8 +144,6 @@ namespace ae::py
         for (const auto [key_raw, value] : source) {
             if (const std::string_view key = key_raw.cast<std::string_view>(); key == "fold")
                 target.fold = value.cast<double>();
-            else if (key == "theoretical")
-                target.theoretical = value.cast<bool>();
             else if (key == "within")
                 set_point_style_fow(target.within, value.cast<pybind11::dict>(), true);
             else if (key == "outside")

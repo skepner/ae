@@ -141,7 +141,6 @@
                 },
                 "SC": {                                            // serum coverage data
                     "u": 2,                                        // fold
-                    "T": true,                                     // false or absent: empirical, true: theoretical
                     "I": {                                         // style for points within fold
                         "O": "pink",                               // outline color
                         "F": ":bright",                            // fill color
