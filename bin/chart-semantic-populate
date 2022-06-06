@@ -89,10 +89,13 @@ def add_plot_styles(chart: ae_backend.chart_v3.Chart, semantic_data: dict, numbe
     sera_for_coverage = [8, 9, 10, 11, 16, 17] # for bvic-hi-turkey-cnic
     priority = 4000
     for serum_no in sera_for_coverage:
+        serum_passage_type = chart.serum(serum_no).passage().passage_type()
+        color = "#FF0000" if serum_passage_type == "egg" else ("#FFA500" if serum_passage_type == "reassortant" else "#0000FF")
+        circle_style = {"outline": color, "fill": f"#10{color[1:]}", "outline_width": 3.0}
         for theoretical in [True, False]:
             et = 't' if theoretical else 'e'
-            ae.semantic.serum_circle.style(chart=chart, style_name=f"-ci-{serum_no}-{et}", sera=[serum_no], theoretical=theoretical, priority=priority)
-        ae.semantic.serum_coverage.style(chart=chart, style_name=f"-sc-{serum_no}", serum_no=serum_no, priority=priority)
+            added_styles |= ae.semantic.serum_circle.style(chart=chart, style_name=f"-ci-{serum_no}-{et}", sera=[serum_no], theoretical=theoretical, priority=priority, circle_style=circle_style)
+        added_styles |= ae.semantic.serum_coverage.style(chart=chart, style_name=f"-sc-{serum_no}", serum_no=serum_no, priority=priority)
         priority += 1
 
     # front styles
@@ -118,8 +121,15 @@ def add_plot_styles(chart: ae_backend.chart_v3.Chart, semantic_data: dict, numbe
             add_front_style(style_name=added[1:], references=["-reset", added, "-new-2", "-new-1", "-vaccines"], title=f"{title_prefix} by clade", show_legend=True, legend_counter=True)
         elif added == "-serology":
             add_front_style(style_name=added[1:], references=["-reset", "-clades", "-clades-v1", "-pale", added, "-vaccines-blue"], title=f"{title_prefix} with serology antigens", show_legend=True, legend_counter=True)
+    # serum coverage front
+    sc_style_priority = 20
+    for serum_no in sera_for_coverage:
+        sr_name = chart.serum(serum_no).designation()
+        for suff in ["e", "t"]:
+            add_front_style(style_name=f"sc-{serum_no}-{suff}", references=["-reset", "-clades", "-clades-v1", "-pale", f"-sc-{serum_no}", f"-ci-{serum_no}-{suff}", "-vaccines"], title=f"{title_prefix}\n{sr_name}", show_legend=True, legend_counter=True, style_priority=sc_style_priority)
+            sc_style_priority += 1
     # add last 6 ts
-    for style_priority, added in enumerate(sorted(added for added in added_styles if added[:4] == "-ts-")[-6:], start=20):
+    for style_priority, added in enumerate(sorted(added for added in added_styles if added[:4] == "-ts-")[-6:], start=30):
         add_front_style(style_name=added[1:], references=["-reset", "-continent", added, "-new-big", "-vaccines-blue"], title=f"{title_prefix} {added[4:]}", show_legend=False, style_priority=style_priority)
     # serum circles
     ae.semantic.serum_circle.style(chart=chart, style_name="ci-all")
