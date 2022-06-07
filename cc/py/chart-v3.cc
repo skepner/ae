@@ -195,6 +195,15 @@ void ae::py::chart_v3(pybind11::module_& mdl)
 
         .def("populate_from_seqdb", &populate_from_seqdb, pybind11::doc("populate with sequences from seqdb, returns number of antigens and number of sera that have sequences")) //
         .def("lineage", [](const Chart& chart) -> std::string_view { return chart.lineage(); })                                                                                   //
+        .def(
+            "subtype_lineage",
+            [](const Chart& chart) -> std::string {
+                if (const auto subtype = chart.info().type_subtype(); subtype.h_or_b() == "B")
+                    return fmt::format("{}{}", subtype, chart.lineage());
+                else
+                    return std::string{*subtype};
+            },
+            pybind11::doc("returns A(H1N1), A(H3N2), BV, BY")) //
 
         // ----------------------------------------------------------------------
 
@@ -284,20 +293,20 @@ void ae::py::chart_v3(pybind11::module_& mdl)
                           "is called for each antigen, selects just antigens for which predicate\n"
                           "returns True, returns SelectedAntigens object.")) //
         .def(
-            "select_all_antigens",                                                         //
-            [](std::shared_ptr<Chart> chart) { return new SelectedAntigens{chart}; },      //
-            pybind11::doc(R"(Select all antigens.)")) //
+            "select_all_antigens",                                                    //
+            [](std::shared_ptr<Chart> chart) { return new SelectedAntigens{chart}; }, //
+            pybind11::doc(R"(Select all antigens.)"))                                 //
         .def(
             "select_no_antigens", //
             [](std::shared_ptr<Chart> chart) {
                 return new SelectedAntigens{chart, SelectedAntigens::None};
-            },                                                                            //
+            },                                       //
             pybind11::doc(R"(Select no antigens.)")) //
         .def(
             "select_reference_antigens", //
             [](std::shared_ptr<Chart> chart) {
                 return new SelectedAntigens{chart, chart->reference()};
-            },                                                                                   //
+            },                                              //
             pybind11::doc(R"(Select reference antigens.)")) //
         .def(
             "select_new_antigens", //
@@ -305,7 +314,8 @@ void ae::py::chart_v3(pybind11::module_& mdl)
                 auto* selected = new SelectedAntigens{chart};
                 selected->filter_new(previous_chart.antigens());
                 return selected;
-            }, "previous_chart"_a,                                                                                  //
+            },
+            "previous_chart"_a,                                                   //
             pybind11::doc(R"(Select antigens not found in the previous_chart.)")) //
 
         // .def("antigens_by_aa_at_pos", &ae::py::antigens_sera_by_aa_at_pos<SelectedAntigens>, "pos"_a,
@@ -323,14 +333,14 @@ void ae::py::chart_v3(pybind11::module_& mdl)
                           "is called for each serum, selects just sera for which predicate\n"
                           "returns True, returns SelectedSera object.")) //
         .def(
-            "select_all_sera",                                                     //
-            [](std::shared_ptr<Chart> chart) { return new SelectedSera{chart}; },  //
-            pybind11::doc(R"(Select all sera.)")) //
+            "select_all_sera",                                                    //
+            [](std::shared_ptr<Chart> chart) { return new SelectedSera{chart}; }, //
+            pybind11::doc(R"(Select all sera.)"))                                 //
         .def(
             "select_no_sera", //
             [](std::shared_ptr<Chart> chart) {
                 return new SelectedSera{chart, SelectedSera::None};
-            },                                                                    //
+            },                                   //
             pybind11::doc(R"(Select no sera.)")) //
 
         .def("duplicates_distinct", &Chart::duplicates_distinct, pybind11::doc("make duplicating antigens/sera distinct")) //
