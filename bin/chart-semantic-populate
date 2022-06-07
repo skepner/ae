@@ -34,7 +34,7 @@ def main(args):
 def load_modules(chart: ae_backend.chart_v3.Chart, module_filenames: list[Path]) -> dict:
     semantic_attribute_data = {}
     semantic_plot_spec_data = {}
-    subtype = f"{chart.info().type_subtype()}{chart.lineage()}"
+    subtype = chart.subtype_lineage()
     for module_filename in module_filenames:
         mod = ae.utils.load_module.load(module_filename)
         semantic_attribute_data.update(mod.semantic_attribute_data_for_subtype(subtype))
