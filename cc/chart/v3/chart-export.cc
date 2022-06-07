@@ -453,10 +453,8 @@ static inline void export_legacy_plot_spec(fmt::memory_buffer& out, const ae::ch
 
 // ----------------------------------------------------------------------
 
-void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
+std::string ae::chart::v3::Chart::export_to_json() const
 {
-    Timeit ti{fmt::format("exporting chart to {}", filename), std::chrono::milliseconds{1000}};
-
     fmt::memory_buffer out;
 
     // ----------------------------------------------------------------------
@@ -726,7 +724,17 @@ void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
 
     fmt::format_to(std::back_inserter(out), "\n }}\n}}\n");
 
-    ae::file::write(filename, fmt::to_string(out), ae::file::force_compression::yes);
+    return fmt::to_string(out);
+
+} // ae::chart::v3::Chart::export_to_json
+
+// ----------------------------------------------------------------------
+
+void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
+{
+    Timeit ti{fmt::format("exporting chart to {}", filename), std::chrono::milliseconds{1000}};
+
+    ae::file::write(filename, export_to_json(), ae::file::force_compression::yes);
 
 } // ae::chart::v3::Chart::write
 

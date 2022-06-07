@@ -172,6 +172,8 @@ void ae::py::chart_v3(pybind11::module_& mdl)
         .def(pybind11::init<const std::filesystem::path&>(), "filename"_a, pybind11::doc("imports chart from a file")) //
         .def(pybind11::init<const Chart&>(), "chart"_a, pybind11::doc("clone chart"))                                  //
         .def("write", &Chart::write, "filename"_a, pybind11::doc("exports chart into a file"))                         //
+        .def(
+            "export", [](const Chart& chart) -> pybind11::bytes { return chart.export_to_json(); }, pybind11::doc("exports chart into json uncompressed, bytes")) //
 
         .def("__str__", [](const Chart& chart) { return chart.name(); }) //
         .def(
