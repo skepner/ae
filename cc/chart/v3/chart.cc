@@ -295,6 +295,8 @@ ae::antigen_indexes ae::chart::v3::Chart::reference() const
 ae::sequences::lineage_t ae::chart::v3::Chart::lineage() const // major lineage
 {
     const auto present_lineages = lineages();
+    if (!present_lineages.empty() && info().type_subtype().h_or_b() != "B")
+        AD_WARNING("Lineages for \"{}\": {}", info().type_subtype(), present_lineages);
     const auto max = std::max_element(std::begin(present_lineages), std::end(present_lineages), [](const auto& en1, const auto& en2) { return en1.second < en2.second; });
     if (max != std::end(present_lineages))
         return max->first;
@@ -309,8 +311,10 @@ std::unordered_map<ae::sequences::lineage_t, size_t, ae::sequences::lineage_t_ha
 {
     std::unordered_map<sequences::lineage_t, size_t, ae::sequences::lineage_t_hash_for_unordered_map, std::equal_to<>> lineages;
     for (const auto& antigen : antigens()) {
-        if (const auto& lineage = antigen.lineage(); !lineage.empty())
+        if (const auto& lineage = antigen.lineage(); !lineage.empty()) {
+            // AD_DEBUG("{} --> lineage {}", antigen.designation(), lineage);
             ++lineages.try_emplace(lineage, 0).first->second;
+        }
     }
     return lineages;
 
