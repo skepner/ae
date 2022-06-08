@@ -22,19 +22,19 @@ def parse_date(source: datetime.date|str, default_month: int = 1, default_day: i
 
 # ----------------------------------------------------------------------
 
-def get_antigen_date_range(chart: ae_backend.chart_v3.Chart, first: datetime.date|str, last: datetime.date|str) -> [datetime.date, datetime.date]:
+def get_antigen_date_range(chart: ae_backend.chart_v3.Chart, first: datetime.date|str = None, last: datetime.date|str = None, limit_by_chart: bool = False) -> [datetime.date, datetime.date]:
     chart_first, chart_last = (parse_date(date) for date in chart.antigen_date_range(test_only=True))
     if not first:
         first = chart_first
     else:
         first = parse_date(first)
-        if first < chart_first:
+        if limit_by_chart and first < chart_first:
             first = chart_first
     if not last:
         last = chart_last
     else:
         last = parse_date(last)
-        if last > chart_last:
+        if limit_by_chart and last > chart_last:
             last = chart_last
     # print(f">>>> antigen_date_range {repr(first)} {repr(last)} -- chart: {chart_first} {chart_last}", file=sys.stderr)
     return [first, last]
