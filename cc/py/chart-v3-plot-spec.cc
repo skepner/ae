@@ -51,7 +51,7 @@ namespace ae::py
                 target.offset = ae::draw::v2::offset_t{val[0], val[1]};
             }
             else if (key == "text")
-                target.text = value.cast<std::string>();
+                target.text = std::string{value.cast<std::string_view>()};
             else if (key == "size")
                 target.size = value.cast<double>();
             else if (key == "color")
