@@ -17,17 +17,19 @@ class Result (name_passage.Result):
         return f"Vaccine {name}{surrogate} [{en['year']}]"
 
     def _sorting_key(self, name: str):
-        return self.data[name]["year"]
+        return self.data[name].get("year") or ""
 
 # ----------------------------------------------------------------------
 
-def attributes(chart: ae_backend.chart_v3.Chart, entries: list, current_vaccine_years: list[str] = []):
+def attributes(chart: ae_backend.chart_v3.Chart, entries: list, current_vaccine_years: list[str] = [], report: bool = False):
     """entries are returned by acmacs-data/semantic-vaccines semantic_data_for_subtype(subtype).
     [{"name": "MALAYSIA/2506/2004", "passage": "egg|cell|reassortant", "surrogate": False, "year": "2006", **ignored}]
     """
     result = Result(chart)
     for en in entries:
         _semantic_entry(chart=chart, result=result, current_vaccine_years=current_vaccine_years, **en)
+    if report:
+        print(result.report(), file=sys.stderr)
     return result
 
 # ----------------------------------------------------------------------
