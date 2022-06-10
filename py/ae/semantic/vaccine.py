@@ -1,4 +1,4 @@
-import sys, pprint
+import sys, pprint, json
 from typing import Optional
 import ae_backend
 from ..utils.num_digits import num_digits
@@ -28,7 +28,29 @@ class Vaccine:
             self.no = no
             self.antigen = antigen
             self.layers = chart.titers().layers_with_antigen(no)
-            print(no, antigen.designation(), self.layers)
+
+        def to_dict(self):
+            return {"no": self.no, "designation": self.antigen.designation(), "layers": self.layers}
+
+    def semantic_vaccine(self, entry: Entry, current_vaccine_years: list[str] = []):
+        val = ""
+        if entry.antigen.reassortant():
+            passage = "reassortant"
+        elif entry.antigen.passage().is_egg():
+            passage = "egg"
+        elif entry.antigen.passage().is_cell():
+            passage = "cell"
+        if passage:
+            val += passage[0]
+        if self.surrogate:
+            val += "s"
+        val += self.year or ""
+        if self.year in current_vaccine_years:
+            val += "c"
+        entry.antigen.semantic.vaccine(val)
+
+    def __repr__(self):
+        return (json.dumps({"name": self.name, "year": self.year, "surrogate": self.surrogate, "cell": [en.to_dict() for en in self.cell], "egg": [en.to_dict() for en in self.egg], "reassortant": [en.to_dict() for en in self.reassortant]}))
 
     @classmethod
     def make(cls, chart: ae_backend.chart_v3.Chart, name: str, year: str = None, passage: str = None, surrogate: bool = False, **ignored):
