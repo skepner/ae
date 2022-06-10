@@ -155,7 +155,8 @@ namespace ae::py
 
     // ----------------------------------------------------------------------
 
-    static inline ae::chart::v3::semantic::StyleModifier& add_modifier(ae::chart::v3::semantic::Style& style, const pybind11::kwargs& kwargs)
+    // cannot return added modifier, because it can be moved (pointer changed) when another modifier added (due to vector relocation)
+    static inline void add_modifier(ae::chart::v3::semantic::Style& style, const pybind11::kwargs& kwargs)
     {
         auto& modifier = style.modifiers.emplace_back();
         for (const auto [keyword_handle, value] : kwargs) {
@@ -222,7 +223,6 @@ namespace ae::py
                     throw std::runtime_error{fmt::format("Style.add_modifier: unrecognized \"{}\": {}", keyword, static_cast<std::string>(pybind11::repr(value)))};
             }
         }
-        return modifier;
     }
 
     static inline void remove_modifiers(ae::chart::v3::semantic::Style& style)

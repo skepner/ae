@@ -1,7 +1,7 @@
 #! /bin/bash
 
 BUILD_DEFAULT_DIR=build
-BUILD_DEBUG_DIR=build.debug
+BUILD_DEBUG_DIR=build #.debug
 BUILD_DIR="${BUILD_DEFAULT_DIR}"
 SETUP_ARGS=-Doptimization=3
 BUILT=NO
@@ -20,7 +20,7 @@ build()
     else
         find_mk_time
     fi
-    ${MK_TIME} meson compile -C "${BUILD_DIR}"
+    ${MK_TIME} meson compile -C "${BUILD_DIR}" ${MESON_FLAGS}
     BUILT=YES
 }
 
@@ -33,7 +33,7 @@ build_default()
 
 # ----------------------------------------------------------------------
 
-build_debug()
+build_debug_asan()
 {
     # run python using ~/bin/python-address-sanitizer
     BUILD_DIR="${BUILD_DEBUG_DIR}"
@@ -41,6 +41,8 @@ build_debug()
     if [[ $(uname) == "Darwin" ]]; then
         # -Db_lundef=false see: https://github.com/mesonbuild/meson/issues/764
         SETUP_ARGS="${SETUP_ARGS} -Db_lundef=false"
+        # export LDFLAGS=-shared-libasan
+        export PATH="/opt/homebrew/opt/llvm/bin:${PATH}"
     fi
     export CPPFLAGS=-fno-omit-frame-pointer
     build
@@ -48,11 +50,11 @@ build_debug()
 
 # ----------------------------------------------------------------------
 
-build_debug_no_asan()
+build_debug()
 {
     # run python using ~/bin/python-address-sanitizer
     BUILD_DIR="${BUILD_DEBUG_DIR}"
-    SETUP_ARGS="-Doptimization=g"
+    SETUP_ARGS="-Doptimization=0"
     export CPPFLAGS=-fno-omit-frame-pointer
     build
 }

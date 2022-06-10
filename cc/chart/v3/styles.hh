@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <list>
 #include <array>
 #include <string>
 #include <optional>
@@ -156,7 +157,11 @@ namespace ae::chart::v3::semantic
         Style& find(std::string_view name);
 
       private:
-        std::vector<Style> styles_{};
+        // reference to style can be kept by python program and then
+        // new style added. If vector<> is used, relocation of
+        // existing style object may happen and reference in python
+        // may become invalid. do not use vector<> here!
+        std::list<Style> styles_{};
     };
 } // namespace ae::chart::v3::semantic
 
