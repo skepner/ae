@@ -172,7 +172,19 @@ def find(subtype: str, lineage: str, names: list, args: argparse.Namespace):
 def write_json(filename: Path, selected: ae_backend.seqdb.Selected):
     data = []
     for ref in selected:
-        data.append({"name": ref.name(), "seq_id": ref.seq_id(), "date": ref.date(), "clades": ref.clades, "aa": str(ref.aa), "nuc": str(ref.nuc)})
+        en = {
+            "name": ref.name(),
+            "seq_id": ref.seq_id(),
+            "passage": ref.passage() or None,
+            "reassortant": ref.reassortant() or None,
+            "annotations": ref.annotations() or None,
+            "lineage": ref.lineage() or None,
+            "date": ref.date(),
+            "clades": ref.clades or None,
+            "aa": str(ref.aa),
+            "nuc": str(ref.nuc)
+        }
+        data.append({field: value for field, value in en.items() if value})
     # print(f">>>> json {filename} {len(data)}", file=sys.stderr)
     json.dump(data, filename.open("w"), indent=1)
 
