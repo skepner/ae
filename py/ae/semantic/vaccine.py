@@ -41,7 +41,7 @@ def _semantic_entry(chart: ae_backend.chart_v3.Chart, name: str, year: str = Non
         result = Result(chart)
     subreport = {}
     for psg in _passages(passage):
-        antigens = chart.select_antigens(lambda ag: ag.name == vac_name and ag.passage_is(psg) and layout.connected(ag.point_no))
+        antigens = chart.select_antigens(lambda ag: ag.name == vac_name and not ag.distinct() and ag.passage_is(psg) and layout.connected(ag.point_no))
         if len(antigens):
             if result._has_layers and len(antigens) > 1:
                 antigens.sort_by_number_of_layers_descending()

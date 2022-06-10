@@ -256,6 +256,7 @@ void ae::py::chart_v3_antigens(pybind11::module_& chart_v3_submodule)
         .def("has_clade", [](const SelectionData<Antigen>& sd, std::string_view clade) { return sd.ag_sr.semantic().has_clade(clade); })                           //
         .def("layers", [](const SelectionData<Antigen>& sd) -> std::vector<size_t> { return to_vector_base_t(sd.chart->titers().layers_with_antigen(sd.index)); }) //
         .def("passage_is", &passage_is<Antigen>, "passage_type"_a, pybind11::doc("if passage_type=None, returns True"))                                            //
+        .def("distinct", [](const SelectionData<Antigen>& sd) -> bool { return sd.ag_sr.annotations().distinct(); })                                               //
         ;
 
     pybind11::class_<SelectionData<Serum>>(chart_v3_submodule, "SelectionData_Serum")
