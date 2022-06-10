@@ -10,6 +10,51 @@ from .name_generator import NameGenerator
 
 sPassages = ["cell", "egg", "reassortant"]
 
+class Vaccine:
+
+    def __init__(self, name: str, year: str, surrogate: bool):
+        self.name = name
+        self.year = year
+        self.surrogate = surrogate
+        for passage in sPassages:
+            setattr(self, passage, [])
+
+    def __bool__(self):
+        return any(bool(getattr(self, passage, None)) for passage in sPassages)
+
+    class Entry:
+
+        def __init__(self, chart: ae_backend.chart_v3.Chart, no: int, antigen: ae_backend.chart_v3.Antigen):
+            self.no = no
+            self.antigen = antigen
+            self.layers = chart.titers().layers_with_antigen(no)
+            print(no, antigen.designation(), self.layers)
+
+    @classmethod
+    def make(cls, chart: ae_backend.chart_v3.Chart, name: str, year: str = None, passage: str = None, surrogate: bool = False, **ignored):
+        chart_has_layers = chart.titers().number_of_layers() > 0
+        layout = chart.projection().layout() if chart.number_of_projections() else None # avoid disconnected if projection present
+        vac_name = virus.add_subtype_prefix(chart, name)
+        vaccine = Vaccine(name=name, year=year, surrogate=surrogate)
+        for psg in [passage] if passage else sPassages:
+            antigens = chart.select_antigens(lambda ag: ag.name == vac_name and not ag.distinct() and ag.passage_is(psg) and layout.connected(ag.point_no))
+            if len(antigens):
+                if chart_has_layers and len(antigens) > 1:
+                    antigens.sort_by_number_of_layers_descending()
+                setattr(vaccine, psg, [cls.Entry(chart, *antigen) for antigen in antigens])
+        return vaccine
+
+# ----------------------------------------------------------------------
+
+def find(chart: ae_backend.chart_v3.Chart, semantic_attribute_data: list) -> list[Vaccine]:
+    """Return list of vaccine entries (one entry per name).
+    semantic_attribute_data is loaded from e.g. acmacs-data/semantic-vaccines.py
+    order of returned elements is the same as entries
+    """
+    return [en for en in (Vaccine.make(chart, **source) for source in semantic_attribute_data) if en]
+
+# ======================================================================
+
 class Result (name_passage.Result):
 
     def _format_header(self, name: str, en: dict, **args):
@@ -21,12 +66,12 @@ class Result (name_passage.Result):
 
 # ----------------------------------------------------------------------
 
-def attributes(chart: ae_backend.chart_v3.Chart, entries: list, current_vaccine_years: list[str] = [], report: bool = False):
-    """entries are returned by acmacs-data/semantic-vaccines semantic_data_for_subtype(subtype).
+def attributes(chart: ae_backend.chart_v3.Chart, semantic_attribute_data: list, current_vaccine_years: list[str] = [], report: bool = False):
+    """semantic_attribute_data are returned by acmacs-data/semantic-vaccines semantic_data_for_subtype(subtype).
     [{"name": "MALAYSIA/2506/2004", "passage": "egg|cell|reassortant", "surrogate": False, "year": "2006", **ignored}]
     """
     result = Result(chart)
-    for en in entries:
+    for en in semantic_attribute_data:
         _semantic_entry(chart=chart, result=result, current_vaccine_years=current_vaccine_years, **en)
     if report:
         print(result.report(), file=sys.stderr)
