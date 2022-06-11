@@ -100,12 +100,18 @@ def collect_data_for_styles(chart: ae_backend.chart_v3.Chart):
         "designation": antigen.designation(),
         "lox": 0.0, "loy": 1.0,     # label offset
         "size": 70.0,
+        "outline_width": 4.0,
         "label_size": 36.0,
         "label": name_generator.location_year2_passaga_type(antigen),
         "semantic": antigen.semantic.get("V")
     } for no, antigen in chart.select_antigens(lambda ag: bool(ag.antigen.semantic.get("V")))]
     vaccine_data.sort(key=lambda en: en["semantic"] + en["designation"])
     return vaccine_data
+
+# ----------------------------------------------------------------------
+
+def default_field_order():
+    return ["no", "designation", "size", "lox", "loy", "label", "label_size", "semantic", "outline_width"]
 
 # ----------------------------------------------------------------------
 
@@ -128,109 +134,155 @@ def update(collected: list[dict[str, object]], user: list[dict[str, object]], ma
     return collected_not_in_user + user_result
 
 # ======================================================================
-# ======================================================================
-# ======================================================================
-
-class Result (name_passage.Result):
-
-    def _format_header(self, name: str, en: dict, **args):
-        surrogate = " surrogate" if en.get("surrogate") else ""
-        return f"Vaccine {name}{surrogate} [{en['year']}]"
-
-    def _sorting_key(self, name: str):
-        return self.data[name].get("year") or ""
-
-# ----------------------------------------------------------------------
-
-def attributes(chart: ae_backend.chart_v3.Chart, semantic_attribute_data: list, current_vaccine_years: list[str] = [], report: bool = False):
-    """semantic_attribute_data are returned by acmacs-data/semantic-vaccines semantic_data_for_subtype(subtype).
-    [{"name": "MALAYSIA/2506/2004", "passage": "egg|cell|reassortant", "surrogate": False, "year": "2006", **ignored}]
-    """
-    result = Result(chart)
-    for en in semantic_attribute_data:
-        _semantic_entry(chart=chart, result=result, current_vaccine_years=current_vaccine_years, **en)
-    if report:
-        print(result.report(), file=sys.stderr)
-    return result
-
-# ----------------------------------------------------------------------
-
-def _semantic_entry(chart: ae_backend.chart_v3.Chart, name: str, year: str = None, passage: str = None, surrogate: bool = False, result: Result = None, current_vaccine_years: list[str] = None, **ignored) -> Result:
-    layout = chart.projection().layout() if chart.number_of_projections() else None # avoid disconnected if projection present
-    vac_name = virus.add_subtype_prefix(chart, name)
-    if result is None:
-        result = Result(chart)
-    subreport = {}
-    for psg in _passages(passage):
-        antigens = chart.select_antigens(lambda ag: ag.name == vac_name and not ag.distinct() and ag.passage_is(psg) and layout.connected(ag.point_no))
-        if len(antigens):
-            if result._has_layers and len(antigens) > 1:
-                antigens.sort_by_number_of_layers_descending()
-            antigens[0][1].semantic.vaccine(_make_attribute_value(year=year, current_vaccine_years=current_vaccine_years, passage=passage, surrogate=surrogate, antigen=antigens[0][1]))
-            subreport[psg] = antigens
-    if subreport:
-        result.data[name] = {"year": year, "surrogate": surrogate, **subreport}
-    return result
-
-# ----------------------------------------------------------------------
-
-def _make_attribute_value(year: Optional[str], current_vaccine_years: list[str], passage: str, surrogate: bool, antigen: ae_backend.chart_v3.Antigen):
-    val = ""
-    if not passage:
-        if antigen.reassortant():
-            passage = "reassortant"
-        elif antigen.passage().is_egg():
-            passage = "egg"
-        elif antigen.passage().is_cell():
-            passage = "cell"
-    if passage:
-        val += passage[0]
-    if surrogate:
-        val += "s"
-    val += year or ""
-    if year in current_vaccine_years:
-        val += "c"
-    return val
-
-# ----------------------------------------------------------------------
-
-def _passages(passage_type: Optional[str]):
-    if passage_type:
-        return [passage_type]
-    else:
-        return sPassages
-
-# ======================================================================
 
 sModifier = {"outline": "black", "fill": ":bright", "raise": True, "size": 70, "only": "antigens"}
 sLabelModifier = {"offset": [0, 1], "slant": "normal", "weight": "normal", "size": 36.0, "color": "black"}
 
-def style(chart: ae_backend.chart_v3.Chart, style_name: str = "-vaccines") -> set[str]:
-    """Add "-vaccines" and "-vaccines-blue" plot style"""
+def style(chart: ae_backend.chart_v3.Chart, style_name: str, data: list[dict[str, object]], common_modifier: dict, label_modifier: dict, priority: int = 1000) -> set[str]:
+    """Add "-vaccines" and "-vaccines-blue" plot style
+    data is the output of find() and/or update()
+    common_modifier: {"outline": "black", "fill": ":bright", "size": 70}
+    label_modifier: {"slant": "normal", "weight": "normal", "color": "black"} - other fields are taken from data
+    """
 
-    def make_style(name: str, point_modifier: dict):
-        style = chart.styles()[name]
-        style.priority = 1000
-        style.add_modifier(selector={"V": True}, **point_modifier)
-        return style
+    style = chart.styles()[style_name]
+    style.priority = 1000
+    style.add_modifier(selector={"V": True}, only="antigens", raise_=True, **common_modifier)
 
-    name_generator = NameGenerator()
-    styles = [make_style(name=style_name, point_modifier=sModifier), make_style(name=style_name + "-blue", point_modifier={**sModifier, "fill": "blue"})]
-    # individual vaccine modifiers with label data
-    for no, antigen in chart.select_antigens(lambda ag: bool(ag.antigen.semantic.get("V"))):
-        for style in styles:
-            style.add_modifier(selector={"!i": no}, only="antigens", outline_width=4.0, label={**sLabelModifier, "text": name_generator.location_year2_passaga_type(antigen)})
+    # for en in data:
+    #     style.add_modifier(selector={"!i": en["no"]}, only="antigens", outline_width=4.0, label={**sLabelModifier, "text": name_generator.location_year2_passaga_type(antigen)})
 
-    def is_current_vaccine(ag):
-        if vaccine_attribute := ag.antigen.semantic.get("V"):
-            return vaccine_attribute[-1] == "c"
-        else:
-            return False
 
-    for no, antigen in chart.select_antigens(lambda ag: is_current_vaccine(ag)):
-        fill = "green" if antigen.reassortant() else "red"
-        styles[1].add_modifier(selector={"!i": no}, only="antigens", fill=fill)
 
-    return set([style_name, style_name + "-blue"])
+    # def make_style(name: str, point_modifier: dict):
+    #     style = chart.styles()[name]
+    #     style.priority = 1000
+    #     style.add_modifier(selector={"V": True}, **point_modifier)
+    #     return style
+
+    # name_generator = NameGenerator()
+    # styles = [make_style(name=style_name, point_modifier=sModifier), make_style(name=style_name + "-blue", point_modifier={**sModifier, "fill": "blue"})]
+    # # individual vaccine modifiers with label data
+    # for no, antigen in chart.select_antigens(lambda ag: bool(ag.antigen.semantic.get("V"))):
+    #     for style in styles:
+    #         style.add_modifier(selector={"!i": no}, only="antigens", outline_width=4.0, label={**sLabelModifier, "text": name_generator.location_year2_passaga_type(antigen)})
+
+    # def is_current_vaccine(ag):
+    #     if vaccine_attribute := ag.antigen.semantic.get("V"):
+    #         return vaccine_attribute[-1] == "c"
+    #     else:
+    #         return False
+
+    # for no, antigen in chart.select_antigens(lambda ag: is_current_vaccine(ag)):
+    #     fill = "green" if antigen.reassortant() else "red"
+    #     styles[1].add_modifier(selector={"!i": no}, only="antigens", fill=fill)
+
+    # return set([style_name, style_name + "-blue"])
+
+# ======================================================================
+# ======================================================================
+# ======================================================================
+
+# class Result (name_passage.Result):
+
+#     def _format_header(self, name: str, en: dict, **args):
+#         surrogate = " surrogate" if en.get("surrogate") else ""
+#         return f"Vaccine {name}{surrogate} [{en['year']}]"
+
+#     def _sorting_key(self, name: str):
+#         return self.data[name].get("year") or ""
+
+# # ----------------------------------------------------------------------
+
+# def attributes(chart: ae_backend.chart_v3.Chart, semantic_attribute_data: list, current_vaccine_years: list[str] = [], report: bool = False):
+#     """semantic_attribute_data are returned by acmacs-data/semantic-vaccines semantic_data_for_subtype(subtype).
+#     [{"name": "MALAYSIA/2506/2004", "passage": "egg|cell|reassortant", "surrogate": False, "year": "2006", **ignored}]
+#     """
+#     result = Result(chart)
+#     for en in semantic_attribute_data:
+#         _semantic_entry(chart=chart, result=result, current_vaccine_years=current_vaccine_years, **en)
+#     if report:
+#         print(result.report(), file=sys.stderr)
+#     return result
+
+# # ----------------------------------------------------------------------
+
+# def _semantic_entry(chart: ae_backend.chart_v3.Chart, name: str, year: str = None, passage: str = None, surrogate: bool = False, result: Result = None, current_vaccine_years: list[str] = None, **ignored) -> Result:
+#     layout = chart.projection().layout() if chart.number_of_projections() else None # avoid disconnected if projection present
+#     vac_name = virus.add_subtype_prefix(chart, name)
+#     if result is None:
+#         result = Result(chart)
+#     subreport = {}
+#     for psg in _passages(passage):
+#         antigens = chart.select_antigens(lambda ag: ag.name == vac_name and not ag.distinct() and ag.passage_is(psg) and layout.connected(ag.point_no))
+#         if len(antigens):
+#             if result._has_layers and len(antigens) > 1:
+#                 antigens.sort_by_number_of_layers_descending()
+#             antigens[0][1].semantic.vaccine(_make_attribute_value(year=year, current_vaccine_years=current_vaccine_years, passage=passage, surrogate=surrogate, antigen=antigens[0][1]))
+#             subreport[psg] = antigens
+#     if subreport:
+#         result.data[name] = {"year": year, "surrogate": surrogate, **subreport}
+#     return result
+
+# # ----------------------------------------------------------------------
+
+# def _make_attribute_value(year: Optional[str], current_vaccine_years: list[str], passage: str, surrogate: bool, antigen: ae_backend.chart_v3.Antigen):
+#     val = ""
+#     if not passage:
+#         if antigen.reassortant():
+#             passage = "reassortant"
+#         elif antigen.passage().is_egg():
+#             passage = "egg"
+#         elif antigen.passage().is_cell():
+#             passage = "cell"
+#     if passage:
+#         val += passage[0]
+#     if surrogate:
+#         val += "s"
+#     val += year or ""
+#     if year in current_vaccine_years:
+#         val += "c"
+#     return val
+
+# # ----------------------------------------------------------------------
+
+# def _passages(passage_type: Optional[str]):
+#     if passage_type:
+#         return [passage_type]
+#     else:
+#         return sPassages
+
+# # ======================================================================
+
+# sModifier = {"outline": "black", "fill": ":bright", "raise": True, "size": 70, "only": "antigens"}
+# sLabelModifier = {"offset": [0, 1], "slant": "normal", "weight": "normal", "size": 36.0, "color": "black"}
+
+# def style(chart: ae_backend.chart_v3.Chart, style_name: str = "-vaccines") -> set[str]:
+#     """Add "-vaccines" and "-vaccines-blue" plot style"""
+
+#     def make_style(name: str, point_modifier: dict):
+#         style = chart.styles()[name]
+#         style.priority = 1000
+#         style.add_modifier(selector={"V": True}, **point_modifier)
+#         return style
+
+#     name_generator = NameGenerator()
+#     styles = [make_style(name=style_name, point_modifier=sModifier), make_style(name=style_name + "-blue", point_modifier={**sModifier, "fill": "blue"})]
+#     # individual vaccine modifiers with label data
+#     for no, antigen in chart.select_antigens(lambda ag: bool(ag.antigen.semantic.get("V"))):
+#         for style in styles:
+#             style.add_modifier(selector={"!i": no}, only="antigens", outline_width=4.0, label={**sLabelModifier, "text": name_generator.location_year2_passaga_type(antigen)})
+
+#     def is_current_vaccine(ag):
+#         if vaccine_attribute := ag.antigen.semantic.get("V"):
+#             return vaccine_attribute[-1] == "c"
+#         else:
+#             return False
+
+#     for no, antigen in chart.select_antigens(lambda ag: is_current_vaccine(ag)):
+#         fill = "green" if antigen.reassortant() else "red"
+#         styles[1].add_modifier(selector={"!i": no}, only="antigens", fill=fill)
+
+#     return set([style_name, style_name + "-blue"])
 
 # ======================================================================
