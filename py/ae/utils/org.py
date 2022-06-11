@@ -18,4 +18,31 @@ def org_table_to_dict(data: str) -> list[dict[str, str]]:
             break
     return result
 
+# ----------------------------------------------------------------------
+
+def dict_to_org_table(data: dict, field_order: list) -> str:
+    field_size : dict[str, int] = {field: 0 for field in field_order}
+    for en in data:
+        for field, val in en.items():
+            field_size[field] = max(field_size.get(field, 0), len(field), len(str(val)))
+    fields = field_order + [field for field in field_size if field not in field_order]
+
+    res = "\n# -*- Org -*-\n|"
+    start_size = len(res) - 1
+    for field in fields:
+        res += f" {field:<{field_size[field]}s} |"
+    table_width = len(res) - start_size
+    res += f"\n{'-' * table_width}\n"
+    for en in data:
+        res += "|"
+        for field in fields:
+            val = en.get(field, "")
+            if isinstance(val, (int, float)):
+                res += f" {str(val):>{field_size[field]}s} |"
+            else:
+                res += f" {str(val):<{field_size[field]}s} |"
+        res += "\n"
+    res += "# -*-\n"
+    return res
+
 # ======================================================================
