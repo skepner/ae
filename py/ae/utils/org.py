@@ -27,7 +27,7 @@ def dict_to_org_table(data: dict, field_order: list) -> str:
             field_size[field] = max(field_size.get(field, 0), len(field), len(str(val)))
     fields = field_order + [field for field in field_size if field not in field_order]
 
-    res = "\n# -*- Org -*-\n"
+    res = "# -*- Org -*-\n"
     res += "| " + " | ".join(f"{field:<{field_size[field]}s}" for field in fields) + " |\n" # header
     res += "|" + "+".join(("-" * (field_size[field] + 2)) for field in fields) + "|\n" # separator
     for en in data:
@@ -39,7 +39,7 @@ def dict_to_org_table(data: dict, field_order: list) -> str:
             else:
                 res += f" {str(val):<{field_size[field]}s} |"
         res += "\n"
-    res += "# -*-\n"
+    res += "# -*-"
     return res
 
 # ======================================================================
