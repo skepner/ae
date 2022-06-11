@@ -92,6 +92,42 @@ def find(chart: ae_backend.chart_v3.Chart, semantic_attribute_data: list, report
 
 # ======================================================================
 
+def collect_data_for_styles(chart: ae_backend.chart_v3.Chart):
+    """Look for "V" semantic attribute to collect data for styles"""
+    name_generator = NameGenerator()
+    vaccine_data = [{
+        "no": no,
+        "designation": antigen.designation(),
+        "lox": 0.0, "loy": 1.0,     # label offset
+        "size": 70.0,
+        "label_size": 36.0,
+        "label": name_generator.location_year2_passaga_type(antigen),
+        "semantic": antigen.semantic.get("V")
+    } for no, antigen in chart.select_antigens(lambda ag: bool(ag.antigen.semantic.get("V")))]
+    vaccine_data.sort(key=lambda en: en["semantic"] + en["designation"])
+    return vaccine_data
+
+# ----------------------------------------------------------------------
+
+def update(collected: list[dict[str, object]], user: list[dict[str, object]], match_by: str = "designation") -> list[dict[str, object]]:
+    """match_by is a unique key! user data order is preferred, extra collected data is at the beginning of the result"""
+    collected_ref = {en[match_by]: en for en in collected}
+    user_ref = {en[match_by]: en for en in user}
+
+    def upd(src: dict[str, object], upd: dict[str, object]) -> dict[str, object]:
+        res = {**src}
+        for key, val in upd.items():
+            if key != match_by and val is not None and val != "":
+                res[key] = val
+        return res
+    user_result = [upd(collected_ref.get(usr[match_by], {match_by: usr[match_by]}), usr) for usr in user]
+    collected_not_in_user = [coll for coll in collected if coll[match_by] not in user_ref]
+    return collected_not_in_user + user_result
+
+# ======================================================================
+# ======================================================================
+# ======================================================================
+
 class Result (name_passage.Result):
 
     def _format_header(self, name: str, en: dict, **args):
