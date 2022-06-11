@@ -33,18 +33,15 @@ class Vaccine:
             return {"no": self.no, "designation": self.antigen.designation(), "layers": self.layers}
 
     def semantic_vaccine(self, entry: Entry, current_vaccine_years: list[str] = []):
-        val = ""
         if entry.antigen.reassortant():
             passage = "reassortant"
         elif entry.antigen.passage().is_egg():
             passage = "egg"
         elif entry.antigen.passage().is_cell():
             passage = "cell"
-        if passage:
-            val += passage[0]
-        if self.surrogate:
-            val += "s"
-        val += self.year or ""
+        else:
+            passage = " "       # space!
+        val = f"{self.year or ''}{passage[0]}{self.surrogate or ''}"
         if self.year in current_vaccine_years:
             val += "c"
         entry.antigen.semantic.vaccine(val)
