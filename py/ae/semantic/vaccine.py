@@ -29,6 +29,9 @@ class Vaccine:
             self.antigen = antigen
             self.layers = chart.titers().layers_with_antigen(no)
 
+        def __str__(self):
+            return f"{self.no:4d} {self.antigen.designation()} (layers: {len(self.layers)})"
+
         def to_dict(self):
             return {"no": self.no, "designation": self.antigen.designation(), "layers": self.layers}
 
@@ -49,6 +52,17 @@ class Vaccine:
     def __repr__(self):
         return (json.dumps({"name": self.name, "year": self.year, "surrogate": self.surrogate, "cell": [en.to_dict() for en in self.cell], "egg": [en.to_dict() for en in self.egg], "reassortant": [en.to_dict() for en in self.reassortant]}))
 
+    def report(self):
+        print(f"{self.name} [{self.year}]{' <surrogate>' if self.surrogate else ''}", file=sys.stderr)
+        for passage_type in sPassages:
+            for no, en in enumerate(getattr(self, passage_type, [])):
+                if no == 0:
+                    prefix = f"{passage_type[:4]:<4s}"
+                else:
+                    prefix = " " * 4
+                print(f"  {prefix}  {en}", file=sys.stderr)
+        print(file=sys.stderr)
+
     @classmethod
     def make(cls, chart: ae_backend.chart_v3.Chart, name: str, year: str = None, passage: str = None, surrogate: bool = False, **ignored):
         chart_has_layers = chart.titers().number_of_layers() > 0
@@ -65,12 +79,16 @@ class Vaccine:
 
 # ----------------------------------------------------------------------
 
-def find(chart: ae_backend.chart_v3.Chart, semantic_attribute_data: list) -> list[Vaccine]:
+def find(chart: ae_backend.chart_v3.Chart, semantic_attribute_data: list, report: bool = True) -> list[Vaccine]:
     """Return list of vaccine entries (one entry per name).
     semantic_attribute_data is loaded from e.g. acmacs-data/semantic-vaccines.py
     order of returned elements is the same as entries
     """
-    return [en for en in (Vaccine.make(chart, **source) for source in semantic_attribute_data) if en]
+    data = [en for en in (Vaccine.make(chart, **source) for source in semantic_attribute_data) if en]
+    if report:
+        for en in data:
+            en.report()
+    return data
 
 # ======================================================================
 
