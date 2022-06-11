@@ -117,7 +117,10 @@ def update(collected: list[dict[str, object]], user: list[dict[str, object]], ma
     def upd(src: dict[str, object], upd: dict[str, object]) -> dict[str, object]:
         res = {**src}
         for key, val in upd.items():
-            if key != match_by and val is not None and val != "":
+            if key == "no":
+                if str(val) != str(res[key]):
+                    print(f">> vaccine.update: no mismatch (\"{val}\" vs. \"{res[key]}\") for matching key: {src} -- {upd}", file=sys.stderr)
+            elif key != match_by and val is not None and val != "":
                 res[key] = val
         return res
     user_result = [upd(collected_ref.get(usr[match_by], {match_by: usr[match_by]}), usr) for usr in user]
