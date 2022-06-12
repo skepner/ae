@@ -149,10 +149,47 @@ def style(chart: ae_backend.chart_v3.Chart, style_name: str, data: list[dict[str
     style.priority = 1000
     style.add_modifier(selector={"V": True}, only="antigens", raise_=True, **common_modifier)
 
-    # for en in data:
-    #     style.add_modifier(selector={"!i": en["no"]}, only="antigens", outline_width=4.0, label={**sLabelModifier, "text": name_generator.location_year2_passaga_type(antigen)})
+    for en in data:
+        style.add_modifier(selector={"!i": en["no"]}, only="antigens", **_extract_point_modifier_data(source=en, label_modifier=label_modifier))
+    return {style_name}
 
+# ----------------------------------------------------------------------
 
+def _extract_point_modifier_data(source: dict[str, object], label_modifier: dict) -> dict[str, object]:
+    def get_float(key: str):
+        if (val := source.get(key)) is not None:
+            return float(val)
+        else:
+            return None
+
+    return _remove_none({
+        "fill": source.get("fill"),
+        "outline": source.get("outline"),
+        "outline_width": get_float("outline_width"),
+        "size": get_float("size"),
+        "rotation": get_float("rotation"),
+        "aspect": get_float("aspect"),
+        "shape": source.get("shape"),
+        "hide": source.get("hide"),
+        "label": {
+            **label_modifier,
+            **_remove_none({
+                "offset": [get_float("lox") or 0.0, get_float("loy") or 0.0],
+                "text": source.get("label"),
+                "size": get_float("label_size"),
+                "color": source.get("label_color"),
+                "rotation": get_float("label_rotation"),
+                "shown": source.get("label_shown"),
+                "slant": source.get("label_slant"),
+                "weight": source.get("label_weight"),
+            })
+        }
+    })
+
+# ----------------------------------------------------------------------
+
+def _remove_none(source: dict):
+    return {key: val for key, val in source.items() if val is not None}
 
     # def make_style(name: str, point_modifier: dict):
     #     style = chart.styles()[name]
