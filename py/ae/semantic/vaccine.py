@@ -156,9 +156,15 @@ def style(chart: ae_backend.chart_v3.Chart, style_name: str, data: list[dict[str
 # ----------------------------------------------------------------------
 
 def _extract_point_modifier_data(source: dict[str, object], label_modifier: dict) -> dict[str, object]:
-    def get_float(key: str):
+    def get_float(key: str) -> float:
         if (val := source.get(key)) is not None:
             return float(val)
+        else:
+            return None
+
+    def get_bool(key: str) -> bool:
+        if (val := source.get(key)) is not None:
+            return val.lower() in ["t", "true", "y", "yes", "1"]
         else:
             return None
 
@@ -170,7 +176,7 @@ def _extract_point_modifier_data(source: dict[str, object], label_modifier: dict
         "rotation": get_float("rotation"),
         "aspect": get_float("aspect"),
         "shape": source.get("shape"),
-        "hide": source.get("hide"),
+        "hide": get_bool("hide"),
         "label": {
             **label_modifier,
             **_remove_none({
