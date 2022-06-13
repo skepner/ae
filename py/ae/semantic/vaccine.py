@@ -106,6 +106,7 @@ def collect_data_for_styles(chart: ae_backend.chart_v3.Chart):
         "semantic": antigen.semantic.get("V")
     } for no, antigen in chart.select_antigens(lambda ag: bool(ag.antigen.semantic.get("V")))]
     vaccine_data.sort(key=lambda en: en["semantic"] + en["designation"])
+    # pprint.pprint(vaccine_data, width=200)
     return vaccine_data
 
 # ----------------------------------------------------------------------
@@ -120,7 +121,9 @@ def update(collected: list[dict[str, object]], user: list[dict[str, object]], ma
     collected_ref = {en[match_by]: en for en in collected}
     user_ref = {en[match_by]: en for en in user}
 
-    def upd(src: dict[str, object], upd: dict[str, object]) -> dict[str, object]:
+    def upd(src: Optional[dict[str, object]], upd: dict[str, object]) -> dict[str, object]:
+        if not src:
+            return None
         res = {**src}
         for key, val in upd.items():
             if key == "no":
@@ -129,7 +132,8 @@ def update(collected: list[dict[str, object]], user: list[dict[str, object]], ma
             elif key != match_by and val is not None and val != "":
                 res[key] = val
         return res
-    user_result = [upd(collected_ref.get(usr[match_by], {match_by: usr[match_by]}), usr) for usr in user]
+
+    user_result = [user_updated for user_updated in (upd(collected_ref.get(usr[match_by]), usr) for usr in user) if user_updated]
     collected_not_in_user = [coll for coll in collected if coll[match_by] not in user_ref]
     return collected_not_in_user + user_result
 
