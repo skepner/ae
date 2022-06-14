@@ -1,3 +1,4 @@
+import sys
 
 # ======================================================================
 
@@ -20,14 +21,16 @@ def org_table_to_dict(data: str) -> list[dict[str, str]]:
 
 # ----------------------------------------------------------------------
 
-def dict_to_org_table(data: dict, field_order: list) -> str:
-    field_size : dict[str, int] = {field: 0 for field in field_order}
+def dict_to_org_table(data: dict, field_order: list, add_org_mode_wrapper: bool = True) -> str:
+    field_size : dict[str, int] = {field: len(field) for field in field_order}
     for en in data:
         for field, val in en.items():
-            field_size[field] = max(field_size.get(field, 0), len(field), len(str(val)))
+            field_size[field] = max(field_size.get(field, 0), len(str(val)))
     fields = field_order + [field for field in field_size if field not in field_order]
 
-    res = "# -*- Org -*-\n"
+    res = ""
+    if add_org_mode_wrapper:
+        res += "# -*- Org -*-\n"
     res += "| " + " | ".join(f"{field:<{field_size[field]}s}" for field in fields) + " |\n" # header
     res += "|" + "+".join(("-" * (field_size[field] + 2)) for field in fields) + "|\n" # separator
     for en in data:
@@ -39,7 +42,8 @@ def dict_to_org_table(data: dict, field_order: list) -> str:
             else:
                 res += f" {str(val):<{field_size[field]}s} |"
         res += "\n"
-    res += "# -*-"
+    if add_org_mode_wrapper:
+        res += "# -*-"
     return res
 
 # ======================================================================
