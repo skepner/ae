@@ -90,9 +90,9 @@ def collect_data_for_styles(chart: ae_backend.chart_v3.Chart):
         "no": no,
         "designation": antigen.designation(),
         "lox": 0.0, "loy": 1.0,     # label offset
-        "size": 70.0,
-        "outline_width": 1.0,
-        "label_size": 36.0,
+        # "size": 70.0,
+        # "outline_width": 1.0,
+        # "label_size": 36.0,
         "label": name_generator.location_year2_passaga_type(antigen),
         "semantic": antigen.semantic.get("V")
     } for no, antigen in chart.select_antigens(lambda ag: bool(ag.antigen.semantic.get("V")))]
@@ -103,7 +103,7 @@ def collect_data_for_styles(chart: ae_backend.chart_v3.Chart):
 # ----------------------------------------------------------------------
 
 def default_field_order():
-    return ["no", "designation", "lox", "loy", "fill", "label", "label_size", "size", "semantic", "outline_width"]
+    return ["no", "designation", "lox", "loy", "fill", "label", "semantic", "label_size", "size", "outline_width"]
 
 # ----------------------------------------------------------------------
 
@@ -130,14 +130,11 @@ def update(collected: list[dict[str, object]], user: list[dict[str, object]], ma
 
 # ======================================================================
 
-sModifier = {"outline": "black", "fill": ":bright", "raise": True, "size": 70, "only": "antigens"}
-sLabelModifier = {"offset": [0, 1], "slant": "normal", "weight": "normal", "size": 36.0, "color": "black"}
-
 def style(chart: ae_backend.chart_v3.Chart, style_name: str, data: list[dict[str, object]], common_modifier: dict, label_modifier: dict, priority: int = 1000) -> set[str]:
     """Add "-vaccines" and "-vaccines-blue" plot style
     data is the output of find() and/or update()
-    common_modifier: {"outline": "black", "fill": ":bright", "size": 70}
-    label_modifier: {"slant": "normal", "weight": "normal", "color": "black"} - other fields are taken from data
+    common_modifier: {"outline": "black", "fill": ":bright", "size": 50, "outline_width": 1.0}
+    label_modifier: {"size": 30.0, "slant": "normal", "weight": "normal", "color": "black"} - other fields are taken from data
     """
 
     style = chart.styles()[style_name]

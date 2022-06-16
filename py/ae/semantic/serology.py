@@ -43,9 +43,9 @@ def collect_data_for_styles(chart: ae_backend.chart_v3.Chart):
         "no": no,
         "designation": antigen.designation(),
         "lox": 0.0, "loy": 1.0,     # label offset
-        "size": 50.0,
-        "outline_width": 1.0,
-        "label_size": 28.0,
+        # "size": 50.0,
+        # "outline_width": 1.0,
+        # "label_size": 28.0,
         "fill": "orange",
         "label": name_generator.location_isolation_year2_passaga_type(antigen),
     } for no, antigen in chart.select_antigens(lambda ag: bool(ag.antigen.semantic.get("serology")))]
@@ -60,13 +60,11 @@ def default_field_order():
 
 # ======================================================================
 
-sLabelModifier = {"offset": [0, 1], "slant": "normal", "weight": "normal", "size": 36.0, "color": "black"}
-
 def style(chart: ae_backend.chart_v3.Chart, style_name: str, data: list[dict[str, object]], common_modifier: dict, label_modifier: dict, priority: int = 1000) -> set[str]:
     """Add "-serology"
     data is the output of find() and/or update()
-    common_modifier: {"outline": "black", "fill": ":bright"}
-    label_modifier: {"slant": "normal", "weight": "normal", "color": "black"} - other fields are taken from data
+    common_modifier: {"outline": "black", "fill": ":bright", "size": 50, "outline_width": 1.0}
+    label_modifier: {"size": 26.0, "slant": "normal", "weight": "normal", "color": "black"} - other fields are taken from data
     """
 
     style = chart.styles()[style_name]
