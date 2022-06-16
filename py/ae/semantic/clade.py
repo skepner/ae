@@ -1,5 +1,6 @@
 import sys
 import ae_backend
+from . import front_style
 
 # ======================================================================
 
@@ -24,7 +25,7 @@ def attributes(chart: ae_backend.chart_v3.Chart, entries: list):
 
 # ======================================================================
 
-def style(chart: ae_backend.chart_v3.Chart, name: str, data: list, add_counter: bool = True) -> set[str]:
+def style(chart: ae_backend.chart_v3.Chart, name: str, data: list, add_counter: bool = True, legend_style: dict[str, object] = {}) -> set[str]:
     """expected data: [{"name": "3C.2a1b.2a.2 156S", "legend": "2a1b.2a.2 156S", "color": "red", **ignored}]"""
     snames = set()
 
@@ -39,6 +40,7 @@ def style(chart: ae_backend.chart_v3.Chart, name: str, data: list, add_counter: 
     style = chart.styles()[sname]
     style.priority = 1000
     style.legend.add_counter = add_counter
+    front_style.legend_style(style.legend, legend_style)
     legend_priority = 99
     for modifier in data:
         style.add_modifier(selector={"C": modifier["name"]}, fill=modifier["color"], outline="black", rais=True, only="antigens", legend=modifier["legend"], legend_priority=legend_priority)

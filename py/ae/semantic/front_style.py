@@ -24,4 +24,15 @@ def _title_style(plot_title, title_style: dict[str, object]):
     if offset := title_style.get("offset"):
         plot_title.box.offset(*offset)
 
+# ----------------------------------------------------------------------
+
+def legend_style(legend: ae_backend.chart_v3.SemanticLegend, legend_style: dict[str, object]):
+    # "legend_style": {"point_size": 10.0, "interline": 0.4, "text_size": 20.0},
+    if (point_size := legend_style.get("point_size")) is not None:
+        legend.point_size = point_size
+    if (interline := legend_style.get("interline")) is not None:
+        legend.row_style.interline = interline
+    if (text_size := legend_style.get("text_size")) is not None:
+        legend.row_style.font_size = text_size
+
 # ======================================================================
