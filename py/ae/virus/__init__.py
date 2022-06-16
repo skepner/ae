@@ -1,1 +1,1 @@
-from .subtype_prefix import add_subtype_prefix
+from .subtype_prefix import add_subtype_prefix, add_subtype_prefix_for_chart

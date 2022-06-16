@@ -1,14 +1,11 @@
 import sys, pprint, json
 from typing import Optional
 import ae_backend
-from ..utils.num_digits import num_digits
-from .. import virus
-from . import name_passage
+from .find import AntigenFinder, PASSAGES
+# from .. import virus
 from .name_generator import NameGenerator
 
 # ======================================================================
-
-sPassages = ["cell", "egg", "reassortant"]
 
 class Vaccine:
 
@@ -16,18 +13,18 @@ class Vaccine:
         self.name = name
         self.year = year
         self.surrogate = surrogate
-        for passage in sPassages:
+        for passage in PASSAGES:
             setattr(self, passage, [])
 
     def __bool__(self):
-        return any(bool(getattr(self, passage, None)) for passage in sPassages)
+        return any(bool(getattr(self, passage, None)) for passage in PASSAGES)
 
     class Entry:
 
-        def __init__(self, chart: ae_backend.chart_v3.Chart, no: int, antigen: ae_backend.chart_v3.Antigen):
+        def __init__(self, no: int, antigen: ae_backend.chart_v3.Antigen, layers: list):
             self.no = no
             self.antigen = antigen
-            self.layers = chart.titers().layers_with_antigen(no)
+            self.layers = layers
 
         def __str__(self):
             return f"{self.no:4d} {self.antigen.designation()} (layers: {len(self.layers)})"
@@ -54,7 +51,7 @@ class Vaccine:
 
     def report(self):
         print(f"{self.name} [{self.year}]{' <surrogate>' if self.surrogate else ''}", file=sys.stderr)
-        for passage_type in sPassages:
+        for passage_type in PASSAGES:
             for no, en in enumerate(getattr(self, passage_type, [])):
                 if no == 0:
                     prefix = f"{passage_type[:4]:<4s}"
@@ -64,17 +61,10 @@ class Vaccine:
         print(file=sys.stderr)
 
     @classmethod
-    def make(cls, chart: ae_backend.chart_v3.Chart, name: str, year: str = None, passage: str = None, surrogate: bool = False, **ignored):
-        chart_has_layers = chart.titers().number_of_layers() > 0
-        layout = chart.projection().layout() if chart.number_of_projections() else None # avoid disconnected if projection present
-        vac_name = virus.add_subtype_prefix(chart, name)
+    def make(cls, chart: ae_backend.chart_v3.Chart, finder: AntigenFinder, name: str, year: str = None, passage: str = None, surrogate: bool = False, **ignored):
         vaccine = Vaccine(name=name, year=year, surrogate=surrogate)
-        for psg in [passage] if passage else sPassages:
-            antigens = chart.select_antigens(lambda ag: ag.name == vac_name and not ag.distinct() and ag.passage_is(psg) and layout.connected(ag.point_no))
-            if len(antigens):
-                if chart_has_layers and len(antigens) > 1:
-                    antigens.sort_by_number_of_layers_descending()
-                setattr(vaccine, psg, [cls.Entry(chart, *antigen) for antigen in antigens])
+        for psg, found in finder.find(name=name, passage=passage).items():
+            setattr(vaccine, psg, [cls.Entry(**en) for en in found])
         return vaccine
 
 # ----------------------------------------------------------------------
@@ -84,7 +74,8 @@ def find(chart: ae_backend.chart_v3.Chart, semantic_attribute_data: list, report
     semantic_attribute_data is loaded from e.g. acmacs-data/semantic-vaccines.py
     order of returned elements is the same as entries
     """
-    data = [en for en in (Vaccine.make(chart, **source) for source in semantic_attribute_data) if en]
+    finder = AntigenFinder(chart)
+    data = [en for en in (Vaccine.make(chart, finder, **source) for source in semantic_attribute_data) if en]
     if report:
         for en in data:
             en.report()
@@ -100,7 +91,7 @@ def collect_data_for_styles(chart: ae_backend.chart_v3.Chart):
         "designation": antigen.designation(),
         "lox": 0.0, "loy": 1.0,     # label offset
         "size": 70.0,
-        "outline_width": 4.0,
+        "outline_width": 1.0,
         "label_size": 36.0,
         "label": name_generator.location_year2_passaga_type(antigen),
         "semantic": antigen.semantic.get("V")
@@ -154,12 +145,12 @@ def style(chart: ae_backend.chart_v3.Chart, style_name: str, data: list[dict[str
     style.add_modifier(selector={"V": True}, only="antigens", raise_=True, **common_modifier)
 
     for en in data:
-        style.add_modifier(selector={"!i": en["no"]}, only="antigens", **_extract_point_modifier_data(source=en, label_modifier=label_modifier))
+        style.add_modifier(selector={"!i": en["no"]}, only="antigens", **extract_point_modifier_data(source=en, label_modifier=label_modifier))
     return {style_name}
 
 # ----------------------------------------------------------------------
 
-def _extract_point_modifier_data(source: dict[str, object], label_modifier: dict) -> dict[str, object]:
+def extract_point_modifier_data(source: dict[str, object], label_modifier: dict) -> dict[str, object]:
     def get_float(key: str) -> float:
         if (val := source.get(key)) is not None:
             return float(val)
