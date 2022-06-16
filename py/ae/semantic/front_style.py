@@ -18,5 +18,10 @@ def _title_style(plot_title, title_style: dict[str, object]):
     for tkey, skey in [["font_size", "size"], ["font_weight", "weight"], ["font_slant", "slant"], ["font_face", "face"], ["color", "color"], ["interline", "interline"]]:
         if (value := title_style.get(skey)) is not None:
             setattr(plot_title.text, tkey, value)
+    for tkey, skey in [["origin", "origin"], ["padding", "padding"], ["border_color", "border_color"], ["border_width", "border_width"], ["background_color", "background"]]:
+        if (value := title_style.get(skey)) is not None:
+            setattr(plot_title.box, tkey, value)
+    if offset := title_style.get("offset"):
+        plot_title.box.offset(*offset)
 
 # ======================================================================
