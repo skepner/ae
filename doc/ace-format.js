@@ -106,134 +106,136 @@
                 "i": 1                                             // UNUSED number of iterations?
             }
         ],
-        "R": {                                                     // sematic attributes based plot specifications, key: name of the style, value: style object
-            "z": 0,                                                // priority order when showing in GUI
-            "t": "",                                               // title
-            "V": [-5.0, -5.0, 10.0, 10.0],                         // viewport
-            "A": {                                                 // modifiers to apply
-                "R": "-clades",                                    // name ("N") of another plot spec to use (inherited from), applied before adding other changes provided by this object
-                "T": {                                             // select antigens/sera
-                    "<name of semantic attribute>": <value>,       // if value is true, ag/sr selected if they have that semantic attribute with any value, if value is false, select only if attribute is absent or false
-                    "!i": 0,                                       // antigen/serum index, i.e. individual selection (must use "A" below as well!)
+        "R": {                                                     // sematic attributes based plot specifications
+            "<name>": {                                            // key: name of the style, value: style object
+                "z": 0,                                                // priority order when showing in GUI
+                "t": "",                                               // title
+                "V": [-5.0, -5.0, 10.0, 10.0],                         // viewport
+                "A": {                                                 // modifiers to apply
+                    "R": "-clades",                                    // name ("N") of another plot spec to use (inherited from), applied before adding other changes provided by this object
+                    "T": {                                             // select antigens/sera
+                        "<name of semantic attribute>": <value>,       // if value is true, ag/sr selected if they have that semantic attribute with any value, if value is false, select only if attribute is absent or false
+                        "!i": 0,                                       // antigen/serum index, i.e. individual selection (must use "A" below as well!)
 
-                    "!D": ["date-first", "date-last"]              // ? select antigens with isolation date in range, if antigen date is absent, it is ""
-                                                                   // if date-last is "", it means until now
-                },
-                "A": 1,                                            // true or 1: select antigens only, false or 0: select sera only, absent or -1: select antigens and sera
-                "S": "C",                                          // shape: "C[IRCLE]" (default), "B[OX]", "T[RIANGLE]", "E[GG]", "U[GLYEGG]"
-                "F": "transparent",                                // fill color
-                "O": "black",                                      // outline color
-                "o": 1.0,                                          // outline width
-                "s": 1.0,                                          // size, default 1.0
-                "r": 0.0,                                          // rotation in radians, default 0.0
-                "a": 1.0,                                          // aspect ratio, default 1.0
-                "-": false,                                        // hide point and its label
-                "CI": {                                            // draw serum circle based on the corresponding "CI" semantic attribute
-                    "u": 2,                                        // fold
-                    "T": true,                                     // false or absent: draw empirical (if available), true: draw theoretical
-                    "f": true,                                     // draw fallback if radius is not available
-                    "O": "blue",                                   // outline color
-                    "F": "transparent",                            // fill color
-                    "o": 1.0,                                      // outline width
-                    "d": 0,                                        // number of dashes in circle, reasonable value: 100
-                    "a": [0, 30],                                  // angles for radius lines
-                    "r": {"O": "blue", "o": 1.0< "d": 0},          // radius lines, "d" - number of dashes in radius line, reasonable value: 16 (100 / 2 / pi)
-                },
-                "SC": {                                            // serum coverage data
-                    "u": 2,                                        // fold
-                    "I": {                                         // style for points within fold
-                        "O": "pink",                               // outline color
-                        "F": ":bright",                            // fill color
-                        "o": 3.0,                                  // outline width
+                        "!D": ["date-first", "date-last"]              // ? select antigens with isolation date in range, if antigen date is absent, it is ""
+                        // if date-last is "", it means until now
                     },
-                    "O": {                                         // style for points outside fold
-                        "O": "black",                              // outline color
-                        "F": ":bright",                            // fill color
-                        "o": 3.0,                                  // outline width
+                    "A": 1,                                            // true or 1: select antigens only, false or 0: select sera only, absent or -1: select antigens and sera
+                    "S": "C",                                          // shape: "C[IRCLE]" (default), "B[OX]", "T[RIANGLE]", "E[GG]", "U[GLYEGG]"
+                    "F": "transparent",                                // fill color
+                    "O": "black",                                      // outline color
+                    "o": 1.0,                                          // outline width
+                    "s": 1.0,                                          // size, default 1.0
+                    "r": 0.0,                                          // rotation in radians, default 0.0
+                    "a": 1.0,                                          // aspect ratio, default 1.0
+                    "-": false,                                        // hide point and its label
+                    "CI": {                                            // draw serum circle based on the corresponding "CI" semantic attribute
+                        "u": 2,                                        // fold
+                        "T": true,                                     // false or absent: draw empirical (if available), true: draw theoretical
+                        "f": true,                                     // draw fallback if radius is not available
+                        "O": "blue",                                   // outline color
+                        "F": "transparent",                            // fill color
+                        "o": 1.0,                                      // outline width
+                        "d": 0,                                        // number of dashes in circle, reasonable value: 100
+                        "a": [0, 30],                                  // angles for radius lines
+                        "r": {"O": "blue", "o": 1.0< "d": 0},          // radius lines, "d" - number of dashes in radius line, reasonable value: 16 (100 / 2 / pi)
                     },
+                    "SC": {                                            // serum coverage data
+                        "u": 2,                                        // fold
+                        "I": {                                         // style for points within fold
+                            "O": "pink",                               // outline color
+                            "F": ":bright",                            // fill color
+                            "o": 3.0,                                  // outline width
+                        },
+                        "O": {                                         // style for points outside fold
+                            "O": "black",                              // outline color
+                            "F": ":bright",                            // fill color
+                            "o": 3.0,                                  // outline width
+                        },
+                    },
+                    "D": "r",                                          // drawing order: raise, lower, absent: no change
+                    "l": {                                             // object label style -> Offset + TextData
+                        "-": false,                                    // if label is hidden
+                        "p":  [0, 1],                                  // [x, y]: label offset (2D only), list of two doubles, default is [0, 1] means under point
+                        "t": "label",                                  // label text if forced by user
+                        "f": "helvetica",                              // font face
+                        "S": "normal",                                 // font slant: "normal" (default), "italic"
+                        "W": "normal",                                 // font weight: "normal" (default), "bold"
+                        "s": 16.0,                                     // label size
+                        "c": "black",                                  // label color
+                        "r": 0.0,                                      // label rotation
+                        "i": 0.2                                       // addtional interval between lines as a fraction of line height
+                    },
+                    "L" {                                              //legend row
+                        "p": 0,                                        // priority
+                        "t": "legend row"
+                    }
                 },
-                "D": "r",                                          // drawing order: raise, lower, absent: no change
-                "l": {                                             // object label style -> Offset + TextData
-                    "-": false,                                    // if label is hidden
-                    "p":  [0, 1],                                  // [x, y]: label offset (2D only), list of two doubles, default is [0, 1] means under point
-                    "t": "label",                                  // label text if forced by user
-                    "f": "helvetica",                              // font face
-                    "S": "normal",                                 // font slant: "normal" (default), "italic"
-                    "W": "normal",                                 // font weight: "normal" (default), "bold"
-                    "s": 16.0,                                     // label size
-                    "c": "black",                                  // label color
-                    "r": 0.0,                                      // label rotation
-                    "i": 0.2                                       // addtional interval between lines as a fraction of line height
-                },
-                "L" {                                              //legend row
-                    "p": 0,                                        // priority
-                    "t": "legend row"
-                }
-            },
-            "T" {                                                  // Title
-                "-": false,                                        // hidden
-                "B": {                                             // box area
-                    "o":  "tl",                                    // box relative to, two letter code
-                                                                   //   first letter is for vertical position:
-                                                                   //     T - origin is bottom of the box relative to the top of the plot, i.e. box is above the plot
-                                                                   //     t - origin is top of the box relative to the top of the plot, i.e. box is within the plot
-                                                                   //     c - box is centered vertically
-                                                                   //     B - origin is bottom of the box relative to the bottom of the plot, i.e. box is within the plot
-                                                                   //     b - origin is top of the box relative to the bottom of the plot, i.e. box is above the plot
-                                                                   //   second letter is for horizontal position:
-                                                                   //     L - origin is right of the box relative to the left of the plot, i.e. box is to the left of the plot
-                                                                   //     l - origin is left of the box relative to the left of the plot, i.e. box is within the plot
-                                                                   //     c - box is centered horizontally
-                                                                   //     R - origin is right of the box relative to the right of the plot, i.e. box is within the plot
-                                                                   //     r - origin is left of the box relative to the right of the plot, i.e. box is to the right of the plot
+                "T" {                                                  // Title
+                    "-": false,                                        // hidden
+                    "B": {                                             // box area
+                        "o":  "tl",                                    // box relative to, two letter code
+                        //   first letter is for vertical position:
+                        //     T - origin is bottom of the box relative to the top of the plot, i.e. box is above the plot
+                        //     t - origin is top of the box relative to the top of the plot, i.e. box is within the plot
+                        //     c - box is centered vertically
+                        //     B - origin is bottom of the box relative to the bottom of the plot, i.e. box is within the plot
+                        //     b - origin is top of the box relative to the bottom of the plot, i.e. box is above the plot
+                        //   second letter is for horizontal position:
+                        //     L - origin is right of the box relative to the left of the plot, i.e. box is to the left of the plot
+                        //     l - origin is left of the box relative to the left of the plot, i.e. box is within the plot
+                        //     c - box is centered horizontally
+                        //     R - origin is right of the box relative to the right of the plot, i.e. box is within the plot
+                        //     r - origin is left of the box relative to the right of the plot, i.e. box is to the right of the plot
 
-                    "p": {"t": 0.0, "b": 0.0, "l": 0.0, "r": 0.0}, //  padding
-                    "O": [10, 10],                                 // offset relative to origin (pixels)
-                    "B": "black",                                  // border color
-                    "W":  0.0,                                     // border width, 0 - no border
-                    "F": "transparent",                            // background
+                        "p": {"t": 0.0, "b": 0.0, "l": 0.0, "r": 0.0}, //  padding
+                        "O": [10, 10],                                 // offset relative to origin (pixels)
+                        "B": "black",                                  // border color
+                        "W":  0.0,                                     // border width, 0 - no border
+                        "F": "transparent",                            // background
+                    },
+                    "T": {                                             // :text: style of text
+                        "t": "line\nline",                             //  multi-line text, lines are separated by \n
+                        "f": "helvetica",                              // font face, "monospace", "sansserif", "serif", "helvetica", "courier", "times"
+                        "S": "normal",                                 // font slant: "normal" (default), "italic"
+                        "W": "bold",                                   // font weight: "normal" (default), "bold"
+                        "s":  16.0,                                    // font size
+                        "c": "black",                                  // text color
+                        "i":  0.2                                      // addtional interval between lines as a fraction of line height
+                    }
                 },
-                "T": {                                             // :text: style of text
-                    "t": "line\nline",                             //  multi-line text, lines are separated by \n
-                    "f": "helvetica",                              // font face, "monospace", "sansserif", "serif", "helvetica", "courier", "times"
-                    "S": "normal",                                 // font slant: "normal" (default), "italic"
-                    "W": "bold",                                   // font weight: "normal" (default), "bold"
-                    "s":  16.0,                                    // font size
-                    "c": "black",                                  // text color
-                    "i":  0.2                                      // addtional interval between lines as a fraction of line height
-                }
-            },
-            "L": {                                                 //  legend data
-                "-": false,                                        // hidden
-                "C": true,                                         // add counter
-                "S": 10.0,                                         // point size
-                "z": true,                                         // show rows with zero count
-                "B": {                                             //  :box: box area
-                    "o":  "tl",                                    // box relative to, two letter code (see above)
-                    "p": {"t": 0.0, "b": 0.0, "l": 0.0, "r": 0.0}, // padding
-                    "O": [10, 10],                                 // offset relative to origin (pixels)
-                    "B": "black",                                  // Color border color
-                    "W": 0.0,                                      // border width, 0 - no border
-                    "F": "transparent",                            // Color background
+                "L": {                                                 //  legend data
+                    "-": false,                                        // hidden
+                    "C": true,                                         // add counter
+                    "S": 10.0,                                         // point size
+                    "z": true,                                         // show rows with zero count
+                    "B": {                                             //  :box: box area
+                        "o":  "tl",                                    // box relative to, two letter code (see above)
+                        "p": {"t": 0.0, "b": 0.0, "l": 0.0, "r": 0.0}, // padding
+                        "O": [10, 10],                                 // offset relative to origin (pixels)
+                        "B": "black",                                  // Color border color
+                        "W": 0.0,                                      // border width, 0 - no border
+                        "F": "transparent",                            // Color background
+                    },
+                    "t": {                                             // object :text: style of text in a legend row
+                        "f": "helvetica"                               // "monospace", "sansserif", "serif", "helvetica", "courier", "times"
+                        "S": "normal"                                  // font slant: "normal" (default), "italic"
+                        "W": "normal"                                  // font weight: "normal" (default), "bold"
+                        "s": 1.0,                                      // label size, default 1.0
+                        "c": "black",                                  //  label color, default: "black"
+                        "i":  0.2                                      // addtional interval between lines as a fraction of line height
+                    },
+                    "T": {                                             // object :text: title and its style
+                        "t": "title text",                             // title text, title is not shown if text is empty, text may include newlines
+                        "f": "helvetica",                              // font face, "monospace", "sansserif", "serif", "helvetica", "courier", "times"
+                        "S": "normal",                                 // font slant: "normal" (default), "italic"
+                        "W": "bold",                                   // font weight: "normal" (default), "bold"
+                        "s": 1.0,                                      // label size, default 1.0
+                        "c": "black",                                  // label color, default: "black"
+                        "i": 0.2                                       //addtional interval between lines as a fraction of line height
+                    }
                 },
-                "t": {                                             // object :text: style of text in a legend row
-                    "f": "helvetica"                               // "monospace", "sansserif", "serif", "helvetica", "courier", "times"
-                    "S": "normal"                                  // font slant: "normal" (default), "italic"
-                    "W": "normal"                                  // font weight: "normal" (default), "bold"
-                    "s": 1.0,                                      // label size, default 1.0
-                    "c": "black",                                  //  label color, default: "black"
-                    "i":  0.2                                      // addtional interval between lines as a fraction of line height
-                },
-                "T": {                                             // object :text: title and its style
-                    "t": "title text",                             // title text, title is not shown if text is empty, text may include newlines
-                    "f": "helvetica",                              // font face, "monospace", "sansserif", "serif", "helvetica", "courier", "times"
-                    "S": "normal",                                 // font slant: "normal" (default), "italic"
-                    "W": "bold",                                   // font weight: "normal" (default), "bold"
-                    "s": 1.0,                                      // label size, default 1.0
-                    "c": "black",                                  // label color, default: "black"
-                    "i": 0.2                                       //addtional interval between lines as a fraction of line height
-                }
-            },
+            }
         },
 
 
