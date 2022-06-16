@@ -288,7 +288,7 @@ static inline bool export_semantic_text(fmt::memory_buffer& out, const std::opti
         comma_L2 = put_optional(out, text->font_slant, "S", comma_L2);
         comma_L2 = put_optional(out, text->font_size, "s", comma_L2);
         comma_L2 = put_optional(out, text->color, "c", comma_L2);
-        comma_L2 = put_optional(out, text->interline, "c", comma_L2);
+        comma_L2 = put_optional(out, text->interline, "i", comma_L2);
         fmt::format_to(std::back_inserter(out), "}}");
     }
     return comma;
