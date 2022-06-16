@@ -247,7 +247,7 @@ void ae::py::chart_v3_plot_spec(pybind11::module_& chart_v3_submodule)
         .def(
             "__iter__", [](semantic::Styles& styles) { return pybind11::make_iterator(styles.begin(), styles.end()); }, pybind11::keep_alive<0, 1>())         //
         .def("__getitem__", &semantic::Styles::find, "name"_a, pybind11::return_value_policy::reference_internal, pybind11::doc("find or add style by name")) //
-        .def("remove", &semantic::Styles::clear, pybind11::doc("remove all sematic styles")) //
+        .def("remove", &semantic::Styles::clear, pybind11::doc("remove all sematic styles"))                                                                  //
         ;
 
     pybind11::class_<semantic::Style>(chart_v3_submodule, "SemanticStyle") //
@@ -291,11 +291,14 @@ void ae::py::chart_v3_plot_spec(pybind11::module_& chart_v3_submodule)
         .def_property(
             "shown", [](const semantic::Legend& legend) { return legend.shown.has_value() ? *legend.shown : false; }, [](semantic::Legend& legend, bool shown) { legend.shown = shown; }) //
         .def_property(
-            "add_counter", [](const semantic::Legend& legend) { return legend.add_counter.has_value() ? *legend.add_counter : false; }, [](semantic::Legend& legend, bool add_counter) { legend.add_counter = add_counter; }) //
+            "add_counter", [](const semantic::Legend& legend) { return legend.add_counter.has_value() ? *legend.add_counter : false; },
+            [](semantic::Legend& legend, bool add_counter) { legend.add_counter = add_counter; }) //
         .def_property(
-            "show_rows_with_zero_count", [](const semantic::Legend& legend) { return legend.show_rows_with_zero_count.has_value() ? *legend.show_rows_with_zero_count : false; }, [](semantic::Legend& legend, bool show_rows_with_zero_count) { legend.show_rows_with_zero_count = show_rows_with_zero_count; }) //
+            "show_rows_with_zero_count", [](const semantic::Legend& legend) { return legend.show_rows_with_zero_count.has_value() ? *legend.show_rows_with_zero_count : false; },
+            [](semantic::Legend& legend, bool show_rows_with_zero_count) { legend.show_rows_with_zero_count = show_rows_with_zero_count; }) //
         .def_property(
-            "point_size", [](const semantic::Legend& legend) { return legend.point_size.has_value() ? *legend.point_size : 10.0; }, [](semantic::Legend& legend, double point_size) { legend.point_size = point_size; }) //
+            "point_size", [](const semantic::Legend& legend) { return legend.point_size.has_value() ? *legend.point_size : 10.0; },
+            [](semantic::Legend& legend, double point_size) { legend.point_size = point_size; }) //
         .def_property_readonly(
             "box",
             [](semantic::Legend& legend) -> semantic::box_t& {
