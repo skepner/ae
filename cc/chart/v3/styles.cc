@@ -49,7 +49,7 @@ void ae::chart::v3::semantic::text_t::set_font_weight(std::string_view value)
 void ae::chart::v3::semantic::text_t::set_font_slant(std::string_view value)
 {
     using namespace std::string_view_literals;
-    if (value != "normal"sv || value != "italic"sv)
+    if (value != "normal"sv && value != "italic"sv)
         throw std::runtime_error{fmt::format("invalid sematic text font slant \"{}\"", value)};
     font_slant = value;
 
