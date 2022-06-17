@@ -1,4 +1,4 @@
-import sys, os, datetime, time, json, tempfile, asyncio, subprocess
+import sys, os, asyncio, subprocess
 from pathlib import Path
 
 import ae_backend
@@ -8,11 +8,6 @@ import ae_backend
 KATERI_EXE = "kateri"
 
 communicator = None
-
-# ----------------------------------------------------------------------
-
-def tasks():
-    return [SocketServer(), Kateri()]
 
 # ----------------------------------------------------------------------
 
@@ -49,10 +44,10 @@ class SocketServerTask:
         global communicator
         communicator = Communicator()
         self.socket_server = await asyncio.start_unix_server(communicator.connected, socket_name)
-        print(f">>> [server] started pid: {os.getpid()} socket: {socket_name}", file=sys.stderr)
+        print(f">>> [server-for-kateri] started pid: {os.getpid()} socket: {socket_name}", file=sys.stderr)
         await self.socket_server.serve_forever()
         self.socket_server = None
-        print(f">>> [server] completed", file=sys.stderr)
+        print(f">>> [server-for-kateri] completed", file=sys.stderr)
 
     def running(self) -> bool:
         global communicator
@@ -78,11 +73,14 @@ class Communicator:
     def set_style(self, style: str):
         self.send_command({"C": "set_style", "style": style})
 
-    def pdf(self, filename: str, width: float = 800.0, open: bool = False):
+    def pdf(self, filename: str, style: str = None, width: float = 800.0, open: bool = False):
+        if style:
+            self.set_style(style=style)
         self.send_command({"C": "pdf", "width": width})
         self.expected.append({"C": "PDFB", "filename": filename, "open": open})
 
     def send_command(self, command: dict[str, object]):
+        import json
         self._send(b"COMD", json.dumps(command).encode("utf-8"))
 
     def _send(self, data_code: bytes, data: bytes):
