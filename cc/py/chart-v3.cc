@@ -311,6 +311,12 @@ void ae::py::chart_v3(pybind11::module_& mdl)
             },                                              //
             pybind11::doc(R"(Select reference antigens.)")) //
         .def(
+            "select_test_antigens", //
+            [](std::shared_ptr<Chart> chart) {
+                return new SelectedAntigens{chart, chart->test()};
+            },                                              //
+            pybind11::doc(R"(Select test antigens.)")) //
+        .def(
             "select_new_antigens", //
             [](std::shared_ptr<Chart> chart, const Chart& previous_chart) {
                 auto* selected = new SelectedAntigens{chart};

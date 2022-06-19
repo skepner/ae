@@ -292,6 +292,20 @@ ae::antigen_indexes ae::chart::v3::Chart::reference() const
 
 // ----------------------------------------------------------------------
 
+ae::antigen_indexes ae::chart::v3::Chart::test() const // inversion of the reference() list
+{
+    const auto ref = reference();
+    antigen_indexes indexes;
+    for (const auto ag_no : antigens().size()) {
+        if (!ref.contains(ag_no))
+            indexes.push_back(ag_no);
+    }
+    return indexes;
+
+} // ae::chart::v3::Chart::test
+
+// ----------------------------------------------------------------------
+
 ae::sequences::lineage_t ae::chart::v3::Chart::lineage() const // major lineage
 {
     const auto present_lineages = lineages();
