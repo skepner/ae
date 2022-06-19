@@ -13,16 +13,17 @@ def attributes(chart: ae_backend.chart_v3.Chart, previous_chart: ae_backend.char
 
 # ======================================================================
 
-def style(chart: ae_backend.chart_v3.Chart, number_of_previous_charts: int, first_priority: int = 4500) -> set[str]:
-    """add "-new-1", "-new-2", "-new-big" styles marking antigens with the "new" semantic attribute"""
-    snames = set()
+def style_new(chart: ae_backend.chart_v3.Chart, number_of_previous_charts: int, first_priority: int = 4500):
+    """add "-new-1", "-new-2", "-new-1-big" styles marking antigens with the "new" semantic attribute"""
     if number_of_previous_charts > 0:
         priority = first_priority
         outline_widths = [1, 6, 3]
         for prev_no in range(number_of_previous_charts, 0, -1):
-            snames |= style_with_one_modifier(chart=chart, style_name=f"-new-{prev_no}", selector={"new": prev_no}, modifier={"outline": "black", "outline_width": outline_widths[prev_no], "only": "antigens", "raise": True}, priority=priority)
+            style_with_one_modifier(chart=chart, style_name=f"-new-{prev_no}", selector={"new": prev_no}, modifier={"outline": "black", "outline_width": outline_widths[prev_no], "only": "antigens", "raise": True}, priority=priority)
             priority += 1
-        snames |= style_with_one_modifier(chart=chart, style_name=f"-new-big", selector={"new": 1}, modifier={"size": 30, "only": "antigens", "raise": True}, priority=priority)
-    return snames
+
+def style_new_big(chart: ae_backend.chart_v3.Chart, size: float = 30.0, priority: int = 4502):
+    """add "-new-1-big" style marking antigens with the "new" semantic attribute"""
+    style_with_one_modifier(chart=chart, style_name=f"-new-1-big", selector={"new": 1}, modifier={"size": size, "only": "antigens", "raise": True}, priority=priority)
 
 # ======================================================================

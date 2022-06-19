@@ -25,16 +25,13 @@ def attributes(chart: ae_backend.chart_v3.Chart, entries: list):
 
 # ======================================================================
 
-def style(chart: ae_backend.chart_v3.Chart, name: str, data: list, add_counter: bool = True, legend_style: dict[str, object] = {}) -> set[str]:
+def style(chart: ae_backend.chart_v3.Chart, name: str, data: list, add_counter: bool = True, legend_style: dict[str, object] = {}):
     """expected data: [{"name": "3C.2a1b.2a.2 156S", "legend": "2a1b.2a.2 156S", "color": "red", **ignored}]"""
-    snames = set()
-
     sname = f"-{name}-sera"
     style = chart.styles()[sname]
     style.priority = 1000
     for modifier in data:
         style.add_modifier(selector={"C": modifier["name"]}, outline=modifier["color"], outline_width=3.0, rais=True, only="sera")
-    snames.add(sname)
 
     sname = f"-{name}"
     style = chart.styles()[sname]
@@ -45,7 +42,5 @@ def style(chart: ae_backend.chart_v3.Chart, name: str, data: list, add_counter: 
     for modifier in data:
         style.add_modifier(selector={"C": modifier["name"]}, fill=modifier["color"], outline="black", rais=True, only="antigens", legend=modifier["legend"], legend_priority=legend_priority)
         legend_priority -= 1
-    snames.add(sname)
-    return snames
 
 # ======================================================================

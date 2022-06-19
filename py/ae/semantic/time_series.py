@@ -26,7 +26,7 @@ def style(chart: ae_backend.chart_v3.Chart, name: str = "ts-", first: datetime.d
         style.add_modifier(selector={"R": False, "!D": ["", dfirst.strftime("%Y-%m-%d")]}, hide=True, only="antigens")
         style.add_modifier(selector={"R": False, "!D": [dlast.strftime("%Y-%m-%d"), ""]}, hide=True, only="antigens")
         title = " ".join(en for en in [title_prefix, calendar.month_name[dfirst.month], str(dfirst.year)] if en)
-        front_style.add(chart=chart, style_name=sname[1:], references=["-reset", "-continent", "-new-bigger", sname, "-vaccines"], title=title, show_legend=True, legend_counter=True, style_priority=front_priority + priority_inc)
+        front_style.add(chart=chart, style_name=sname[1:], references=["-reset", "-continent", "-new-1-big", sname, "-vaccines"], title=title, show_legend=True, legend_counter=True, style_priority=front_priority + priority_inc)
         priority_inc += 1
 
     # pprint.pprint(time_series(first=datetime.date(2022, 6, 1), last_inclusive=datetime.date(2023, 1, 2), period="week"))
