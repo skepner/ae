@@ -9,16 +9,6 @@ from .name_generator import NameGenerator
 
 class Vaccine:
 
-    def __init__(self, name: str, year: str, surrogate: bool):
-        self.name = name
-        self.year = year
-        self.surrogate = surrogate
-        for passage in PASSAGES:
-            setattr(self, passage, [])
-
-    def __bool__(self):
-        return any(bool(getattr(self, passage, None)) for passage in PASSAGES)
-
     class Entry:
 
         def __init__(self, no: int, antigen: ae_backend.chart_v3.Antigen, layers: list):
@@ -31,6 +21,21 @@ class Vaccine:
 
         def to_dict(self):
             return {"no": self.no, "designation": self.antigen.designation(), "layers": self.layers}
+
+    # ----------------------------------------------------------------------
+
+    def __init__(self, name: str, year: str, surrogate: bool):
+        self.name = name
+        self.year = year
+        self.surrogate = surrogate
+        self.cell: Optional[list[Vaccine.Entry]] = None
+        self.egg: Optional[list[Vaccine.Entry]] = None
+        self.reassortant: Optional[list[Vaccine.Entry]] = None
+        for passage in PASSAGES:
+            setattr(self, passage, [])
+
+    def __bool__(self):
+        return any(bool(getattr(self, passage, None)) for passage in PASSAGES)
 
     def semantic_vaccine(self, entry: Entry, current_vaccine_years: list[str] = []):
         if entry.antigen.reassortant():
