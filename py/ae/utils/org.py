@@ -21,7 +21,7 @@ def org_table_to_dict(data: str) -> list[dict[str, str]]:
 
 # ----------------------------------------------------------------------
 
-def dict_to_org_table(data: dict, field_order: list, add_org_mode_wrapper: bool = True) -> str:
+def dict_to_org_table(data: list[dict[str, object]], field_order: list, add_org_mode_wrapper: bool = True) -> str:
     field_size : dict[str, int] = {field: len(field) for field in field_order}
     for en in data:
         for field, val in en.items():

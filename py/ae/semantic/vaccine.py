@@ -112,12 +112,12 @@ def default_field_order():
 
 # ----------------------------------------------------------------------
 
-def update(collected: list[dict[str, object]], user: list[dict[str, object]], match_by: str = "designation") -> list[dict[str, object]]:
+def update(collected: list[dict[str, object]], user: list[dict[str, object|str]], match_by: str = "designation") -> list[dict[str, object]]:
     """match_by is a unique key! user data order is preferred, extra collected data is at the beginning of the result"""
     collected_ref = {en[match_by]: en for en in collected}
     user_ref = {en[match_by]: en for en in user}
 
-    def upd(src: Optional[dict[str, object]], upd: dict[str, object]) -> dict[str, object]:
+    def upd(src: Optional[dict[str, object]], upd: dict[str, object]) -> Optional[dict[str, object]]:
         if not src:
             return None
         res = {**src}

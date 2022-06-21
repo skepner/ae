@@ -1,13 +1,12 @@
 import sys, os, asyncio, subprocess
 from pathlib import Path
+from typing import Optional
 
 import ae_backend
 
 # ======================================================================
 
 KATERI_EXE = "kateri"
-
-communicator = None
 
 # ----------------------------------------------------------------------
 
@@ -42,7 +41,6 @@ class SocketServerTask:
 
     async def start(self, socket_name: str, **ignored):
         global communicator
-        communicator = Communicator()
         self.socket_server = await asyncio.start_unix_server(communicator.connected, socket_name)
         print(f">>> [server-for-kateri] started pid: {os.getpid()} socket: {socket_name}", file=sys.stderr)
         await self.socket_server.serve_forever()
@@ -138,5 +136,9 @@ class Communicator:
                 subprocess.call(["open", expected["filename"]])
         else:
             print(f">> [kateri.Communicator] not implemented processing for expected {expected}", file=sys.stderr)
+
+# ----------------------------------------------------------------------
+
+communicator = Communicator()
 
 # ======================================================================
