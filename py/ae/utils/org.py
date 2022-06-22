@@ -14,10 +14,25 @@ def org_table_to_dict(data: str) -> list[dict[str, str]]:
             if not field_names:
                 field_names = fields
             else:
-                result.append({key: fields[no] for no, key in enumerate(field_names) if fields[no]})
+                result.append({key: _convert_value(fields[no]) for no, key in enumerate(field_names) if fields[no]})
         elif field_names:
             break
     return result
+
+def _convert_value(value: str) -> object:
+    if value in ["true", "True"]:
+        return True
+    if value in ["false", "False"]:
+        return False
+    try:
+        return int(value)
+    except ValueError:
+        pass
+    try:
+        return float(value)
+    except ValueError:
+        pass
+    return value
 
 # ----------------------------------------------------------------------
 
