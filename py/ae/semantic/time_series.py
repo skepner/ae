@@ -1,25 +1,27 @@
 import sys, datetime, pprint, calendar
+from typing import Optional
 import ae_backend
-from ..utils.datetime import get_antigen_date_range, time_series
+# from ..utils.datetime import get_antigen_date_range
+from ..utils.time_series import TimeSeriesRange
 from . import front_style
 
 # ======================================================================
 
-def style(chart: ae_backend.chart_v3.Chart, name: str = "ts-", first: datetime.date|str = None, last_inclusive: datetime.date|str = None, title_prefix: str = None, period: str = "month", priority: int = 5000, front_priority: int = 500):
+def style(chart: ae_backend.chart_v3.Chart, time_series: TimeSeriesRange, name: str = "ts-", title_prefix: str = None, priority: int = 5000, front_priority: int = 500):
     """period: "year", "month", "week" """
 
-    if period == "year":
+    if time_series.period == "year":
         name_format = "%Y"
-    elif period == "month":
+    elif time_series.period == "month":
         name_format = "%Y-%m"
-    elif period == "week":
+    elif time_series.period == "week":
         name_format = "%Y-%m-%d"
     else:
         raise ValueError(f"time_series: uknown period: \"{period}\"")
 
-    first, last_inclusive = get_antigen_date_range(chart=chart, first=first, last=last_inclusive)
+    # first, last_inclusive = get_antigen_date_range(chart=chart, first=first, last=last_inclusive)
     priority_inc = 0
-    for dfirst, dlast in time_series(first=first, last_inclusive=last_inclusive, period=period):
+    for dfirst, dlast in time_series.range_begin_end():
         sname = f"-{name}{dfirst.strftime(name_format)}"
         style = chart.styles()[sname]
         style.priority = priority + priority_inc
