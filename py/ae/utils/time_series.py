@@ -53,6 +53,13 @@ class TimeSeriesRange:
             yield current
             current = self.next(current)
 
+    def range_begin_str(self) -> Generator[str, None, None]:
+        fmt = self.name_format_style()
+        current = self._first
+        while current < self._after_last:
+            yield current.strftime(fmt)
+            current = self.next(current)
+
     def range_begin_end(self) -> Generator[list[datetime.date], None, None]:
         current = self._first
         while current < self._after_last:
