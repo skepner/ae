@@ -71,11 +71,14 @@ class Communicator:
     def set_style(self, style: str):
         self.send_command({"C": "set_style", "style": style})
 
-    def pdf(self, filename: str, style: str = None, width: float = 800.0, open: bool = False):
+    def pdf(self, filename: str|Path, style: str = None, width: float = 800.0, open: bool = False):
         if style:
             self.set_style(style=style)
         self.send_command({"C": "pdf", "width": width})
         self.expected.append({"C": "PDFB", "filename": filename, "open": open})
+
+    def quit(self):
+        self.send_command({"C": "quit"})
 
     def send_command(self, command: dict[str, object]):
         import json
@@ -94,6 +97,7 @@ class Communicator:
     async def connected(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
         self.writer = writer
         while (request := (await reader.read(4)).decode('utf8').strip()) not in ["", "QUIT"]: # empty request means broken pipe
+            # print(f">>>> received from kateri: {request}", file=sys.stderr)
             if request == "HELO":
                 pass
             elif request == "PDFB":
@@ -103,6 +107,7 @@ class Communicator:
             else:
                 print(f">> [kateri.Communicator] unrecognized request \"{request}\"", file=sys.stderr)
             await writer.drain()
+        print(f">>>> kateri: quit", file=sys.stderr)
         writer.close()
 
     def is_connected(self) -> bool:
