@@ -9,7 +9,7 @@ class TimeSeriesRange:
 
     def __init__(self, first: str|datetime.date, after_last: Optional[str|datetime.date] = None, last_inclusive: Optional[str|datetime.date] = None, period: str = "month"):
         if period not in ["week", "month", "year"]:
-            raise ValueError(f"invalid period: \"{period}\"")
+            raise ValueError(f"TimeSeriesRange: invalid period: \"{period}\"")
         self.period = period
         self._first = datetime.parse_date(first)
         if self.period == "week":
@@ -32,7 +32,7 @@ class TimeSeriesRange:
                     return date.replace(month=date.month + 1)
             case "week":
                 return date + datetime.timedelta(days=7)
-        raise ValueError(f"invalid period: \"{self.period}\"")
+        raise ValueError(f"TimeSeriesRange: invalid period: \"{self.period}\"")
 
     def previous(self, date: datetime.date) -> datetime.date:
         match self.period:
@@ -45,7 +45,7 @@ class TimeSeriesRange:
                     return date.replace(month=date.month - 1)
             case "week":
                 return date - datetime.timedelta(days=7)
-        raise ValueError(f"invalid period: \"{self.period}\"")
+        raise ValueError(f"TimeSeriesRange: invalid period: \"{self.period}\"")
 
     def range_begin(self) -> Generator[datetime.date, None, None]:
         current = self._first
@@ -80,5 +80,15 @@ class TimeSeriesRange:
 
     def __str__(self):
         return f"TimeSeries[{self.front_YMD()}, {self.back_YMD()}]"
+
+    def name_format_style(self) -> str:
+        if self.period == "year":
+            return "%Y"
+        elif self.period == "month":
+            return "%Y-%m"
+        elif self.period == "week":
+            return "%Y-%m-%d"
+        else:
+            raise ValueError(f"TimeSeriesRange: uknown period: \"{self.period}\"")
 
 # ======================================================================
