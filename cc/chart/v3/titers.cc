@@ -729,11 +729,12 @@ void ae::chart::v3::Titers::remove_antigens(dense_t& data, const antigen_indexes
 
 // ----------------------------------------------------------------------
 
-void ae::chart::v3::Titers::remove_antigens(sparse_t& data, const antigen_indexes& to_remove, serum_index number_of_sera)
+void ae::chart::v3::Titers::remove_antigens(sparse_t& data, const antigen_indexes& to_remove, serum_index)
 {
     auto indexes_i = to_vector_base_t(to_remove);
     std::sort(std::begin(indexes_i), std::end(indexes_i), [](auto i1, auto i2) { return i1 > i2; }); // descending
-    throw std::runtime_error("ae::chart::v3::Titers::remove_antigens not implemented");
+    for (const auto ag_no : indexes_i)
+        data.erase(std::next(data.begin(), ag_no));
 
 } // ae::chart::v3::Titers::remove_antigens
 
@@ -753,9 +754,12 @@ void ae::chart::v3::Titers::remove_sera(dense_t& data, const serum_indexes& to_r
 
 // ----------------------------------------------------------------------
 
-void ae::chart::v3::Titers::remove_sera(sparse_t& data, const serum_indexes& to_remove, serum_index number_of_sera)
+void ae::chart::v3::Titers::remove_sera(sparse_t& data, const serum_indexes& to_remove, serum_index)
 {
-    throw std::runtime_error("ae::chart::v3::Titers::remove_sera not implemented");
+    for (auto& ag_en : data) {
+        for (const auto sr_no : to_remove)
+            ag_en.erase(std::remove_if(std::begin(ag_en), std::end(ag_en), [sr_no](const auto& sr_en) { return sr_en.first == sr_no; }), std::end(ag_en));
+    }
 
 } // ae::chart::v3::Titers::remove_sera
 
