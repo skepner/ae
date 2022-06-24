@@ -93,6 +93,18 @@ namespace ae::chart::v3
 
         // ErrorLines error_lines() const { return ae::chart::v2::error_lines(*this); }
 
+        void remove_points(const point_indexes& points)
+            {
+                layout_.remove_points(points);
+                stress_ = std::nullopt;
+                // forced_column_bases_.remove(points);
+                // disconnected_.remove(points);
+                // unmovable_.remove(points);
+                // unmovable_in_the_last_dimension_.remove(points);
+                // avidity_adjusts_.remove();
+                throw std::runtime_error("ae::chart::v3::Projection::remove_points not implemented");
+            }
+
       private:
         Layout layout_{};
         Transformation transformation_{};
@@ -145,14 +157,12 @@ namespace ae::chart::v3
         // void remove_all_except(size_t projection_no);
         // void remove_except(size_t number_of_initial_projections_to_keep, ProjectionP projection_to_keep = {nullptr});
 
-        // void remove_antigens(const ReverseSortedIndexes& indexes)
-        // {
-        //     for_each(data_.begin(), data_.end(), [&](auto& projection) { projection->remove_antigens(indexes); });
-        // }
-        // void remove_sera(const ReverseSortedIndexes& indexes, size_t number_of_antigens)
-        // {
-        //     for_each(data_.begin(), data_.end(), [&indexes, number_of_antigens](auto& projection) { projection->remove_sera(indexes, number_of_antigens); });
-        // }
+        void remove_points(const point_indexes& points)
+        {
+            for (auto& prj : data_)
+                prj.remove_points(points);
+        }
+
         // void insert_antigen(size_t before)
         // {
         //     for_each(data_.begin(), data_.end(), [=](auto& projection) { projection->insert_antigen(before); });
