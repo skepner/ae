@@ -380,16 +380,17 @@ namespace ae::chart::v3
 
         void remove_antigens(const antigen_indexes& to_remove)
         {
-            std::visit([&to_remove](auto& dat) { Titers::remove_antigens(dat, to_remove); }, titers_);
+            std::visit([&to_remove, this](auto& dat) { Titers::remove_antigens(dat, to_remove, number_of_sera_); }, titers_);
             for (auto& layer : layers_)
-                remove_antigens(layer, to_remove);
+                remove_antigens(layer, to_remove, number_of_sera_);
         }
 
         void remove_sera(const serum_indexes& to_remove)
         {
-            std::visit([&to_remove](auto& dat) { Titers::remove_sera(dat, to_remove); }, titers_);
+            std::visit([&to_remove, this](auto& dat) { Titers::remove_sera(dat, to_remove, number_of_sera_); }, titers_);
             for (auto& layer : layers_)
-                remove_sera(layer, to_remove);
+                remove_sera(layer, to_remove, number_of_sera_);
+            number_of_sera_ = number_of_sera_ - to_remove.size();
         }
 
         // ----------------------------------------------------------------------
@@ -410,10 +411,10 @@ namespace ae::chart::v3
         titer_merge_report set_titers_from_layers(more_than_thresholded mtt);
         std::pair<Titer, titer_merge> titer_from_layers(antigen_index aAntigenNo, serum_index aSerumNo, more_than_thresholded mtt, double standard_deviation_threshold) const;
 
-        static void remove_antigens(dense_t& data, const antigen_indexes& to_remove);
-        static void remove_antigens(sparse_t& data, const antigen_indexes& to_remove);
-        static void remove_sera(dense_t& data, const serum_indexes& to_remove);
-        static void remove_sera(sparse_t& data, const serum_indexes& to_remove);
+        static void remove_antigens(dense_t& data, const antigen_indexes& to_remove, serum_index number_of_sera);
+        static void remove_antigens(sparse_t& data, const antigen_indexes& to_remove, serum_index number_of_sera);
+        static void remove_sera(dense_t& data, const serum_indexes& to_remove, serum_index number_of_sera);
+        static void remove_sera(sparse_t& data, const serum_indexes& to_remove, serum_index number_of_sera);
 
     }; // class Titers
 

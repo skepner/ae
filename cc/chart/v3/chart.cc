@@ -339,6 +339,7 @@ std::unordered_map<ae::sequences::lineage_t, size_t, ae::sequences::lineage_t_ha
 
 void ae::chart::v3::Chart::remove_antigens(const SelectedAntigens& to_remove)
 {
+    AD_DEBUG("remove_antigens {}", to_remove);
     antigens().remove(to_remove.indexes);
     titers().remove_antigens(to_remove.indexes);
     const auto points_to_remove = to_point_indexes(to_remove.indexes);
