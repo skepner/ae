@@ -314,7 +314,7 @@ void ae::py::chart_v3(pybind11::module_& mdl)
             "select_test_antigens", //
             [](std::shared_ptr<Chart> chart) {
                 return new SelectedAntigens{chart, chart->test()};
-            },                                              //
+            },                                         //
             pybind11::doc(R"(Select test antigens.)")) //
         .def(
             "select_new_antigens", //
@@ -434,21 +434,21 @@ void ae::py::chart_v3(pybind11::module_& mdl)
 
         //         .def("plot_spec", [](Chart& chart) { return PlotSpecRef{.plot_spec = chart.plot_spec_modify_ptr(), .number_of_antigens = chart.number_of_antigens()}; }) //
 
-        //         .def(
-        //             "remove_antigens_sera",
-        //             [](Chart& chart, std::shared_ptr<SelectedAntigensModify> antigens, std::shared_ptr<SelectedSeraModify> sera, bool remove_projections) {
-        //                 if (remove_projections)
-        //                     chart.projections_modify().remove_all();
-        //                 if (antigens && !antigens->empty())
-        //                     chart.remove_antigens(ae::chart::v3::ReverseSortedIndexes{*antigens->indexes});
-        //                 if (sera && !sera->empty())
-        //                     chart.remove_sera(ae::chart::v3::ReverseSortedIndexes{*sera->indexes});
-        //             },                                                                          //
-        //             "antigens"_a = nullptr, "sera"_a = nullptr, "remove_projections"_a = false, //
-        //             pybind11::doc(R"(
-        // Usage:
-        //     chart.remove_antigens_sera(antigens=chart.select_antigens(lambda ag: ag.lineage == "VICTORIA"), sera=chart.select_sera(lambda sr: sr.lineage == "VICTORIA"))
-        // )"))                                                                                    //
+        .def(
+            "remove_antigens_sera",
+            [](Chart& chart, std::shared_ptr<SelectedAntigens> antigens, std::shared_ptr<SelectedSera> sera, bool remove_projections) {
+                if (remove_projections)
+                    chart.projections().remove_all();
+                if (antigens && !antigens->empty())
+                    chart.remove_antigens(*antigens);
+                if (sera && !sera->empty())
+                    chart.remove_sera(*sera);
+            },                                                                          //
+            "antigens"_a = nullptr, "sera"_a = nullptr, "remove_projections"_a = false, //
+            pybind11::doc(R"(
+        Usage:
+            chart.remove_antigens_sera(antigens=chart.select_antigens(lambda ag: ag.lineage == "VICTORIA"), sera=chart.select_sera(lambda sr: sr.lineage == "VICTORIA"))
+        )"))                                                                            //
         //         .def(
         //             "keep_antigens_sera",
         //             [](Chart& chart, std::shared_ptr<SelectedAntigensModify> antigens, std::shared_ptr<SelectedSeraModify> sera, bool remove_projections) {

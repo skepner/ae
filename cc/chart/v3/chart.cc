@@ -5,6 +5,7 @@
 #include "chart/v3/optimize.hh"
 
 #include "chart/v3/disconnected-points-handler.hh"
+#include "chart/v3/selected-antigens-sera.hh"
 
 // ----------------------------------------------------------------------
 
@@ -333,5 +334,33 @@ std::unordered_map<ae::sequences::lineage_t, size_t, ae::sequences::lineage_t_ha
     return lineages;
 
 } // ae::chart::v3::Chart::lineages
+
+// ----------------------------------------------------------------------
+
+void ae::chart::v3::Chart::remove_antigens(const SelectedAntigens& to_remove)
+{
+    antigens().remove(to_remove.indexes);
+    titers().remove_antigens(to_remove.indexes);
+    const auto points_to_remove = to_point_indexes(to_remove.indexes);
+    // projections().remove_points(points_to_remove);
+    styles().clear();
+    // legacy_plot_spec().remove_points(points_to_remove);
+    throw std::runtime_error("ae::chart::v3::Chart::remove_antigens not implemented");
+
+} // ae::chart::v3::Chart::remove_antigens
+
+// ----------------------------------------------------------------------
+
+void ae::chart::v3::Chart::remove_sera(const SelectedSera& to_remove)
+{
+    sera().remove(to_remove.indexes);
+    titers().remove_sera(to_remove.indexes);
+    const auto points_to_remove = to_point_indexes(to_remove.indexes, antigens().size());
+    // projections().remove_points(points_to_remove);
+    styles().clear();
+    // legacy_plot_spec().remove_points(points_to_remove);
+    throw std::runtime_error("ae::chart::v3::Chart::remove_sera not implemented");
+
+} // ae::chart::v3::Chart::remove_sera
 
 // ----------------------------------------------------------------------

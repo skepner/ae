@@ -717,3 +717,35 @@ double ae::chart::v3::Titers::max_distance(const column_bases& cb) const
 } // ae::chart::v3::Titers::max_distance
 
 // ----------------------------------------------------------------------
+
+void ae::chart::v3::Titers::remove_antigens(dense_t& data, const antigen_indexes& to_remove)
+{
+    throw std::runtime_error("ae::chart::v3::Titers::remove_antigens not implemented");
+
+} // ae::chart::v3::Titers::remove_antigens
+
+// ----------------------------------------------------------------------
+
+void ae::chart::v3::Titers::remove_antigens(sparse_t& data, const antigen_indexes& to_remove)
+{
+    throw std::runtime_error("ae::chart::v3::Titers::remove_antigens not implemented");
+
+} // ae::chart::v3::Titers::remove_antigens
+
+// ----------------------------------------------------------------------
+
+void ae::chart::v3::Titers::remove_sera(dense_t& data, const serum_indexes& to_remove)
+{
+    throw std::runtime_error("ae::chart::v3::Titers::remove_sera not implemented");
+
+} // ae::chart::v3::Titers::remove_sera
+
+// ----------------------------------------------------------------------
+
+void ae::chart::v3::Titers::remove_sera(sparse_t& data, const serum_indexes& to_remove)
+{
+    throw std::runtime_error("ae::chart::v3::Titers::remove_sera not implemented");
+
+} // ae::chart::v3::Titers::remove_sera
+
+// ----------------------------------------------------------------------

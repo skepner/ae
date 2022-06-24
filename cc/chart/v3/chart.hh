@@ -16,6 +16,9 @@
 
 namespace ae::chart::v3
 {
+    struct SelectedAntigens;
+    struct SelectedSera;
+
     class Error : public std::runtime_error
     {
       public:
@@ -84,6 +87,9 @@ namespace ae::chart::v3
 
         sequences::lineage_t lineage() const; // major lineage
         std::unordered_map<sequences::lineage_t, size_t, sequences::lineage_t_hash_for_unordered_map, std::equal_to<>> lineages() const; // lineage to antigen count
+
+        void remove_antigens(const SelectedAntigens& to_remove);
+        void remove_sera(const SelectedSera& to_remove);
 
       private:
         Info info_{};

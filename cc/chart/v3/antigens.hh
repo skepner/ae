@@ -221,6 +221,14 @@ namespace ae::chart::v3
             }
         }
 
+        void remove(indexes_t indexes)
+        {
+            auto indexes_i = to_vector_base_t(indexes);
+            std::sort(std::begin(indexes_i), std::end(indexes_i), [](auto i1, auto i2) { return i1 > i2; }); // descending
+            for (const auto ind : indexes_i)
+                data_.erase(std::next(data_.begin(), ind));
+        }
+
         // ----------------------------------------------------------------------
 
       private:
