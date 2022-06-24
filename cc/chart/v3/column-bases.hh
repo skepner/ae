@@ -92,6 +92,7 @@ namespace ae::chart::v3
         void set(serum_index aSerumNo, double column_basis) { data_[aSerumNo.get()] = column_basis; }
         // void remove(const ReverseSortedIndexes& indexes, ReverseSortedIndexes::difference_type base_index = 0) { ae::chart::v2::remove(indexes, data_, base_index); }
         void insert(serum_index before, double value) { data_.insert(data_.begin() + static_cast<decltype(data_)::difference_type>(before.get()), value); }
+        void remove(serum_index sr_no) { data_.erase(std::next(data_.begin(), *sr_no)); }
 
         // import from ace
         void add(double value) { data_.push_back(value); }

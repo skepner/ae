@@ -175,6 +175,12 @@ namespace ae
     using point_indexes = ae::named_vector_t<point_index, struct point_index_tag>;
     using layer_indexes = ae::named_vector_t<layer_index, struct layer_index_tag>;
 
+    inline void remove(point_indexes& indexes, const std::vector<size_t>& to_remove_sorted_descending)
+    {
+        for (const auto ind : to_remove_sorted_descending)
+            indexes.get().erase(std::next(indexes->begin(), ind));
+    }
+
     inline point_indexes to_point_indexes(const antigen_indexes& agi, antigen_index = antigen_index{0})
     {
         return point_indexes{ranges::views::transform(agi, [](antigen_index index) { return point_index{*index}; }) | ranges::to_vector};

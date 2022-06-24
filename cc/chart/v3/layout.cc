@@ -77,11 +77,9 @@ ae::chart::v3::Layout ae::chart::v3::Layout::transform(const Transformation& aTr
 
 // ----------------------------------------------------------------------
 
-void ae::chart::v3::Layout::remove_points(const point_indexes& points)
+void ae::chart::v3::Layout::remove_points(const std::vector<size_t>& points_sorted_descending)
 {
-    auto indexes_i = to_vector_base_t(points);
-    std::sort(std::begin(indexes_i), std::end(indexes_i), [](auto i1, auto i2) { return i1 > i2; }); // descending
-    for (const auto ind : indexes_i)
+    for (const auto ind : points_sorted_descending)
         data_.erase(std::next(data_.begin(), ind * number_of_dimensions_.get()), std::next(data_.begin(), (ind + 1) * number_of_dimensions_.get()));
 
 } // ae::chart::v3::Layout::remove_points

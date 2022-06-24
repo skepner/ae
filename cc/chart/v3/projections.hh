@@ -93,17 +93,28 @@ namespace ae::chart::v3
 
         // ErrorLines error_lines() const { return ae::chart::v2::error_lines(*this); }
 
-        void remove_points(const point_indexes& points)
-            {
-                layout_.remove_points(points);
-                stress_ = std::nullopt;
-                // forced_column_bases_.remove(points);
-                // disconnected_.remove(points);
-                // unmovable_.remove(points);
-                // unmovable_in_the_last_dimension_.remove(points);
-                // avidity_adjusts_.remove();
-                throw std::runtime_error("ae::chart::v3::Projection::remove_points not implemented");
+        void remove_points(const point_indexes& points, antigen_index number_of_antigens)
+        {
+            auto indexes_descending = to_vector_base_t(points);
+            std::sort(std::begin(indexes_descending), std::end(indexes_descending), [](auto i1, auto i2) { return i1 > i2; }); // descending
+            layout_.remove_points(indexes_descending);
+            stress_ = std::nullopt;
+            if (!forced_column_bases_.empty()) {
+                for (const auto no : indexes_descending) {
+                    if (no > number_of_antigens.get())
+                        forced_column_bases_.remove(serum_index{no - number_of_antigens.get()});
+                }
             }
+            remove(disconnected_, indexes_descending);
+            remove(unmovable_, indexes_descending);
+            remove(unmovable_in_the_last_dimension_, indexes_descending);
+            if (!avidity_adjusts_->empty()) {
+                for (const auto no : indexes_descending) {
+                    if (no < number_of_antigens.get())
+                        avidity_adjusts_.get().erase(std::next(avidity_adjusts_->begin(), no));
+                }
+            }
+        }
 
       private:
         Layout layout_{};
@@ -157,10 +168,10 @@ namespace ae::chart::v3
         // void remove_all_except(size_t projection_no);
         // void remove_except(size_t number_of_initial_projections_to_keep, ProjectionP projection_to_keep = {nullptr});
 
-        void remove_points(const point_indexes& points)
+        void remove_points(const point_indexes& points, antigen_index number_of_antigens)
         {
             for (auto& prj : data_)
-                prj.remove_points(points);
+                prj.remove_points(points, number_of_antigens);
         }
 
         // void insert_antigen(size_t before)

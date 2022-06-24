@@ -90,7 +90,7 @@ namespace ae::chart::v3
         std::span<double> span() { return std::span(data_.data(), data_.size()); }
         std::span<const double> span() const { return std::span(data_.data(), data_.size()); }
 
-        void remove_points(const point_indexes& points);
+        void remove_points(const std::vector<size_t>& points_sorted_descending);
 
       private:
         number_of_dimensions_t number_of_dimensions_{2};
