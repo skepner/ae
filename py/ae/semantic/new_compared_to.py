@@ -22,8 +22,4 @@ def style_new(chart: ae_backend.chart_v3.Chart, number_of_previous_charts: int, 
             style_with_one_modifier(chart=chart, style_name=f"-new-{prev_no}", selector={"new": prev_no}, modifier={"outline": "black", "outline_width": outline_widths[prev_no], "only": "antigens", "raise": True}, priority=priority)
             priority += 1
 
-def style_new_big(chart: ae_backend.chart_v3.Chart, size: float = 30.0, priority: int = 4502):
-    """add "-new-1-big" style marking antigens with the "new" semantic attribute"""
-    style_with_one_modifier(chart=chart, style_name=f"-new-1-big", selector={"new": 1}, modifier={"size": size, "only": "antigens", "raise": True}, priority=priority)
-
 # ======================================================================
