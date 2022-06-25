@@ -59,15 +59,12 @@ namespace ae::chart::v3::legacy
 
         void remove_points(const point_indexes& points)
         {
-            if (!empty()) {
-                const auto indexes_descending = to_vector_base_t_descending(points);
-                if (!style_for_point_.empty()) {
-                    for (const auto ind : indexes_descending)
-                        style_for_point_.erase(std::next(style_for_point_.begin(), ind));
-                }
-                if (!drawing_order_.empty())
-                    remove(drawing_order_, indexes_descending);
+            if (!style_for_point_.empty()) {
+                for (const auto ind : to_vector_base_t_descending(points))
+                    style_for_point_.erase(std::next(style_for_point_.begin(), ind));
             }
+            if (!drawing_order_.empty())
+                remove(drawing_order_, points);
         }
 
       private:

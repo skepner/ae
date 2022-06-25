@@ -104,9 +104,9 @@ namespace ae::chart::v3
                         forced_column_bases_.remove(serum_index{no - number_of_antigens.get()});
                 }
             }
-            remove(disconnected_, indexes_descending);
-            remove(unmovable_, indexes_descending);
-            remove(unmovable_in_the_last_dimension_, indexes_descending);
+            remove(disconnected_, points);
+            remove(unmovable_, points);
+            remove(unmovable_in_the_last_dimension_, points);
             if (!avidity_adjusts_->empty()) {
                 for (const auto no : indexes_descending) {
                     if (no < number_of_antigens.get())

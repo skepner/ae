@@ -199,16 +199,9 @@ namespace ae
         return result;
     }
 
-    template <typename Index, typename Tag> inline void remove(ae::named_vector_t<Index, Tag>& indexes, const ae::named_vector_t<Index, Tag>& to_remove)
+    template <typename Index, typename Tag1, typename Tag2> inline void remove(ae::named_vector_t<Index, Tag1>& indexes, const ae::named_vector_t<Index, Tag2>& to_remove)
     {
-        for (const auto ind : to_vector_base_t_descending(to_remove))
-            indexes.get().erase(std::next(indexes->begin(), ind));
-    }
-
-    template <typename Index, typename Tag> inline void remove(ae::named_vector_t<Index, Tag>& indexes, const std::vector<size_t>& to_remove_sorted_descending)
-    {
-        for (const auto ind : to_remove_sorted_descending)
-            indexes.get().erase(std::next(indexes->begin(), ind));
+        indexes.get().erase(std::remove_if(indexes.begin(), indexes.end(), [&to_remove](auto ind) { return to_remove.contains(ind); }), indexes.end());
     }
 
     class disconnected_points : public point_indexes
