@@ -36,26 +36,39 @@ namespace ae::chart::v3::legacy
         void error_line_negative_color(Color color) { error_line_negative_color_ = color; }
 
         void initialize(antigen_index number_of_antigens, const antigen_indexes& reference, serum_index number_of_sera)
-            {
-                drawing_order_.get().clear();
-                styles_.clear();
-                style_for_point_.clear();
+        {
+            drawing_order_.get().clear();
+            styles_.clear();
+            style_for_point_.clear();
 
-                auto& test_antigen = styles_.emplace_back();
-                test_antigen.fill(Color{"green"});
-                auto& reference_antigen = styles_.emplace_back();
-                reference_antigen.size(8.0);
-                auto& serum = styles_.emplace_back();
-                serum.size(8.0);
-                serum.shape(point_shape::Box);
+            auto& test_antigen = styles_.emplace_back();
+            test_antigen.fill(Color{"green"});
+            auto& reference_antigen = styles_.emplace_back();
+            reference_antigen.size(8.0);
+            auto& serum = styles_.emplace_back();
+            serum.size(8.0);
+            serum.shape(point_shape::Box);
 
-                for ([[maybe_unused]] const auto ag_no : number_of_antigens)
-                    style_for_point_.push_back(0);
-                for ([[maybe_unused]] const auto sr_no : number_of_sera)
-                    style_for_point_.push_back(2);
-                for (const auto ag_no : reference)
-                    style_for_point_[*ag_no] = 1;
+            for ([[maybe_unused]] const auto ag_no : number_of_antigens)
+                style_for_point_.push_back(0);
+            for ([[maybe_unused]] const auto sr_no : number_of_sera)
+                style_for_point_.push_back(2);
+            for (const auto ag_no : reference)
+                style_for_point_[*ag_no] = 1;
+        }
+
+        void remove_points(const point_indexes& points)
+        {
+            if (!empty()) {
+                const auto indexes_descending = to_vector_base_t_descending(points);
+                if (!style_for_point_.empty()) {
+                    for (const auto ind : indexes_descending)
+                        style_for_point_.erase(std::next(style_for_point_.begin(), ind));
+                }
+                if (!drawing_order_.empty())
+                    remove(drawing_order_, indexes_descending);
             }
+        }
 
       private:
         // antigen_index number_of_antigens_{};

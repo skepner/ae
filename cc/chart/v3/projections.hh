@@ -95,8 +95,7 @@ namespace ae::chart::v3
 
         void remove_points(const point_indexes& points, antigen_index number_of_antigens)
         {
-            auto indexes_descending = to_vector_base_t(points);
-            std::sort(std::begin(indexes_descending), std::end(indexes_descending), [](auto i1, auto i2) { return i1 > i2; }); // descending
+            const auto indexes_descending = to_vector_base_t_descending(points);
             layout_.remove_points(indexes_descending);
             stress_ = std::nullopt;
             if (!forced_column_bases_.empty()) {

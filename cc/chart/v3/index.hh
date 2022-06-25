@@ -175,12 +175,6 @@ namespace ae
     using point_indexes = ae::named_vector_t<point_index, struct point_index_tag>;
     using layer_indexes = ae::named_vector_t<layer_index, struct layer_index_tag>;
 
-    inline void remove(point_indexes& indexes, const std::vector<size_t>& to_remove_sorted_descending)
-    {
-        for (const auto ind : to_remove_sorted_descending)
-            indexes.get().erase(std::next(indexes->begin(), ind));
-    }
-
     inline point_indexes to_point_indexes(const antigen_indexes& agi, antigen_index = antigen_index{0})
     {
         return point_indexes{ranges::views::transform(agi, [](antigen_index index) { return point_index{*index}; }) | ranges::to_vector};
@@ -195,6 +189,26 @@ namespace ae
         std::vector<typename Index::value_type> result(source.size());
         std::transform(source.begin(), source.end(), result.begin(), [](auto src) { return *src; });
         return result;
+    }
+
+    template <typename Index, typename Tag> inline std::vector<typename Index::value_type> to_vector_base_t_descending(const ae::named_vector_t<Index, Tag>& source)
+    {
+        std::vector<typename Index::value_type> result(source.size());
+        std::transform(source.begin(), source.end(), result.begin(), [](auto src) { return *src; });
+        std::sort(result.begin(), result.end(), [](auto i1, auto i2) { return i1 > i2; });
+        return result;
+    }
+
+    template <typename Index, typename Tag> inline void remove(ae::named_vector_t<Index, Tag>& indexes, const ae::named_vector_t<Index, Tag>& to_remove)
+    {
+        for (const auto ind : to_vector_base_t_descending(to_remove))
+            indexes.get().erase(std::next(indexes->begin(), ind));
+    }
+
+    template <typename Index, typename Tag> inline void remove(ae::named_vector_t<Index, Tag>& indexes, const std::vector<size_t>& to_remove_sorted_descending)
+    {
+        for (const auto ind : to_remove_sorted_descending)
+            indexes.get().erase(std::next(indexes->begin(), ind));
     }
 
     class disconnected_points : public point_indexes

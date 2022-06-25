@@ -45,8 +45,8 @@ namespace ae::py
                               [](bool flag) -> pybind11::object { return pybind11::bool_(flag); },                                                                                //
                               [](const ae::dynamic::string& str) -> pybind11::object { return pybind11::str(static_cast<std::string_view>(str)); },                               //
                               [](const ae::dynamic::null&) -> pybind11::object { return pybind11::none(); },                                                                      //
-                              [](const ae::dynamic::object& obj) -> pybind11::object { throw std::runtime_error{"ae::py::to_py_object is not implmented for dynamic::object"}; }, //
-                              [](const ae::dynamic::array& arr) -> pybind11::object { throw std::runtime_error{"ae::py::to_py_object is not implmented for dynamic::array"}; }    //
+                              [](const ae::dynamic::object& /*obj*/) -> pybind11::object { throw std::runtime_error{"ae::py::to_py_object is not implmented for dynamic::object"}; }, //
+                              [](const ae::dynamic::array& /*arr*/) -> pybind11::object { throw std::runtime_error{"ae::py::to_py_object is not implmented for dynamic::array"}; }    //
                           },
                           value.data());
     }
