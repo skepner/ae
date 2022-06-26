@@ -36,6 +36,14 @@ class MyTest (unittest.TestCase):
         self.assertEqual(self.chart_orig.number_of_antigens() - len(self.antigens_to_remove), self.chart_for_removal.number_of_antigens())
         self.assertEqual(self.chart_orig.number_of_sera() - len(self.sera_to_remove), self.chart_for_removal.number_of_sera())
 
+    def test_names(self):
+        antigen_names_orig = [ag.designation() for no, ag in self.chart_orig.select_all_antigens() if no not in self.antigens_to_remove_chosen]
+        antigen_names_after_removal = [ag.designation() for no, ag in self.chart_for_removal.select_all_antigens()]
+        self.assertEqual(antigen_names_orig, antigen_names_after_removal)
+        serum_names_orig = [sr.designation() for no, sr in self.chart_orig.select_all_sera() if no not in self.sera_to_remove_chosen]
+        serum_names_after_removal = [sr.designation() for no, sr in self.chart_for_removal.select_all_sera()]
+        self.assertEqual(serum_names_orig, serum_names_after_removal)
+
 # ----------------------------------------------------------------------
 
 if __name__ == '__main__':
