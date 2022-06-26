@@ -50,9 +50,6 @@ class MyTest (unittest.TestCase):
         titers_removed = [[str(self.chart_for_removal.titers().titer(ag_no, sr_no)) for sr_no in range(self.chart_for_removal.number_of_sera())] for ag_no in range(self.chart_for_removal.number_of_antigens())]
         self.assertEqual(len(titers_orig), len(titers_removed))
         for ag_no in range(len(titers_orig)):
-            print(f">>>> {ag_no} {len(titers_orig[ag_no])} {len(titers_removed[ag_no])}", file=sys.stderr)
-            print(f">>>> {titers_orig[ag_no]}", file=sys.stderr)
-            print(f">>>> {titers_removed[ag_no]}", file=sys.stderr)
             self.assertEqual(len(titers_orig[ag_no]), len(titers_removed[ag_no]))
             self.assertEqual(titers_orig[ag_no], titers_removed[ag_no])
         # layers

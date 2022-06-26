@@ -751,8 +751,15 @@ void ae::chart::v3::Titers::remove_sera(dense_t& data, const serum_indexes& to_r
 void ae::chart::v3::Titers::remove_sera(sparse_t& data, const serum_indexes& to_remove, serum_index)
 {
     for (auto& ag_en : data) {
-        for (const auto sr_no : to_remove)
-            ag_en.erase(std::remove_if(std::begin(ag_en), std::end(ag_en), [sr_no](const auto& sr_en) { return sr_en.first == sr_no; }), std::end(ag_en));
+        for (const auto sr_no : to_vector_base_t_descending(to_remove)) {
+            // remove entry for sr_no
+            ag_en.erase(std::remove_if(std::begin(ag_en), std::end(ag_en), [sr_no](const auto& sr_en) { return sr_en.first.get() == sr_no; }), std::end(ag_en));
+            // re-number entries if their no > sr_no
+            for (auto& en : ag_en) {
+                if (en.first.get() > sr_no)
+                    --en.first;
+            }
+        }
     }
 
 } // ae::chart::v3::Titers::remove_sera
