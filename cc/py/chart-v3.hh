@@ -20,7 +20,7 @@ namespace ae::py
         // ae::chart::v3::Projection& p() { return chart->projections()[projection_no]; }
         // const ae::chart::v3::Projection& p() const { return chart->projections()[projection_no]; }
 
-        double stress() const { return projection.stress(*chart); }
+        double stress() const { return projection.stress(*chart, ae::chart::v3::recalculate_stress::if_necessary); }
         double recalculate_stress() const { projection.reset_stress(); return projection.stress(*chart); }
         std::string_view comment() const { return projection.comment(); }
         std::string minimum_column_basis() const { return projection.minimum_column_basis().format("{}", ae::chart::v3::minimum_column_basis::use_none::yes); }

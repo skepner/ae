@@ -53,7 +53,7 @@ class MyTest (unittest.TestCase):
             self.assertEqual(len(titers_orig[ag_no]), len(titers_removed[ag_no]))
             self.assertEqual(titers_orig[ag_no], titers_removed[ag_no])
 
-        # layers
+    def test_titer_layers(self):
         self.assertEqual(self.chart_orig.titers().number_of_layers(), self.chart_for_removal.titers().number_of_layers())
         for layer in range(self.chart_orig.titers().number_of_layers()):
             titers_orig = [[str(self.chart_orig.titers().titer_of_layer(layer, ag_no, sr_no)) for sr_no in range(self.chart_orig.number_of_sera()) if sr_no not in self.sera_to_remove_chosen] for ag_no in range(self.chart_orig.number_of_antigens()) if ag_no not in self.antigens_to_remove_chosen]
@@ -63,9 +63,12 @@ class MyTest (unittest.TestCase):
                 self.assertEqual(len(titers_orig[ag_no]), len(titers_removed[ag_no]))
                 self.assertEqual(titers_orig[ag_no], titers_removed[ag_no])
 
-
     def test_projections(self):
-        pass
+        self.assertEqual(self.chart_orig.number_of_projections(), self.chart_for_removal.number_of_projections())
+        for p_no in range(self.chart_orig.number_of_projections()):
+            p1 = self.chart_orig.projection(p_no)
+            p2 = self.chart_for_removal.projection(p_no)
+            self.assertEqual(p1.stress(), p2.stress())
 
     def test_styles(self):
         pass

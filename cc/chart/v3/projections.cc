@@ -30,6 +30,7 @@ double ae::chart::v3::Projection::stress(const Chart& chart, recalculate_stress 
 double ae::chart::v3::Projection::stress_recalculate(const Chart& chart) const
 {
     stress_ = stress_factory(chart, *this, optimization_options{}.mult).value(layout());
+    AD_DEBUG("stress_recalculate {}", *stress_);
     return *stress_;
 
 } // ae::chart::v3::Projection::stress_recalculate
@@ -77,6 +78,31 @@ ae::chart::v3::optimization_status ae::chart::v3::Projection::relax(const Chart&
     return status;
 
 } // ae::chart::v3::Projection::relax
+
+// ----------------------------------------------------------------------
+
+void ae::chart::v3::Projection::remove_points(const point_indexes& points, antigen_index number_of_antigens)
+{
+    const auto indexes_descending = to_vector_base_t_descending(points);
+    layout_.remove_points(indexes_descending);
+    stress_ = std::nullopt;
+    if (!forced_column_bases_.empty()) {
+        for (const auto no : indexes_descending) {
+            if (no > number_of_antigens.get())
+                forced_column_bases_.remove(serum_index{no - number_of_antigens.get()});
+        }
+    }
+    remove(disconnected_, points);
+    remove(unmovable_, points);
+    remove(unmovable_in_the_last_dimension_, points);
+    if (!avidity_adjusts_->empty()) {
+        for (const auto no : indexes_descending) {
+            if (no < number_of_antigens.get())
+                avidity_adjusts_.get().erase(std::next(avidity_adjusts_->begin(), no));
+        }
+    }
+
+} // ae::chart::v3::Projection::remove_points
 
 // ----------------------------------------------------------------------
 
