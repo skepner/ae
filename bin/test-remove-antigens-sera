@@ -13,20 +13,21 @@ chart_filename = None
 
 class MyTest (unittest.TestCase):
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         global chart_filename
-        self.chart_orig = ae_backend.chart_v3.Chart(chart_filename)
-        print(f"{self.chart_orig} AG:{self.chart_orig.number_of_antigens()} SR:{self.chart_orig.number_of_sera()} LAY:{self.chart_orig.titers().number_of_layers()} PRJ:{self.chart_orig.number_of_projections()}")
-        self.chart_for_removal = ae_backend.chart_v3.Chart(chart_filename)
-        self.antigens_to_remove_chosen = set(random.randrange(self.chart_orig.number_of_antigens()) for i in range(random.randint(int(self.chart_orig.number_of_antigens() * 0.05), int(self.chart_orig.number_of_antigens() * 0.15))))
-        self.antigens_to_remove = self.chart_for_removal.select_antigens(lambda ag: ag.no in self.antigens_to_remove_chosen)
-        print(f">>>> AG to remove {self.antigens_to_remove} {self.antigens_to_remove.points()}", file=sys.stderr)
-        self.sera_to_remove_chosen = set(random.randrange(self.chart_orig.number_of_sera()) for i in range(random.randint(int(self.chart_orig.number_of_sera() * 0.05), int(self.chart_orig.number_of_sera() * 0.15))))
-        # print(f">>>> self.sera_to_remove_chosen {len(self.sera_to_remove_chosen)} {self.sera_to_remove_chosen}", file=sys.stderr)
-        self.sera_to_remove = self.chart_for_removal.select_sera(lambda sr: sr.no in self.sera_to_remove_chosen)
-        print(f">>>> sera_to_remove: ({len(self.sera_to_remove)}) {self.sera_to_remove.indexes()}", file=sys.stderr)
-        self.chart_for_removal.remove_antigens_sera(antigens=self.antigens_to_remove, sera=self.sera_to_remove)
-        print(f"{self.chart_for_removal} AG:{self.chart_for_removal.number_of_antigens()} SR:{self.chart_for_removal.number_of_sera()}")
+        cls.chart_orig = ae_backend.chart_v3.Chart(chart_filename)
+        print(f">>>> {cls.chart_orig} AG:{cls.chart_orig.number_of_antigens()} SR:{cls.chart_orig.number_of_sera()} LAY:{cls.chart_orig.titers().number_of_layers()} PRJ:{cls.chart_orig.number_of_projections()}")
+        cls.chart_for_removal = ae_backend.chart_v3.Chart(chart_filename)
+        cls.antigens_to_remove_chosen = set(random.randrange(cls.chart_orig.number_of_antigens()) for i in range(random.randint(int(cls.chart_orig.number_of_antigens() * 0.05), int(cls.chart_orig.number_of_antigens() * 0.15))))
+        cls.antigens_to_remove = cls.chart_for_removal.select_antigens(lambda ag: ag.no in cls.antigens_to_remove_chosen)
+        print(f">>>> AG to remove {cls.antigens_to_remove} {cls.antigens_to_remove.points()}", file=sys.stderr)
+        cls.sera_to_remove_chosen = set(random.randrange(cls.chart_orig.number_of_sera()) for i in range(random.randint(int(cls.chart_orig.number_of_sera() * 0.05), int(cls.chart_orig.number_of_sera() * 0.15))))
+        # print(f">>>> cls.sera_to_remove_chosen {len(cls.sera_to_remove_chosen)} {cls.sera_to_remove_chosen}", file=sys.stderr)
+        cls.sera_to_remove = cls.chart_for_removal.select_sera(lambda sr: sr.no in cls.sera_to_remove_chosen)
+        print(f">>>> sera_to_remove: ({len(cls.sera_to_remove)}) {cls.sera_to_remove.indexes()}", file=sys.stderr)
+        cls.chart_for_removal.remove_antigens_sera(antigens=cls.antigens_to_remove, sera=cls.sera_to_remove)
+        print(f">>>> {cls.chart_for_removal} AG:{cls.chart_for_removal.number_of_antigens()} SR:{cls.chart_for_removal.number_of_sera()}")
 
     def test_chosen(self):
         self.assertEqual(len(self.antigens_to_remove_chosen), len(self.antigens_to_remove))
@@ -43,6 +44,29 @@ class MyTest (unittest.TestCase):
         serum_names_orig = [sr.designation() for no, sr in self.chart_orig.select_all_sera() if no not in self.sera_to_remove_chosen]
         serum_names_after_removal = [sr.designation() for no, sr in self.chart_for_removal.select_all_sera()]
         self.assertEqual(serum_names_orig, serum_names_after_removal)
+
+    def test_titers(self):
+        titers_orig = [[str(self.chart_orig.titers().titer(ag_no, sr_no)) for sr_no in range(self.chart_orig.number_of_sera()) if sr_no not in self.sera_to_remove_chosen] for ag_no in range(self.chart_orig.number_of_antigens()) if ag_no not in self.antigens_to_remove_chosen]
+        titers_removed = [[str(self.chart_for_removal.titers().titer(ag_no, sr_no)) for sr_no in range(self.chart_for_removal.number_of_sera())] for ag_no in range(self.chart_for_removal.number_of_antigens())]
+        self.assertEqual(len(titers_orig), len(titers_removed))
+        for ag_no in range(len(titers_orig)):
+            print(f">>>> {ag_no} {len(titers_orig[ag_no])} {len(titers_removed[ag_no])}", file=sys.stderr)
+            print(f">>>> {titers_orig[ag_no]}", file=sys.stderr)
+            print(f">>>> {titers_removed[ag_no]}", file=sys.stderr)
+            self.assertEqual(len(titers_orig[ag_no]), len(titers_removed[ag_no]))
+            self.assertEqual(titers_orig[ag_no], titers_removed[ag_no])
+        # layers
+        self.assertEqual(self.chart_orig.titers().number_of_layers(), self.chart_for_removal.titers().number_of_layers())
+
+
+    def test_projections(self):
+        pass
+
+    def test_styles(self):
+        pass
+
+    def test_legacy_plot_spec(self):
+        pass
 
 # ----------------------------------------------------------------------
 
