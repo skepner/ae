@@ -175,9 +175,9 @@ void ae::py::chart_v3_antigens(pybind11::module_& chart_v3_submodule)
         .def("__bool_", [](const SelectedAntigens& antigens) { return !antigens.empty(); })                   //
         .def(
             "__iter__", [](const SelectedAntigens& antigens) { return pybind11::make_iterator(antigens.begin(), antigens.end()); }, pybind11::keep_alive<0, 1>()) //
-        // .def("indexes", [](const SelectedAntigens& selected) { return *selected.indexes; })                                                                 //
-        // .def(
-        //     "points", [](const SelectedAntigens& selected) { return *selected.points(); }, pybind11::doc("return point numbers")) //
+        .def("indexes", [](const SelectedAntigens& selected) { return ae::to_vector_base_t(selected.indexes); })                                                  //
+        .def(
+            "points", [](const SelectedAntigens& selected) { return ae::to_vector_base_t(selected.points()); }, pybind11::doc("return point numbers")) //
         // .def(
         //     "area", [](const SelectedAntigens& selected, size_t projection_no) { return selected.area(projection_no); }, "projection_no"_a = 0,
         //     pybind11::doc("return boundaries of the selected points (not transformed)")) //
@@ -231,7 +231,9 @@ void ae::py::chart_v3_antigens(pybind11::module_& chart_v3_submodule)
         .def("__bool_", [](const SelectedSera& sera) { return !sera.empty(); })                           //
         .def(
             "__iter__", [](const SelectedSera& sera) { return pybind11::make_iterator(sera.begin(), sera.end()); }, pybind11::keep_alive<0, 1>()) //
-        // .def("indexes", [](const SelectedSera& selected) { return *selected.indexes; })                                                     //
+        .def("indexes", [](const SelectedSera& selected) { return ae::to_vector_base_t(selected.indexes); })                                                  //
+        .def(
+            "points", [](const SelectedSera& selected) { return ae::to_vector_base_t(selected.points()); }, pybind11::doc("return point numbers")) //
         // .def("for_each", &SelectedSera::for_each, "modifier"_a,
         //      pybind11::doc("modifier(sr_no, serum) is called for each selected serum, serum fields, e.g. name, can be modified in the function.")) //
         .def("sort_by_number_of_layers_descending", &SelectedSera::sort_by_number_of_layers_descending) //
