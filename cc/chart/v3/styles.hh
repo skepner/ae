@@ -124,8 +124,8 @@ namespace ae::chart::v3::semantic
         PointStyle point_style{};
         DrawingOrderModifier order{DrawingOrderModifier::no_change};
         LegendRow legend{};
-        std::optional<serum_circle_style_t> serum_circle;
-        std::optional<serum_coverage_style_t> serum_coverage;
+        std::optional<serum_circle_style_t> serum_circle{};
+        std::optional<serum_coverage_style_t> serum_coverage{};
     };
 
     struct Style
