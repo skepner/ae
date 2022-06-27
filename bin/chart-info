@@ -3,6 +3,7 @@ import os, sys, re, json, pprint, argparse, traceback
 from pathlib import Path
 import ae_backend
 from ae.utils.format_table import format_table
+import ae.chart
 
 # ----------------------------------------------------------------------
 
@@ -13,56 +14,7 @@ def main(args: argparse.Namespace):
         chart = ae_backend.chart_v3.Chart(chart_file)
         num_projections = chart.number_of_projections()
         print(chart.name_for_file())
-        print(chart.name(0), f"{chart.number_of_antigens()}:{chart.number_of_sera()}", f"projections:{num_projections}" if num_projections else "no projections")
-        if chart_forced_column_bases := chart.forced_column_bases():
-            if args.show_all:
-                print("  forced column bases: see after sources below")
-            else:
-                print("  forced column bases:", chart_forced_column_bases)
-
-        # def sel_ser(serum_ref):
-        #     print(serum_ref.no, serum_ref.point_no, serum_ref.serum.name(), serum_ref.serum.serum_id(), serum_ref.serum.passage())
-        #     return "DARWIN" in serum_ref.serum.name()
-
-        # srr = chart.select_sera(sel_ser)
-        # print(len(srr), [[no, sr.name()] for no, sr in srr])
-
-        if (args.show_projections or args.show_all) and num_projections:
-            print()
-            for projection_no in range(num_projections):
-                projection = chart.projection(projection_no)
-                print(f"{projection_no:3d}  {projection.stress():11.6f} >={projection.minimum_column_basis()}", end="")
-                if comment := projection.comment():
-                    print(f" <{comment}>", end="")
-                if projection_forced_column_bases := projection.forced_column_bases():
-                    if projection_forced_column_bases == chart_forced_column_bases:
-                        print(" chart-forced-column-bases", end="")
-                    else:
-                        print("", projection_forced_column_bases, end="")
-                if disconnected := projection.disconnected():
-                    print(f" discon:{disconnected}", end="")
-                if unmovable := projection.unmovable():
-                    print(f" unmov:{unmovable}", end="")
-                if unmovable_in_the_last_dimension := projection.unmovable_in_the_last_dimension():
-                    print(f" unmov-last:{unmovable_in_the_last_dimension}", end="")
-                print()
-
-        if args.show_all:
-            print()
-            info = chart.info()
-            if num_sources := info.number_of_sources():
-                print("sources", num_sources)
-                for source_no in range(num_sources):
-                    source = info.source(source_no)
-                    print(f"{source_no:3d} {source.date()} {source.name()}")
-                print()
-            if chart_forced_column_bases:
-                print("forced column bases")
-                for no, sr in chart.select_all_sera():
-                    fcb = f"{chart_forced_column_bases[no]:11.8f}"
-                    fcb = re.sub(r"0+$", lambda m: " " * len(m.group(0)), fcb)
-                    fcb = re.sub(r"\. ", "  ", fcb)
-                    print(f"{no:3d}     {fcb}   {sr.name()} {sr.serum_id()} {sr.passage()}")
+        print(ae.chart.info(chart, show_all=args.show_all))
 
         if args.print_layout is not None:
             layout = chart.projection(args.print_layout).layout()
@@ -83,7 +35,7 @@ try:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("chart", nargs="+", type=Path)
     parser.add_argument("-a", "--all", dest="show_all", action="store_true", default=False, help="show all possible information")
-    parser.add_argument("-p", dest="show_projections", action="store_true", default=False, help="show projections")
+    # parser.add_argument("-p", dest="show_projections", action="store_true", default=False, help="show projections")
     parser.add_argument("--layout", dest="print_layout", type=int, default=None, help="print layout of the specified projection")
     parser.add_argument("--transformation", dest="print_transformation", type=int, default=None, help="print transformation of the specified projection")
     args = parser.parse_args()
