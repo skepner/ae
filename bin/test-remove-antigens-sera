@@ -68,15 +68,19 @@ class MyTest (unittest.TestCase):
         removed_points = self.antigens_to_remove_chosen | set(no + self.chart_orig.number_of_antigens() for no in self.sera_to_remove_chosen)
         for p_no in range(self.chart_orig.number_of_projections()):
             p1 = self.chart_orig.projection(p_no)
-            l1 = [[co for co in pp if not math.isnan(co)] for no, pp in enumerate(p1.layout()) if no not in removed_points]
             p2 = self.chart_for_removal.projection(p_no)
-            l2 = [[co for co in pp if not math.isnan(co)] for no, pp in enumerate(p2.layout())]
             # cannot check stresses!
+            # layouts
+            l1 = [[co for co in pp if not math.isnan(co)] for no, pp in enumerate(p1.layout()) if no not in removed_points]
+            l2 = [[co for co in pp if not math.isnan(co)] for no, pp in enumerate(p2.layout())]
             self.assertEqual(len(l1), len(l2))
             # for ind in range(len(l1)):
             #     if l1[ind] != l2[ind]:
             #         print(f"{ind:3d}  {str(l1[ind]):50s}   {l2[ind]}")
             self.assertEqual(l1, l2)
+            # disconnected
+            with_nan = [no for no, pp in enumerate(l2) if not pp]
+            self.assertEqual(with_nan, p2.disconnected())
 
     def test_styles(self):
         pass
