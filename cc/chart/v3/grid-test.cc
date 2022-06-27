@@ -197,6 +197,7 @@ void ae::chart::v3::grid_test::results_t::apply(Layout& layout) const
 void ae::chart::v3::grid_test::results_t::apply(Projection& projection) const // move points to their better locations
 {
     apply(projection.layout());
+    projection.reset_stress();
 
 } // ae::chart::v3::grid_test::results_t::apply
 

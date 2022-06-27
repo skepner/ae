@@ -35,6 +35,7 @@ def info(chart: ae_backend.chart_v3.Chart, show_projections: bool = False, show_
             if unmovable_in_the_last_dimension := projection.unmovable_in_the_last_dimension():
                 projections += f" unmov-last:{unmovable_in_the_last_dimension}"
             projections += "\n"
+        projections = projections.rstrip()
 
     info = chart.info()
     sources = None
