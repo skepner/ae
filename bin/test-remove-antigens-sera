@@ -2,7 +2,7 @@
 """
 Remove few antigens and sera chosen at random from the passed chart and check the result
 """
-import os, sys, pprint, random, argparse, traceback
+import os, sys, pprint, random, argparse, traceback, math
 from pathlib import Path
 import unittest
 import ae_backend
@@ -21,7 +21,7 @@ class MyTest (unittest.TestCase):
         cls.chart_for_removal = ae_backend.chart_v3.Chart(chart_filename)
         cls.antigens_to_remove_chosen = set(random.randrange(cls.chart_orig.number_of_antigens()) for i in range(random.randint(int(cls.chart_orig.number_of_antigens() * 0.05), int(cls.chart_orig.number_of_antigens() * 0.15))))
         cls.antigens_to_remove = cls.chart_for_removal.select_antigens(lambda ag: ag.no in cls.antigens_to_remove_chosen)
-        print(f">>>> AG to remove {cls.antigens_to_remove} {cls.antigens_to_remove.points()}", file=sys.stderr)
+        print(f">>>> AG to remove {cls.antigens_to_remove} ", file=sys.stderr)
         cls.sera_to_remove_chosen = set(random.randrange(cls.chart_orig.number_of_sera()) for i in range(random.randint(int(cls.chart_orig.number_of_sera() * 0.05), int(cls.chart_orig.number_of_sera() * 0.15))))
         # print(f">>>> cls.sera_to_remove_chosen {len(cls.sera_to_remove_chosen)} {cls.sera_to_remove_chosen}", file=sys.stderr)
         cls.sera_to_remove = cls.chart_for_removal.select_sera(lambda sr: sr.no in cls.sera_to_remove_chosen)
@@ -65,12 +65,18 @@ class MyTest (unittest.TestCase):
 
     def test_projections(self):
         self.assertEqual(self.chart_orig.number_of_projections(), self.chart_for_removal.number_of_projections())
+        removed_points = self.antigens_to_remove_chosen | set(no + self.chart_orig.number_of_antigens() for no in self.sera_to_remove_chosen)
         for p_no in range(self.chart_orig.number_of_projections()):
             p1 = self.chart_orig.projection(p_no)
-            l1 = [list(pp) for pp in p1.layout()]
-            print(f">>>> {l1}", file=sys.stderr)
+            l1 = [[co for co in pp if not math.isnan(co)] for no, pp in enumerate(p1.layout()) if no not in removed_points]
             p2 = self.chart_for_removal.projection(p_no)
+            l2 = [[co for co in pp if not math.isnan(co)] for no, pp in enumerate(p2.layout())]
             # cannot check stresses!
+            self.assertEqual(len(l1), len(l2))
+            # for ind in range(len(l1)):
+            #     if l1[ind] != l2[ind]:
+            #         print(f"{ind:3d}  {str(l1[ind]):50s}   {l2[ind]}")
+            self.assertEqual(l1, l2)
 
     def test_styles(self):
         pass

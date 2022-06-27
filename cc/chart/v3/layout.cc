@@ -77,15 +77,6 @@ ae::chart::v3::Layout ae::chart::v3::Layout::transform(const Transformation& aTr
 
 // ----------------------------------------------------------------------
 
-// void ae::chart::v3::Layout::remove_points(const std::vector<size_t>& points_sorted_descending)
-// {
-//     for (const auto ind : points_sorted_descending)
-//         data_.erase(std::next(data_.begin(), ind * number_of_dimensions_.get()), std::next(data_.begin(), (ind + 1) * number_of_dimensions_.get()));
-
-// } // ae::chart::v3::Layout::remove_points
-
-// ----------------------------------------------------------------------
-
 void ae::chart::v3::Layout::remove(const point_indexes& points_sorted_ascending)
 {
     if (!points_sorted_ascending.empty()) {
@@ -103,7 +94,7 @@ void ae::chart::v3::Layout::remove(const point_indexes& points_sorted_ascending)
                 ++no_ptr;
                 if (no_ptr == points_sorted_ascending.end()) {
                     // just copy rest
-                    std::copy(src, data_.end(), target);
+                    std::copy(next_point(src), data_.end(), target);
                     break;
                 }
             }
