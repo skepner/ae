@@ -1,5 +1,5 @@
 [wrap-git]
-directory = range-v3-0.11.0
+directory = range-v3-0.12.0
 url = https://github.com/ericniebler/range-v3.git
 revision = head
 patch_directory = range_v3

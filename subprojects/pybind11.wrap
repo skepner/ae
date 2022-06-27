@@ -1,9 +1,16 @@
 [wrap-file]
-directory = pybind11-2.9.0
-source_url = https://github.com/pybind/pybind11/archive/refs/tags/v2.9.0.tar.gz
-source_filename = pybind11-2.9.0.tar.gz
-source_hash = 057fb68dafd972bc13afb855f3b0d8cf0fa1a78ef053e815d9af79be7ff567cb
+directory = pybind11-2.9.2
+source_url = https://github.com/pybind/pybind11/archive/refs/tags/v2.9.2.tar.gz
+source_filename = pybind11-2.9.2.tar.gz
+source_hash = 6bd528c4dbe2276635dc787b6b1f2e5316cf6b49ee3e150264e455a0d68d19c1
 patch_directory = pybind11
+
+# [wrap-file]
+# directory = pybind11-2.9.0
+# source_url = https://github.com/pybind/pybind11/archive/refs/tags/v2.9.0.tar.gz
+# source_filename = pybind11-2.9.0.tar.gz
+# source_hash = 057fb68dafd972bc13afb855f3b0d8cf0fa1a78ef053e815d9af79be7ff567cb
+# patch_directory = pybind11
 
 # [wrap-file]
 # directory = pybind11-2.8.1

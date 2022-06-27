@@ -2,7 +2,7 @@
 
 ## Dependencies (general description)
 
-- clang-13 or g++-11
+- clang-14 or g++-11
 - ninja
 - meson 0.60+
 - cmake 3.18+ (to build lexy)

@@ -18,9 +18,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# modified by Eu for 0.11.0
+# modified by Eu for 0.12.0
 
-project('range-v3', 'cpp', version: '0.11.0',
+project('range-v3', 'cpp', version: '0.12.0',
         license: 'Boost, libc++, Stepanov and McJones "Elements of Programming", SGI STL')
 
 range_inc = include_directories('include')

@@ -1,9 +1,16 @@
 [wrap-file]
-directory = simdjson-1.0.0
-source_url = https://github.com/simdjson/simdjson/archive/refs/tags/v1.0.0.tar.gz
-source_filename = v1.0.0.tar.gz
-source_hash = fe54be1459b37e88abd438b01968144ed4774699d1272dd47a790b9362c5df42
+directory = simdjson-2.0.4
+source_url = https://github.com/simdjson/simdjson/archive/refs/tags/v2.0.4.tar.gz
+source_filename = v2.0.4.tar.gz
+source_hash = c8a12cf60f6ce8c0e556f68bd80e7bd9f11f5876e198ed3637da8ccf182eaa24
 patch_directory = simdjson
 
 [provide]
 simdjson = simdjson_dep
+
+# [wrap-file]
+# directory = simdjson-1.0.0
+# source_url = https://github.com/simdjson/simdjson/archive/refs/tags/v1.0.0.tar.gz
+# source_filename = v1.0.0.tar.gz
+# source_hash = fe54be1459b37e88abd438b01968144ed4774699d1272dd47a790b9362c5df42
+# patch_directory = simdjson

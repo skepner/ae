@@ -1,6 +1,6 @@
 #pragma once
 
-// #include <compare>
+#include <compare>
 
 #include <vector>
 #include <string>
@@ -31,17 +31,6 @@ namespace std
         else
             return std::strong_ordering::equal;
     }
-
-    // ----------------------------------------------------------------------
-
-    struct compare_three_way
-    {
-        template <typename Tp, typename Up> auto operator()(Tp&& t, Up&& u) const noexcept
-        {
-            // return static_cast<Tp&&>(t) <=> static_cast<Up&&>(u);
-            return t <=> u;
-        }
-    };
 
     // ----------------------------------------------------------------------
 
