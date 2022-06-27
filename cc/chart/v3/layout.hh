@@ -93,6 +93,19 @@ namespace ae::chart::v3
         // void remove_points(const std::vector<size_t>& points_sorted_descending);
         void remove(const point_indexes& points_sorted_ascending);
 
+        struct ConstIterator
+        {
+            const Layout& layout;
+            point_index point_no;
+
+            point_coordinates_ref_const operator*() const { return layout[point_no]; }
+            ConstIterator& operator++() { ++point_no; return *this; }
+            bool operator==(const ConstIterator& rhs) const { return &layout == &rhs.layout && point_no == rhs.point_no; }
+        };
+
+        ConstIterator begin() const { return ConstIterator{*this, point_index{0}}; }
+        ConstIterator end() const { return ConstIterator{*this, number_of_points()}; }
+
       private:
         number_of_dimensions_t number_of_dimensions_{2};
         data_t data_{};

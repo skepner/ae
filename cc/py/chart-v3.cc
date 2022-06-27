@@ -555,7 +555,9 @@ void ae::py::chart_v3(pybind11::module_& mdl)
                     throw std::invalid_argument{fmt::format("wrong index: {}, number of points in layout: {}", index, layout.number_of_points())};
             },
             "index"_a, pybind11::doc("negative index counts from the layout end")) //
-        .def("minmax", &Layout::minmax)                                            //
+        .def(
+            "__iter__", [](const Layout& layout) { return pybind11::make_iterator(layout.begin(), layout.end()); }, pybind11::keep_alive<0, 1>()) //
+        .def("minmax", &Layout::minmax)                                                                                                           //
         .def(
             "connected", [](const Layout& layout, size_t index) { return layout.point_has_coordinates(point_index{index}); }, "index"_a) //
         // .def("__str__", [](const Layout& layout) { return fmt::format("{}", layout); }) //
@@ -570,13 +572,22 @@ void ae::py::chart_v3(pybind11::module_& mdl)
         .def("__str__", [](const point_coordinates& pc) { return fmt::format("{}", pc); })                                                       //
         ;
 
-    pybind11::class_<point_coordinates_ref>(chart_v3_submodule, "PointCoordinatesInLayout")               //
-        .def("__len__", [](const point_coordinates_ref& pc) -> size_t { return *pc.number_of_dimensions(); }) //
+    // pybind11::class_<point_coordinates_ref>(chart_v3_submodule, "PointCoordinatesInLayout")                   //
+    //     .def("__len__", [](const point_coordinates_ref& pc) -> size_t { return *pc.number_of_dimensions(); }) //
+    //     .def(
+    //         "__getitem__", [](const point_coordinates_ref& pc, size_t dim_no) -> double { return pc[number_of_dimensions_t{dim_no}]; }, "dim"_a) //
+    //     .def(
+    //         "__iter__", [](const point_coordinates_ref& pc) { return pybind11::make_iterator(pc.begin(), pc.end()); }, pybind11::keep_alive<0, 1>()) //
+    //     .def("__str__", [](const point_coordinates_ref& pc) { return fmt::format("{}", pc); })                                                       //
+    //     ;
+
+    pybind11::class_<point_coordinates_ref_const>(chart_v3_submodule, "PointCoordinatesInLayout")                   //
+        .def("__len__", [](const point_coordinates_ref_const& pc) -> size_t { return *pc.number_of_dimensions(); }) //
         .def(
-            "__getitem__", [](const point_coordinates_ref& pc, size_t dim_no) -> double { return pc[number_of_dimensions_t{dim_no}]; }, "dim"_a) //
+            "__getitem__", [](const point_coordinates_ref_const& pc, size_t dim_no) -> double { return pc[number_of_dimensions_t{dim_no}]; }, "dim"_a) //
         .def(
-            "__iter__", [](const point_coordinates_ref& pc) { return pybind11::make_iterator(pc.begin(), pc.end()); }, pybind11::keep_alive<0, 1>()) //
-        .def("__str__", [](const point_coordinates_ref& pc) { return fmt::format("{}", pc); })                                                       //
+            "__iter__", [](const point_coordinates_ref_const& pc) { return pybind11::make_iterator(pc.begin(), pc.end()); }, pybind11::keep_alive<0, 1>()) //
+        .def("__str__", [](const point_coordinates_ref_const& pc) { return fmt::format("{}", pc); })                                                       //
         ;
 
     pybind11::class_<Transformation>(chart_v3_submodule, "Transformation")                                      //
