@@ -570,6 +570,15 @@ void ae::py::chart_v3(pybind11::module_& mdl)
         .def("__str__", [](const point_coordinates& pc) { return fmt::format("{}", pc); })                                                       //
         ;
 
+    pybind11::class_<point_coordinates_ref>(chart_v3_submodule, "PointCoordinatesInLayout")               //
+        .def("__len__", [](const point_coordinates_ref& pc) -> size_t { return *pc.number_of_dimensions(); }) //
+        .def(
+            "__getitem__", [](const point_coordinates_ref& pc, size_t dim_no) -> double { return pc[number_of_dimensions_t{dim_no}]; }, "dim"_a) //
+        .def(
+            "__iter__", [](const point_coordinates_ref& pc) { return pybind11::make_iterator(pc.begin(), pc.end()); }, pybind11::keep_alive<0, 1>()) //
+        .def("__str__", [](const point_coordinates_ref& pc) { return fmt::format("{}", pc); })                                                       //
+        ;
+
     pybind11::class_<Transformation>(chart_v3_submodule, "Transformation")                                      //
         .def("__str__", [](const Transformation& transformation) { return fmt::format("{}", transformation); }) //
         ;

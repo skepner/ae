@@ -77,11 +77,41 @@ ae::chart::v3::Layout ae::chart::v3::Layout::transform(const Transformation& aTr
 
 // ----------------------------------------------------------------------
 
-void ae::chart::v3::Layout::remove_points(const std::vector<size_t>& points_sorted_descending)
-{
-    for (const auto ind : points_sorted_descending)
-        data_.erase(std::next(data_.begin(), ind * number_of_dimensions_.get()), std::next(data_.begin(), (ind + 1) * number_of_dimensions_.get()));
+// void ae::chart::v3::Layout::remove_points(const std::vector<size_t>& points_sorted_descending)
+// {
+//     for (const auto ind : points_sorted_descending)
+//         data_.erase(std::next(data_.begin(), ind * number_of_dimensions_.get()), std::next(data_.begin(), (ind + 1) * number_of_dimensions_.get()));
 
-} // ae::chart::v3::Layout::remove_points
+// } // ae::chart::v3::Layout::remove_points
+
+// ----------------------------------------------------------------------
+
+void ae::chart::v3::Layout::remove(const point_indexes& points_sorted_ascending)
+{
+    if (!points_sorted_ascending.empty()) {
+        const auto next_point = [this](auto iter) { return iter + number_of_dimensions_.get(); };
+        const auto copy_point = [next_point](auto source, auto target) { std::copy(source, next_point(source), target); };
+
+        auto no_ptr = points_sorted_ascending.begin();
+        for (auto src = data_.begin(), target = data_.begin(); src != data_.end(); src = next_point(src)) {
+            if ((src - data_.begin()) < static_cast<ssize_t>(no_ptr->get() * number_of_dimensions_.get())) {
+                copy_point(src, target);
+                target = next_point(target);
+            }
+            else {
+                // skip src (remove)
+                ++no_ptr;
+                if (no_ptr == points_sorted_ascending.end()) {
+                    // just copy rest
+                    std::copy(src, data_.end(), target);
+                    break;
+                }
+            }
+        }
+        // truncate
+        data_.erase(std::prev(data_.end(), points_sorted_ascending.size() * number_of_dimensions_.get()), data_.end());
+    }
+
+} // ae::chart::v3::Layout::remove
 
 // ----------------------------------------------------------------------

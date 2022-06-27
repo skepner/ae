@@ -177,11 +177,15 @@ namespace ae
 
     inline point_indexes to_point_indexes(const antigen_indexes& agi, antigen_index = antigen_index{0})
     {
-        return point_indexes{ranges::views::transform(agi, [](antigen_index index) { return point_index{*index}; }) | ranges::to_vector};
+        point_indexes pi{ranges::views::transform(agi, [](antigen_index index) { return point_index{*index}; }) | ranges::to_vector};
+        ranges::sort(pi);
+        return pi;
     }
     inline point_indexes to_point_indexes(const serum_indexes& sri, antigen_index number_of_antigens)
     {
-        return point_indexes{ranges::views::transform(sri, [number_of_antigens](serum_index index) { return number_of_antigens + index; }) | ranges::to_vector};
+        point_indexes pi{ranges::views::transform(sri, [number_of_antigens](serum_index index) { return number_of_antigens + index; }) | ranges::to_vector};
+        ranges::sort(pi);
+        return pi;
     }
 
     template <typename Index, typename Tag> inline std::vector<typename Index::value_type> to_vector_base_t(const ae::named_vector_t<Index, Tag>& source)
@@ -199,9 +203,40 @@ namespace ae
         return result;
     }
 
-    template <typename Index, typename Tag1, typename Tag2> inline void remove(ae::named_vector_t<Index, Tag1>& indexes, const ae::named_vector_t<Index, Tag2>& to_remove)
+    // indexes is an ascending (after sorting below) list of indexes
+    // to_remove_sorted_ascending is a sorted list of indexes to remove
+    // indexes has to be renumbered upon each removal
+    template <typename Index, typename Tag> inline void remove_and_renumber(ae::named_vector_t<Index, Tag>& indexes, const point_indexes& to_remove_sorted_ascending)
     {
-        indexes.get().erase(std::remove_if(indexes.begin(), indexes.end(), [&to_remove](auto ind) { return to_remove.contains(ind); }), indexes.end());
+        if (!to_remove_sorted_ascending.empty()) {
+            std::sort(indexes.begin(), indexes.end());
+            auto no_ptr = to_remove_sorted_ascending.begin();
+            auto target = indexes.begin();
+            for (auto src = indexes.begin(); src != indexes.end(); ++src) {
+                while (*src > *no_ptr && no_ptr != to_remove_sorted_ascending.end())
+                    ++no_ptr;
+                if (no_ptr != to_remove_sorted_ascending.end()) {
+                    if (*src < *no_ptr) {
+                        *target = *src - (no_ptr - to_remove_sorted_ascending.begin());
+                        ++target;
+                    }
+                    else if (*src == *no_ptr) {
+                        // skip src (remove)
+                        ++no_ptr;
+                    }
+                    else {
+                        ++no_ptr;
+                    }
+                }
+                if (no_ptr == to_remove_sorted_ascending.end()) {
+                    // just copy and renumber rest
+                    target = std::transform(src, indexes.end(), target, [diff = no_ptr - to_remove_sorted_ascending.begin()](const auto& en) { return en - diff; });
+                    break;
+                }
+            }
+            // truncate
+            indexes.get().erase(target, indexes.end());
+        }
     }
 
     class disconnected_points : public point_indexes

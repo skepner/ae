@@ -64,7 +64,7 @@ namespace ae::chart::v3::legacy
                     style_for_point_.erase(std::next(style_for_point_.begin(), ind));
             }
             if (!drawing_order_.empty())
-                remove(drawing_order_, points);
+                remove_and_renumber(drawing_order_, points);
         }
 
       private:

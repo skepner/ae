@@ -83,22 +83,21 @@ ae::chart::v3::optimization_status ae::chart::v3::Projection::relax(const Chart&
 
 void ae::chart::v3::Projection::remove_points(const point_indexes& points, antigen_index number_of_antigens)
 {
-    const auto indexes_descending = to_vector_base_t_descending(points);
-    layout_.remove_points(indexes_descending);
+    layout_.remove(points);
     stress_ = std::nullopt;
     if (!forced_column_bases_.empty()) {
-        for (const auto no : indexes_descending) {
-            if (no > number_of_antigens.get())
+        for (const auto no : points) {
+            if (no.get() > number_of_antigens.get())
                 forced_column_bases_.remove(serum_index{no - number_of_antigens.get()});
         }
     }
-    remove(disconnected_, points);
-    remove(unmovable_, points);
-    remove(unmovable_in_the_last_dimension_, points);
+    remove_and_renumber(disconnected_, points);
+    remove_and_renumber(unmovable_, points);
+    remove_and_renumber(unmovable_in_the_last_dimension_, points);
     if (!avidity_adjusts_->empty()) {
-        for (const auto no : indexes_descending) {
-            if (no < number_of_antigens.get())
-                avidity_adjusts_.get().erase(std::next(avidity_adjusts_->begin(), no));
+        for (const auto no : points) {
+            if (no.get() < number_of_antigens.get())
+                avidity_adjusts_.get().erase(std::next(avidity_adjusts_->begin(), no.get()));
         }
     }
 
