@@ -1,10 +1,10 @@
 from pathlib import Path
 from typing import Optional
-import ae_backend
+import ae_backend.chart_v3
 
 # ======================================================================
 
-def merge(sources: list[Path|ae_backend.chart_v3.Chart], match: str, merge_type: str, combine_cheating_assays: bool, duplicates_distinct: bool, report: bool) -> ae_backend.chart_v3.Chart:
+def merge(sources: list[Path]|list[ae_backend.chart_v3.Chart], match: str, merge_type: str, combine_cheating_assays: bool, duplicates_distinct: bool, report: bool) -> ae_backend.chart_v3.Chart:
     """match: "strict", "relaxed", "ignored", "auto"
     merge_type: "type1", "simple", "type2", "incremental", "type3", "overlay", "type4", "type5"
     """

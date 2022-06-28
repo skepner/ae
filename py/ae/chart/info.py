@@ -29,9 +29,15 @@ def info(chart: ae_backend.chart_v3.Chart, show_projections: bool = False, show_
                 else:
                     projections += f" {projection_forced_column_bases}"
             if disconnected := projection.disconnected():
-                projections += f" discon:{disconnected}"
+                if len(disconnected) > 20:
+                    projections += f" discon:({len(disconnected)})"
+                else:
+                    projections += f" discon:{disconnected}"
             if unmovable := projection.unmovable():
-                projections += f" unmov:{unmovable}"
+                if len(unmovable) > 20:
+                    projections += f" unmov:({len(unmovable)})"
+                else:
+                    projections += f" unmov:{unmovable}"
             if unmovable_in_the_last_dimension := projection.unmovable_in_the_last_dimension():
                 projections += f" unmov-last:{unmovable_in_the_last_dimension}"
             projections += "\n"
