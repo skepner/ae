@@ -305,13 +305,24 @@ test('ae test passage parsing', test_passage)
 
 python3 = import('python').find_installation('python3.10')
 
-ae_lib = python3.extension_module(
+ae_backend = python3.extension_module(
   'ae_backend',
   sources : sources_py,
   include_directories : include_cc,
   dependencies : [python3.dependency(), xxhash, pybind11, xlnt, fmt, range_v3, simdjson],
   link_with : [libae],
   install : true)
+
+# stubs for mypy
+stubgen = find_program('stubgen')
+ae_backend_stubs = custom_target(
+  'ae_backend_stubs',
+  build_by_default: true,
+  input : [ae_backend],
+  output: ['stubs'],
+  command: [stubgen, '--package', 'ae_backend', '--output', '@OUTPUT@']
+           )
+
 
 # https://gabmus.org/posts/python-unittest-meson/
 # envdata = environment()
