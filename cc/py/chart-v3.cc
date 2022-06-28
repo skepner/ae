@@ -368,14 +368,14 @@ void ae::py::chart_v3(pybind11::module_& mdl)
             [](Chart& chart, size_t to_keep) { return chart.projections().keep(projection_index{to_keep}); }, //
             "keep"_a)                                                                                         //
 
-        //         .def(
-        //             "orient_to",
-        //             [](Chart& chart, const Chart& master, size_t projection_no) {
-        //                 ae::chart::v3::CommonAntigensSera common(master, chart, CommonAntigensSera::match_level_t::strict);
-        //                 const auto procrustes_data = ae::chart::v3::procrustes(*master.projection(0), *chart.projection(projection_no), common.points(), ae::chart::v3::procrustes_scaling_t::no);
-        //                 chart.projection_modify(projection_no)->transformation(procrustes_data.transformation);
-        //             },                                 //
-        //             "master"_a, "projection_no"_a = 0) //
+        .def(
+            "orient_to",
+            [](Chart& chart, const Chart& master, size_t projection_no) {
+                const auto procrustes_data = ae::chart::v3::procrustes(master.projections()[projection_index{0}], chart.projections()[projection_index{projection_no}],
+                                                                       common_antigens_sera_t{master, chart, antigens_sera_match_level_t::automatic}, ae::chart::v3::procrustes_scaling_t::no);
+                chart.projections()[projection_index{projection_no}].transformation() = procrustes_data.transformation;
+            },                                 //
+            "master"_a, "projection_no"_a = 0) //
 
         //         // .def(
         //         //     "select_antigens_by_aa", //
@@ -593,6 +593,10 @@ void ae::py::chart_v3(pybind11::module_& mdl)
 
     pybind11::class_<Transformation>(chart_v3_submodule, "Transformation")                                      //
         .def("__str__", [](const Transformation& transformation) { return fmt::format("{}", transformation); }) //
+        .def(
+            "rotate", [](Transformation& transformation, double angle) { transformation.rotate(Rotation{angle}); }, "angle"_a) //
+        .def("flip_ew", [](Transformation& transformation) { transformation.flip(0.0, 1.0); })                                 //
+        .def("flip_ns", [](Transformation& transformation) { transformation.flip(1.0, 0.0); })                                 //
         ;
 
     // ----------------------------------------------------------------------

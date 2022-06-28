@@ -7,7 +7,7 @@ from .vaccine import update, extract_point_modifier_data # update called by 0do 
 
 # ======================================================================
 
-def find(chart: ae_backend.chart_v3.Chart, semantic_attribute_data: list[dict[str, str]], report: bool = True) -> list[dict[str, object]]:
+def find(chart: ae_backend.chart_v3.Chart, semantic_attribute_data: list[dict[str, str]], report: bool = True) -> list[dict[str, object|list[dict[str, object]]]]:
     """Return list of serology antigen entries (one entry per name).
     semantic_attribute_data [{"name": "Wisconsin/588/2019", "passage": "cell"}] is loaded from e.g. acmacs-data/semantic-serology.py
     order of returned elements is the same as entries
