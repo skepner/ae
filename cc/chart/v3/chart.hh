@@ -61,6 +61,7 @@ namespace ae::chart::v3
         const semantic::Styles& styles() const { return styles_; }
         legacy::PlotSpec& legacy_plot_spec() { return legacy_plot_spec_; }
         const legacy::PlotSpec& legacy_plot_spec() const { return legacy_plot_spec_; }
+        void semantic_style_to_legacy(std::string_view style_name) { styles().find_and_export_to(style_name, legacy_plot_spec()); }
 
         std::string export_to_json() const;
         void write(const std::filesystem::path& filename) const;

@@ -1,4 +1,16 @@
 #include "chart/v3/styles.hh"
+#include "chart/v3/legacy-plot-spec.hh"
+
+// ----------------------------------------------------------------------
+
+const ae::chart::v3::semantic::Style* ae::chart::v3::semantic::Styles::find_if_exists(std::string_view name) const
+{
+    if (const auto found = std::find_if(begin(), end(), [name](const auto& style) { return style.name == name; }); found != end())
+        return &*found;
+    else
+        return nullptr;
+
+} // ae::chart::v3::semantic::Styles::find_if_exists
 
 // ----------------------------------------------------------------------
 
@@ -54,5 +66,33 @@ void ae::chart::v3::semantic::text_t::set_font_slant(std::string_view value)
     font_slant = value;
 
 } // ae::chart::v3::semantic::text_t::set_font_salnt
+
+// ----------------------------------------------------------------------
+
+void ae::chart::v3::semantic::Style::export_to(ae::chart::v3::legacy::PlotSpec& plot_spec) const
+{
+    plot_spec.styles().clear();
+    auto& basic_style = plot_spec.styles().emplace_back(PointStyle{});
+    basic_style.fill(Color{"pink"});
+    basic_style.outline(Color{"black"});
+    basic_style.size(2.0);
+    basic_style.shape(point_shape{point_shape::Shape::Triangle});
+    basic_style.shown(true);
+    ranges::fill(plot_spec.style_for_point(), 0ul);
+    plot_spec.drawing_order().get().clear();
+    ranges::copy(ranges::views::iota(point_index{0}, point_index{plot_spec.style_for_point().size()}), std::back_inserter(plot_spec.drawing_order().get()));
+
+    // drawing order is not touched
+
+} // ae::chart::v3::semantic::Style::export_to
+
+// ----------------------------------------------------------------------
+
+void ae::chart::v3::semantic::Styles::find_and_export_to(std::string_view name, legacy::PlotSpec& plot_spec) const
+{
+    if (const auto* found = find_if_exists(name); found)
+        found->export_to(plot_spec);
+
+} // ae::chart::v3::semantic::Styles::find_and_export_to
 
 // ----------------------------------------------------------------------

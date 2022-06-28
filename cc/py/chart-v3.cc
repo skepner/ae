@@ -229,6 +229,7 @@ void ae::py::chart_v3(pybind11::module_& mdl)
         .def("titers", pybind11::overload_cast<>(&Chart::titers), pybind11::return_value_policy::reference_internal) //
 
         .def("styles", pybind11::overload_cast<>(&Chart::styles), pybind11::return_value_policy::reference_internal) //
+        .def("semantic_style_to_legacy", &Chart::semantic_style_to_legacy, "style_name"_a) //
 
         // ----------------------------------------------------------------------
 

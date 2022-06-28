@@ -15,6 +15,11 @@
 
 // ----------------------------------------------------------------------
 
+namespace ae::chart::v3::legacy
+{
+    class PlotSpec;
+}
+
 namespace ae::chart::v3::semantic
 {
     enum class DrawingOrderModifier { no_change, raise, lower };
@@ -140,6 +145,8 @@ namespace ae::chart::v3::semantic
 
         Style() = default;
         Style(std::string_view a_name) : name{a_name} {}
+
+        void export_to(legacy::PlotSpec& plot_spec) const;
     };
 
     class Styles
@@ -155,6 +162,8 @@ namespace ae::chart::v3::semantic
 
         // find or add style by name
         Style& find(std::string_view name);
+        const Style* find_if_exists(std::string_view name) const;
+        void find_and_export_to(std::string_view name, legacy::PlotSpec& plot_spec) const;
 
       private:
         // reference to style can be kept by python program and then
