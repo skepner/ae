@@ -44,9 +44,9 @@ namespace ae::chart::v3::legacy
             auto& test_antigen = styles_.emplace_back();
             test_antigen.fill(Color{"green"});
             auto& reference_antigen = styles_.emplace_back();
-            reference_antigen.size(8.0);
+            reference_antigen.size(1.3);
             auto& serum = styles_.emplace_back();
-            serum.size(8.0);
+            serum.size(1.3);
             serum.shape(point_shape::Box);
 
             for ([[maybe_unused]] const auto ag_no : number_of_antigens)
