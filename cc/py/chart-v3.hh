@@ -30,12 +30,18 @@ namespace ae::py
         std::vector<size_t> unmovable_in_the_last_dimension() const { return to_vector_base_t(projection.unmovable_in_the_last_dimension()); }
         ae::chart::v3::Transformation& transformation() { return projection.transformation(); }
         ae::chart::v3::Layout& layout() { return projection.layout(); }
+
         double relax(ae::chart::v3::optimization_precision precision)
         {
             // optimization_options opt;
             // opt.precision = precision;
             projection.relax(*chart, ae::chart::v3::optimization_options{.precision = precision});
             return projection.stress(*chart);
+        }
+
+        void connect_all_disconnected()
+        {
+            projection.disconnected().get().clear();
         }
 
         ae::chart::v3::avidity_test::results_t avidity_test(double adjust_step, double min_adjust, double max_adjust, bool rough)

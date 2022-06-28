@@ -518,17 +518,18 @@ void ae::py::chart_v3(pybind11::module_& mdl)
 
     // ----------------------------------------------------------------------
 
-    pybind11::class_<ProjectionRef>(chart_v3_submodule, "Projection")                                             //
-        .def("stress", &ProjectionRef::stress)                                                                    //
-        .def("recalculate_stress", &ProjectionRef::recalculate_stress)                                            //
-        .def("comment", &ProjectionRef::comment)                                                                  //
-        .def("minimum_column_basis", &ProjectionRef::minimum_column_basis)                                        //
-        .def("forced_column_bases", &ProjectionRef::forced_column_bases)                                          //
-        .def("disconnected", &ProjectionRef::disconnected)                                                        //
-        .def("unmovable", &ProjectionRef::unmovable)                                                              //
-        .def("unmovable_in_the_last_dimension", &ProjectionRef::unmovable_in_the_last_dimension)                  //
-        .def("layout", &ProjectionRef::layout, pybind11::return_value_policy::reference_internal)                 //
-        .def("transformation", &ProjectionRef::transformation, pybind11::return_value_policy::reference_internal) //
+    pybind11::class_<ProjectionRef>(chart_v3_submodule, "Projection")                                                                                         //
+        .def("stress", &ProjectionRef::stress)                                                                                                                //
+        .def("recalculate_stress", &ProjectionRef::recalculate_stress)                                                                                        //
+        .def("comment", &ProjectionRef::comment)                                                                                                              //
+        .def("minimum_column_basis", &ProjectionRef::minimum_column_basis)                                                                                    //
+        .def("forced_column_bases", &ProjectionRef::forced_column_bases)                                                                                      //
+        .def("disconnected", &ProjectionRef::disconnected)                                                                                                    //
+        .def("unmovable", &ProjectionRef::unmovable)                                                                                                          //
+        .def("unmovable_in_the_last_dimension", &ProjectionRef::unmovable_in_the_last_dimension)                                                              //
+        .def("connect_all_disconnected", &ProjectionRef::connect_all_disconnected, pybind11::doc("reconnected points still have NaN coordinates after call")) //
+        .def("layout", &ProjectionRef::layout, pybind11::return_value_policy::reference_internal)                                                             //
+        .def("transformation", &ProjectionRef::transformation, pybind11::return_value_policy::reference_internal)                                             //
         .def(
             "relax", [](ProjectionRef& projection, bool rough) { return projection.relax(rough ? optimization_precision::rough : optimization_precision::fine); }, "rough"_a = false) //
         .def("avidity_test", &ProjectionRef::avidity_test, "adjust_step"_a, "min_adjust"_a, "max_adjust"_a, "rough"_a)                                                                //
