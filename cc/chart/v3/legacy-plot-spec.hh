@@ -3,6 +3,7 @@
 #include "utils/named-vector.hh"
 #include "chart/v3/index.hh"
 #include "chart/v3/point-style.hh"
+#include <iterator>
 
 // ----------------------------------------------------------------------
 
@@ -37,7 +38,6 @@ namespace ae::chart::v3::legacy
 
         void initialize(antigen_index number_of_antigens, const antigen_indexes& reference, serum_index number_of_sera)
         {
-            drawing_order_.get().clear();
             styles_.clear();
             style_for_point_.clear();
 
@@ -55,6 +55,15 @@ namespace ae::chart::v3::legacy
                 style_for_point_.push_back(2);
             for (const auto ag_no : reference)
                 style_for_point_[*ag_no] = 1;
+
+            drawing_order_.get().clear();
+            // sera followed by reference antigens followed by test antigens
+            ranges::copy(ranges::views::iota(to_point_index(number_of_antigens), number_of_antigens + number_of_sera), std::back_inserter(*drawing_order_));
+            ranges::copy(to_point_indexes(reference), std::back_inserter(*drawing_order_));
+            ranges::copy(ranges::views::iota(antigen_index{0}, number_of_antigens)                                //
+                             | ranges::views::filter([&reference](auto ind) { return !reference.contains(ind); }) //
+                             | ranges::views::transform(&to_point_index),
+                         std::back_inserter(*drawing_order_));
         }
 
         void remove_points(const point_indexes& points)

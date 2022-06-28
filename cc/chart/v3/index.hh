@@ -18,6 +18,7 @@ namespace ae
     {
       public:
         using value_type = size_t;
+        using difference_type = ssize_t; // required for ranges
 
         explicit constexpr index_tt() : value_{0} {}
         constexpr index_tt(index_tt_invalid_) : value_{static_cast<value_type>(-1)} {}
@@ -138,11 +139,16 @@ namespace ae
     template <typename Tag> inline index_iterator_tt<Tag> index_tt<Tag>::begin() const { return index_iterator_tt<Tag>{index_tt<Tag>{0}}; }
     template <typename Tag> inline index_iterator_tt<Tag> index_tt<Tag>::end() const { return index_iterator_tt<Tag>{*this}; }
 
+    template <typename Tag> inline ae::named_vector_t<index_tt<Tag>, Tag> index_range(index_tt<Tag> first, index_tt<Tag> last)
+    {
+        ae::named_vector_t<index_tt<Tag>, Tag> result(last.get() - first.get());
+        std::iota(result.begin(), result.end(), first);
+        return result;
+    }
+
     template <typename Tag> inline ae::named_vector_t<index_tt<Tag>, Tag> index_range(index_tt<Tag> last)
     {
-        ae::named_vector_t<index_tt<Tag>, Tag> result(*last);
-        std::iota(result.begin(), result.end(), index_tt<Tag>{0});
-        return result;
+        return index_range(index_tt<Tag>{0}, last);
     }
 
     // ----------------------------------------------------------------------
