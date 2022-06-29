@@ -97,18 +97,27 @@ get_report = report           # alias to avoid renaming report argument in find(
 
 # ----------------------------------------------------------------------
 
-def set_semantic(vaccines_found: list[Vaccine], current_vaccine_years: list[str] = [], disable: dict[str, dict[str, list[str]]] = {}):
-    """disable: {"any": {"name": ["SOUTH AUSTRALIA/34/2019"]}, "egg": {"name": ["CAMBODIA/E0826360/2020"]}}"""
+def set_semantic(vaccines_found: list[Vaccine], current_vaccine_years: list[str] = [], disable: dict[str, dict[str, list[str]]] = {}, choose: dict[str, list[dict[str, str|int]]] = {}):
+    """
+    disable: {"any": {"name": ["SOUTH AUSTRALIA/34/2019"]}, "egg": {"name": ["CAMBODIA/E0826360/2020"]}} use "name" or "year" as a selector
+    choose: {"egg": [{"name": "VICTORIA/2570/2019", "index": 1}]} use "name" or "year" as a selector to choose index (default is 0) to get from list for passage
+    """
 
-    def match(vac: Vaccine, selector: dict[str, list[str]]) -> bool:
+    def is_disbaled(vac: Vaccine, selector: dict[str, list[str]]) -> bool:
         return any(getattr(vac, attr_name, None) in vals for attr_name, vals in selector.items())
 
+    def get_index(vac: Vaccine, selector: list[dict[str, str|int]]) -> int:
+        for sel in selector:
+            if any(getattr(vac, attr_name, None) == val for attr_name, val in sel.items() if attr_name != "index"):
+                return sel["index"]
+        return 0
+
     for vaccine in vaccines_found:
-        if not match(vaccine, disable.get("any", {})):
+        if not is_disbaled(vaccine, disable.get("any", {})):
             print(f">>>> V {vaccine}", file=sys.stderr)
             for passage in ["cell", "egg", "reassortant"]:
-                if (vaccines_per_passage := getattr(vaccine, passage)) and not match(vaccine, disable.get(passage, {})):
-                    vaccine.semantic_vaccine(vaccines_per_passage[0], current_vaccine_years=current_vaccine_years)
+                if (vaccines_per_passage := getattr(vaccine, passage)) and not is_disbaled(vaccine, disable.get(passage, {})):
+                    vaccine.semantic_vaccine(vaccines_per_passage[get_index(vaccine, choose.get(passage, []))], current_vaccine_years=current_vaccine_years)
 
 # ======================================================================
 
