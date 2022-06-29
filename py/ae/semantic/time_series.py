@@ -9,6 +9,7 @@ from .style import style_with_one_modifier
 # ======================================================================
 
 def style(chart: ae_backend.chart_v3.Chart, time_series: TimeSeriesRange, name: str = "ts-", vaccine_style_name: str = "-vaccines", title_prefix: str = None, title_style: dict[str, object] = {}, priority: int = 5000, front_priority: int = 500):
+    """vaccine_style_name - support for different vaccine colring in clades and ts, use -vaccines-ts" for ts"""
     priority_inc = 0
     for dfirst, dlast in time_series.range_begin_end():
         sname = f"-{name}{dfirst.strftime(time_series.name_format_style())}"
