@@ -1,6 +1,6 @@
 import sys, pprint, json
 from typing import Optional
-import ae_backend
+import ae_backend.chart_v3
 from .find import AntigenFinder, PASSAGES
 # from .. import virus
 from .name_generator import NameGenerator
@@ -24,7 +24,7 @@ class Vaccine:
 
     # ----------------------------------------------------------------------
 
-    def __init__(self, name: str, year: str, surrogate: bool):
+    def __init__(self, name: str, year: Optional[str], surrogate: bool):
         self.name = name
         self.year = year
         self.surrogate = surrogate
@@ -54,16 +54,16 @@ class Vaccine:
     def __repr__(self):
         return (json.dumps({"name": self.name, "year": self.year, "surrogate": self.surrogate, "cell": [en.to_dict() for en in self.cell], "egg": [en.to_dict() for en in self.egg], "reassortant": [en.to_dict() for en in self.reassortant]}))
 
-    def report(self):
-        print(f"{self.name} [{self.year}]{' <surrogate>' if self.surrogate else ''}", file=sys.stderr)
+    def report(self) -> list[str]:
+        result = [f"{self.name} [{self.year}]{' <surrogate>' if self.surrogate else ''}"]
         for passage_type in PASSAGES:
             for no, en in enumerate(getattr(self, passage_type, [])):
                 if no == 0:
                     prefix = f"{passage_type[:4]:<4s}"
                 else:
                     prefix = " " * 4
-                print(f"  {prefix}  {en}", file=sys.stderr)
-        print(file=sys.stderr)
+                result.append(f"  {prefix}  {en}")
+        return result
 
     @classmethod
     def make(cls, chart: ae_backend.chart_v3.Chart, finder: AntigenFinder, name: str, year: str = None, passage: str = None, surrogate: bool = False, **ignored):
@@ -82,16 +82,40 @@ def find(chart: ae_backend.chart_v3.Chart, semantic_attribute_data: list, report
     finder = AntigenFinder(chart)
     data = [en for en in (Vaccine.make(chart, finder, **source) for source in semantic_attribute_data) if en]
     if report:
-        for en in data:
-            en.report()
+        print("\n".join(get_report(data)), file=sys.stderr)
     return data
+
+def report(vaccines_found: list[Vaccine]) -> list[str]:
+    result: list[str] = []
+    for en in vaccines_found:
+        if result:
+            result.append("")
+        result.extend(en.report())
+    return result
+
+get_report = report           # alias to avoid renaming report argument in find()
+
+# ----------------------------------------------------------------------
+
+def set_semantic(vaccines_found: list[Vaccine], current_vaccine_years: list[str] = [], disable: dict[str, dict[str, list[str]]] = {}):
+    """disable: {"any": {"name": ["SOUTH AUSTRALIA/34/2019"]}, "egg": {"name": ["CAMBODIA/E0826360/2020"]}}"""
+
+    def match(vac: Vaccine, selector: dict[str, list[str]]) -> bool:
+        return any(getattr(vac, attr_name, None) in vals for attr_name, vals in selector.items())
+
+    for vaccine in vaccines_found:
+        if not match(vaccine, disable.get("any", {})):
+            print(f">>>> V {vaccine}", file=sys.stderr)
+            for passage in ["cell", "egg", "reassortant"]:
+                if (vaccines_per_passage := getattr(vaccine, passage)) and not match(vaccine, disable.get(passage, {})):
+                    vaccine.semantic_vaccine(vaccines_per_passage[0], current_vaccine_years=current_vaccine_years)
 
 # ======================================================================
 
 def collect_data_for_styles(chart: ae_backend.chart_v3.Chart):
     """Look for "V" semantic attribute to collect data for styles"""
     name_generator = NameGenerator()
-    vaccine_data = [{
+    vaccine_data: list[dict[str,str|float]] = [{
         "no": no,
         "designation": antigen.designation(),
         "lox": 0.0, "loy": 1.0,     # label offset
