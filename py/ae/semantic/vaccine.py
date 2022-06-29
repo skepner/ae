@@ -168,11 +168,12 @@ def update(collected: list[dict[str, object]], user: list[dict[str, object|str]]
 
 # ======================================================================
 
-def style(chart: ae_backend.chart_v3.Chart, style_name: str, data: list[dict[str, object]], common_modifier: dict, label_modifier: dict, priority: int = 1000) -> set[str]:
-    """Add "-vaccines" and "-vaccines-blue" plot style
+def style(chart: ae_backend.chart_v3.Chart, style_name: str, data: list[dict[str, object]], common_modifier: dict, label_modifier: dict, data_key_mapping: dict[str, str] = {}, priority: int = 1000) -> set[str]:
+    """Add "-vaccines" (or "-vaccines-ts") plot style
     data is the output of find() and/or update()
     common_modifier: {"outline": "black", "fill": ":bright", "size": 50, "outline_width": 1.0}
     label_modifier: {"size": 30.0, "slant": "normal", "weight": "normal", "color": "black"} - other fields are taken from data
+    data_key_mapping: to support chosing between different fill colors for ts and clades: {"fill": "fill_ts"}
     """
 
     style = chart.styles()[style_name]
@@ -180,12 +181,12 @@ def style(chart: ae_backend.chart_v3.Chart, style_name: str, data: list[dict[str
     style.add_modifier(selector={"V": True}, only="antigens", raise_=True, **common_modifier)
 
     for en in data:
-        style.add_modifier(selector={"!i": en["no"]}, only="antigens", **extract_point_modifier_data(source=en, label_modifier=label_modifier))
+        style.add_modifier(selector={"!i": en["no"]}, only="antigens", **extract_point_modifier_data(source=en, data_key_mapping=data_key_mapping, label_modifier=label_modifier))
     return {style_name}
 
 # ----------------------------------------------------------------------
 
-def extract_point_modifier_data(source: dict[str, object], label_modifier: dict) -> dict[str, object]:
+def extract_point_modifier_data(source: dict[str, object], data_key_mapping: dict[str, str], label_modifier: dict) -> dict[str, object]:
     def get_float(key: str) -> float:
         if (val := source.get(key)) is not None:
             return float(val)
@@ -199,14 +200,14 @@ def extract_point_modifier_data(source: dict[str, object], label_modifier: dict)
             return None
 
     return _remove_none({
-        "fill": source.get("fill"),
-        "outline": source.get("outline"),
-        "outline_width": get_float("outline_width"),
-        "size": get_float("size"),
-        "rotation": get_float("rotation"),
-        "aspect": get_float("aspect"),
-        "shape": source.get("shape"),
-        "hide": get_bool("hide"),
+        "fill": source.get(data_key_mapping.get("fill", "fill")),
+        "outline": source.get(data_key_mapping.get("outline", "outline")),
+        "outline_width": get_float(data_key_mapping.get("outline_width", "outline_width")),
+        "size": get_float(data_key_mapping.get("size", "size")),
+        "rotation": get_float(data_key_mapping.get("rotation", "rotation")),
+        "aspect": get_float(data_key_mapping.get("aspect", "aspect")),
+        "shape": source.get(data_key_mapping.get("shape", "shape")),
+        "hide": get_bool(data_key_mapping.get("hide", "hide")),
         "label": {
             **label_modifier,
             **_remove_none({
