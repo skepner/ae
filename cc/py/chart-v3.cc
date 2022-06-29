@@ -595,9 +595,10 @@ void ae::py::chart_v3(pybind11::module_& mdl)
     pybind11::class_<Transformation>(chart_v3_submodule, "Transformation")                                      //
         .def("__str__", [](const Transformation& transformation) { return fmt::format("{}", transformation); }) //
         .def(
-            "rotate", [](Transformation& transformation, double angle) { transformation.rotate(Rotation{angle}); }, "angle"_a) //
-        .def("flip_ew", [](Transformation& transformation) { transformation.flip(0.0, 1.0); })                                 //
-        .def("flip_ns", [](Transformation& transformation) { transformation.flip(1.0, 0.0); })                                 //
+            "rotate", [](Transformation& transformation, double angle) { transformation.rotate(ae::draw::v2::rotation(angle)); }, "angle"_a,
+            pybind11::doc("angle < 3.15 - radians, angle >= 3.15 - degrees"))                  //
+        .def("flip_ew", [](Transformation& transformation) { transformation.flip(0.0, 1.0); }) //
+        .def("flip_ns", [](Transformation& transformation) { transformation.flip(1.0, 0.0); }) //
         ;
 
     // ----------------------------------------------------------------------
