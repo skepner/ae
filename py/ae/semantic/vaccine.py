@@ -46,9 +46,10 @@ class Vaccine:
             passage = "cell"
         else:
             passage = " "       # space!
-        val = f"{self.year or ''}{passage[0]}{self.surrogate or ''}"
+        val = f"{self.year or ''}{passage[0]}{'s' if self.surrogate else ''}"
         if self.year in current_vaccine_years:
-            val += "c"
+            val += "C"
+        # print(f">>>> semantic_vaccine {entry.antigen.designation()} \"{val}\"", file=sys.stderr)
         entry.antigen.semantic.vaccine(val)
 
     def __repr__(self):
