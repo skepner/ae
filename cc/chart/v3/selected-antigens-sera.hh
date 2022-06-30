@@ -146,6 +146,12 @@ namespace ae::chart::v3
                 indexes.end());
         }
 
+        void remove(const Selected<AgSr>& to_remove)
+        {
+            std::unordered_set<index_t, index_hash_for_unordered_map, std::equal_to<>> ind_to_remove(to_remove.indexes.begin(), to_remove.indexes.end());
+            indexes.get().erase(std::remove_if(std::begin(indexes), std::end(indexes), [&ind_to_remove](const auto& index) { return ind_to_remove.contains(index); }), indexes.end());
+        }
+
         SelectedIterator<AgSr> begin();
         SelectedIterator<AgSr> end();
 

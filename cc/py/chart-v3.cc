@@ -450,30 +450,29 @@ void ae::py::chart_v3(pybind11::module_& mdl)
         Usage:
             chart.remove_antigens_sera(antigens=chart.select_antigens(lambda ag: ag.lineage == "VICTORIA"), sera=chart.select_sera(lambda sr: sr.lineage == "VICTORIA"))
         )"))                                                                            //
-        //         .def(
-        //             "keep_antigens_sera",
-        //             [](Chart& chart, std::shared_ptr<SelectedAntigensModify> antigens, std::shared_ptr<SelectedSeraModify> sera, bool remove_projections) {
-        //                 if (remove_projections)
-        //                     chart.projections_modify().remove_all();
-        //                 if (antigens && !antigens->empty()) {
-        //                     ae::chart::v3::ReverseSortedIndexes antigens_to_remove(chart.number_of_antigens());
-        //                     antigens_to_remove.remove(*antigens->indexes);
-        //                     // AD_INFO("antigens_to_remove:  {} {}", antigens_to_remove.size(), antigens_to_remove);
-        //                     chart.remove_antigens(antigens_to_remove);
-        //                 }
-        //                 if (sera && !sera->empty()) {
-        //                     ae::chart::v3::ReverseSortedIndexes sera_to_remove(chart.number_of_sera());
-        //                     sera_to_remove.remove(*sera->indexes);
-        //                     // AD_INFO("sera_to_remove:  {} {}", sera_to_remove.size(), sera_to_remove);
-        //                     chart.remove_sera(sera_to_remove);
-        //                 }
-        //             },                                                                          //
-        //             "antigens"_a = nullptr, "sera"_a = nullptr, "remove_projections"_a = false, //
-        //             pybind11::doc(R"(
-        // Usage:
-        //     chart.remove_antigens_sera(antigens=chart.select_antigens(lambda ag: ag.lineage == "VICTORIA"), sera=chart.select_sera(lambda sr: sr.lineage == "VICTORIA"))
-        // )"))                                                                                    //
-
+        .def(
+            "keep_antigens_sera",
+            [](std::shared_ptr<Chart> chart, std::shared_ptr<SelectedAntigens> antigens, std::shared_ptr<SelectedSera> sera, bool remove_projections) {
+                if (remove_projections)
+                    chart->projections().remove_all();
+                if (antigens && !antigens->empty()) {
+                    SelectedAntigens antigens_to_remove(chart);
+                    antigens_to_remove.remove(*antigens);
+                    // AD_INFO("antigens_to_remove:  {} {}", antigens_to_remove.size(), antigens_to_remove);
+                    chart->remove_antigens(antigens_to_remove);
+                }
+                if (sera && !sera->empty()) {
+                    SelectedSera sera_to_remove(chart);
+                    sera_to_remove.remove(*sera);
+                    // AD_INFO("sera_to_remove:  {} {}", sera_to_remove.size(), sera_to_remove);
+                    chart->remove_sera(sera_to_remove);
+                }
+            },                                                                          //
+            "antigens"_a = nullptr, "sera"_a = nullptr, "remove_projections"_a = false, //
+            pybind11::doc(R"(
+        Usage:
+            chart.keep_antigens_sera(antigens=chart.select_antigens(lambda ag: ag.lineage == "VICTORIA"), sera=chart.select_sera(lambda sr: sr.lineage == "VICTORIA"))
+        )"))                                                                            //
         ;
 
     // ----------------------------------------------------------------------
@@ -483,7 +482,8 @@ void ae::py::chart_v3(pybind11::module_& mdl)
         .def(
             "titer", [](const Titers& titers, size_t ag_no, size_t sr_no) { return titers.titer(antigen_index{ag_no}, serum_index{sr_no}); }, "antigen_no"_a, "serum_no"_a) //
         .def(
-            "set_titer", [](Titers& titers, size_t ag_no, size_t sr_no, std::string_view new_titer) { return titers.set_titer(antigen_index{ag_no}, serum_index{sr_no}, Titer{new_titer}); }, "antigen_no"_a, "serum_no"_a, "titer"_a) //
+            "set_titer", [](Titers& titers, size_t ag_no, size_t sr_no, std::string_view new_titer) { return titers.set_titer(antigen_index{ag_no}, serum_index{sr_no}, Titer{new_titer}); },
+            "antigen_no"_a, "serum_no"_a, "titer"_a) //
         .def(
             "titer_of_layer", [](const Titers& titers, size_t layer_no, size_t ag_no, size_t sr_no) { return titers.titer_of_layer(layer_index{layer_no}, antigen_index{ag_no}, serum_index{sr_no}); },
             "layer_no"_a, "antigen_no"_a, "serum_no"_a)                                                                            //
