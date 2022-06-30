@@ -739,9 +739,11 @@ void ae::chart::v3::Titers::remove_antigens(sparse_t& data, const antigen_indexe
 void ae::chart::v3::Titers::remove_sera(dense_t& data, const serum_indexes& to_remove, serum_index number_of_sera)
 {
     const auto number_of_antigens = data.size() / number_of_sera.get();
-    for (const auto sr_no : to_vector_base_t(to_remove)) {
-        for (size_t ag_no = number_of_antigens; ag_no > 0; --ag_no)
-            data.erase(std::next(data.begin(), ag_no * number_of_sera.get() + sr_no));
+    for (const auto sr_no : to_vector_base_t_descending(to_remove)) {
+        for (size_t ag_no_plus_1 = number_of_antigens; ag_no_plus_1 > 0; --ag_no_plus_1) {
+            data.erase(std::next(data.begin(), (ag_no_plus_1 - 1) * number_of_sera.get() + sr_no));
+        }
+        --number_of_sera;
     }
 
 } // ae::chart::v3::Titers::remove_sera
