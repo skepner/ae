@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ext/range-v3.hh"
 #include "utils/log.hh"
 #include "utils/collection.hh"
 #include "sequences/clades.hh"
@@ -31,39 +32,26 @@ namespace ae::chart::v3
                 clds.add_if_not_present(clade);
         }
 
-        void add_clade(std::string_view clade)
-        {
-            data_.as_array(_clades_key).add_if_not_present(clade);
-        }
+        void add_clade(std::string_view clade) { data_.as_array(_clades_key).add_if_not_present(clade); }
 
-        bool has_clade(std::string_view clade) const
+        bool has_clade(std::string_view clade) const { return data_[_clades_key].contains(clade); }
+
+        bool has_any_clade_of(const std::vector<std::string>& clades) const
         {
-            return data_[_clades_key].contains(clade);
+            return ranges::any_of(clades, [this](const auto& clade) { return has_clade(clade); });
         }
 
         // ----------------------------------------------------------------------
 
-        void vaccine(std::string_view vac)
-            {
-                data_[_vaccine_key] = vac;
-            }
+        void vaccine(std::string_view vac) { data_[_vaccine_key] = vac; }
 
-        std::string_view vaccine() const
-            {
-                return data_[_vaccine_key].as_string_or_empty();
-            }
+        std::string_view vaccine() const { return data_[_vaccine_key].as_string_or_empty(); }
 
         // ----------------------------------------------------------------------
 
-        template <typename Val> void set(std::string_view key, Val value)
-            {
-                data_[key] = value;
-            }
+        template <typename Val> void set(std::string_view key, Val value) { data_[key] = value; }
 
-        const auto& get(std::string_view key) const
-            {
-                return data_[key];
-            }
+        const auto& get(std::string_view key) const { return data_[key]; }
 
       private:
         DynamicCollection data_{};
