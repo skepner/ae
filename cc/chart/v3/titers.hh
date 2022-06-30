@@ -291,6 +291,11 @@ namespace ae::chart::v3
 
         Titer titer(antigen_index aAntigenNo, serum_index aSerumNo) const;
 
+        void set_titer(antigen_index aAntigenNo, serum_index aSerumNo, const Titer& titer)
+        {
+            std::visit([this, aAntigenNo, aSerumNo, &titer](auto& titers) { set_titer(titers, aAntigenNo, aSerumNo, titer); }, titers_);
+        }
+
         size_t number_of_non_dont_cares() const;
         size_t titrations_for_antigen(antigen_index antigen_no) const;
         size_t titrations_for_serum(serum_index serum_no) const;

@@ -483,6 +483,8 @@ void ae::py::chart_v3(pybind11::module_& mdl)
         .def(
             "titer", [](const Titers& titers, size_t ag_no, size_t sr_no) { return titers.titer(antigen_index{ag_no}, serum_index{sr_no}); }, "antigen_no"_a, "serum_no"_a) //
         .def(
+            "set_titer", [](Titers& titers, size_t ag_no, size_t sr_no, std::string_view new_titer) { return titers.set_titer(antigen_index{ag_no}, serum_index{sr_no}, Titer{new_titer}); }, "antigen_no"_a, "serum_no"_a, "titer"_a) //
+        .def(
             "titer_of_layer", [](const Titers& titers, size_t layer_no, size_t ag_no, size_t sr_no) { return titers.titer_of_layer(layer_index{layer_no}, antigen_index{ag_no}, serum_index{sr_no}); },
             "layer_no"_a, "antigen_no"_a, "serum_no"_a)                                                                            //
         .def("set_from_layers_report", [](const Titers& titers) { return new TiterMergeReport{titers.set_from_layers_report()}; }) //
