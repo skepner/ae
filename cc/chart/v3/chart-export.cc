@@ -157,28 +157,33 @@ const auto put_semantic = [](fmt::memory_buffer& out, const ae::chart::v3::Seman
 
 // ----------------------------------------------------------------------
 
-static inline bool export_shown(fmt::memory_buffer& out, std::optional<bool> shown, bool comma)
+static inline bool export_shown_always(fmt::memory_buffer& out, bool shown, bool hidden_as_minus, bool comma)
 {
-    if (shown.has_value()) {
+    if (hidden_as_minus) {
         comma = put_comma_key(out, comma, "-");
-        fmt::format_to(std::back_inserter(out), "{}", !*shown);
+        fmt::format_to(std::back_inserter(out), "{}", !shown);
+    }
+    else {
+        comma = put_comma_key(out, comma, "+");
+        fmt::format_to(std::back_inserter(out), "{}", shown);
     }
     return comma;
 }
 
+static inline bool export_shown(fmt::memory_buffer& out, std::optional<bool> shown, bool hidden_as_minus, bool comma)
+{
+    if (shown.has_value())
+        return export_shown_always(out, *shown, hidden_as_minus, comma);
+    else
+        return comma;
+}
+
 static inline bool export_shown(fmt::memory_buffer& out, bool shown, bool hidden_as_minus, bool comma)
 {
-    if (!shown) {
-        if (hidden_as_minus) {
-            comma = put_comma_key(out, comma, "-");
-            fmt::format_to(std::back_inserter(out), "true");
-        }
-        else {
-            comma = put_comma_key(out, comma, "+");
-            fmt::format_to(std::back_inserter(out), "false");
-        }
-    }
-    return comma;
+    if (!shown)
+        return export_shown_always(out, shown, hidden_as_minus, comma);
+    else
+        return comma;
 }
 
 static inline bool export_offset(fmt::memory_buffer& out, const ae::draw::v2::offset_t& offset, const ae::draw::v2::offset_t& dflt, bool comma)
@@ -230,8 +235,7 @@ static inline bool export_text_and_offset(fmt::memory_buffer& out, const ae::dra
 
 static inline bool export_point_style(fmt::memory_buffer& out, const ae::chart::v3::PointStyle& style, bool hidden_as_minus, bool comma)
 {
-    if (style.shown().has_value())
-        comma = export_shown(out, *style.shown(), hidden_as_minus, comma);
+    comma = export_shown(out, style.shown(), hidden_as_minus, comma);
     comma = put_str(out, style.fill(), not_empty, "F", comma);
     comma = put_str(out, style.outline(), not_empty, "O", comma);
     comma = put_optional(out, style.outline_width(), "o", comma);
@@ -299,7 +303,7 @@ static inline bool export_semantic_plot_title(fmt::memory_buffer& out, const ae:
     if (title != dflt) {
         comma = put_comma(out, comma);
         fmt::format_to(std::back_inserter(out), "\n      \"T\":{{");
-        auto comma_L3 = export_shown(out, title.shown, false);
+        auto comma_L3 = export_shown(out, title.shown, true, false);
         comma_L3 = export_semantic_box(out, title.box, comma_L3);
         comma_L3 = export_semantic_text(out, title.text, "T", comma_L3);
         fmt::format_to(std::back_inserter(out), "}}");
@@ -314,7 +318,7 @@ static inline bool export_semantic_plot_spec_legend(fmt::memory_buffer& out, con
     if (const ae::chart::v3::semantic::Legend dflt{}; legend != dflt) {
         comma = put_comma(out, comma);
         fmt::format_to(std::back_inserter(out), "\n      \"L\": {{");
-        auto comma_L2 = export_shown(out, legend.shown, false);
+        auto comma_L2 = export_shown(out, legend.shown, true, false);
         comma_L2 = put_optional(out, legend.add_counter, "C", comma_L2);
         comma_L2 = put_optional(out, legend.point_size, "S", comma_L2);
         comma_L2 = put_optional(out, legend.show_rows_with_zero_count, "z", comma_L2);

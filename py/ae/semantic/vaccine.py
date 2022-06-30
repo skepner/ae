@@ -182,7 +182,7 @@ def style(chart: ae_backend.chart_v3.Chart, style_name: str, data: list[dict[str
     style.add_modifier(selector={"V": True}, only="antigens", raise_=True, **common_modifier)
 
     for en in data:
-        style.add_modifier(selector={"!i": en["no"]}, only="antigens", **extract_point_modifier_data(source=en, data_key_mapping=data_key_mapping, label_modifier=label_modifier))
+        style.add_modifier(selector={"!i": en["no"]}, only="antigens", show=True, **extract_point_modifier_data(source=en, data_key_mapping=data_key_mapping, label_modifier=label_modifier))
     return {style_name}
 
 # ----------------------------------------------------------------------

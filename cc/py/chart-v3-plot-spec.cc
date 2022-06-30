@@ -162,8 +162,9 @@ namespace ae::py
         for (const auto [keyword_handle, value] : kwargs) {
             if (!value.is_none()) {
                 const auto keyword = keyword_handle.cast<std::string_view>();
-                if (keyword == "parent")
+                if (keyword == "parent") {
                     modifier.parent.assign(value.cast<std::string_view>());
+                }
                 else if (keyword == "selector") {
                     auto& target = modifier.selector.as_object();
                     for (const auto [selector_key, selector_value] : value.cast<pybind11::dict>()) {
@@ -172,6 +173,8 @@ namespace ae::py
                 }
                 else if (keyword == "hide")
                     modifier.point_style.shown(!value.cast<bool>());
+                else if (keyword == "show")
+                    modifier.point_style.shown(value.cast<bool>());
                 else if (keyword == "fill")
                     modifier.point_style.fill(value.cast<std::string_view>());
                 else if (keyword == "outline")
