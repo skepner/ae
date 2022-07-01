@@ -1107,9 +1107,8 @@ ae::xlsx::v1::ExtractorCrick::ExtractorCrick(std::shared_ptr<Sheet> a_sheet)
 
 void ae::xlsx::v1::ExtractorCrick::find_antigen_annotations_column(warn_if_not_found winf)
 {
-    if (const auto matches = sheet().grep(re_Crick_LabelOther, {nrow_t{3}, ncol_t{2}}, {nrow_t{20}, ncol_t{5}}); matches.size() == 1) {
-        if (const auto matches2 = sheet().grep(re_Crick_LabelInformation, {nrow_t{matches[0].row + nrow_t{1}}, matches[0].col}, {nrow_t{matches[0].row + nrow_t{1}}, matches[0].col}); matches2.size() == 1)
-            other_information_col_ = matches[0].col;
+    if (const auto matches = sheet().grepv(re_Crick_LabelOther, re_Crick_LabelInformation, {nrow_t{3}, ncol_t{2}}, {nrow_t{20}, ncol_t{5}}); matches.size() == 1) {
+        other_information_col_ = matches[0].col;
     }
 
     if (other_information_col_.has_value())

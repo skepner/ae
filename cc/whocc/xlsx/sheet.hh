@@ -139,7 +139,7 @@ namespace ae::xlsx::inline v1
         std::vector<cell_match_t> grep(const std::regex& rex, const cell_addr_t& min, const cell_addr_t& max) const;
 
         // finds sets of two cells, the second one is right below the the first one
-        // returns references to the second cells
+        // returns references to the second cell
         std::vector<cell_match_t> grepv(const std::regex& rex1, const std::regex& rex2, const cell_addr_t& min, const cell_addr_t& max) const;
     };
 
