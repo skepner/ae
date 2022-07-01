@@ -2,7 +2,8 @@
 
 import sys, os, subprocess, pprint, argparse, traceback
 from pathlib import Path
-import ae_backend
+import ae_backend.chart_v3, ae_backend.whocc
+import ae.chart
 import ae.whocc.torg, ae.whocc.ace, ae.whocc.table_dir
 import ae.utils.load_module, ae.utils.open_file, ae.utils.json
 
@@ -55,13 +56,9 @@ def torg_to_ace(torg_filename: Path, ace_filename: Path, prn_read: bool = False,
     with ae.utils.open_file.for_writing(ace_filename) as output:
         output.write(ae.utils.json.dumps(ace_data, indent=2).encode("utf-8"))
 
-    chart = ae_backend.chart_v2.Chart(ace_filename)
-    print(f"\n{SEP}\n{chart.make_name()}\n{chart.table_as_text()}", end="")
-    if check_by_seqdb:
-        # chart.populate_from_seqdb()
-        sequenced_antigens = chart.select_all_antigens().filter_sequenced() # auto-populated
-        sequenced_sera = chart.select_all_sera().filter_sequenced() # auto-populated
-        print(f"Sequenced:\n  Antigens: {len(sequenced_antigens):3d} of {chart.number_of_antigens():3d}\n  Sera:     {len(sequenced_sera):3d} of {chart.number_of_sera():3d}")
+    chart = ae_backend.chart_v3.Chart(ace_filename)
+    chart.populate_from_seqdb()
+    print(f"\n{SEP}\n{ae.chart.text(chart)}")
     print(f"{SEP}\n")
 
     if check_by_hidb:
