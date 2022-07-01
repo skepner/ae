@@ -1,6 +1,6 @@
 import re
 
-import ae_backend
+import ae_backend.chart_v3
 
 # ======================================================================
 

@@ -5,7 +5,7 @@ import math
 class Formatter:
 
     # do not call it format because str has format method
-    def fmt(self, field, width: int):
+    def fmt(self, row_no: int, field_no: int, field, width: int):
         if hasattr(field, "fmt"):
             return field.fmt(width)
         elif isinstance(field, int):
@@ -25,17 +25,17 @@ class ValueFormatter:
 
 class Centered (ValueFormatter):
 
-    def fmt(self, width: int) -> str:
+    def fmt(self, width: int, **args) -> str:
         return f"{str(self.value):^{width}s}"
 
 class RightAligned (ValueFormatter):
 
-    def fmt(self, width: int) -> str:
+    def fmt(self, width: int, **args) -> str:
         return f"{str(self.value):>{width}s}"
 
 # ----------------------------------------------------------------------
 
-def format_table(table: list, field_sep: str =" ", formatter: Formatter = None):
+def format_table(table: list, field_sep: str =" ", formatter: Formatter = None) -> str:
     """formatter is an instance of class derived from Formatter, it may override fmt method.
     """
     if not table:
@@ -47,7 +47,7 @@ def format_table(table: list, field_sep: str =" ", formatter: Formatter = None):
 
 # ----------------------------------------------------------------------
 
-def format_list_of_lists(table: list, field_sep: str =" ", formatter: Formatter = None):
+def format_list_of_lists(table: list, field_sep: str =" ", formatter: Formatter = None) -> str:
 
     def calculate_width(field):
         if hasattr(field, "width"):
@@ -63,6 +63,6 @@ def format_list_of_lists(table: list, field_sep: str =" ", formatter: Formatter 
     for row in table:
         for col_no, col in enumerate(row):
             widths[col_no] = max(widths[col_no], calculate_width(col))
-    return "\n".join(field_sep.join(formatter.fmt(field, widths[field_no]) for field_no, field in enumerate(row)) for row in table)
+    return "\n".join(field_sep.join(formatter.fmt(row_no=row_no, field_no=field_no, field=field, width=widths[field_no]) for field_no, field in enumerate(row)) for row_no, row in enumerate(table))
 
 # ----------------------------------------------------------------------
