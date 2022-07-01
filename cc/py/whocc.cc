@@ -57,7 +57,8 @@ namespace ae::xlsx::inline v1
             "name"_a = fields.name,
             "date"_a = fields.date,
             "passage"_a = fields.passage,
-            "lab_id"_a = fields.lab_id
+            "lab_id"_a = fields.lab_id,
+            "annotations"_a = fields.annotations
         );
     }
 

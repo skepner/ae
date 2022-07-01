@@ -21,6 +21,7 @@ namespace ae::xlsx::inline v1
         std::string date{};
         std::string passage{};
         std::string lab_id{};
+        std::string annotations{}; // other information column in Crick
     };
 
     struct serum_fields_t
@@ -102,6 +103,7 @@ namespace ae::xlsx::inline v1
         virtual void find_antigen_date_column(warn_if_not_found winf);
         virtual void find_antigen_passage_column(warn_if_not_found winf);
         virtual void find_antigen_lab_id_column(warn_if_not_found winf);
+        virtual void find_antigen_annotations_column(warn_if_not_found) {}
         virtual void find_serum_rows(warn_if_not_found) {}
         virtual std::optional<nrow_t> find_serum_row(const std::regex& re, std::string_view row_name, warn_if_not_found winf, std::optional<nrow_t> ignore = std::nullopt) const;
         virtual void exclude_control_sera(warn_if_not_found winf) = 0;
@@ -238,6 +240,7 @@ namespace ae::xlsx::inline v1
       public:
         ExtractorCrick(std::shared_ptr<Sheet> a_sheet);
 
+        antigen_fields_t antigen(size_t ag_no) const override;
         serum_fields_t serum(size_t sr_no) const override;
         std::string titer(size_t ag_no, size_t sr_no) const override;
 
@@ -249,6 +252,7 @@ namespace ae::xlsx::inline v1
         const char* extractor_name() const override { return "[Crick]"; }
 
       protected:
+        void find_antigen_annotations_column(warn_if_not_found winf) override;
         void find_serum_rows(warn_if_not_found winf) override;
         void find_serum_name_rows(warn_if_not_found winf);
         void find_serum_less_than_substitutions(warn_if_not_found winf);
@@ -257,6 +261,7 @@ namespace ae::xlsx::inline v1
         const std::string& get_footnote(const std::string& key, const std::string& if_not_found) const;
 
         std::optional<nrow_t> serum_name_1_row_{}, serum_name_2_row_{};
+        std::optional<ncol_t> other_information_col_{};
         std::vector<std::pair<std::string, std::string>> footnote_index_subst_{};
         std::vector<std::string> serum_less_than_substitutions_{};
     };

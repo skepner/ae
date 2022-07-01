@@ -1,6 +1,6 @@
 import sys, io, re, math, pprint, datetime
 from pathlib import Path
-import ae_backend
+import ae_backend.whocc
 from ..utils import open_file, load_module
 from . import data_fix, table_dir
 
@@ -94,7 +94,7 @@ def table(extractor: ae_backend.whocc.xlsx.Extractor, data_fixer: data_fix.DataF
     for ag_no in range(extractor.number_of_antigens()):
         ag_row = sr_row.index("base") + ag_no
         antigen = data_fixer.antigen(extractor.antigen(ag_no), ag_no)
-        data[ag_row][ag_col.index("name")] = antigen["name"]
+        data[ag_row][ag_col.index("name")] = " ".join([antigen["name"], antigen["annotations"]])
         data[ag_row][ag_col.index("date")] = antigen["date"]
         data[ag_row][ag_col.index("passage")] = antigen["passage"]
         data[ag_row][ag_col.index("lab_id")] = antigen["lab_id"]

@@ -54,6 +54,8 @@ static const std::regex re_AC21_batch_label{R"(^\s*BATCH\s*#?\s*$)", regex_icase
 static const std::regex re_AC21_comment_label{R"(^\s*COMMENT\s*$)", regex_icase};
 static const std::regex re_AC21_empty{R"(^\s*$)", regex_icase};
 
+static const std::regex re_Crick_LabelOther{R"(^\s*other\s*$)", regex_icase};
+static const std::regex re_Crick_LabelInformation{R"(^\s*information\s*$)", regex_icase};
 static const std::regex re_CRICK_serum_name_1{"^([AB]/[A-Z '_-]+|NYMC\\s+X-[0-9]+[A-Z]*)$", regex_icase};
 static const std::regex re_CRICK_serum_name_2{"^[A-Z0-9-/]+$", regex_icase};
 #define pattern_CRICK_serum_id "F[0-9]+/[0-2][0-9]"
@@ -229,6 +231,7 @@ void ae::xlsx::v1::Extractor::preprocess(warn_if_not_found winf)
     find_antigen_date_column(winf);
     find_antigen_passage_column(winf);
     find_antigen_lab_id_column(winf);
+    find_antigen_annotations_column(winf);
     find_serum_rows(winf);
     exclude_control_sera(winf); // remove human, WHO, pooled sera
 
@@ -1102,6 +1105,22 @@ ae::xlsx::v1::ExtractorCrick::ExtractorCrick(std::shared_ptr<Sheet> a_sheet)
 
 // ----------------------------------------------------------------------
 
+void ae::xlsx::v1::ExtractorCrick::find_antigen_annotations_column(warn_if_not_found winf)
+{
+    if (const auto matches = sheet().grep(re_Crick_LabelOther, {nrow_t{3}, ncol_t{2}}, {nrow_t{20}, ncol_t{5}}); matches.size() == 1) {
+        if (const auto matches2 = sheet().grep(re_Crick_LabelInformation, {nrow_t{matches[0].row + nrow_t{1}}, matches[0].col}, {nrow_t{matches[0].row + nrow_t{1}}, matches[0].col}); matches2.size() == 1)
+            other_information_col_ = matches[0].col;
+    }
+
+    if (other_information_col_.has_value())
+        AD_INFO("[{}]: Antigen Other Information column: {}", lab(), *other_information_col_);
+    else
+        AD_WARNING(winf == warn_if_not_found::yes, "[{}]: Antigen Other Information column not found", lab());
+
+} // ae::xlsx::v1::ExtractorCrick::find_antigen_annotations_column
+
+// ----------------------------------------------------------------------
+
 void ae::xlsx::v1::ExtractorCrick::find_serum_rows(warn_if_not_found winf)
 {
     find_serum_name_rows(winf);
@@ -1110,7 +1129,6 @@ void ae::xlsx::v1::ExtractorCrick::find_serum_rows(warn_if_not_found winf)
     find_serum_less_than_substitutions(winf);
 
 } // ae::xlsx::v1::ExtractorCrick::find_serum_rows
-
 
 // ======================================================================
 
@@ -1205,6 +1223,18 @@ void ae::xlsx::v1::ExtractorCrick::find_serum_less_than_substitutions(warn_if_no
     }
 
 } // ae::xlsx::v1::ExtractorCrick::find_serum_less_than_substitutions
+
+// ----------------------------------------------------------------------
+
+ae::xlsx::v1::antigen_fields_t ae::xlsx::v1::ExtractorCrick::antigen(size_t ag_no) const
+{
+    auto fields = ExtractorWithSerumRowsAbove::antigen(ag_no);
+    if (other_information_col_.has_value()) {
+        fields.annotations = fmt::format("{}", sheet().cell(antigen_rows().at(ag_no), *other_information_col_));
+    }
+    return fields;
+
+} // ae::xlsx::v1::ExtractorCrick::antigen
 
 // ----------------------------------------------------------------------
 
@@ -1406,7 +1436,6 @@ void ae::xlsx::v1::ExtractorNIID::find_antigen_lab_id_column(warn_if_not_found w
         AD_INFO("[{}]: Antigen lab_id column: {}", lab(), *antigen_lab_id_column_);
     else
         AD_WARNING(winf == warn_if_not_found::yes, "[{}]: Antigen lab_id column not found", lab());
-
 
 } // ae::xlsx::v1::ExtractorNIID::find_antigen_lab_id_column
 
