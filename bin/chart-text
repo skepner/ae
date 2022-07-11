@@ -1,0 +1,32 @@
+#! /usr/bin/env python3
+import os, sys, re, json, pprint, argparse, traceback
+from pathlib import Path
+import ae_backend
+from ae.utils.format_table import format_table
+import ae.chart
+
+# ----------------------------------------------------------------------
+
+def main(args: argparse.Namespace):
+    for chart_file in args.chart:
+        if chart_file != args.chart[0]:
+            print("\n")
+        chart = ae_backend.chart_v3.Chart(chart_file)
+        if args.populate_from_seqdb:
+            chart.populate_from_seqdb()
+        print(ae.chart.text(chart))
+
+# ----------------------------------------------------------------------
+
+try:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("chart", nargs="+", type=Path)
+    parser.add_argument("-s", default=False, dest="populate_from_seqdb", action="store_true")
+    args = parser.parse_args()
+    exit_code = main(args) or 0
+except Exception as err:
+    print(f"> {err}\n{traceback.format_exc()}", file=sys.stderr)
+    exit_code = 1
+exit(exit_code)
+
+# ======================================================================
