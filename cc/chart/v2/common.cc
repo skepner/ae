@@ -11,7 +11,7 @@ using namespace ae::chart::v2;
 enum class score_t : size_t { no_match = 0, passage_serum_id_ignored = 1, egg = 2, without_date = 3, full_match = 4 };
 
 template <> struct fmt::formatter<score_t> : fmt::formatter<ae::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(const score_t& value, FormatCtx& ctx)
+    template <typename FormatCtx> auto format(const score_t& value, FormatCtx& ctx) const
     {
         switch (value) {
             case score_t::no_match:

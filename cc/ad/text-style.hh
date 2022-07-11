@@ -122,7 +122,7 @@ namespace acmacs
 // ----------------------------------------------------------------------
 
 template <> struct fmt::formatter<acmacs::FontSlant> : fmt::formatter<ae::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(const acmacs::FontSlant& slant, FormatCtx& ctx)
+    template <typename FormatCtx> auto format(const acmacs::FontSlant& slant, FormatCtx& ctx) const
     {
         switch (slant.get()) {
             case acmacs::FontSlant::Normal:
@@ -135,7 +135,7 @@ template <> struct fmt::formatter<acmacs::FontSlant> : fmt::formatter<ae::fmt_he
 };
 
 template <> struct fmt::formatter<acmacs::FontWeight> : fmt::formatter<ae::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(const acmacs::FontWeight& weight, FormatCtx& ctx)
+    template <typename FormatCtx> auto format(const acmacs::FontWeight& weight, FormatCtx& ctx) const
     {
         switch (weight.get()) {
             case acmacs::FontWeight::Normal:
@@ -148,13 +148,13 @@ template <> struct fmt::formatter<acmacs::FontWeight> : fmt::formatter<ae::fmt_h
 };
 
 template <> struct fmt::formatter<acmacs::TextStyle> : fmt::formatter<ae::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(const acmacs::TextStyle& style, FormatCtx& ctx) {
+    template <typename FormatCtx> auto format(const acmacs::TextStyle& style, FormatCtx& ctx) const {
         return format_to(ctx.out(), R"({{"slant": {}, "weight": {}, "family": {}}})", style.slant, style.weight, style.font_family);
     }
 };
 
 template <> struct fmt::formatter<acmacs::LabelStyle> : fmt::formatter<ae::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(const acmacs::LabelStyle& style, FormatCtx& ctx)
+    template <typename FormatCtx> auto format(const acmacs::LabelStyle& style, FormatCtx& ctx) const
     {
         return format_to(ctx.out(), R"({{"shown": {}, "offset": {}, "size": {}, "color": {}, "rotation": {}, "interline": {:.2f}, "style": {}}})", style.shown, style.offset, style.size, style.color,
                          style.rotation, style.interline, style.style);

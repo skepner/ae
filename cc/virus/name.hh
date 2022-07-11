@@ -41,7 +41,7 @@ namespace ae::virus::inline v2
 
 template <> struct fmt::formatter<ae::virus::Name> : public fmt::formatter<std::string_view>
 {
-    template <typename FormatContext> auto format(const ae::virus::Name& ts, FormatContext& ctx) { return fmt::formatter<std::string_view>::format(static_cast<std::string_view>(ts), ctx); }
+    template <typename FormatContext> auto format(const ae::virus::Name& ts, FormatContext& ctx) const { return fmt::formatter<std::string_view>::format(static_cast<std::string_view>(ts), ctx); }
 };
 
 // ----------------------------------------------------------------------

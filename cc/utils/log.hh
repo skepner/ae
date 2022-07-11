@@ -131,7 +131,7 @@ namespace ae
 // ----------------------------------------------------------------------
 
 template <> struct fmt::formatter<ae::log::source_location> : fmt::formatter<ae::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(const ae::log::source_location& sl, FormatCtx& ctx)
+    template <typename FormatCtx> auto format(const ae::log::source_location& sl, FormatCtx& ctx) const
     {
         if (sl.file)
             return format_to(ctx.out(), " @@ {}:{}", sl.file, sl.line);

@@ -129,7 +129,7 @@ template <> struct fmt::formatter<sequence_aligned_t>
         return it;
     }
 
-    template <typename Seq, typename FormatContext> auto format(const Seq& seq, FormatContext& ctx)
+    template <typename Seq, typename FormatContext> auto format(const Seq& seq, FormatContext& ctx) const
     {
         if (first_ == 0)
             return format_to(ctx.out(), "{}", *seq);

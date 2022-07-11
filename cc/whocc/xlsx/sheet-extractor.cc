@@ -270,7 +270,7 @@ template <ae::xlsx::NRowCol nrowcol> inline std::string format(const number_rang
 
 // template <typename nrowcol> requires NRowCol<nrowcol> struct fmt::formatter<number_ranges<nrowcol>> : fmt::formatter<acmacs::fmt_helper::default_formatter>
 // {
-//     template <typename FormatCtx> auto format(const number_ranges<nrowcol>& rngs, FormatCtx& ctx)
+//     template <typename FormatCtx> auto format(const number_ranges<nrowcol>& rngs, FormatCtx& ctx) const
 //     {
 //         std::string prefix;
 //         for (const auto& en : rngs) {

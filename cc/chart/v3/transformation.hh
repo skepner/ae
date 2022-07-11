@@ -226,7 +226,7 @@ namespace ae::chart::v3
 
 template <> struct fmt::formatter<ae::chart::v3::Transformation> : public fmt::formatter<ae::fmt_helper::default_formatter>
 {
-    template <typename FormatContext> auto format(const ae::chart::v3::Transformation& transformation, FormatContext& ctx)
+    template <typename FormatContext> auto format(const ae::chart::v3::Transformation& transformation, FormatContext& ctx) const
     {
         switch (*transformation.number_of_dimensions) {
             case 2:

@@ -173,7 +173,7 @@ namespace ae::virus
 
 template <> struct fmt::formatter<ae::virus::Passage> : public fmt::formatter<std::string>
 {
-    template <typename FormatContext> auto format(const ae::virus::Passage& ts, FormatContext& ctx) { return fmt::formatter<std::string>::format(static_cast<std::string>(ts), ctx); }
+    template <typename FormatContext> auto format(const ae::virus::Passage& ts, FormatContext& ctx) const { return fmt::formatter<std::string>::format(static_cast<std::string>(ts), ctx); }
 };
 
 // ======================================================================

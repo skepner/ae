@@ -80,7 +80,7 @@ namespace ae::chart::v2
 
 template <> struct fmt::formatter<ae::chart::v2::optimization_method> : public fmt::formatter<ae::fmt_helper::default_formatter>
 {
-    template <typename FormatContext> auto format(const ae::chart::v2::optimization_method& method, FormatContext& ctx)
+    template <typename FormatContext> auto format(const ae::chart::v2::optimization_method& method, FormatContext& ctx) const
     {
         using namespace ae::chart::v2;
         switch (method) {
@@ -99,7 +99,7 @@ template <> struct fmt::formatter<ae::chart::v2::optimization_method> : public f
 
 template <> struct fmt::formatter<ae::chart::v2::optimization_precision> : public fmt::formatter<ae::fmt_helper::default_formatter>
 {
-    template <typename FormatContext> auto format(const ae::chart::v2::optimization_precision& precision, FormatContext& ctx)
+    template <typename FormatContext> auto format(const ae::chart::v2::optimization_precision& precision, FormatContext& ctx) const
     {
         using namespace ae::chart::v2;
         switch (precision) {
@@ -116,7 +116,7 @@ template <> struct fmt::formatter<ae::chart::v2::optimization_precision> : publi
 
 template <> struct fmt::formatter<ae::chart::v2::multiply_antigen_titer_until_column_adjust> : public fmt::formatter<ae::fmt_helper::default_formatter>
 {
-    template <typename FormatContext> auto format(const ae::chart::v2::multiply_antigen_titer_until_column_adjust& mul, FormatContext& ctx)
+    template <typename FormatContext> auto format(const ae::chart::v2::multiply_antigen_titer_until_column_adjust& mul, FormatContext& ctx) const
     {
         using namespace ae::chart::v2;
         switch (mul) {
@@ -131,7 +131,7 @@ template <> struct fmt::formatter<ae::chart::v2::multiply_antigen_titer_until_co
 
 template <> struct fmt::formatter<ae::chart::v2::dodgy_titer_is_regular> : public fmt::formatter<ae::fmt_helper::default_formatter>
 {
-    template <typename FormatContext> auto format(const ae::chart::v2::dodgy_titer_is_regular& dod, FormatContext& ctx)
+    template <typename FormatContext> auto format(const ae::chart::v2::dodgy_titer_is_regular& dod, FormatContext& ctx) const
     {
         using namespace ae::chart::v2;
         switch (dod) {

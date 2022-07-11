@@ -115,7 +115,7 @@ namespace ae::chart::v2
 // ----------------------------------------------------------------------
 
 template <> struct fmt::formatter<ae::chart::v2::optimization_status> : fmt::formatter<ae::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(const ae::chart::v2::optimization_status& status, FormatCtx& ctx)
+    template <typename FormatCtx> auto format(const ae::chart::v2::optimization_status& status, FormatCtx& ctx) const
     {
         return format_to(ctx.out(), "{} {:.12f} <- {:.12f}\n time: {}\n iter: {}\n nstress: {}", status.method, status.final_stress, status.initial_stress, status.time, status.number_of_iterations, status.number_of_stress_calculations);
     }

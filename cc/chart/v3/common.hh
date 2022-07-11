@@ -151,7 +151,7 @@ namespace ae::chart::v3
 
 // template <> struct fmt::formatter<ae::chart::v3::CommonAntigensSera::common_t> : public fmt::formatter<acmacs::fmt_helper::default_formatter>
 // {
-//     template <typename FormatContext> auto format(const ae::chart::v3::CommonAntigensSera::common_t& common, FormatContext& ctx)
+//     template <typename FormatContext> auto format(const ae::chart::v3::CommonAntigensSera::common_t& common, FormatContext& ctx) const
 //     {
 //         return format_to(ctx.out(), "{{{},{}}}", common.primary, common.secondary);
 //     }

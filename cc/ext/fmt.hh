@@ -14,6 +14,9 @@
 #pragma GCC diagnostic ignored "-Wswitch-enum"
 #pragma GCC diagnostic ignored "-Wundefined-func-template" // fmt/chrono.h:1182
 
+// 9.0.0 clang 14
+#pragma GCC diagnostic ignored "-Wfloat-equal" // fmt/format.h:2484
+
 #elif defined(__GNUG__)
 
 #pragma GCC diagnostic ignored "-Wdeprecated" // fmt/format.h: implicit capture of ‘this’ via ‘[=]’ is deprecated in C++20
@@ -82,7 +85,7 @@ template <> struct fmt::formatter<ae::fmt_helper::float_formatter>
 // ----------------------------------------------------------------------
 
 // template <> struct fmt::formatter<###> : fmt::formatter<ae::fmt_helper::default_formatter> {
-//     template <typename FormatCtx> constexpr auto format(const ###& value, FormatCtx& ctx)
+//     template <typename FormatCtx> constexpr auto format(const ###& value, FormatCtx& ctx) const
 //     {
 //         format_to(ctx.out(), "{} {}", );
 //         return format_to(ctx.out(), "{} {}", );
@@ -125,7 +128,7 @@ namespace ae
 
 template <> struct fmt::formatter<std::optional<std::string>> : fmt::formatter<ae::fmt_helper::default_formatter>
 {
-    template <typename FormatCtx> constexpr auto format(const std::optional<std::string>& str, FormatCtx& ctx)
+    template <typename FormatCtx> constexpr auto format(const std::optional<std::string>& str, FormatCtx& ctx) const
     {
         if (str.has_value())
             return format_to(ctx.out(), "\"{}\"", *str);

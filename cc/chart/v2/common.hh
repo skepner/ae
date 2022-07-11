@@ -189,7 +189,7 @@ namespace ae::chart::v2
 
 template <> struct fmt::formatter<ae::chart::v2::CommonAntigensSera::common_t> : public fmt::formatter<ae::fmt_helper::default_formatter>
 {
-    template <typename FormatContext> auto format(const ae::chart::v2::CommonAntigensSera::common_t& common, FormatContext& ctx)
+    template <typename FormatContext> auto format(const ae::chart::v2::CommonAntigensSera::common_t& common, FormatContext& ctx) const
     {
         return format_to(ctx.out(), "{{{},{}}}", common.primary, common.secondary);
     }

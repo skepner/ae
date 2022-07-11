@@ -131,17 +131,17 @@ namespace ae::sequences
 // ----------------------------------------------------------------------
 
 template <> struct fmt::formatter<ae::sequences::pos1_t> : fmt::formatter<ae::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(const ae::sequences::pos1_t& pos1, FormatCtx& ctx) { return format_to(ctx.out(), "{}", pos1.get()); }
+    template <typename FormatCtx> auto format(const ae::sequences::pos1_t& pos1, FormatCtx& ctx) const { return format_to(ctx.out(), "{}", pos1.get()); }
 };
 
 template <> struct fmt::formatter<ae::sequences::pos0_t> : fmt::formatter<ae::fmt_helper::default_formatter>
 {
-    template <typename FormatCtx> auto format(const ae::sequences::pos0_t& pos0, FormatCtx& ctx) { return format_to(ctx.out(), "{}", ae::sequences::pos1_t{pos0}); }
+    template <typename FormatCtx> auto format(const ae::sequences::pos0_t& pos0, FormatCtx& ctx) const { return format_to(ctx.out(), "{}", ae::sequences::pos1_t{pos0}); }
 };
 
 template <> struct fmt::formatter<ae::sequences::aa_nuc_at_pos1_eq_t> : fmt::formatter<ae::fmt_helper::default_formatter>
 {
-    template <typename FormatCtx> auto format(const ae::sequences::aa_nuc_at_pos1_eq_t& pos1_eq, FormatCtx& ctx)
+    template <typename FormatCtx> auto format(const ae::sequences::aa_nuc_at_pos1_eq_t& pos1_eq, FormatCtx& ctx) const
     {
         return format_to(ctx.out(), "{}{}{}", std::get<bool>(pos1_eq) ? "" : "!", std::get<ae::sequences::pos1_t>(pos1_eq), std::get<char>(pos1_eq));
     }

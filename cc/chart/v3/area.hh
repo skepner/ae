@@ -90,7 +90,7 @@ namespace ae::chart::v3
 
 template <> struct fmt::formatter<ae::chart::v3::Area> : public fmt::formatter<ae::fmt_helper::float_formatter>
 {
-    template <typename FormatContext> auto format(const ae::chart::v3::Area& area, FormatContext& ctx)
+    template <typename FormatContext> auto format(const ae::chart::v3::Area& area, FormatContext& ctx) const
     {
         return format_to(ctx.out(), "Area{{area: {}, min: {}, max: {}}}", area.area(), area.min, area.max);
     }

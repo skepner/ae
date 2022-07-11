@@ -149,7 +149,7 @@ namespace ae::xlsx::inline v1
 
 template <> struct fmt::formatter<ae::xlsx::cell_t> : fmt::formatter<ae::fmt_helper::default_formatter>
 {
-    template <typename FormatCtx> auto format(const ae::xlsx::cell_t& cell, FormatCtx& ctx)
+    template <typename FormatCtx> auto format(const ae::xlsx::cell_t& cell, FormatCtx& ctx) const
     {
         std::visit(
             [&ctx]<typename Content>(const Content& arg) {
@@ -173,7 +173,7 @@ template <> struct fmt::formatter<ae::xlsx::cell_t> : fmt::formatter<ae::fmt_hel
 
 template <> struct fmt::formatter<ae::xlsx::nrow_t> : fmt::formatter<ae::fmt_helper::default_formatter>
 {
-    template <typename FormatCtx> auto format(ae::xlsx::nrow_t row, FormatCtx& ctx)
+    template <typename FormatCtx> auto format(ae::xlsx::nrow_t row, FormatCtx& ctx) const
     {
         return format_to(ctx.out(), "{}", *row + 1);
     }
@@ -181,7 +181,7 @@ template <> struct fmt::formatter<ae::xlsx::nrow_t> : fmt::formatter<ae::fmt_hel
 
 template <> struct fmt::formatter<ae::xlsx::ncol_t> : fmt::formatter<ae::fmt_helper::default_formatter>
 {
-    template <typename FormatCtx> auto format(ae::xlsx::ncol_t col, FormatCtx& ctx)
+    template <typename FormatCtx> auto format(ae::xlsx::ncol_t col, FormatCtx& ctx) const
     {
         auto coll = *col;
         std::string nn;
@@ -198,17 +198,17 @@ template <> struct fmt::formatter<ae::xlsx::ncol_t> : fmt::formatter<ae::fmt_hel
 
 template <> struct fmt::formatter<ae::xlsx::cell_addr_t> : fmt::formatter<ae::fmt_helper::default_formatter>
 {
-    template <typename FormatCtx> auto format(const ae::xlsx::cell_addr_t& addr, FormatCtx& ctx) { return format_to(ctx.out(), "{}{}", addr.col, addr.row); }
+    template <typename FormatCtx> auto format(const ae::xlsx::cell_addr_t& addr, FormatCtx& ctx) const { return format_to(ctx.out(), "{}{}", addr.col, addr.row); }
 };
 
 template <> struct fmt::formatter<ae::xlsx::cell_match_t> : fmt::formatter<ae::fmt_helper::default_formatter>
 {
-    template <typename FormatCtx> auto format(const ae::xlsx::cell_match_t& match, FormatCtx& ctx) { return format_to(ctx.out(), "{}{}:{}", match.row, match.col, match.matches); }
+    template <typename FormatCtx> auto format(const ae::xlsx::cell_match_t& match, FormatCtx& ctx) const { return format_to(ctx.out(), "{}{}:{}", match.row, match.col, match.matches); }
 };
 
 template <ae::xlsx::NRowCol nrowcol> struct fmt::formatter<ae::xlsx::range<nrowcol>> : fmt::formatter<ae::fmt_helper::default_formatter>
 {
-    template <typename FormatCtx> auto format(const ae::xlsx::range<nrowcol>& rng, FormatCtx& ctx)
+    template <typename FormatCtx> auto format(const ae::xlsx::range<nrowcol>& rng, FormatCtx& ctx) const
     {
         return format_to(ctx.out(), "{}:{}", rng.first, rng.second);
     }
@@ -216,7 +216,7 @@ template <ae::xlsx::NRowCol nrowcol> struct fmt::formatter<ae::xlsx::range<nrowc
 
 template <ae::xlsx::NRowCol nrowcol> struct fmt::formatter<std::optional<nrowcol>> : fmt::formatter<ae::fmt_helper::default_formatter>
 {
-    template <typename FormatCtx> auto format(std::optional<nrowcol> rowcol, FormatCtx& ctx)
+    template <typename FormatCtx> auto format(std::optional<nrowcol> rowcol, FormatCtx& ctx) const
     {
         if (rowcol.has_value())
             return format_to(ctx.out(), "{}", *rowcol);

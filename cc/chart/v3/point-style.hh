@@ -61,7 +61,7 @@ namespace ae::chart::v3
 
 template <> struct fmt::formatter<ae::chart::v3::PointStyle> : fmt::formatter<ae::fmt_helper::default_formatter>
 {
-    template <typename FormatCtx> auto format(const ae::chart::v3::PointStyle& style, FormatCtx& ctx)
+    template <typename FormatCtx> auto format(const ae::chart::v3::PointStyle& style, FormatCtx& ctx) const
     {
         using namespace std::string_view_literals;
         const auto out = [&ctx](std::string_view key, const auto& value, std::string_view format, bool comma) -> bool {

@@ -330,7 +330,7 @@ namespace ae::xlsx::inline v1
 
 template <> struct fmt::formatter<ae::xlsx::detect_result_t> : fmt::formatter<ae::fmt_helper::default_formatter>
 {
-    template <typename FormatCtx> auto format(const ae::xlsx::detect_result_t& detected, FormatCtx& ctx)
+    template <typename FormatCtx> auto format(const ae::xlsx::detect_result_t& detected, FormatCtx& ctx) const
     {
         if (detected.ignore)
             return format_to(ctx.out(), "[Sheet IGNORE]");

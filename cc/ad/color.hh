@@ -96,7 +96,7 @@ template <> struct fmt::formatter<Color>
         return std::find(it, ctx.end(), '}');
     }
 
-    template <typename FormatCtx> auto format(const Color& val, FormatCtx& ctx)
+    template <typename FormatCtx> auto format(const Color& val, FormatCtx& ctx) const
     {
         switch (format_code_) {
           case 'X':

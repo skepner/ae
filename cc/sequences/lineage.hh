@@ -52,7 +52,7 @@ namespace ae::sequences
 
 template <> struct fmt::formatter<ae::sequences::lineage_t> : fmt::formatter<std::string>
 {
-    template <typename FormatCtx> constexpr auto format(const ae::sequences::lineage_t& lineage, FormatCtx& ctx) { return fmt::formatter<std::string>::format(lineage, ctx); }
+    template <typename FormatCtx> constexpr auto format(const ae::sequences::lineage_t& lineage, FormatCtx& ctx) const { return fmt::formatter<std::string>::format(lineage, ctx); }
 };
 
 // ======================================================================

@@ -275,7 +275,7 @@ namespace acmacs
 // }
 
 template <typename T> struct fmt::formatter<T, std::enable_if_t<std::is_same_v<decltype(acmacs::to_string(std::declval<T>())), std::string>, std::string>> : fmt::formatter<std::string> {
-        template <typename FormatCtx> auto format(const T& val, FormatCtx& ctx) { return fmt::formatter<std::string>::format(acmacs::to_string(val), ctx); }
+        template <typename FormatCtx> auto format(const T& val, FormatCtx& ctx) const { return fmt::formatter<std::string>::format(acmacs::to_string(val), ctx); }
 };
 
 

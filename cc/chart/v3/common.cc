@@ -376,7 +376,7 @@ std::string ae::chart::v3::common_antigens_sera_t::report(size_t indent) const
 enum class score_t : size_t { no_match = 0, passage_serum_id_ignored = 1, egg = 2, without_date = 3, full_match = 4 };
 
 template <> struct fmt::formatter<score_t> : fmt::formatter<acmacs::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(const score_t& value, FormatCtx& ctx)
+    template <typename FormatCtx> auto format(const score_t& value, FormatCtx& ctx) const
     {
         switch (value) {
             case score_t::no_match:

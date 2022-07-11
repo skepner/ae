@@ -59,7 +59,7 @@ namespace ae::sequences
 
 // template <> struct fmt::formatter<ae::sequences::> : fmt::formatter<std::string>
 // {
-//     template <typename FormatCtx> constexpr auto format(const ae::sequences::& , FormatCtx& ctx) { return fmt::formatter<std::string>::format(, ctx); }
+//     template <typename FormatCtx> constexpr auto format(const ae::sequences::& , FormatCtx& ctx) const { return fmt::formatter<std::string>::format(, ctx); }
 // };
 
 // ======================================================================

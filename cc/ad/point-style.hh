@@ -248,7 +248,7 @@ namespace acmacs
 // ----------------------------------------------------------------------
 
 template <> struct fmt::formatter<acmacs::PointShape> : fmt::formatter<ae::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(const acmacs::PointShape& shape, FormatCtx& ctx)
+    template <typename FormatCtx> auto format(const acmacs::PointShape& shape, FormatCtx& ctx) const
     {
         switch (shape.get()) {
             case acmacs::PointShape::Circle:
@@ -267,7 +267,7 @@ template <> struct fmt::formatter<acmacs::PointShape> : fmt::formatter<ae::fmt_h
 };
 
 template <> struct fmt::formatter<acmacs::PointStyle> : fmt::formatter<ae::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(const acmacs::PointStyle& style, FormatCtx& ctx)
+    template <typename FormatCtx> auto format(const acmacs::PointStyle& style, FormatCtx& ctx) const
     {
         return format_to(ctx.out(), R"({{"shape": {}, "shown": {}, "fill": "{}", "outline": "{}", "outline_width": {}, "size": {}, "aspect": {}, "rotation": {}, "label": {}, "label_text": "{}"}})",
                          style.shape(), style.shown(), style.fill(), style.outline(), style.outline_width(), style.size(), style.aspect(), style.rotation(), style.label(), style.label_text());

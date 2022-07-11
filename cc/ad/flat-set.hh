@@ -67,7 +67,7 @@ namespace acmacs
 
 template <typename Elt> struct fmt::formatter<acmacs::flat_set_t<Elt>> : fmt::formatter<ae::fmt_helper::default_formatter>
 {
-    template <typename FormatCtx> auto format(const acmacs::flat_set_t<Elt>& value, FormatCtx& ctx)
+    template <typename FormatCtx> auto format(const acmacs::flat_set_t<Elt>& value, FormatCtx& ctx) const
     {
         fmt::format_to(ctx.out(), "{{");
         bool first{true};

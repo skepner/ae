@@ -320,7 +320,7 @@ namespace ae::chart::v2
 
 template <> struct fmt::formatter<ae::chart::v2::Area> : public fmt::formatter<ae::fmt_helper::float_formatter>
 {
-    template <typename FormatContext> auto format(const ae::chart::v2::Area& area, FormatContext& ctx)
+    template <typename FormatContext> auto format(const ae::chart::v2::Area& area, FormatContext& ctx) const
     {
         return format_to(ctx.out(), "Area{{min:{}, max:{}}}", format_val(area.min), format_val(area.max));
     }
@@ -330,7 +330,7 @@ template <> struct fmt::formatter<ae::chart::v2::Area> : public fmt::formatter<a
 
 template <> struct fmt::formatter<ae::chart::v2::Layout> : public fmt::formatter<ae::fmt_helper::float_formatter>
 {
-    template <typename FormatContext> auto format(const ae::chart::v2::Layout& layout, FormatContext& ctx)
+    template <typename FormatContext> auto format(const ae::chart::v2::Layout& layout, FormatContext& ctx) const
     {
         format_to(ctx.out(), "Layout {}d ({})\n", layout.number_of_dimensions(), layout.number_of_points());
         const auto num_digits_in_point_no = static_cast<int>(std::log10(layout.number_of_points())) + 1;

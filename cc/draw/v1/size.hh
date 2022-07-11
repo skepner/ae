@@ -130,7 +130,7 @@ namespace ae::draw::v1
 
 template <> struct fmt::formatter<ae::draw::v1::Size> : public fmt::formatter<ae::fmt_helper::float_formatter>
 {
-    template <typename FormatContext> auto format(const ae::draw::v1::Size& size, FormatContext& ctx)
+    template <typename FormatContext> auto format(const ae::draw::v1::Size& size, FormatContext& ctx) const
     {
         return format_to(ctx.out(), "[{}, {}]", format_val(size.width), format_val(size.height));
     }

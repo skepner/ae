@@ -224,7 +224,7 @@ namespace ae::fmt_helper
 {
     template <typename Map> struct map_formatter : fmt::formatter<default_formatter>
     {
-        template <typename FormatCtx> auto format(const Map& map, FormatCtx& ctx)
+        template <typename FormatCtx> auto format(const Map& map, FormatCtx& ctx) const
         {
             fmt::format_to(ctx.out(), "{{");
             bool first{true};

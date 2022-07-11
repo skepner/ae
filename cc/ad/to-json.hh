@@ -383,7 +383,7 @@ template <typename T> struct fmt::formatter<T, std::enable_if_t<std::is_base_of<
         return it;
     }
 
-    template <typename FormatCtx> auto format(const to_json::json& js, FormatCtx& ctx)
+    template <typename FormatCtx> auto format(const to_json::json& js, FormatCtx& ctx) const
     {
         if (indent_ > 0)
             return fmt::formatter<std::string>::format(js.pretty(indent_), ctx);

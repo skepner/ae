@@ -1,8 +1,9 @@
 #! /usr/bin/env python3
 import os, sys, re, json, pprint, argparse, traceback
 from pathlib import Path
-import ae_backend
+import ae_backend.chart_v3
 from ae.utils.format_table import format_table
+import ae.chart
 
 # ----------------------------------------------------------------------
 
@@ -55,9 +56,10 @@ def main(args: argparse.Namespace):
 
         if chart.number_of_antigens() < 300:
             print()
-            chart2 = ae_backend.chart_v2.Chart(chart_file)
-            text = chart2.table_as_text(show_clades=True)
-            print(text)
+            print("", ae.chart.text(chart), sep="\n")
+            # chart2 = ae_backend.chart_v2.Chart(chart_file)
+            # text = chart2.table_as_text(show_clades=True)
+            # print(text)
 
 # ----------------------------------------------------------------------
 

@@ -77,7 +77,7 @@ namespace ae::chart::v3
 
 template <> struct fmt::formatter<ae::chart::v3::point_shape> : fmt::formatter<ae::fmt_helper::default_formatter>
 {
-    template <typename FormatCtx> auto format(const ae::chart::v3::point_shape& shape, FormatCtx& ctx)
+    template <typename FormatCtx> auto format(const ae::chart::v3::point_shape& shape, FormatCtx& ctx) const
     {
         using namespace ae::chart::v3;
         switch (shape.get()) {

@@ -220,7 +220,7 @@ namespace ae::draw::v1
 
 template <> struct fmt::formatter<ae::draw::v1::Transformation> : public fmt::formatter<ae::fmt_helper::default_formatter>
 {
-    template <typename FormatContext> auto format(const ae::draw::v1::Transformation& transformation, FormatContext& ctx)
+    template <typename FormatContext> auto format(const ae::draw::v1::Transformation& transformation, FormatContext& ctx) const
     {
         switch (*transformation.number_of_dimensions) {
             case 2:

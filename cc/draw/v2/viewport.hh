@@ -22,7 +22,7 @@ namespace ae::draw::v2
 
 template <> struct fmt::formatter<ae::draw::v2::Viewport> : fmt::formatter<ae::fmt_helper::default_formatter>
 {
-    template <typename FormatCtx> constexpr auto format(const ae::draw::v2::Viewport& viewport, FormatCtx& ctx)
+    template <typename FormatCtx> constexpr auto format(const ae::draw::v2::Viewport& viewport, FormatCtx& ctx) const
     {
         return format_to(ctx.out(), "Viewport{{x:{}, y:{}, w:{}, h:{}}}", ae::format_double(viewport.x), ae::format_double(viewport.y), ae::format_double(viewport.width),
                          ae::format_double(viewport.height));

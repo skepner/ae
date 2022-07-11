@@ -99,7 +99,7 @@ namespace ae::virus::name::inline v1
 // ----------------------------------------------------------------------
 
 template <> struct fmt::formatter<ae::virus::name::Parts> : fmt::formatter<ae::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(const ae::virus::name::Parts& parts, FormatCtx& ctx)
+    template <typename FormatCtx> auto format(const ae::virus::name::Parts& parts, FormatCtx& ctx) const
     {
         return format_to(ctx.out(), "{}", parts.name(ae::virus::name::Parts::mark_extra::yes));
     }
