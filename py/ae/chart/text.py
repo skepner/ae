@@ -16,23 +16,29 @@ def text(chart: ae_backend.chart_v3.Chart) -> str:
     sequenced_antigens = sum(1 for _, antigen in all_antigens if antigen.sequence_aa())
     all_sera = chart.select_all_sera()
     titers = chart.titers()
-    table = [
-        header_prefix + [Centered(sr_no) for sr_no in range(chart.number_of_sera())],
-        header_prefix + [ae_backend.virus.name_abbreviated_location_isolation_year(sr.name()) for no, sr in all_sera],
-        header_prefix + [" ".join(sr.annotations() + [sr.reassortant()]) for no, sr in all_sera],
-        header_prefix + [sr.passage() for no, sr in all_sera],
-        header_prefix + [sr.serum_id() for no, sr in all_sera],
-        ["", "", "", "", "", f"{sequenced_antigens}/{len(all_antigens)}", ""],
-    ] + [
+    table = (
         [
-            ag_no,
-            " ".join([antigen.name(), *antigen.annotations(), antigen.reassortant()]),
-            antigen.passage(),
-            antigen.date(),
-            ":ref" if ag_no in ref_ags else "",
-            ":seq" if antigen.sequence_aa() else "",
-            *[RightAligned(titers.titer(ag_no, sr_no)) for sr_no in range(chart.number_of_sera())]
-        ] for ag_no, antigen in all_antigens]
-    return f"{ae.chart.info(chart)}\n{format_table(table, field_sep='  ')}"
+            header_prefix + [Centered(sr_no) for sr_no in range(chart.number_of_sera())],
+            header_prefix + [ae_backend.virus.name_abbreviated_location_isolation_year(sr.name()) for no, sr in all_sera],
+            header_prefix + [" ".join(sr.annotations() + [sr.reassortant()]) for no, sr in all_sera],
+            header_prefix + [sr.passage() for no, sr in all_sera],
+            header_prefix + [sr.serum_id() for no, sr in all_sera],
+            ["", "", "", "", "", f"{sequenced_antigens}/{len(all_antigens)}", ""],
+        ] +
+        [
+            [
+                ag_no,
+                " ".join([antigen.name(), *antigen.annotations(), antigen.reassortant()]),
+                antigen.passage(),
+                antigen.date(),
+                ":ref" if ag_no in ref_ags else "",
+                ":seq" if antigen.sequence_aa() else "",
+                *[RightAligned(titers.titer(ag_no, sr_no)) for sr_no in range(chart.number_of_sera())]
+            ] for ag_no, antigen in all_antigens])
+    serum_table = [
+            ["SR", sr_no, sr.name(), " ".join(sr.annotations() + [sr.reassortant()]), sr.passage(), sr.serum_id()
+             ] for sr_no, sr in all_sera
+        ]
+    return f"{ae.chart.info(chart)}\n{format_table(table, field_sep='  ')}\n\n{format_table(serum_table, field_sep='  ')}"
 
 # ======================================================================
