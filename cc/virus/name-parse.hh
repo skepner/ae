@@ -43,6 +43,7 @@ namespace ae::virus::name::inline v1
         std::string name(mark_extra me = mark_extra::no) const;
         std::string fields() const;
         std::string host_location_isolation_year() const;
+        std::string year2() const { return year.size() == 4 ? year.substr(2) : year; }
         bool good() const noexcept { return !location.empty() && !isolation.empty() && year.size() == 4; }
         bool good_but_no_country() const noexcept { return good() && country.empty(); }
 

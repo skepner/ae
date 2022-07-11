@@ -2,6 +2,7 @@
 #include "utils/messages.hh"
 #include "virus/name-parse.hh"
 #include "virus/passage.hh"
+#include "locdb/v3/locdb.hh"
 
 // ----------------------------------------------------------------------
 
@@ -68,6 +69,20 @@ void ae::py::virus(pybind11::module_& mdl)
         .def_readonly("country", &ae::virus::name::Parts::country)                                  //
         .def("fields", &ae::virus::name::Parts::fields)                                             //
         ;
+
+    virus_submodule.def(
+        "name_abbreviated_location_isolation_year",
+        [](pybind11::object source, std::string_view type_subtype, std::string_view year_hint) {
+            ae::virus::name::parse_settings settings{ae::virus::name::parse_settings::tracing::no, ae::virus::name::parse_settings::report::no,
+                                                     type_subtype};
+            ae::Messages messages;
+            const auto parts = ae::virus::name::parse(std::string{pybind11::str(source)}, year_hint, settings, messages, ae::MessageLocation{});
+            if (!parts.good())
+                return std::string{pybind11::str(source)};
+            const auto& locdb = ae::locdb::v3::get();
+            return fmt::format("{}/{}/{}", locdb.abbreviation(parts.location), parts.isolation, parts.year2());
+        },
+        "source"_a, "type_subtype"_a = "", "year_hint"_a = "");
 
     // ----------------------------------------------------------------------
 

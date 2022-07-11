@@ -1,6 +1,6 @@
 import re
 
-import ae_backend.chart_v3
+import ae_backend.chart_v3, ae_backend.virus
 import ae.chart
 from ..utils.format_table import format_table, Centered, RightAligned
 from ..utils.num_digits import num_digits
@@ -18,7 +18,7 @@ def text(chart: ae_backend.chart_v3.Chart) -> str:
     titers = chart.titers()
     table = [
         header_prefix + [Centered(sr_no) for sr_no in range(chart.number_of_sera())],
-        header_prefix + [sr.name() for no, sr in all_sera],
+        header_prefix + [ae_backend.virus.name_abbreviated_location_isolation_year(sr.name()) for no, sr in all_sera],
         header_prefix + [" ".join(sr.annotations() + [sr.reassortant()]) for no, sr in all_sera],
         header_prefix + [sr.passage() for no, sr in all_sera],
         header_prefix + [sr.serum_id() for no, sr in all_sera],
