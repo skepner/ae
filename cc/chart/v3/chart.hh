@@ -14,6 +14,11 @@
 
 // ----------------------------------------------------------------------
 
+namespace ae::simdjson
+{
+    class Parser;
+}
+
 namespace ae::chart::v3
 {
     struct SelectedAntigens;
@@ -33,6 +38,7 @@ namespace ae::chart::v3
       public:
         Chart() = default;
         Chart(const std::filesystem::path& filename) { read(filename); }
+        Chart(std::string_view data) { read(data); }
 
         Chart(const Chart&) = default;
         Chart(Chart&&) = default;
@@ -102,6 +108,8 @@ namespace ae::chart::v3
         legacy::PlotSpec legacy_plot_spec_{};
 
         void read(const std::filesystem::path& filename);
+        void read(std::string_view data);
+        void read(ae::simdjson::Parser& parser);
     };
 
 } // namespace ae::chart::v3

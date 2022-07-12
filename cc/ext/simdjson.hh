@@ -50,6 +50,13 @@ namespace ae::simdjson
         {
         }
 
+        Parser(std::string_view data)                    //
+            : parser_{},                                                 //
+              json_{file::decompress_if_necessary(data, ::simdjson::SIMDJSON_PADDING)}, //
+              doc_{parser_.iterate(json_, json_.size() + ::simdjson::SIMDJSON_PADDING)}
+        {
+        }
+
         constexpr auto& doc() { return doc_; }
 
         size_t current_location_offset() { return doc_.current_location().value() - json_.data(); }

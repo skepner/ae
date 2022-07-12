@@ -475,6 +475,8 @@ void ae::py::chart_v3(pybind11::module_& mdl)
         )"))                                                                            //
         ;
 
+    chart_v3_submodule.def("chart_from_json", [](std::string_view json) { return std::make_shared<Chart>(json); }, "json"_a);
+
     // ----------------------------------------------------------------------
 
     pybind11::class_<Titers>(chart_v3_submodule, "Titers")                                        //

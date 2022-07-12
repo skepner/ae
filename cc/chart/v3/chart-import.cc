@@ -841,6 +841,78 @@ inline void read_semantic_plot_specification(ae::chart::v3::semantic::Styles& ta
 
 // ----------------------------------------------------------------------
 
+void ae::chart::v3::Chart::read(ae::simdjson::Parser& parser)
+{
+    using namespace ae::simdjson;
+
+    for (auto field : parser.doc().get_object()) {
+        const std::string_view key = field.unescaped_key();
+        // fmt::print(">>>> key \"{}\"\n", key);
+        if (key == "  version") {
+            if (const std::string_view ver{field.value()}; ver != "acmacs-ace-v1")
+                throw Error{"unsupported version: \"{}\"", ver};
+        }
+        else if (key == "c") {
+            std::vector<double> forced_column_bases_for_a_new_projections;
+            for (auto field_c : field.value().get_object()) {
+                if (const std::string_view key_c = field_c.unescaped_key(); key_c.size() == 1) {
+                    switch (key_c[0]) {
+                        case 'i':
+                            read_info(info(), field_c.value().get_object());
+                            break;
+                        case 'a':
+                            read_antigens(antigens(), field_c.value().get_array());
+                            break;
+                        case 's':
+                            read_sera(sera(), field_c.value().get_array());
+                            break;
+                        case 't':
+                            read_titers(titers(), field_c.value().get_object());
+                            break;
+                        case 'P':
+                            read_projections(projections(), field_c.value().get_array());
+                            break;
+                        case 'R':
+                            read_semantic_plot_specification(styles(), field_c.value().get_object());
+                            break;
+                        case 'p':
+                            read_legacy_plot_specification(legacy_plot_spec(), field_c.value().get_object());
+                            break;
+                        case 'C': // forced column bases for a new projections
+                            for (const double cb : field_c.value().get_array())
+                                forced_column_bases_for_a_new_projections.push_back(cb);
+                            break;
+                        // case 'x':
+                        //     read_extension(extension_data(), field_c.value().get_object());
+                        //     break;
+                        default:
+                            unhandled_key({"c", key_c});
+                            break;
+                    }
+                }
+                else if (key_c[0] != '?' && key_c[0] != ' ' && key_c[0] != '_')
+                    unhandled_key({"c", key_c});
+            }
+            if (!forced_column_bases_for_a_new_projections.empty()) {
+                if (serum_index{forced_column_bases_for_a_new_projections.size()} != sera().size())
+                    throw Error{"invalid number of entries in the forced_column_bases_for_a_new_projections (\"c\":\"C\"): {}, number of sera: {}", forced_column_bases_for_a_new_projections.size(),
+                                sera().size()};
+                for (const auto sr_no : sera().size()) {
+                    if (const auto cb = forced_column_bases_for_a_new_projections[sr_no.get()]; cb > 0.0)
+                        sera()[sr_no].forced_column_basis(cb);
+                    else
+                        sera()[sr_no].not_forced_column_basis();
+                }
+            }
+        }
+        else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
+            unhandled_key({key});
+    }
+
+} // ae::chart::v3::Chart::read
+
+// ----------------------------------------------------------------------
+
 void ae::chart::v3::Chart::read(const std::filesystem::path& filename)
 {
     Timeit ti{fmt::format("importing chart from {}", filename), std::chrono::milliseconds{1000}};
@@ -848,68 +920,7 @@ void ae::chart::v3::Chart::read(const std::filesystem::path& filename)
     try {
         Parser parser{filename};
         try {
-            for (auto field : parser.doc().get_object()) {
-                const std::string_view key = field.unescaped_key();
-                // fmt::print(">>>> key \"{}\"\n", key);
-                if (key == "  version") {
-                    if (const std::string_view ver{field.value()}; ver != "acmacs-ace-v1")
-                        throw Error{"unsupported version: \"{}\"", ver};
-                }
-                else if (key == "c") {
-                    std::vector<double> forced_column_bases_for_a_new_projections;
-                    for (auto field_c : field.value().get_object()) {
-                        if (const std::string_view key_c = field_c.unescaped_key(); key_c.size() == 1) {
-                            switch (key_c[0]) {
-                                case 'i':
-                                    read_info(info(), field_c.value().get_object());
-                                    break;
-                                case 'a':
-                                    read_antigens(antigens(), field_c.value().get_array());
-                                    break;
-                                case 's':
-                                    read_sera(sera(), field_c.value().get_array());
-                                    break;
-                                case 't':
-                                    read_titers(titers(), field_c.value().get_object());
-                                    break;
-                                case 'P':
-                                    read_projections(projections(), field_c.value().get_array());
-                                    break;
-                                case 'R':
-                                    read_semantic_plot_specification(styles(), field_c.value().get_object());
-                                    break;
-                                case 'p':
-                                    read_legacy_plot_specification(legacy_plot_spec(), field_c.value().get_object());
-                                    break;
-                                case 'C': // forced column bases for a new projections
-                                    for (const double cb : field_c.value().get_array())
-                                        forced_column_bases_for_a_new_projections.push_back(cb);
-                                    break;
-                                // case 'x':
-                                //     read_extension(extension_data(), field_c.value().get_object());
-                                //     break;
-                                default:
-                                    unhandled_key({"c", key_c});
-                                    break;
-                            }
-                        }
-                        else if (key_c[0] != '?' && key_c[0] != ' ' && key_c[0] != '_')
-                            unhandled_key({"c", key_c});
-                    }
-                    if (!forced_column_bases_for_a_new_projections.empty()) {
-                        if (serum_index{forced_column_bases_for_a_new_projections.size()} != sera().size())
-                            throw Error{"{}: invalid number of entries in the forced_column_bases_for_a_new_projections (\"c\":\"C\"): {}, number of sera: {}", filename.native(), forced_column_bases_for_a_new_projections.size(), sera().size()};
-                        for (const auto sr_no : sera().size()) {
-                            if (const auto cb = forced_column_bases_for_a_new_projections[sr_no.get()]; cb > 0.0)
-                                sera()[sr_no].forced_column_basis(cb);
-                            else
-                                sera()[sr_no].not_forced_column_basis();
-                        }
-                    }
-                }
-                else if (key[0] != '?' && key[0] != ' ' && key[0] != '_')
-                    unhandled_key({key});
-            }
+            read(parser);
         }
         catch (simdjson_error& err) {
             throw Error{"{} parsing error: {} at {} \"{}\"\n", filename.native(), err.what(), parser.current_location_offset(), parser.current_location_snippet(50)};
@@ -917,6 +928,30 @@ void ae::chart::v3::Chart::read(const std::filesystem::path& filename)
     }
     catch (simdjson_error& err) {
         throw Error{"{} json parser creation error: {} (UNESCAPED_CHARS means a char < 0x20)\n", filename.native(), err.what()};
+    }
+    catch (Error& err) {
+        throw Error{"{} {}", filename.native(), err.what()};
+    }
+
+} // ae::chart::v3::Chart::read
+
+// ----------------------------------------------------------------------
+
+void ae::chart::v3::Chart::read(std::string_view data)
+{
+    Timeit ti{fmt::format("importing chart from {} bytes", data.size()), std::chrono::milliseconds{1000}};
+    using namespace ae::simdjson;
+    try {
+        Parser parser{data};
+        try {
+            read(parser);
+        }
+        catch (simdjson_error& err) {
+            throw Error{"parsing error: {} at {} \"{}\"\n", err.what(), parser.current_location_offset(), parser.current_location_snippet(50)};
+        }
+    }
+    catch (simdjson_error& err) {
+        throw Error{"json parser creation error: {} (UNESCAPED_CHARS means a char < 0x20)\n", err.what()};
     }
 
 } // ae::chart::v3::Chart::read
