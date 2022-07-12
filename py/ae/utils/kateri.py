@@ -2,7 +2,7 @@ import sys, os, asyncio, subprocess
 from pathlib import Path
 from typing import Optional
 
-import ae_backend
+import ae_backend.chart_v3
 
 # ======================================================================
 
@@ -71,6 +71,15 @@ class Communicator:
     def set_style(self, style: str):
         self.send_command({"C": "set_style", "style": style})
 
+    def export_to_legacy(self, style: Optional[str] = None):
+        if style:
+            self.send_command({"C": "set_style", "style": style})
+        self.send_command({"C": "export_to_legacy"})
+
+    def get_chart(self):
+        self.send_command({"C": "get_chart"})
+        self.expected.append({"C": "CHRT"})
+
     def pdf(self, filename: str|Path, style: str = None, width: float = 800.0, open: bool = False):
         if style:
             self.set_style(style=style)
@@ -100,7 +109,7 @@ class Communicator:
             # print(f">>>> received from kateri: {request}", file=sys.stderr)
             if request == "HELO":
                 pass
-            elif request == "PDFB":
+            elif request in ["PDFB", "CHRT"]:
                 payload_length = int.from_bytes(await reader.read(4), byteorder=sys.byteorder)
                 # print(f">>>> [kateri.Communicator] {request} {payload_length} bytes", file=sys.stderr)
                 self._process_expected(request, await self._read_with_padding(reader=reader, payload_length=payload_length))
@@ -139,6 +148,10 @@ class Communicator:
                 output.write(data)
             if expected.get("open"):
                 subprocess.call(["open", expected["filename"]])
+        elif expected["C"] == "CHRT":
+            print(f">>> [kateri.Communicator] receiving chart ({len(data)} bytes)", file=sys.stderr)
+            chart = ae_backend.chart_v3.chart_from_json(data)
+            subprocess.run(["subl", "-"], input=chart.export())
         else:
             print(f">> [kateri.Communicator] not implemented processing for expected {expected}", file=sys.stderr)
 
