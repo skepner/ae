@@ -27,7 +27,7 @@ def for_writing(path :Path, do_backup: bool = True):
     if path.suffix in [".xz", ".ace", ".jxz", ".tjz"]:
         return lzma.LZMAFile(path, "w")
     elif path.suffix in [".bz2"]:
-        return lzma.BZ2File(path, "w")
+        return bz2.BZ2File(path, "w")
     elif path.suffix in [".gz"]:
         return gzip.GzipFile(path, "w")
     else:
