@@ -1,6 +1,6 @@
 import sys, os, asyncio, subprocess
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Callable
 
 import ae_backend.chart_v3
 
@@ -76,9 +76,9 @@ class Communicator:
             self.send_command({"C": "set_style", "style": style})
         self.send_command({"C": "export_to_legacy"})
 
-    def get_chart(self):
+    def get_chart(self, callback: Optional[Callable[[ae_backend.chart_v3.Chart], None]] = None):
         self.send_command({"C": "get_chart"})
-        self.expected.append({"C": "CHRT"})
+        self.expected.append({"C": "CHRT", "callback": callback})
 
     def pdf(self, filename: str|Path, style: str = None, width: float = 800.0, open: bool = False):
         if style:
@@ -150,8 +150,8 @@ class Communicator:
                 subprocess.call(["open", expected["filename"]])
         elif expected["C"] == "CHRT":
             print(f">>> [kateri.Communicator] receiving chart ({len(data)} bytes)", file=sys.stderr)
-            chart = ae_backend.chart_v3.chart_from_json(data)
-            subprocess.run(["subl", "-"], input=chart.export())
+            if cb := expected.get("callback"):
+                cb(ae_backend.chart_v3.chart_from_json(data))
         else:
             print(f">> [kateri.Communicator] not implemented processing for expected {expected}", file=sys.stderr)
 
