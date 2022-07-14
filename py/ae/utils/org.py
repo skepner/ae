@@ -1,6 +1,8 @@
 import sys
+from typing import Any
 
 # ======================================================================
+
 
 def org_table_to_dict(data: str) -> list[dict[str, str]]:
     """only the first table is extrcated, any lines before and after the first table are ignored."""
@@ -19,7 +21,8 @@ def org_table_to_dict(data: str) -> list[dict[str, str]]:
             break
     return result
 
-def _convert_value(value: str) -> object:
+
+def _convert_value(value: str) -> Any:
     if value in ["true", "True"]:
         return True
     if value in ["false", "False"]:
@@ -36,8 +39,9 @@ def _convert_value(value: str) -> object:
 
 # ----------------------------------------------------------------------
 
+
 def dict_to_org_table(data: list[dict[str, object]], field_order: list, add_org_mode_wrapper: bool = True) -> str:
-    field_size : dict[str, int] = {field: len(field) for field in field_order}
+    field_size: dict[str, int] = {field: len(field) for field in field_order}
     for en in data:
         for field, val in en.items():
             field_size[field] = max(field_size.get(field, 0), len(str(val)))
@@ -46,8 +50,8 @@ def dict_to_org_table(data: list[dict[str, object]], field_order: list, add_org_
     res = ""
     if add_org_mode_wrapper:
         res += "# -*- Org -*-\n"
-    res += "| " + " | ".join(f"{field:<{field_size[field]}s}" for field in fields) + " |\n" # header
-    res += "|" + "+".join(("-" * (field_size[field] + 2)) for field in fields) + "|\n" # separator
+    res += "| " + " | ".join(f"{field:<{field_size[field]}s}" for field in fields) + " |\n"  # header
+    res += "|" + "+".join(("-" * (field_size[field] + 2)) for field in fields) + "|\n"  # separator
     for en in data:
         res += "|"
         for field in fields:
