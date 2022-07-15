@@ -10,6 +10,7 @@
 // ----------------------------------------------------------------------
 
 #pragma GCC diagnostic push
+
 #ifdef __clang__
 #pragma GCC diagnostic ignored "-Wglobal-constructors"
 #pragma GCC diagnostic ignored "-Wexit-time-destructors"
@@ -90,7 +91,7 @@ static const std::regex re_VIDRL_serum_name{"^(?:[AB]/)?([A-Z][A-Z ]+)/?([0-9]+)
 static const std::regex re_VIDRL_serum_id{"^(" pattern_VIDRL_serum_id "|" pattern_CRICK_serum_id ")$", regex_icase};
 static const std::regex re_VIDRL_serum_id_with_days{"^[AF][0-9][0-9][0-9][0-9]-[0-9]+D$", regex_icase};
 
-static const std::regex re_human_who_serum{R"(^\s*(.*(HUMAN|WHO|NORMAL)|GOAT|POST? VAX)\b)", regex_icase}; // "POST VAX" is in VIDRL H3 HI 2021
+static const std::regex re_human_who_serum{R"(^\s*(.*(HUMAN|WHO|NORMAL)|GOAT|POST? VAX|VAX POOL)\b)", regex_icase}; // "POST VAX": VIDRL H3 HI 2021, "HUMAN VAX": VIDRL H3 HI 2022
 
 #pragma GCC diagnostic pop
 
