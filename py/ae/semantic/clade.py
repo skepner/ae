@@ -1,10 +1,12 @@
 import sys
+from typing import Any
+
 import ae_backend
 from . import front_style
 
 # ======================================================================
 
-def attributes(chart: ae_backend.chart_v3.Chart, entries: list):
+def attributes(chart: ae_backend.chart_v3.Chart, entries: list[dict[str, str]]):
     """expected entries: [{"name": "3C.2a1b.2a.2 156S", "clade": "3C.2a1b.2a.2", "aa": "156S", **ignored}]"""
 
     def set_by_clade_aa(name: str, clade: str, aa: str):
@@ -25,15 +27,15 @@ def attributes(chart: ae_backend.chart_v3.Chart, entries: list):
 
 # ======================================================================
 
-def style(chart: ae_backend.chart_v3.Chart, name: str, data: list, add_counter: bool = True, legend_style: dict[str, object] = {}):
+def style(chart: ae_backend.chart_v3.Chart, style_name: str, data: list[dict[str, str]], add_counter: bool = True, legend_style: dict[str, Any] = {}):
     """expected data: [{"name": "3C.2a1b.2a.2 156S", "legend": "2a1b.2a.2 156S", "color": "red", **ignored}]"""
-    sname = f"-{name}-sera"
+    sname = f"-{style_name}-sera"
     style = chart.styles()[sname]
     style.priority = 1000
     for modifier in data:
         style.add_modifier(selector={"C": modifier["name"]}, outline=modifier["color"], outline_width=3.0, rais=True, only="sera")
 
-    sname = f"-{name}"
+    sname = f"-{style_name}"
     style = chart.styles()[sname]
     style.priority = 1000
     style.legend.add_counter = add_counter
