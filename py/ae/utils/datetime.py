@@ -1,14 +1,11 @@
-import sys, datetime as dt, calendar
+import sys, datetime, calendar
+from datetime import datetime, date, timedelta
 from typing import Optional
-import ae_backend
-
-date = dt.date
-datetime = dt.datetime
-timedelta = dt.timedelta
+import ae_backend.chart_v3
 
 # ======================================================================
 
-def parse_date(source: date|str, default_month: int = 1, default_day: int = 1) -> date:
+def parse_date(source: date | str, default_month: int = 1, default_day: int = 1) -> date:
     """parses date from strings like: YYYY-MM-DD, YYYYMMDD, YYYY, YYYY-MM, YYYYMM"""
     if isinstance(source, date):
         return source
@@ -27,7 +24,7 @@ def parse_date(source: date|str, default_month: int = 1, default_day: int = 1) -
 
 # ----------------------------------------------------------------------
 
-def get_antigen_date_range(chart: ae_backend.chart_v3.Chart, first: Optional[date|str] = None, last: Optional[date|str] = None, limit_by_chart: bool = False) -> [date, date]:
+def get_antigen_date_range(chart: ae_backend.chart_v3.Chart, first: Optional[date | str] = None, last: Optional[date | str] = None, limit_by_chart: bool = False) -> list[date]:
     chart_first, chart_last = (parse_date(date) for date in chart.antigen_date_range(test_only=True))
     if not first:
         first = chart_first
