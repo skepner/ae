@@ -4,9 +4,9 @@ from typing import Any
 # ======================================================================
 
 
-def org_table_to_dict(data: str) -> list[dict[str, str]]:
+def org_table_to_dict(data: str) -> list[dict[str, str | bool | int | float]]:
     """only the first table is extrcated, any lines before and after the first table are ignored."""
-    result: list[dict[str, str]] = []
+    result: list[dict[str, str | bool | int | float]] = []
     field_names: list[str] = []
     for line in data.split("\n"):
         if line[:2] == "|-":
@@ -22,7 +22,7 @@ def org_table_to_dict(data: str) -> list[dict[str, str]]:
     return result
 
 
-def _convert_value(value: str) -> Any:
+def _convert_value(value: str) -> str | bool | int | float:
     if value in ["true", "True"]:
         return True
     if value in ["false", "False"]:
