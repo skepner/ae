@@ -53,6 +53,7 @@ def main(args: argparse.Namespace):
 def torg_to_ace(torg_filename: Path, ace_filename: Path, prn_read: bool = False, prn_remove_concentration: bool = False, check_by_seqdb: bool = True, check_by_hidb: bool = True):
     ace_data = ae.whocc.torg.to_ace(torg_filename=torg_filename, prn_read=prn_read, prn_remove_concentration=prn_remove_concentration)
     ae.whocc.ace.DataFixer(ace_data).process()
+    # pprint.pprint(ace_data, width=200)
     with ae.utils.open_file.for_writing(ace_filename) as output:
         output.write(ae.utils.json.dumps(ace_data, indent=2).encode("utf-8"))
 

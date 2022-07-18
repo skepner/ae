@@ -67,7 +67,7 @@ class DataFixer:
     def mark_duplicates_as_distinct(self):
         full_names = {}
         for no, antigen in enumerate(self.ace_data["c"]["a"]):
-            full_name = " ".join(str(part) for part in (antigen.get(part_name) for part_name in ["N", "R", "A", "P"]) if part)
+            full_name = " ".join(str(part) for part in (antigen.get(part_name) for part_name in ["N", "R", "a", "P"]) if part)
             full_names.setdefault(full_name, []).append(no)
         for full_name, nos in full_names.items():
             if len(nos) > 1:
