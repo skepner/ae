@@ -14,7 +14,7 @@ def find(chart: ae_backend.chart_v3.Chart, semantic_attribute_data: list[dict[st
     """
     # pprint.pprint(semantic_attribute_data, width=200)
     finder = AntigenFinder(chart)
-    data = [en for en in ({"name": source["name"], **finder.find(name=source["name"], passage=source.get("passage"))} for source in semantic_attribute_data) if any(bool(en.get(psg)) for psg in PASSAGES)]
+    data = [en for en in ({"name": source["name"], **finder.find(name=source["name"], passage=source.get("passage"))} for source in semantic_attribute_data if source) if any(bool(en.get(psg)) for psg in PASSAGES)]
     if report:
         _report(data)
     return data
