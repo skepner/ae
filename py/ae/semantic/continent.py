@@ -60,9 +60,9 @@ sContinentStyle = {
         """)
     }
 
-def style(chart: ae_backend.chart_v3.Chart, name: str = "-continent", test_only: bool = True, raise_: bool = False, style_type: str = "normal") -> set[str]:
+def style(chart: ae_backend.chart_v3.Chart, name: str = "-continent", test_only: bool = True, raise_: bool = False, style_type: str = "normal", priority: int = 1000) -> set[str]:
     style = chart.styles()[name]
-    style.priority = 1000
+    style.priority = priority
     if test_only:
         reference_selector = {"R": False}
     else:

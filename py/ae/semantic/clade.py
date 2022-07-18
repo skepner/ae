@@ -28,17 +28,17 @@ def attributes(chart: ae_backend.chart_v3.Chart, entries: list[dict[str, str]]):
 
 # ======================================================================
 
-def style(chart: ae_backend.chart_v3.Chart, style_name: str, data: list[dict[str, str]], add_counter: bool = True, legend_style: dict[str, Any] = {}):
+def style(chart: ae_backend.chart_v3.Chart, style_name: str, data: list[dict[str, str]], add_counter: bool = True, legend_style: dict[str, Any] = {}, priority: int = 1000):
     """expected data: [{"name": "3C.2a1b.2a.2 156S", "legend": "2a1b.2a.2 156S", "color": "red", **ignored}]"""
     sname = f"-{style_name}-sera"
     style = chart.styles()[sname]
-    style.priority = 1000
+    style.priority = priority + 1
     for modifier in data:
         style.add_modifier(selector={"C": modifier["name"]}, outline=modifier["color"], outline_width=3.0, rais=True, only="sera")
 
     sname = f"-{style_name}"
     style = chart.styles()[sname]
-    style.priority = 1000
+    style.priority = priority
     style.legend.add_counter = add_counter
     front_style.legend_style(style.legend, legend_style)
     legend_priority = 99

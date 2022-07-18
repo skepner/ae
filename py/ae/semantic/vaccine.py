@@ -142,7 +142,7 @@ def collect_data_for_styles(chart: ae_backend.chart_v3.Chart):
 # ----------------------------------------------------------------------
 
 def default_field_order():
-    return ["no", "designation", "lox", "loy", "fill", "label", "semantic", "label_size", "size", "outline_width"]
+    return ["no", "designation", "lox", "loy", "fill", "fill_v1", "fill_v2", "fill_ts", "label", "semantic", "label_size", "size", "outline_width"]
 
 # ----------------------------------------------------------------------
 
@@ -178,7 +178,7 @@ def style(chart: ae_backend.chart_v3.Chart, style_name: str, data: list[dict[str
     """
 
     style = chart.styles()[style_name]
-    style.priority = 1000
+    style.priority = priority
     style.add_modifier(selector={"V": True}, only="antigens", raise_=True, **common_modifier)
 
     for en in data:

@@ -28,12 +28,12 @@ def older_12_months_date(conferencence_date: datetime.date) -> datetime.date:
 
 # ======================================================================
 
-def style(chart: ae_backend.chart_v3.Chart):
+def style(chart: ae_backend.chart_v3.Chart, priority: int = 1000):
     """Add "-o6m-grey" and "-o12m-grey" styles"""
-    for attr in ["o6m", "o12m"]:
+    for no, attr in enumerate(["o6m", "o12m"]):
         sname = f"-{attr}-grey"
         style = chart.styles()[sname]
-        style.priority = 1000
+        style.priority = priority + no
         style.add_modifier(selector={attr: True}, outline="grey", fill="grey", lower=True, only="antigens")
 
 def since_6m_label(conferencence_date: datetime.date) -> str:
