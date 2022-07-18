@@ -1,4 +1,4 @@
-import sys
+import sys, pprint
 from typing import Any
 
 import ae_backend
@@ -19,6 +19,7 @@ def attributes(chart: ae_backend.chart_v3.Chart, entries: list[dict[str, str]]):
             for no, ag_sr in selector(lambda en: en.aa[aa]):
                 ag_sr.semantic.add_clade(name)
 
+    # pprint.pprint(entries)
     for data in entries:
         if data.get("clade"):
             set_by_clade_aa(**data)

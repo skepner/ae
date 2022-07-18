@@ -91,6 +91,7 @@ class Communicator:
 
     def send_command(self, command: dict[str, object]):
         import json
+        # print(f">>>> send to kateri \"{json.dumps(command)}\"", file=sys.stderr)
         self._send(b"COMD", json.dumps(command).encode("utf-8"))
 
     def _send(self, data_code: bytes, data: bytes):
@@ -102,6 +103,8 @@ class Communicator:
         # sent data must contain number of bytes divisible by 4
         if last_chunk := len(data) % 4:
             self.writer.write(b"\x00" * (4 - last_chunk))
+        # if data_code == b"COMD":
+        #     print(f">>>> sent data {data_code} {len(data)} bytes {data} with padding {4 - last_chunk}", file=sys.stderr)
 
     async def connected(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
         self.writer = writer
