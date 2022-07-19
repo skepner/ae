@@ -1,4 +1,4 @@
-import sys, os, asyncio, subprocess
+import sys, os, asyncio, subprocess, json
 from pathlib import Path
 from typing import Optional, Callable
 
@@ -80,6 +80,10 @@ class Communicator:
         self.send_command({"C": "get_chart"})
         self.expected.append({"C": "CHRT", "callback": callback})
 
+    def get_viewport(self, callback: Optional[Callable[[dict], None]] = None):
+        self.send_command({"C": "get_viewport"})
+        self.expected.append({"C": "JSON", "callback": callback})
+
     def pdf(self, filename: str|Path, style: str = None, width: float = 800.0, open: bool = False):
         if style:
             self.set_style(style=style)
@@ -112,7 +116,7 @@ class Communicator:
             # print(f">>>> received from kateri: {request}", file=sys.stderr)
             if request == "HELO":
                 pass
-            elif request in ["PDFB", "CHRT"]:
+            elif request in ["PDFB", "CHRT", "JSON"]:
                 payload_length = int.from_bytes(await reader.read(4), byteorder=sys.byteorder)
                 # print(f">>>> [kateri.Communicator] {request} {payload_length} bytes", file=sys.stderr)
                 self._process_expected(request, await self._read_with_padding(reader=reader, payload_length=payload_length))
@@ -155,6 +159,10 @@ class Communicator:
             print(f">>> [kateri.Communicator] receiving chart ({len(data)} bytes)", file=sys.stderr)
             if cb := expected.get("callback"):
                 cb(ae_backend.chart_v3.chart_from_json(data))
+        elif expected["C"] == "JSON":
+            print(f">>> [kateri.Communicator] receiving json ({len(data)} bytes)", file=sys.stderr)
+            if cb := expected.get("callback"):
+                cb(json.loads(data))
         else:
             print(f">> [kateri.Communicator] not implemented processing for expected {expected}", file=sys.stderr)
 
