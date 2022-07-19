@@ -1,6 +1,6 @@
 import sys, os, asyncio, subprocess, json
 from pathlib import Path
-from typing import Optional, Callable
+from typing import Optional, Callable, Any
 
 import ae_backend.chart_v3
 
@@ -61,6 +61,7 @@ class Communicator:
     def __init__(self):
         self.writer: asyncio.StreamWriter = None
         self.expected = []
+        self._command_id: int = 0
 
     def send_ace(self, filename: Path):
         self._send(b"CHRT", subprocess.check_output(["decat", str(filename)]))
@@ -77,26 +78,30 @@ class Communicator:
         self.send_command({"C": "export_to_legacy"})
 
     def get_chart(self, callback: Optional[Callable[[ae_backend.chart_v3.Chart], None]] = None):
-        self.send_command({"C": "get_chart"})
-        self.expected.append({"C": "CHRT", "callback": callback})
+        self.send_command_expect(command={"C": "get_chart"}, expect={"C": "CHRT", "callback": callback})
 
     def get_viewport(self, callback: Optional[Callable[[dict], None]] = None):
-        self.send_command({"C": "get_viewport"})
-        self.expected.append({"C": "JSON", "callback": callback})
+        self.send_command_expect(command={"C": "get_viewport"}, expect={"C": "JSON", "callback": callback})
 
     def pdf(self, filename: str|Path, style: str = None, width: float = 800.0, open: bool = False):
         if style:
             self.set_style(style=style)
-        self.send_command({"C": "pdf", "width": width})
-        self.expected.append({"C": "PDFB", "filename": filename, "open": open})
+        self.send_command_expect(command={"C": "pdf", "width": width}, expect={"C": "PDFB", "filename": filename, "open": open})
 
     def quit(self):
         self.send_command({"C": "quit"})
 
-    def send_command(self, command: dict[str, object]):
+    def send_command_expect(self, command: dict[str, Any], expect: dict[str, Any]):
+        command_id = self.send_command(command=command)
+        self.expected.append({**expect, "_id": command_id})
+
+    def send_command(self, command: dict[str, Any]) -> int:
+        "return sent command id"
         import json
         # print(f">>>> send to kateri \"{json.dumps(command)}\"", file=sys.stderr)
-        self._send(b"COMD", json.dumps(command).encode("utf-8"))
+        self._command_id += 1
+        self._send(b"COMD", json.dumps({**command, "_id": self._command_id}).encode("utf-8"))
+        return self._command_id
 
     def _send(self, data_code: bytes, data: bytes):
         if not self.writer:
@@ -148,7 +153,7 @@ class Communicator:
                 self.expected[no:no+1] = []
                 break;
 
-    def _process_expected_request(self, expected: dict[str, object], data: bytes):
+    def _process_expected_request(self, expected: dict[str, Any], data: bytes):
         if expected["C"] == "PDFB":
             print(f">>> [kateri.Communicator] writing pdf to {expected['filename']}", file=sys.stderr)
             with Path(expected["filename"]).open("wb") as output:
