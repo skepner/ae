@@ -88,10 +88,17 @@ class Communicator:
         viewport = await futu
         return viewport
 
-    def pdf(self, filename: str|Path, style: str = None, width: float = 800.0, open: bool = False):
+    async def get_pdf(self, style: str = None, width: float = 800.0) -> bytes:
         if style:
             self.set_style(style=style)
-        self.send_command_expect(command={"C": "pdf", "width": width}, expect={"C": "PDFB", "filename": filename, "open": open})
+        futu = asyncio.get_running_loop().create_future()
+        self.send_command_expect(command={"C": "pdf", "width": width}, expect={"C": "PDFB", "future": futu})
+        return await futu
+
+    # def pdf(self, filename: str|Path, style: str = None, width: float = 800.0, open: bool = False):
+    #     if style:
+    #         self.set_style(style=style)
+    #     self.send_command_expect(command={"C": "pdf", "width": width}, expect={"C": "PDFB", "filename": filename, "open": open})
 
     def quit(self):
         self.send_command({"C": "quit"})
@@ -160,22 +167,16 @@ class Communicator:
 
     def _process_expected_request(self, expected: dict[str, Any], data: bytes):
         if expected["C"] == "PDFB":
-            print(f">>> [kateri.Communicator] writing pdf to {expected['filename']}", file=sys.stderr)
-            with Path(expected["filename"]).open("wb") as output:
-                output.write(data)
-            if expected.get("open"):
-                subprocess.call(["open", expected["filename"]])
+            print(f">>> [kateri.Communicator] receiving pdf ({len(data)} bytes)", file=sys.stderr)
+            if futu := expected.get("future"):
+                futu.set_result(data)
         elif expected["C"] == "CHRT":
             print(f">>> [kateri.Communicator] receiving chart ({len(data)} bytes)", file=sys.stderr)
             if futu := expected.get("future"):
                 futu.set_result(ae_backend.chart_v3.chart_from_json(data))
-            # elif cb := expected.get("callback"):
-            #     cb(ae_backend.chart_v3.chart_from_json(data))
         elif expected["C"] == "JSON":
             print(f">>> [kateri.Communicator] receiving json ({len(data)} bytes)", file=sys.stderr)
-            if cb := expected.get("callback"):
-                cb(json.loads(data))
-            elif futu := expected.get("future"):
+            if futu := expected.get("future"):
                 futu.set_result(json.loads(data))
         else:
             print(f">> [kateri.Communicator] not implemented processing for expected {expected}", file=sys.stderr)
