@@ -71,7 +71,10 @@ def main(args: argparse.Namespace):
     if args.remove_leaves_isolated_before:
         print(f">>> removing leaves isolated before {args.remove_leaves_isolated_before}, but keeping tree topology", file=sys.stderr)
         if args.important:
-            important = args.important.split(",")
+            if (fn := Path(args.important)).exists():
+                important = [en.strip().replace(" ", "_") for en in fn.open().readlines()]
+            else:
+                important = args.important.split(",")
             print(f">>> keep {len(important)} important strains", file=sys.stderr)
         else:
             important = []
@@ -93,7 +96,7 @@ try:
     parser.add_argument("--populate", "-p", dest="subtype")
     parser.add_argument("--ladderize", "-l", action="store_true", default=False)
     parser.add_argument("--remove-leaves-isolated-before", help="removes leaves isolated before the date, but keep tree topology")
-    parser.add_argument("--important", "-I", help="comma separated list of important strains (seq_id prefixes) to keep in case of --remove-leaves-isolated-before")
+    parser.add_argument("--important", "-I", "--keep-during-removal", help="comma separated list of important strains (seq_id prefixes) to keep in case of --remove-leaves-isolated-before")
     parser.add_argument("--asr-tree", type=Path, help="raxml --ancestral tree output (*.raxml.ancestralTree)")
     parser.add_argument("--asr-states", type=Path, help="raxml --ancestral states output (*.raxml.ancestralStates)")
     args = parser.parse_args()
