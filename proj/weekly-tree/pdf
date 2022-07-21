@@ -23,21 +23,30 @@ fi
 
 # ----------------------------------------------------------------------------------------------------
 
-if [[ ! -f ${SUBTYPE}/${SUBTYPE}.asr.tjz ]]; then
-    ASR_STATES=$(cat ${SUBTYPE}/raxml-asr-best.txt | sed 's/ancestralTree/ancestralStates/')
-    ${AE_ROOT}/bin/tree-to-json --populate ${SUBTYPE} --asr-tree $(cat ${SUBTYPE}/raxml-asr-best.txt) --asr-states ${ASR_STATES} --ladderize --print-cumulative 20 --remove-if-cumulative-more-than ${CUMUL[${SUBTYPE}]} $(cat ${SUBTYPE}/garli-best.txt) ${SUBTYPE}/${SUBTYPE}.asr.tjz
-fi
-if [[ ! -f ${SUBTYPE}/${SUBTYPE}.asr.pdf ]]; then
-    tal -s ${TAL} -D aa-transitions-method=imported ${SUBTYPE}/${SUBTYPE}.asr.tjz ${SUBTYPE}/${SUBTYPE}.asr.txt ${SUBTYPE}/${SUBTYPE}.asr.pdf
+if [[ ${HIDB_SUBTYPE:0:1} == "h" ]]; then
+    ASR_INFIX=".asr"
+    if [[ ! -f ${SUBTYPE}/${SUBTYPE}${ASR_INFIX}.tjz ]]; then
+        ASR_STATES=$(cat ${SUBTYPE}/raxml-asr-best.txt | sed 's/ancestralTree/ancestralStates/')
+        ${AE_ROOT}/bin/tree-to-json --populate ${SUBTYPE} --asr-tree $(cat ${SUBTYPE}/raxml-asr-best.txt) --asr-states ${ASR_STATES} --ladderize --print-cumulative 20 --remove-if-cumulative-more-than ${CUMUL[${SUBTYPE}]} $(cat ${SUBTYPE}/garli-best.txt) ${SUBTYPE}/${SUBTYPE}${ASR_INFIX}.tjz
+    fi
+    if [[ ! -f ${SUBTYPE}/${SUBTYPE}${ASR_INFIX}.pdf ]]; then
+        tal -s ${TAL} -D aa-transitions-method=imported ${SUBTYPE}/${SUBTYPE}${ASR_INFIX}.tjz ${SUBTYPE}/${SUBTYPE}${ASR_INFIX}.txt ${SUBTYPE}/${SUBTYPE}${ASR_INFIX}.pdf
+    fi
+else
+    ASR_INFIX=""
 fi
 
 # ----------------------------------------------------------------------------------------------------
 
 if [[ ! -f ${SUBTYPE}/${SUBTYPE}.after-${LAST_DATE}.tjz ]]; then
-    ${AE_ROOT}/bin/tree-to-json --populate ${SUBTYPE} --ladderize --remove-leaves-isolated-before ${LAST_DATE} --remove-if-cumulative-more-than ${CUMUL[${SUBTYPE}]} $(cat ${SUBTYPE}/garli-best.txt) ${SUBTYPE}/${SUBTYPE}.after-${LAST_DATE}.tjz
+    HIDB_SUBTYPE=${SUBTYPE}
+    if [[ ${HIDB_SUBTYPE:0:1} == "b" ]]; then HIDB_SUBTYPE=b; fi
+    hidb5-find -s --list-names ${HIDB_SUBTYPE} >${SUBTYPE}.important.txt
+    ${AE_ROOT}/bin/tree-to-json --remove-leaves-isolated-before ${LAST_DATE} --important ${SUBTYPE}.important.txt ${SUBTYPE}/${SUBTYPE}${ASR_INFIX}.tjz ${SUBTYPE}/${SUBTYPE}${SUBTYPE}/${SUBTYPE}${ASR_INFIX}.tjz.after-${LAST_DATE}.tjz
+    # ${AE_ROOT}/bin/tree-to-json --populate ${SUBTYPE} --ladderize --remove-leaves-isolated-before ${LAST_DATE} --important ${SUBTYPE}.important.txt --remove-if-cumulative-more-than ${CUMUL[${SUBTYPE}]} $(cat ${SUBTYPE}/garli-best.txt) ${SUBTYPE}/${SUBTYPE}.after-${LAST_DATE}.tjz
 fi
 if [[ ! -f ${SUBTYPE}/${SUBTYPE}.after-${LAST_DATE}.pdf ]]; then
-    tal -s ${TAL} ${SUBTYPE}/${SUBTYPE}.after-${LAST_DATE}.tjz ${SUBTYPE}/${SUBTYPE}.after-${LAST_DATE}.txt ${SUBTYPE}/${SUBTYPE}.after-${LAST_DATE}.pdf
+    tal -s ${TAL} ${SUBTYPE}/${SUBTYPE}${ASR_INFIX}.after-${LAST_DATE}.tjz ${SUBTYPE}/${SUBTYPE}${ASR_INFIX}.after-${LAST_DATE}.txt ${SUBTYPE}/${SUBTYPE}${ASR_INFIX}.after-${LAST_DATE}.pdf
 fi
 
 # ----------------------------------------------------------------------------------------------------
