@@ -107,6 +107,8 @@ namespace ae::file
     inline bool brotli_compressed(std::string_view input)
     {
         try {
+            if (input.size() < 16)
+                return false;   // small json file, e.g. containing [] is considered compressed, too bad that brotli does not have signature!
             Brotli_Compressor().decompress_and_check(input.substr(0, 1000), Brotli_Compressor::check_if_compressed::yes);
             return true;
         }
