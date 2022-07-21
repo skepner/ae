@@ -12,6 +12,9 @@ TAL="$(dirname $0)/${SUBTYPE}.tal"
 declare -A CUMUL=([bvic]=10 [h1]=0.1 [h3]=10)
 LAST_DATE=2021
 
+HIDB_SUBTYPE=${SUBTYPE}
+if [[ ${HIDB_SUBTYPE:0:1} == "b" ]]; then HIDB_SUBTYPE=b; fi
+
 # ----------------------------------------------------------------------------------------------------
 
 if [[ ! -f ${SUBTYPE}/${SUBTYPE}.tjz ]]; then
@@ -39,8 +42,6 @@ fi
 # ----------------------------------------------------------------------------------------------------
 
 if [[ ! -f ${SUBTYPE}/${SUBTYPE}.after-${LAST_DATE}.tjz ]]; then
-    HIDB_SUBTYPE=${SUBTYPE}
-    if [[ ${HIDB_SUBTYPE:0:1} == "b" ]]; then HIDB_SUBTYPE=b; fi
     hidb5-find -s --list-names ${HIDB_SUBTYPE} >${SUBTYPE}.important.txt
     ${AE_ROOT}/bin/tree-to-json --remove-leaves-isolated-before ${LAST_DATE} --important ${SUBTYPE}.important.txt ${SUBTYPE}/${SUBTYPE}${ASR_INFIX}.tjz ${SUBTYPE}/${SUBTYPE}${SUBTYPE}/${SUBTYPE}${ASR_INFIX}.tjz.after-${LAST_DATE}.tjz
     # ${AE_ROOT}/bin/tree-to-json --populate ${SUBTYPE} --ladderize --remove-leaves-isolated-before ${LAST_DATE} --important ${SUBTYPE}.important.txt --remove-if-cumulative-more-than ${CUMUL[${SUBTYPE}]} $(cat ${SUBTYPE}/garli-best.txt) ${SUBTYPE}/${SUBTYPE}.after-${LAST_DATE}.tjz
