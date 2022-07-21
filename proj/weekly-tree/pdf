@@ -43,7 +43,7 @@ fi
 
 if [[ ! -f ${SUBTYPE}/${SUBTYPE}${ASR_INFIX}.after-${LAST_DATE}.tjz ]]; then
     hidb5-find -s --list-names ${HIDB_SUBTYPE} all >${SUBTYPE}.important.txt
-    ${AE_ROOT}/bin/tree-to-json --remove-leaves-isolated-before ${LAST_DATE} --important ${SUBTYPE}.important.txt ${SUBTYPE}/${SUBTYPE}${ASR_INFIX}.tjz ${SUBTYPE}/${SUBTYPE}${ASR_INFIX}.tjz.after-${LAST_DATE}.tjz
+    ${AE_ROOT}/bin/tree-to-json --remove-leaves-isolated-before ${LAST_DATE} --important ${SUBTYPE}.important.txt ${SUBTYPE}/${SUBTYPE}${ASR_INFIX}.tjz ${SUBTYPE}/${SUBTYPE}${ASR_INFIX}.after-${LAST_DATE}.tjz
     # ${AE_ROOT}/bin/tree-to-json --populate ${SUBTYPE} --ladderize --remove-leaves-isolated-before ${LAST_DATE} --important ${SUBTYPE}.important.txt --remove-if-cumulative-more-than ${CUMUL[${SUBTYPE}]} $(cat ${SUBTYPE}/garli-best.txt) ${SUBTYPE}/${SUBTYPE}.after-${LAST_DATE}.tjz
 fi
 if [[ ! -f ${SUBTYPE}/${SUBTYPE}${ASR_INFIX}.after-${LAST_DATE}.pdf ]]; then
