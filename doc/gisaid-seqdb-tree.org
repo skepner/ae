@@ -1,11 +1,11 @@
-Time-stamp: <2022-06-24 11:19:37 eu>
+Time-stamp: <2022-07-22 08:45:48 eu>
 * already downloaded from gisaid: ~/ac/sequences
 ls -l ~/ac/sequences/gis*.fas.*
 
 * [[https://platform.gisaid.org/epi3/start][GISAID]]
  *Download A and B separately: perhaps bug in gisaid*
 
-** SUBMISSION date From 2021-10-01
+** SUBMISSION date From 2022-01-01
 ** Required Segments: HA (checkbox at the left of HA)
 ** Click Search
 ** Click leftmost checkbox in header to select all, number of slected must not exceed 20k (gisaid does not allow downloading more)
