@@ -736,7 +736,7 @@ std::string ae::chart::v3::Chart::export_to_json() const
 
 void ae::chart::v3::Chart::write(const std::filesystem::path& filename) const
 {
-    Timeit ti{fmt::format("exporting chart to {}", filename), std::chrono::milliseconds{1000}};
+    // Timeit ti{fmt::format("exporting chart to {}", filename), std::chrono::milliseconds{1000}};
 
     ae::file::write(filename, export_to_json(), ae::file::force_compression::yes);
 
