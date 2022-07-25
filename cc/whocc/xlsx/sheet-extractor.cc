@@ -76,8 +76,12 @@ static const std::regex re_NIID_serum_name{R"(^\s*(?:\d+[A-Z]\s+)?)"           /
                                            // R"((?:NIID\s+)?)"                   // NIID artefact
                                            R"(NO\s*\.\s*([\d\-]+)$)",          // serum_id $2
                                            regex_icase};
+static const std::regex re_NIID_serum_name_NIID{R"(^\s*(?:\d+[A-Z]\s+)?)"             // [clade]
+                                                R"(([A-Z][A-Z\d\s\-_\./\(\)\+]+)\s+)" // name with reassortant, passage type or passage with NIID- at the end $1
+                                                R"(([\d\-]+)$)",                      // serum_id (without NIID-) $2
+                                                regex_icase};
 static const std::regex re_NIID_serum_passage_type{R"(\s*(EGG|CELL|HCK)?\s*(?:NIID)?\s*$)", regex_icase};
-static const std::regex re_NIID_serum_passage{R"(\s*((?:S|E|C|SIAT|HCK|MDCK)\d+[A-Z\+\d]*)\s*$)", regex_icase};
+static const std::regex re_NIID_serum_passage{R"(\s*((?:S|E|C|SIAT|HCK|MDCK)\d+[A-Z\+\d/]*)\s*)", regex_icase};
 
 static const std::regex re_NIID_serum_name_fix{R"(\s*([\-/])\s*)", regex_icase}; // remove spaces around - and /
 static const std::regex re_NIID_lab_id_label{"^\\s*NIID-ID\\s*$", regex_icase};
@@ -1445,9 +1449,11 @@ ae::xlsx::v1::serum_fields_t ae::xlsx::v1::ExtractorNIID::serum(size_t sr_no) co
 {
     if (serum_name_row().has_value()) {
         const auto serum_designation = fmt::format("{}", sheet().cell(*serum_name_row(), serum_columns().at(sr_no)));
-        if (std::smatch match; std::regex_search(serum_designation, match, re_NIID_serum_name)) {
+        if (std::smatch match; std::regex_search(serum_designation, match, re_NIID_serum_name) || std::regex_search(serum_designation, match, re_NIID_serum_name_NIID)) {
+            // AD_DEBUG("SR {} match $1:\"{}\" $2:\"{}\"", sr_no, match.str(1), match.str(2));
             auto name = ae::string::replace(ae::string::uppercase(match.str(1)), '\n', ' ');
             name = std::regex_replace(name, re_NIID_serum_name_fix, "$1");
+            // AD_DEBUG("SR {} name:\"{}\" $2:\"{}\"", sr_no, name, match.str(2));
             if (name.size() > 2 && ((name[0] != 'A' && name[0] != 'B') || name[1] != '/'))
                 name = fmt::format("{}/{}", subtype_without_lineage(), name);
             // AD_DEBUG("serum fields \"{}\" \"{}\"", name, match.str(2));
@@ -1459,14 +1465,20 @@ ae::xlsx::v1::serum_fields_t ae::xlsx::v1::ExtractorNIID::serum(size_t sr_no) co
             }
             else if (std::smatch match_passage; std::regex_search(name, match_passage, re_NIID_serum_passage)) {
                 passage = ae::string::uppercase(match_passage.str(1));
-                serum_id = fmt::format("NO.{}", match.str(2)); // without passage!
+                if (name.size() > 6 && name.substr(name.size() - 6) == " NIID-")
+                    serum_id = fmt::format("NIID-{}", match.str(2));
+                else
+                    serum_id = fmt::format("NO.{}", match.str(2)); // without passage!
                 name = match_passage.prefix();
             }
             else {
                 serum_id = ae::string::uppercase(fmt::format("NO.{}", match.str(2)));
             }
-            // AD_DEBUG("serum fields2 \"{}\" \"{}\" \"{}\"", name, passage, match.str(2));
+            // AD_DEBUG("serum fields2 name:\"{}\" passage:\"{}\" serum_id:\"{}\"", name, passage, serum_id);
             return serum_fields_t{.name = name, .serum_id = serum_id, .passage = passage};
+        }
+        else {
+            AD_WARNING("cannot match SR {} \"{}\" by re_NIID_serum_name", sr_no, serum_designation);
         }
     }
     return serum_fields_t{};

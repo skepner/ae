@@ -86,6 +86,8 @@ def table(extractor: ae_backend.whocc.xlsx.Extractor, data_fixer: data_fix.DataF
     for sr_no in range(extractor.number_of_sera()):
         sr_col = ag_col.index("base") + sr_no
         serum = data_fixer.serum(extractor.serum(sr_no), sr_no)
+        if not serum["name"] or not  serum["serum_id"]:
+                print(f">> SR {sr_no} {serum} {extractor.serum(sr_no)}", file=sys.stderr)
         data[sr_row.index("name")][sr_col] = " ".join([serum["name"], serum["conc"], serum["dilut"], "BOOSTED" if serum["boosted"] else ""]).strip()
         data[sr_row.index("passage")][sr_col] = serum["passage"]
         data[sr_row.index("serum_id")][sr_col] = serum["serum_id"]
