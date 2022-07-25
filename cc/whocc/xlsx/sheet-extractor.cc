@@ -70,17 +70,18 @@ static const std::regex re_CRICK_less_than_multi_entry{R"(^\s*(\d)\s*<\s*=\s*(<\
 static const std::regex re_CRICK_prn_2fold{"^2-fold$", regex_icase};
 static const std::regex re_CRICK_prn_read{"^read$", regex_icase};
 
-static const std::regex re_NIID_serum_name{R"(^\s*(?:\d+[A-Z]\s+)?)"           // [clade]
+static const std::regex re_NIID_serum_name{R"(^\s*(?:\d+[A-Z]\s+)?)"             // [clade]
                                            R"(([A-Z][A-Z\d\s\-_\./\(\)\+]+)\s+)" // name with reassortant, passage type or passage $1
                                            // R"((?:(EGG|CELL|HCK)\s+)?)"         // passage type (sometimes absent for reassortants) $2
                                            // R"((?:NIID\s+)?)"                   // NIID artefact
-                                           R"(NO\s*\.\s*([\d\-]+)$)",          // serum_id $2
+                                           R"(NO\s*\.\s*([\d\-]+)$)", // serum_id $2
                                            regex_icase};
 static const std::regex re_NIID_serum_name_NIID{R"(^\s*(?:\d+[A-Z]\s+)?)"             // [clade]
                                                 R"(([A-Z][A-Z\d\s\-_\./\(\)\+]+)\s+)" // name with reassortant, passage type or passage with NIID- at the end $1
-                                                R"(([\d\-]+)$)",                      // serum_id (without NIID-) $2
+                                                R"(([\#\d\-]+)$)",                    // serum_id (without NIID-) $2
                                                 regex_icase};
-static const std::regex re_NIID_serum_passage_type{R"(\s*(EGG|CELL|HCK)?\s*(?:NIID)?\s*$)", regex_icase};
+// static const std::regex re_NIID_serum_passage_type{R"(\s*((?:EGG|CELL|HCK)\b)?\s*(?:NIID)?\s*$)", regex_icase};
+static const std::regex re_NIID_serum_passage_type{R"(\s*(EGG|CELL|HCK)\b\s*)", regex_icase};
 static const std::regex re_NIID_serum_passage{R"(\s*((?:S|E|C|SIAT|HCK|MDCK)\d+[A-Z\+\d/]*)\s*)", regex_icase};
 
 static const std::regex re_NIID_serum_name_fix{R"(\s*([\-/])\s*)", regex_icase}; // remove spaces around - and /
@@ -1449,6 +1450,7 @@ ae::xlsx::v1::serum_fields_t ae::xlsx::v1::ExtractorNIID::serum(size_t sr_no) co
 {
     if (serum_name_row().has_value()) {
         const auto serum_designation = fmt::format("{}", sheet().cell(*serum_name_row(), serum_columns().at(sr_no)));
+        // AD_DEBUG("SR {} \"{}\"", sr_no, serum_designation);
         if (std::smatch match; std::regex_search(serum_designation, match, re_NIID_serum_name) || std::regex_search(serum_designation, match, re_NIID_serum_name_NIID)) {
             // AD_DEBUG("SR {} match $1:\"{}\" $2:\"{}\"", sr_no, match.str(1), match.str(2));
             auto name = ae::string::replace(ae::string::uppercase(match.str(1)), '\n', ' ');
@@ -1460,8 +1462,11 @@ ae::xlsx::v1::serum_fields_t ae::xlsx::v1::ExtractorNIID::serum(size_t sr_no) co
             std::string passage, serum_id;
             if (std::smatch match_passage_type; std::regex_search(name, match_passage_type, re_NIID_serum_passage_type)) {
                 passage = ae::string::uppercase(match_passage_type.str(1));
-                serum_id = fmt::format("{} NO.{}", passage, match.str(2));
-                name = match_passage_type.prefix();
+                if (match.str(2)[0] == '#')
+                    serum_id = fmt::format("{} {}", passage, match.str(2));
+                else
+                    serum_id = fmt::format("{} NO.{}", passage, match.str(2));
+                name = fmt::format("{} {}", match_passage_type.prefix().str(), match_passage_type.suffix().str());
             }
             else if (std::smatch match_passage; std::regex_search(name, match_passage, re_NIID_serum_passage)) {
                 passage = ae::string::uppercase(match_passage.str(1));
