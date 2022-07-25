@@ -120,8 +120,8 @@ def to_ace(torg_filename: Path, prn_read: bool, prn_remove_concentration: bool =
     lab = None
     subtype = None
     assay = None
-    num_antigens = 0
-    num_sera = 0
+    # num_antigens = 0
+    # num_sera = 0
     ace = {
         "  version": "acmacs-ace-v1",
         "?created": f"imported from {torg_filename.name} by {Path(sys.argv[0]).name} on {datetime.date.today()}",
