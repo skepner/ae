@@ -281,8 +281,10 @@ namespace ae::virus::name::inline v1
         // static constexpr auto Z = dsl::lit_c<'Z'> / dsl::lit_c<'z'>;
 
         static constexpr auto OPEN = dsl::lit_c<'('>;
+        static constexpr auto OPT_OPEN = dsl::while_(OPEN);
         static constexpr auto OPEN2 = dsl::lit_c<'('> / dsl::lit_c<'['>;
         static constexpr auto CLOSE = dsl::lit_c<')'>;
+        static constexpr auto OPT_CLOSE = dsl::while_(CLOSE);
         static constexpr auto CLOSE2 = dsl::lit_c<')'> / dsl::lit_c<']'>;;
         static constexpr auto PLUS = dsl::lit_c<'+'>;
         static constexpr auto OPT_SPACES = dsl::while_(dsl::ascii::blank);
@@ -331,13 +333,20 @@ namespace ae::virus::name::inline v1
 
         struct cber
         {
-            // BVR-11A, CBER-11A
-            static constexpr auto peek_bvr = dsl::peek(B + V + R + dsl::hyphen / dsl::ascii::blank / dsl::digit<>);
-            static constexpr auto peek_cber = dsl::peek(C + B + E + R + dsl::hyphen / dsl::ascii::blank / dsl::digit<>);
-            static constexpr auto peek = peek_bvr | peek_cber;
+            // CBER-11A
+            static constexpr auto peek = dsl::peek(C + B + E + R + dsl::hyphen / dsl::ascii::blank / dsl::digit<>);
 
             static constexpr auto rule = peek >> (dsl::while_(dsl::ascii::alpha) + dsl::while_(dsl::hyphen / dsl::ascii::blank) + dsl::capture(dsl::while_(dsl::digit<> / dsl::ascii::alpha)));
             static constexpr auto value = lexy::callback<parts_t>([](auto lex) { return parts_t{part_t{"CBER-" + uppercase_strip(lex), part_type::reassortant}}; });
+        };
+
+        struct bvr
+        {
+            // BVR-11A
+            static constexpr auto peek = dsl::peek(B + V + R + dsl::hyphen / dsl::ascii::blank / dsl::digit<>);
+
+            static constexpr auto rule = peek >> (dsl::while_(dsl::ascii::alpha) + dsl::while_(dsl::hyphen / dsl::ascii::blank) + dsl::capture(dsl::while_(dsl::digit<> / dsl::ascii::alpha)));
+            static constexpr auto value = lexy::callback<parts_t>([](auto lex) { return parts_t{part_t{"BVR-" + uppercase_strip(lex), part_type::reassortant}}; });
         };
 
         struct nymc_x_bx
@@ -389,11 +398,13 @@ namespace ae::virus::name::inline v1
             static constexpr auto NIB = N + I + B;
             static constexpr auto VI = V + I;
             static constexpr auto ARIV = A + R + I + V; // NIBSC H5N3 A/duck/Singapore-Q/F119-3/1997 ARIV-1
-            static constexpr auto prefix = dsl::peek(IVR + hy_space) | dsl::peek(CNIC + hy_space) | dsl::peek(SAN + hy_space) | dsl::peek(NIBRG + hy_space) | dsl::peek(NIB + hy_space) | dsl::peek(VI + hy_space) | dsl::peek(ARIV + hy_space);
+            static constexpr auto prefix = dsl::peek(IVR + hy_space) | dsl::peek(CNIC + hy_space) | dsl::peek(SAN + hy_space) | dsl::peek(NIBRG + hy_space) | dsl::peek(NIB + hy_space) |
+                                           dsl::peek(VI + hy_space) | dsl::peek(ARIV + hy_space);
 
             static constexpr auto rule = (nymc_x_bx::peek >> dsl::p<nymc_x_bx>) //
                                          | (cber::peek >> dsl::p<cber>)         //
-                | (prefix >> (dsl::capture(dsl::while_(dsl::ascii::alpha)) + hy_space + dsl::capture(dsl::while_(dsl::digit<> / dsl::ascii::alpha))));
+                                         | (bvr::peek >> dsl::p<bvr>)           //
+                                         | (prefix >> (dsl::capture(dsl::while_(dsl::ascii::alpha)) + hy_space + dsl::capture(dsl::while_(dsl::digit<> / dsl::ascii::alpha))));
             static constexpr auto value = lexy::callback<parts_t>( //
                 [](const parts_t& parts) { return parts; },        //
                 [](auto lex1, auto lex2) {
@@ -502,7 +513,7 @@ namespace ae::virus::name::inline v1
         {
             static constexpr auto rule =
                 ((dsl::p<reassortant> >> (dsl::opt(dsl::peek(OPT_SPACES + OPEN2) >> (OPT_SPACES + OPEN2 + OPT_SPACES + dsl::p<virus_name> + dsl::if_(CLOSE2)))))
-                 | (dsl::else_ >> (dsl::p<virus_name> + dsl::opt(dsl::p<reassortant>) + dsl::p<rest>)))
+                 | (dsl::else_ >> (dsl::p<virus_name> + OPT_OPEN + dsl::opt(dsl::p<reassortant>) + OPT_CLOSE + dsl::p<rest>)))
                 + dsl::eof;
             static constexpr auto value = lexy::callback<parts_t>(
                 [](const parts_t& reassortant, const parts_t& virus_name) {

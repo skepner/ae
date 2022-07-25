@@ -38,7 +38,8 @@ std::tuple<ae::virus::Reassortant, std::string> ae::virus::reassortant::parse(st
 #define PR_NYMCX_3    PR_AB_REASSORTANT "X" PR_NUMBER
 #define PR_NYMCX_4    "([\\s_])" PR_NYMCX_0
 #define PR_NYMCX_5    PR_PREFIX_1 PR_NYMCX_0
-#define PR_CBER       "(?:CBER|BVR)" PR_NUMBER // Center for Biologics Evaluation and Research https://www.fda.gov/about-fda/fda-organization/center-biologics-evaluation-and-research-cber
+#define PR_CBER       "CBER" PR_NUMBER // Center for Biologics Evaluation and Research https://www.fda.gov/about-fda/fda-organization/center-biologics-evaluation-and-research-cber
+#define PR_BVR        "BVR" PR_NUMBER // Center for Biologics Evaluation and Research https://www.fda.gov/about-fda/fda-organization/center-biologics-evaluation-and-research-cber
 #define PR_IDCDC      "(?:PR8[\\- ]*IDCDC[\\- _]*|I[DB]CDC-)?RG[\\- ]*([\\dA-Z\\.]+)"
 #define PR_NIB        "NIB(?:SC|RG)?" PR_NUMBER
 #define PR_IVR        "(IVR|CVR)" PR_NUMBER // IVR-153 (A(H1N1)/California/7/2009) is by CSL, CVR - by CSL/Seqirus
@@ -62,6 +63,7 @@ std::tuple<ae::virus::Reassortant, std::string> ae::virus::reassortant::parse(st
         look_replace_t{std::regex(PR_PREFIX_1 PR_NIB,   std::regex::icase), {"NIB-$1", "$` $'"}},
         look_replace_t{std::regex(PR_PREFIX_1 PR_IDCDC, std::regex::icase), {"RG-$1", "$` $'"}},
         look_replace_t{std::regex(PR_PREFIX_1 PR_CBER,  std::regex::icase), {"CBER-$1", "$` $'"}},
+        look_replace_t{std::regex(PR_PREFIX_1 PR_BVR,   std::regex::icase), {"BVR-$1", "$` $'"}},
         look_replace_t{std::regex(PR_PREFIX_1 PR_IVR_2, std::regex::icase), {"$1-$2 $4-$5", "$` $3 $'"}}, // before PR_IVR
         look_replace_t{std::regex(PR_PREFIX_1 PR_IVR,   std::regex::icase), {"$1-$2", "$` $'"}},
         look_replace_t{std::regex(PR_PREFIX_1 PR_MELB,  std::regex::icase), {"$1", "$` $'"}},

@@ -1,0 +1,29 @@
+#! /usr/bin/env python3
+
+import sys
+from pathlib import Path
+import argparse
+
+import ae.whocc.torg
+import ae.whocc.ace
+import ae.utils.open_file
+
+# ======================================================================
+
+def main(args):
+    ace_data = ae.whocc.torg.to_ace(torg_filename=args.input, prn_read=args.prn_read, prn_remove_concentration=args.prn_remove_concentration)
+    ae.whocc.ace.DataFixer(ace_data).process()
+    with ae.utils.open_file.for_writing(args.output) as output:
+        output.write(ae.utils.json.dumps(ace_data, indent=2).encode("utf-8"))
+
+# ======================================================================
+
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument("input", type=Path)
+parser.add_argument("output", type=Path)
+parser.add_argument("--prn-read", default=False, action="store_true")
+parser.add_argument("--prn-remove-concentration", default=False, action="store_true")
+args = parser.parse_args()
+sys.exit(main(args) or 0)
+
+# ======================================================================
