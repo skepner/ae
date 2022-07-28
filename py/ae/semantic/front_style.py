@@ -1,8 +1,8 @@
-import ae_backend
+import ae_backend.chart_v3
 
 # ======================================================================
 
-def add(chart: ae_backend.chart_v3.Chart, style_name: str, references: list[str], title: str, title_style: dict[str, object] = {}, show_legend: bool = True, legend_counter: bool = True, style_priority: int = 1):
+def add(chart: ae_backend.chart_v3.Chart, style_name: str, references: list[str], title: str, title_style: dict[str, object] = {}, show_legend: bool = True, legend_counter: bool = True, style_priority: int = 1) -> ae_backend.chart_v3.SemanticStyle:
     style = chart.styles()[style_name]
     style.priority = style_priority
     for ref in references:
@@ -11,6 +11,7 @@ def add(chart: ae_backend.chart_v3.Chart, style_name: str, references: list[str]
         _title_style(plot_title=style.plot_title, title_style=title_style)
         style.legend.shown = show_legend
         style.legend.add_counter = legend_counter
+    return style
 
 # ----------------------------------------------------------------------
 
