@@ -209,8 +209,11 @@ std::string ae::xlsx::v1::Extractor::subtype_short() const
 
 // ----------------------------------------------------------------------
 
-ae::xlsx::v1::antigen_fields_t ae::xlsx::v1::Extractor::antigen(size_t ag_no) const
+const ae::xlsx::v1::antigen_fields_t& ae::xlsx::v1::Extractor::antigen(size_t ag_no) const
 {
+    if (const auto& cached = antigen_cached(ag_no); !cached.empty())
+        return cached;
+
     const auto make = [this, row = antigen_rows().at(ag_no)](std::optional<ncol_t> col) -> std::string {
         if (col.has_value()) {
             if (const auto cell = sheet().cell(row, *col); !is_empty(cell))
@@ -219,12 +222,12 @@ ae::xlsx::v1::antigen_fields_t ae::xlsx::v1::Extractor::antigen(size_t ag_no) co
         return {};
     };
 
-    return antigen_fields_t{
-        .name = make(antigen_name_column()),                     //
-        .date = make_date(make(antigen_date_column())),          //
-        .passage = make_passage(make(antigen_passage_column())), //
-        .lab_id = make_lab_id(make(antigen_lab_id_column()))     //
-    };
+    return antigen_cache_add(ag_no, antigen_fields_t{
+                                        .name = make(antigen_name_column()),                     //
+                                        .date = make_date(make(antigen_date_column())),          //
+                                        .passage = make_passage(make(antigen_passage_column())), //
+                                        .lab_id = make_lab_id(make(antigen_lab_id_column()))     //
+                                    });
 
 } // ae::xlsx::v1::Extractor::antigen
 
@@ -625,6 +628,48 @@ std::string ae::xlsx::v1::Extractor::format_assay_data(std::string_view format) 
 
 // ----------------------------------------------------------------------
 
+const ae::xlsx::antigen_fields_t& ae::xlsx::v1::Extractor::antigen_cached(size_t ag_no) const
+{
+    if (antigen_cache_.empty())
+        antigen_cache_.resize(number_of_antigens());
+    return antigen_cache_[ag_no];
+
+} // ae::xlsx::v1::Extractor::antigen_cached
+
+// ----------------------------------------------------------------------
+
+const ae::xlsx::serum_fields_t& ae::xlsx::v1::Extractor::serum_cached(size_t sr_no) const
+{
+    if (serum_cache_.empty())
+        serum_cache_.resize(number_of_sera());
+    return serum_cache_[sr_no];
+
+} // ae::xlsx::v1::Extractor::serum_cached
+
+// ----------------------------------------------------------------------
+
+const ae::xlsx::antigen_fields_t& ae::xlsx::v1::Extractor::antigen_cache_add(size_t ag_no, antigen_fields_t&& fields) const
+{
+    if (antigen_cache_.empty())
+        antigen_cache_.resize(number_of_antigens());
+    antigen_cache_[ag_no] = std::move(fields);
+    return antigen_cache_[ag_no];
+
+} // ae::xlsx::v1::Extractor::antigen_cache_add
+
+// ----------------------------------------------------------------------
+
+const ae::xlsx::serum_fields_t& ae::xlsx::v1::Extractor::serum_cache_add(size_t sr_no, serum_fields_t&& fields) const
+{
+    if (serum_cache_.empty())
+        serum_cache_.resize(number_of_sera());
+    serum_cache_[sr_no] = std::move(fields);
+    return serum_cache_[sr_no];
+
+} // ae::xlsx::v1::Extractor::serum_cache_add
+
+// ----------------------------------------------------------------------
+
 ae::xlsx::v1::ExtractorCDC::ExtractorCDC(std::shared_ptr<Sheet> a_sheet)
     : Extractor(a_sheet)
 {
@@ -700,8 +745,11 @@ ae::xlsx::v1::nrow_t ae::xlsx::v1::ExtractorCDC::find_serum_row_by_col(ncol_t co
 
 // ----------------------------------------------------------------------
 
-ae::xlsx::v1::serum_fields_t ae::xlsx::v1::ExtractorCDC::serum(size_t sr_no) const
+const ae::xlsx::v1::serum_fields_t& ae::xlsx::v1::ExtractorCDC::serum(size_t sr_no) const
 {
+    if (const auto& cached = serum_cached(sr_no); !cached.empty())
+        return cached;
+
     if (const auto row = find_serum_row_by_col(serum_columns().at(sr_no)); valid(row)) {
 
         const auto make = [this, row](std::optional<ncol_t> col) -> std::string {
@@ -719,16 +767,17 @@ ae::xlsx::v1::serum_fields_t ae::xlsx::v1::ExtractorCDC::serum(size_t sr_no) con
                 return src;
         };
 
-        return {.name = make(serum_name_column_),                     //
-                .serum_id = make_serum_id(make(serum_id_column_)),    //
-                .passage = make_passage(make(serum_passage_column_)), //
-                .species = make(serum_species_column_),               //
-                .conc = make(serum_conc_column_),                     //
-                .dilut = make(serum_dilut_column_),                   //
-                .boosted = serum_boosted_column_.has_value() && !is_empty(sheet().cell(row, *serum_boosted_column_)) && fmt::format("{}", sheet().cell(row, *serum_boosted_column_))[0] == 'Y'};
+        return serum_cache_add(sr_no, serum_fields_t{.name = make(serum_name_column_),                     //
+                                                     .serum_id = make_serum_id(make(serum_id_column_)),    //
+                                                     .passage = make_passage(make(serum_passage_column_)), //
+                                                     .species = make(serum_species_column_),               //
+                                                     .conc = make(serum_conc_column_),                     //
+                                                     .dilut = make(serum_dilut_column_),                   //
+                                                     .boosted = serum_boosted_column_.has_value() && !is_empty(sheet().cell(row, *serum_boosted_column_)) &&
+                                                                fmt::format("{}", sheet().cell(row, *serum_boosted_column_))[0] == 'Y'});
     }
     else
-        return {};
+        return serum_cached(sr_no);
 
 } // ae::xlsx::v1::ExtractorCDC::serum
 
@@ -1010,8 +1059,11 @@ void ae::xlsx::v1::ExtractorAc21::find_serum_columns(warn_if_not_found /*winf*/)
 
 // ----------------------------------------------------------------------
 
-ae::xlsx::v1::serum_fields_t ae::xlsx::v1::ExtractorWithSerumRowsAbove::serum(size_t sr_no) const
+const ae::xlsx::v1::serum_fields_t& ae::xlsx::v1::ExtractorWithSerumRowsAbove::serum(size_t sr_no) const
 {
+    if (const auto& cached = serum_cached(sr_no); !cached.empty())
+        return cached;
+
     const auto make = [this, col = serum_columns().at(sr_no)](std::optional<nrow_t> row) -> std::string {
         if (row.has_value()) {
             if (const auto cell = sheet().cell(*row, col); !is_empty(cell))
@@ -1020,11 +1072,11 @@ ae::xlsx::v1::serum_fields_t ae::xlsx::v1::ExtractorWithSerumRowsAbove::serum(si
         return {};
     };
 
-    return serum_fields_t{
-        // .serum_name is set by lab specific extractor
-        .serum_id = make(serum_id_row()),                  //
-        .passage = make_passage(make(serum_passage_row())) //
-    };
+    return serum_cache_add(sr_no, serum_fields_t{
+                                      // .serum_name is set by lab specific extractor
+                                      .serum_id = make(serum_id_row()),                  //
+                                      .passage = make_passage(make(serum_passage_row())) //
+                                  });
 
 } // ae::xlsx::v1::ExtractorWithSerumRowsAbove::serum
 
@@ -1231,20 +1283,26 @@ void ae::xlsx::v1::ExtractorCrick::find_serum_less_than_substitutions(warn_if_no
 
 // ----------------------------------------------------------------------
 
-ae::xlsx::v1::antigen_fields_t ae::xlsx::v1::ExtractorCrick::antigen(size_t ag_no) const
+const ae::xlsx::v1::antigen_fields_t& ae::xlsx::v1::ExtractorCrick::antigen(size_t ag_no) const
 {
+    if (const auto& cached = antigen_cached(ag_no); !cached.empty())
+        return cached;
+
     auto fields = ExtractorWithSerumRowsAbove::antigen(ag_no);
     if (other_information_col_.has_value()) {
         fields.annotations = fmt::format("{}", sheet().cell(antigen_rows().at(ag_no), *other_information_col_));
     }
-    return fields;
+    return antigen_cache_add(ag_no, std::move(fields));
 
 } // ae::xlsx::v1::ExtractorCrick::antigen
 
 // ----------------------------------------------------------------------
 
-ae::xlsx::v1::serum_fields_t ae::xlsx::v1::ExtractorCrick::serum(size_t sr_no) const
+const ae::xlsx::v1::serum_fields_t& ae::xlsx::v1::ExtractorCrick::serum(size_t sr_no) const
 {
+    if (const auto& cached = serum_cached(sr_no); !cached.empty())
+        return cached;
+
     auto serum = ExtractorWithSerumRowsAbove::serum(sr_no);
     if (serum_name_1_row_ && serum_name_2_row_) {
         const auto n1{fmt::format("{}", sheet().cell(*serum_name_1_row_, serum_columns().at(sr_no)))}, n2{fmt::format("{}", sheet().cell(*serum_name_2_row_, serum_columns().at(sr_no)))};
@@ -1263,7 +1321,7 @@ ae::xlsx::v1::serum_fields_t ae::xlsx::v1::ExtractorCrick::serum(size_t sr_no) c
             serum.serum_id = ae::string::replace(serum.serum_id, " ", "", ",", "/"); // remove spaces, replace , with /, e.g. "Sh  539, 540, 543, 544, 570, 571, 574" -> "SH539/540/543/544/570/571/574"
     }
 
-    return serum;
+    return serum_cache_add(sr_no, std::move(serum));
 
 } // ae::xlsx::v1::ExtractorCrick::serum
 
@@ -1446,8 +1504,11 @@ void ae::xlsx::v1::ExtractorNIID::find_antigen_lab_id_column(warn_if_not_found w
 
 // ----------------------------------------------------------------------
 
-ae::xlsx::v1::serum_fields_t ae::xlsx::v1::ExtractorNIID::serum(size_t sr_no) const
+const ae::xlsx::v1::serum_fields_t& ae::xlsx::v1::ExtractorNIID::serum(size_t sr_no) const
 {
+    if (const auto& cached = serum_cached(sr_no); !cached.empty())
+        return cached;
+
     if (serum_name_row().has_value()) {
         const auto serum_designation = fmt::format("{}", sheet().cell(*serum_name_row(), serum_columns().at(sr_no)));
         // AD_DEBUG("SR {} \"{}\"", sr_no, serum_designation);
@@ -1480,13 +1541,13 @@ ae::xlsx::v1::serum_fields_t ae::xlsx::v1::ExtractorNIID::serum(size_t sr_no) co
                 serum_id = ae::string::uppercase(fmt::format("NO.{}", match.str(2)));
             }
             // AD_DEBUG("serum fields2 name:\"{}\" passage:\"{}\" serum_id:\"{}\"", name, passage, serum_id);
-            return serum_fields_t{.name = name, .serum_id = serum_id, .passage = passage};
+            return serum_cache_add(sr_no, serum_fields_t{.name = name, .serum_id = serum_id, .passage = passage});
         }
         else {
             AD_WARNING("cannot match SR {} \"{}\" by re_NIID_serum_name", sr_no, serum_designation);
         }
     }
-    return serum_fields_t{};
+    return serum_cached(sr_no);
 
 } // ae::xlsx::v1::ExtractorNIID::serum
 
@@ -1563,8 +1624,11 @@ std::string ae::xlsx::v1::ExtractorVIDRL::make_lab_id(const std::string& src) co
 
 // ----------------------------------------------------------------------
 
-ae::xlsx::v1::serum_fields_t ae::xlsx::v1::ExtractorVIDRL::serum(size_t sr_no) const
+const ae::xlsx::v1::serum_fields_t& ae::xlsx::v1::ExtractorVIDRL::serum(size_t sr_no) const
 {
+    if (const auto& cached = serum_cached(sr_no); !cached.empty())
+        return cached;
+
     auto serum = ExtractorWithSerumRowsAbove::serum(sr_no);
     if (serum_name_row_) {
         serum.name = fmt::format("{}", sheet().cell(*serum_name_row_, serum_columns().at(sr_no)));
@@ -1583,7 +1647,7 @@ ae::xlsx::v1::serum_fields_t ae::xlsx::v1::ExtractorVIDRL::serum(size_t sr_no) c
     }
     else
         serum.name = "*no serum_name_row_*";
-    return serum;
+    return serum_cache_add(sr_no, std::move(serum));
 
 } // ae::xlsx::v1::ExtractorVIDRL::serum
 

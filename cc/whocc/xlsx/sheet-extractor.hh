@@ -1,7 +1,7 @@
 #pragma once
 
 #include <optional>
-// #include <vector>
+#include <vector>
 
 #include "ext/date.hh"
 #include "whocc/xlsx/sheet.hh"
@@ -22,6 +22,8 @@ namespace ae::xlsx::inline v1
         std::string passage{};
         std::string lab_id{};
         std::string annotations{}; // other information column in Crick
+
+        bool empty() const { return name.empty(); }
     };
 
     struct serum_fields_t
@@ -33,6 +35,8 @@ namespace ae::xlsx::inline v1
         std::string conc{};
         std::string dilut{};
         bool boosted{false};
+
+        bool empty() const { return name.empty(); }
     };
 
     struct detect_result_t
@@ -69,8 +73,8 @@ namespace ae::xlsx::inline v1
         size_t number_of_antigens() const { return antigen_rows().size(); }
         size_t number_of_sera() const { return serum_columns().size(); }
 
-        virtual antigen_fields_t antigen(size_t ag_no) const;
-        virtual serum_fields_t serum(size_t sr_no) const = 0;
+        virtual const antigen_fields_t& antigen(size_t ag_no) const;
+        virtual const serum_fields_t& serum(size_t sr_no) const = 0;
 
         virtual std::string titer_comment() const { return {}; }
         virtual std::string titer(size_t ag_no, size_t sr_no) const;
@@ -134,6 +138,11 @@ namespace ae::xlsx::inline v1
         std::vector<nrow_t> antigen_rows_{};
         std::vector<ncol_t> serum_columns_{};
 
+        const antigen_fields_t& antigen_cached(size_t ag_no) const;
+        const serum_fields_t& serum_cached(size_t ag_no) const;
+        const antigen_fields_t& antigen_cache_add(size_t ag_no, antigen_fields_t&& fields) const;
+        const serum_fields_t& serum_cache_add(size_t sr_no, serum_fields_t&& fields) const;
+
       private:
         std::shared_ptr<Sheet> sheet_{};
         std::string lab_{};
@@ -142,7 +151,8 @@ namespace ae::xlsx::inline v1
         std::string assay_{"HI"};
         std::string rbc_{};
         std::chrono::year_month_day date_{ae::date::invalid_date};
-
+        mutable std::vector<antigen_fields_t> antigen_cache_{};
+        mutable std::vector<serum_fields_t> serum_cache_{};
     };
 
     std::shared_ptr<Extractor> extractor_factory(std::shared_ptr<Sheet> sheet, const detect_result_t& detected, Extractor::warn_if_not_found winf);
@@ -154,7 +164,7 @@ namespace ae::xlsx::inline v1
       public:
         ExtractorCDC(std::shared_ptr<Sheet> a_sheet);
 
-        serum_fields_t serum(size_t sr_no) const override;
+        const serum_fields_t& serum(size_t sr_no) const override;
         std::string titer(size_t ag_no, size_t sr_no) const override;
 
         void check_export_possibility() const override; // throws Error if exporting is not possible
@@ -211,7 +221,7 @@ namespace ae::xlsx::inline v1
     public:
         using Extractor::Extractor;
 
-        serum_fields_t serum(size_t sr_no) const override;
+        const serum_fields_t& serum(size_t sr_no) const override;
 
         void check_export_possibility() const override; // throws Error if exporting is not possible
 
@@ -240,8 +250,8 @@ namespace ae::xlsx::inline v1
       public:
         ExtractorCrick(std::shared_ptr<Sheet> a_sheet);
 
-        antigen_fields_t antigen(size_t ag_no) const override;
-        serum_fields_t serum(size_t sr_no) const override;
+        const antigen_fields_t& antigen(size_t ag_no) const override;
+        const serum_fields_t& serum(size_t sr_no) const override;
         std::string titer(size_t ag_no, size_t sr_no) const override;
 
         std::string make_date(const std::string& src) const override;
@@ -292,7 +302,7 @@ namespace ae::xlsx::inline v1
       public:
         ExtractorNIID(std::shared_ptr<Sheet> a_sheet);
 
-        serum_fields_t serum(size_t sr_no) const override;
+        const serum_fields_t& serum(size_t sr_no) const override;
         std::string titer(size_t ag_no, size_t sr_no) const override;
 
         const char* extractor_name() const override { return "[NIID]"; }
@@ -312,7 +322,7 @@ namespace ae::xlsx::inline v1
       public:
         ExtractorVIDRL(std::shared_ptr<Sheet> a_sheet);
 
-        serum_fields_t serum(size_t sr_no) const override;
+        const serum_fields_t& serum(size_t sr_no) const override;
 
         const char* extractor_name() const override { return "[VIDRL]"; }
 
