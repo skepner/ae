@@ -188,6 +188,10 @@ inline bool less(std::optional<double> v1, std::optional<double> v2)
 
 std::optional<double> ae::chart::v3::serum_circles_for_serum_t::theoretical() const
 {
+    if (antigens.empty()) {
+        AD_WARNING("no theoretical serum circle for SR {}: no homologous antigens", serum_no);
+        return std::nullopt;
+    }
     const auto val = std::min_element(antigens.begin(), antigens.end(), [](const auto& a1, const auto& a2) { return less(a1.theoretical, a2.theoretical); })->theoretical;
     if (val)
         return std::max(*val, serum_circle_min_radius);
@@ -200,6 +204,10 @@ std::optional<double> ae::chart::v3::serum_circles_for_serum_t::theoretical() co
 
 std::optional<double> ae::chart::v3::serum_circles_for_serum_t::empirical() const
 {
+    if (antigens.empty()) {
+        AD_WARNING("no empirical serum circle for SR {}: no homologous antigens", serum_no);
+        return std::nullopt;
+    }
     const auto val = std::min_element(antigens.begin(), antigens.end(), [](const auto& a1, const auto& a2) { return less(a1.empirical, a2.empirical); })->empirical;
     if (val)
         return std::max(*val, serum_circle_min_radius);

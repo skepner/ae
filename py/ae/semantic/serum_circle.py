@@ -17,7 +17,7 @@ def attributes(chart: ae_backend.chart_v3.Chart):
 
 # ======================================================================
 
-def style(chart: ae_backend.chart_v3.Chart, style_name: str, priority: int = 100, sera: list = None, fold: float = 2.0, theoretical: bool = False, fallback: bool = True, circle_style: dict = {"outline": {"egg": "red", "cell": "blue", "reassortant": "orange"}, "fill": {"egg": "transparent", "cell": "transparent", "reassortant": "transparent"}, "outline_width": 1.0, "dash": 0}) -> set[str]:
+def style(chart: ae_backend.chart_v3.Chart, style_name: str, priority: int = 100, sera: list[int] | None = None, fold: float = 2.0, theoretical: bool = False, fallback: bool = True, circle_style: dict = {"outline": {"egg": "red", "cell": "blue", "reassortant": "orange"}, "fill": {"egg": "transparent", "cell": "transparent", "reassortant": "transparent"}, "outline_width": 1.0, "dash": 0}) -> set[str]:
     """If sera is None show circles for all sera (if semantic attribute data is available), otherwise it's a list of serum indexes.
     empirical: True - show empirical, False - show theoretical.
     fallback: True - show fallback circle if empirical/theoretical is not available.
