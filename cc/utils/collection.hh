@@ -59,6 +59,8 @@ namespace ae
             bool operator==(const object&) const;
 
             bool empty() const { return data_.empty(); }
+            size_t size() const { return data_.size(); }
+
             void add(std::string_view key, value&& val) { insert_or_assign(key, std::move(val)); }
             bool has_key(std::string_view key) const;
 
@@ -85,6 +87,8 @@ namespace ae
             bool operator==(const array&) const = default;
 
             bool empty() const { return data_.empty(); }
+            size_t size() const { return data_.size(); }
+
             void add(value&& src) { data_.push_back(std::move(src)); }
             void add_if_not_present(value&& src) { if (!contains(src)) data_.push_back(std::move(src)); }
             bool contains(const value& val) const;

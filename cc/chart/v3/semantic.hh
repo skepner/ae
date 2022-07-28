@@ -32,6 +32,27 @@ namespace ae::chart::v3
                 clds.add_if_not_present(clade);
         }
 
+        std::vector<std::string_view> clades() const
+            {
+                return std::visit(
+                    []<typename C>(const C& content) -> std::vector<std::string_view> {
+                        if constexpr (std::is_same_v<C, ae::dynamic::array>) {
+                            std::vector<std::string_view> res(content.size());
+                            std::transform(content.begin(), content.end(), res.begin(), [](const auto& val) -> std::string_view { return val.as_string_or_empty(); });
+                            return res;
+                        }
+                        else if constexpr (std::is_same_v<C, ae::dynamic::null>)
+                            return {};
+                        else
+                            throw ae::dynamic::invalid_value{"internal: value of the symantic attribute \"{}\" is not array", _clades_key};
+                    },
+                    data_[_clades_key].data());
+                // const auto& clades = ;
+                // if (clades.is_null())
+                //     return {};
+                // if (!clades.is_array())
+            }
+
         void add_clade(std::string_view clade) { data_.as_array(_clades_key).add_if_not_present(clade); }
 
         bool has_clade(std::string_view clade) const { return data_[_clades_key].contains(clade); }

@@ -280,6 +280,7 @@ void ae::py::chart_v3_antigens(pybind11::module_& chart_v3_submodule)
     pybind11::class_<SemanticAttributes>(chart_v3_submodule, "SemanticAttributes")
         .def("__str__", [](const SemanticAttributes& attrs) { return fmt::format("{}", attrs); })                                                //
         .def("add_clade", &SemanticAttributes::add_clade, "clade"_a)                                                                             //
+        .def("clades", pybind11::overload_cast<>(&SemanticAttributes::clades, pybind11::const_))                                                 //
         .def("vaccine", pybind11::overload_cast<std::string_view>(&SemanticAttributes::vaccine), "year"_a)                                       //
         .def("set", pybind11::overload_cast<std::string_view, std::string_view>(&SemanticAttributes::set<std::string_view>), "key"_a, "value"_a) //
         .def("set", pybind11::overload_cast<std::string_view, bool>(&SemanticAttributes::set<bool>), "key"_a, "value"_a)                         //
