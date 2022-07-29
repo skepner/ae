@@ -1,4 +1,4 @@
-Time-stamp: <2022-07-22 08:45:48 eu>
+Time-stamp: <2022-07-29 11:18:16 eu>
 * already downloaded from gisaid: ~/ac/sequences
 ls -l ~/ac/sequences/gis*.fas.*
 
@@ -23,13 +23,22 @@ Isolate name_|_a=Isolate ID_|_b=Type_|_c=Passage details/history_|_d=Lineage_|_e
 * seqdb-v4
 
 #+BEGIN_SRC bash
-dos2unix /r/gisaid_epiflu_sequence*.fasta && ln -sf ~/ac/sequences/ae.py /r && ~/ae/bin/seqdb-update -m a -n /r/gisaid_epiflu_sequence*.fasta
-# no=0; for f in /r/gisaid_epiflu_sequence*.fasta; do no=$((no+1)); t=gisaid-$(date +%Y-%m%d)-${no}.fas.xz; xz -9ec ${f} >/r/${t}; mv -i /r/${t} ~/ac/sequences/; done
-no=0; for f in /r/gisaid_epiflu_sequence*.fasta; do no=$((no+1)); t=gisaid-$(date +%Y-%m%d)-${no}.fas.br; brotli -c ${f} >/r/${t}; mv -i /r/${t} ~/ac/sequences/; done
-~/ae/bin/seqdb-update -m a ~/ac/sequences/gisaid-$(date +%Y-%m%d)-*.fas.*
-seqdb-put
-ssa
+  dos2unix /r/gisaid_epiflu_sequence*.fasta && ln -sf ~/ac/sequences/ae.py /r
+  ~/ae/bin/seqdb-update -m a -n /r/gisaid_epiflu_sequence*.fasta
+  # no=0; for f in /r/gisaid_epiflu_sequence*.fasta; do no=$((no+1)); t=gisaid-$(date +%Y-%m%d)-${no}.fas.xz; xz -9ec ${f} >/r/${t}; mv -i /r/${t} ~/ac/sequences/; done
+  no=0; for f in /r/gisaid_epiflu_sequence*.fasta; do no=$((no+1)); t=gisaid-$(date +%Y-%m%d)-${no}.fas.br; brotli -c ${f} >/r/${t}; mv -i /r/${t} ~/ac/sequences/; done
+  ~/ae/bin/seqdb-update -m a ~/ac/sequences/gisaid-$(date +%Y-%m%d)-*.fas.*
+  seqdb-put
+  ssa
 #+END_SRC
+
+** ignore locations
+AJUN FARM
+DUMA
+ENFIELD
+ELY
+KLATON
+POLMAN
 
 ** re-build from scratch incrementally (to support weekly trees)
 
