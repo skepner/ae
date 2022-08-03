@@ -14,6 +14,7 @@ class Error (RuntimeError): pass
 # ----------------------------------------------------------------------
 
 def main(args: argparse.Namespace):
+    # print(f">>>> load {ae.whocc.table_dir.detect_pathname()}", file=sys.stderr)
     detect_m = ae.utils.load_module.load(ae.whocc.table_dir.detect_pathname())
     for source in args.filenames:
         workbook = ae_backend.whocc.xlsx.open(source)

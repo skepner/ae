@@ -194,7 +194,7 @@ std::string ae::xlsx::v1::Extractor::subtype_short() const
         return "h1";
     if (subtype_ == "A(H1N1)PDM09")
         return "h1pdm";
-    if (subtype_ == "A(H3N2)")
+    if (subtype_ == "A(H3N2)" || subtype_ == "H3N2")
         return "h3";
     if (subtype_ == "B") {
         if (lineage_ == LineageVictoria)
