@@ -128,7 +128,7 @@ namespace ae::xlsx::inline v1
         virtual bool valid_titer_row(nrow_t /*row*/, const column_range& /*cr*/) const { return true; }
         virtual bool is_control_serum_cell(const cell_t& cell) const;
 
-        virtual std::string make_passage(const std::string& src) const;
+        virtual std::string make_passage(size_t ag_no, const std::string& src) const;
         virtual std::string make_date(const std::string& src) const;
         virtual std::string make_lab_id(const std::string& src) const;
 
@@ -255,7 +255,7 @@ namespace ae::xlsx::inline v1
         std::string titer(size_t ag_no, size_t sr_no) const override;
 
         std::string make_date(const std::string& src) const override;
-        std::string make_passage(const std::string& src) const override;
+        std::string make_passage(size_t ag_no, const std::string& src) const override;
 
         void check_export_possibility() const override; // throws Error if exporting is not possible
 

@@ -225,7 +225,7 @@ const ae::xlsx::v1::antigen_fields_t& ae::xlsx::v1::Extractor::antigen(size_t ag
     return antigen_cache_add(ag_no, antigen_fields_t{
                                         .name = make(antigen_name_column()),                     //
                                         .date = make_date(make(antigen_date_column())),          //
-                                        .passage = make_passage(make(antigen_passage_column())), //
+                                        .passage = make_passage(ag_no, make(antigen_passage_column())), //
                                         .lab_id = make_lab_id(make(antigen_lab_id_column()))     //
                                     });
 
@@ -547,12 +547,12 @@ std::string ae::xlsx::v1::Extractor::make_date(const std::string& src) const
 
 // ----------------------------------------------------------------------
 
-std::string ae::xlsx::v1::Extractor::make_passage(const std::string& src) const
+std::string ae::xlsx::v1::Extractor::make_passage(size_t ag_no, const std::string& src) const
 {
     ae::virus::Passage passage(src); // , ae::virus::Passage::parse::yes, ae::virus::passage::parse_settings::tracing::yes);
     // AD_DEBUG("passage \"{}\" -> \"{}\"", src, passage);
     if (!passage.good()) {
-        AD_WARNING("passage parsing failed: \"{}\" -> \"{}\"", src, passage);
+        AD_WARNING("AG/SR {} passage parsing failed: \"{}\" -> \"{}\"", ag_no, src, passage);
         return src;
     }
     else
@@ -767,12 +767,12 @@ const ae::xlsx::v1::serum_fields_t& ae::xlsx::v1::ExtractorCDC::serum(size_t sr_
                 return src;
         };
 
-        return serum_cache_add(sr_no, serum_fields_t{.name = make(serum_name_column_),                     //
-                                                     .serum_id = make_serum_id(make(serum_id_column_)),    //
-                                                     .passage = make_passage(make(serum_passage_column_)), //
-                                                     .species = make(serum_species_column_),               //
-                                                     .conc = make(serum_conc_column_),                     //
-                                                     .dilut = make(serum_dilut_column_),                   //
+        return serum_cache_add(sr_no, serum_fields_t{.name = make(serum_name_column_),                            //
+                                                     .serum_id = make_serum_id(make(serum_id_column_)),           //
+                                                     .passage = make_passage(sr_no, make(serum_passage_column_)), //
+                                                     .species = make(serum_species_column_),                      //
+                                                     .conc = make(serum_conc_column_),                            //
+                                                     .dilut = make(serum_dilut_column_),                          //
                                                      .boosted = serum_boosted_column_.has_value() && !is_empty(sheet().cell(row, *serum_boosted_column_)) &&
                                                                 fmt::format("{}", sheet().cell(row, *serum_boosted_column_))[0] == 'Y'});
     }
@@ -1075,7 +1075,7 @@ const ae::xlsx::v1::serum_fields_t& ae::xlsx::v1::ExtractorWithSerumRowsAbove::s
     return serum_cache_add(sr_no, serum_fields_t{
                                       // .serum_name is set by lab specific extractor
                                       .serum_id = make(serum_id_row()),                  //
-                                      .passage = make_passage(make(serum_passage_row())) //
+                                      .passage = make_passage(sr_no, make(serum_passage_row())) //
                                   });
 
 } // ae::xlsx::v1::ExtractorWithSerumRowsAbove::serum
@@ -1382,12 +1382,12 @@ std::string ae::xlsx::v1::ExtractorCrick::make_date(const std::string& src) cons
 
 // ----------------------------------------------------------------------
 
-std::string ae::xlsx::v1::ExtractorCrick::make_passage(const std::string& src) const
+std::string ae::xlsx::v1::ExtractorCrick::make_passage(size_t ag_no, const std::string& src) const
 {
     if (std::smatch match; std::regex_search(src, match, re_CRICK_passage_concentration))
-        return ExtractorWithSerumRowsAbove::make_passage(src.substr(0, match.position(0))) + match.str(0);
+        return ExtractorWithSerumRowsAbove::make_passage(ag_no, src.substr(0, match.position(0))) + match.str(0);
     else
-        return ExtractorWithSerumRowsAbove::make_passage(src);
+        return ExtractorWithSerumRowsAbove::make_passage(ag_no, src);
 
 } // ae::xlsx::v1::ExtractorCrick::make_passage
 
