@@ -195,7 +195,7 @@ void ae::py::chart_v3(pybind11::module_& mdl)
 
         .def("info", [](std::shared_ptr<Chart> chart) { return new InfoRef{chart}; }) //
 
-        .def("populate_from_seqdb", &populate_from_seqdb, pybind11::doc("populate with sequences from seqdb, returns number of antigens and number of sera that have sequences")) //
+        .def("populate_from_seqdb", &populate_from_seqdb, "report_matched"_a = false, pybind11::doc("populate with sequences from seqdb, returns number of antigens and number of sera that have sequences")) //
         .def("lineage", [](const Chart& chart) -> std::string_view { return chart.lineage(); })                                                                                   //
         .def(
             "subtype_lineage",

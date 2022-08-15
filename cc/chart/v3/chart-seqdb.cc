@@ -6,7 +6,7 @@
 
 // ======================================================================
 
-std::pair<size_t, size_t> ae::chart::v3::populate_from_seqdb(Chart& chart)
+std::pair<size_t, size_t> ae::chart::v3::populate_from_seqdb(Chart& chart, bool report_matched)
 {
     const auto& seqdb = ae::sequences::seqdb_for_subtype(chart.info().virus_subtype());
     const ae::sequences::Clades clades{ae::sequences::Clades::load_from_default_file};
@@ -23,7 +23,7 @@ std::pair<size_t, size_t> ae::chart::v3::populate_from_seqdb(Chart& chart)
             ag_sr.aa_insertions(insertions);
     };
 
-    const auto populate = [update, &seqdb](auto& ag_srs) -> size_t {
+    const auto populate = [update, &seqdb, report_matched](auto& ag_srs) -> size_t {
         size_t populated{0};
         for (auto& ag_sr : ag_srs) {
             auto selected_by_name = seqdb.select_by_name(ag_sr.name());
@@ -31,6 +31,7 @@ std::pair<size_t, size_t> ae::chart::v3::populate_from_seqdb(Chart& chart)
             if (!selected_by_name->empty()) {
                 update(ag_sr, *selected_by_name);
                 ++populated;
+                AD_INFO(report_matched, "{}", ag_sr.designation());
             }
             else if constexpr (std::is_same_v<std::decay_t<decltype(ag_sr)>, chart::v3::Antigen>) {
                 if (!ag_sr.lab_ids().empty()) { // match by lab_id if match by name failed (e.g. CDC name in old tables)
@@ -40,6 +41,7 @@ std::pair<size_t, size_t> ae::chart::v3::populate_from_seqdb(Chart& chart)
                         if (!selected_by_seq_id->empty()) {
                             update(ag_sr, *selected_by_seq_id);
                             ++populated;
+                            AD_INFO(report_matched, "{}", ag_sr.designation());
                         }
                     }
                 }
