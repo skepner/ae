@@ -44,10 +44,8 @@ std::pair<size_t, size_t> ae::chart::v3::populate_from_seqdb(Chart& chart, bool 
             else if constexpr (std::is_same_v<std::decay_t<decltype(ag_sr)>, chart::v3::Antigen>) {
                 if (!ag_sr.lab_ids().empty()) { // match by lab_id if match by name failed (e.g. CDC name in old tables)
                     for (const auto& lab_id : ag_sr.lab_ids()) {
-                        auto selected_by_seq_id = seqdb.select_all();
-                        selected_by_seq_id->filter_lab_id(lab_id);
-                        if (!selected_by_seq_id->empty()) {
-                            update(ag_sr, no, *selected_by_seq_id);
+                        if (const auto selected_by_lab_id = seqdb.select_by_lab_id(lab_id); !selected_by_lab_id->empty()) {
+                            update(ag_sr, no, *selected_by_lab_id);
                             ++populated;
                         }
                     }

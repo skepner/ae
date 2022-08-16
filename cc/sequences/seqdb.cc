@@ -182,6 +182,36 @@ std::shared_ptr<ae::sequences::SeqdbSelected> ae::sequences::Seqdb::select_by_na
 
 // ----------------------------------------------------------------------
 
+std::shared_ptr<ae::sequences::SeqdbSelected> ae::sequences::Seqdb::select_by_lab_id(std::string_view lab_id) const // lab_id is "LAB#ID", e.g. "CDC#2007700886" as stored in ace
+{
+    auto selected = std::make_shared<SeqdbSelected>(*this);
+    if (const auto lab_and_id = string::split(lab_id, "#"sv); lab_and_id.size() == 2) {
+
+        const auto match = [&lab_and_id](const auto& seq) -> bool {
+            for (const auto& [lab, ids] : seq.lab_ids) {
+                if (lab == lab_and_id[0]) {
+                    for (const auto& id : ids) {
+                        if (id == lab_and_id[1])
+                            return true;
+                    }
+                }
+            }
+            return false;
+        };
+
+        for (const auto& entry : entries_) {
+            for (const auto& seq : entry.seqs) {
+                if (match(seq))
+                    selected->refs_.push_back(SeqdbSeqRef{.entry = &entry, .seq = &seq});
+            }
+        }
+    }
+    return selected;
+
+} // ae::sequences::Seqdb::select_by_lab_id
+
+// ----------------------------------------------------------------------
+
 const ae::sequences::Seqdb::seq_id_index_t& ae::sequences::Seqdb::seq_id_index() const
 {
     if (seq_id_index_.empty()) {

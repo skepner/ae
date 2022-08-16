@@ -111,6 +111,7 @@ namespace ae::sequences
 
         std::shared_ptr<SeqdbSelected> select_all() const;
         std::shared_ptr<SeqdbSelected> select_by_name(std::string_view name) const; // name only (not checked), without reassortant, passage, etc.
+        std::shared_ptr<SeqdbSelected> select_by_lab_id(std::string_view lab_id) const; // lab_id is "LAB#ID", e.g. "CDC#2007700886" as stored in ace
 
         void set_verbose(verbose verb) const { verbose_ = verb; }
         bool is_verbose() const { return verbose_ == verbose::yes; }
