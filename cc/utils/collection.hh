@@ -71,6 +71,8 @@ namespace ae
             value& operator[](std::string_view key) { return find_or_add(key); }
             const value& operator[](std::string_view key) const { return find_or_null(key); }
 
+            void remove(std::string_view key);
+
           private:
             // std::unordered_map<std::string, value, string_hash_for_unordered_map, std::equal_to<>> data_; // g++11 cannot handle value declared after this line
             std::vector<std::pair<std::string, value>> data_;
@@ -205,6 +207,18 @@ namespace ae
                     data_);
             }
 
+            void remove(std::string_view key)
+            {
+                std::visit(
+                    [key]<typename T>(T& content) {
+                        if constexpr (std::is_same_v<T, object>)
+                            return content.remove(key);
+                        else
+                            throw invalid_value{"dynamic::value::remove(key) cannot be used with variant value of type {}", typeid(content).name()};
+                    },
+                    data_);
+            }
+
             void add_if_not_present(value&& to_add)
             {
                 std::visit(
@@ -295,6 +309,11 @@ namespace ae
             if (const auto found = std::find_if(std::begin(data_), std::end(data_), [key](const auto& en) { return en.first == key; }); found != std::end(data_))
                 found->second = std::move(val);
             data_.emplace_back(key, std::move(val));
+        }
+
+        inline void object::remove(std::string_view key)
+        {
+            data_.erase(std::remove_if(std::begin(data_), std::end(data_), [key](const auto& en) { return en.first == key; }), std::end(data_));
         }
 
         // inline array::array() {}

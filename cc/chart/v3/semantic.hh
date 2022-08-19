@@ -74,6 +74,8 @@ namespace ae::chart::v3
 
         const auto& get(std::string_view key) const { return data_[key]; }
 
+        void remove(std::string_view key) { data_.remove(key); }
+
       private:
         DynamicCollection data_{};
     };

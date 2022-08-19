@@ -36,6 +36,11 @@ def _report(data: list[dict[str, object]]):
 
 # ======================================================================
 
+def remove_serology(chart: ae_backend.chart_v3.Chart):
+    """Remove serology semantic attributes"""
+    for no, antigen in chart.select_antigens(lambda ag: bool(ag.antigen.semantic.get("serology"))):
+        antigen.semantic.remove("serology")
+
 def collect_data_for_styles(chart: ae_backend.chart_v3.Chart):
     """Look for "serology" semantic attribute to collect data for styles"""
     name_generator = NameGenerator()

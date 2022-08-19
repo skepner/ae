@@ -289,6 +289,7 @@ void ae::py::chart_v3_antigens(pybind11::module_& chart_v3_submodule)
             "set", [](SemanticAttributes& target, std::string_view key, const pybind11::object& source) { target.set(key, to_dynamic_value(source)); }, "key"_a, "value"_a) //
         .def(
             "get", [](const SemanticAttributes& attrs, std::string_view key) { return to_py_object(attrs.get(key)); }, "key"_a) //
+        .def("remove", &SemanticAttributes::remove, "key"_a)                                                                    //
         ;
 
     // ----------------------------------------------------------------------
