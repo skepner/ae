@@ -1,4 +1,4 @@
-Time-stamp: <2022-08-12 10:26:00 eu>
+Time-stamp: <2022-08-19 09:52:06 eu>
 * already downloaded from gisaid: ~/ac/sequences
 ls -l ~/ac/sequences/gis*.fas.*
 
@@ -35,8 +35,6 @@ Isolate name_|_a=Isolate ID_|_b=Type_|_c=Passage details/history_|_d=Lineage_|_e
 ** ignore locations
 AJUN FARM
 DUMA
-ENFIELD
-ELY
 KLATON
 POLMAN
 
