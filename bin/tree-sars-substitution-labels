@@ -1,0 +1,49 @@
+#! /usr/bin/env python3
+"""
+Read SARS tree from newick, populate it from fasta (including transaltion of sequences from nuc to aa), calculate aa/nuc substitution labels, export newick trees with labels
+"""
+
+# import os
+import sys
+import datetime
+# import re
+# import collections
+# import pprint
+from pathlib import Path
+import argparse
+import ae_backend.tree
+from ae.sequences.source import fasta
+from ae.sequences.utils import hamming_distance
+
+# ----------------------------------------------------------------------
+
+def main(args: argparse.Namespace):
+    s1 = datetime.datetime.now()
+    tree = ae_backend.tree.load(args.input_tree)
+    print(f">>> Tree: {tree.number_of_leaves()} leaves. Loaded in {datetime.datetime.now() - s1}", file=sys.stderr)
+
+
+    s2 = datetime.datetime.now()
+    fasta_data = fasta.read(args.input_fasta)
+    print(f">>> Fasta: {len(fasta_data)} sequences with unique names. Loaded in {datetime.datetime.now() - s2}", file=sys.stderr)
+
+    # if args.output_tree:
+    #     ae_backend.tree.export(tree, args.output_tree)
+
+# ----------------------------------------------------------------------
+
+try:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("input_tree", type=Path)
+    parser.add_argument("input_fasta", type=Path)
+    parser.add_argument("output_tree_nuc_labels", nargs="?", type=Path)
+    parser.add_argument("output_tree_aa_labels", nargs="?", type=Path)
+    args = parser.parse_args()
+    exit_code = main(args) or 0
+except Exception as err:
+    import traceback
+    print(f"> {err}\n{traceback.format_exc()}", file=sys.stderr)
+    exit_code = 1
+exit(exit_code)
+
+# ======================================================================
