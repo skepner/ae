@@ -24,8 +24,21 @@ def main(args: argparse.Namespace):
 
 
     s2 = datetime.datetime.now()
-    fasta_data = fasta.read(args.input_fasta)
-    print(f">>> Fasta: {len(fasta_data)} sequences with unique names. Loaded in {datetime.datetime.now() - s2}", file=sys.stderr)
+    for no, en in enumerate(ae_backend.raw_sequence.FastaReader(args.input_fasta)):
+        print(f">>>> {en.raw_name} AA:[{en.sequence.aa}] NUC:[{en.sequence.nuc}] RAW:[{en.sequence.raw}]", file=sys.stderr)
+        if no > 10:
+            break
+
+    # fasta_data = fasta.read(args.input_fasta)
+    # print(f">>> Fasta: {len(fasta_data)} sequences with unique names. Loaded in {datetime.datetime.now() - s2}", file=sys.stderr)
+
+    # # ss = fasta_data["EPI_ISL_12369448"]
+    # # print(f">>>> AA:[{ss.aa}] NUC:[{ss.nuc}] RAW:[{ss.raw}]", file=sys.stderr)
+
+    # for no, ss in enumerate(fasta_data.items()):
+    #     print(f">>>> {ss[0]} AA:[{ss[1].aa}] NUC:[{ss[1].nuc}] RAW:[{ss[1].raw}]", file=sys.stderr)
+    #     if no > 10:
+    #         break
 
     # if args.output_tree:
     #     ae_backend.tree.export(tree, args.output_tree)
