@@ -30,7 +30,7 @@ namespace ae
         {
             if (report_ == report_time::yes) {
                 if (const auto elap = elapsed(start_); elap >= threshold_)
-                    AD_PRINT(">>> {}: {:%H:%M:%S}\n", message_, elap);
+                    AD_PRINT(">>> {}: {:%H:%M:%S}", message_, elap);
                 report_ = report_time::no;
             }
         }

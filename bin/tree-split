@@ -13,6 +13,8 @@ def main(args: argparse.Namespace):
     print(f">>> {tree.number_of_leaves()} leaves", file=sys.stderr)
     root_node = tree.select_leaves().filter_seq_id([args.split_at])[0]
     ae_backend.tree.export_subtree(root_node, args.bottom_tree)
+    tree.remove([root_node.parent()])
+    ae_backend.tree.export(tree, args.top_tree)
 
 # ----------------------------------------------------------------------
 

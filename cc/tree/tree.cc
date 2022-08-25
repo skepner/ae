@@ -562,7 +562,7 @@ void ae::tree::export_tree(const Tree& tree, const std::filesystem::path& filena
 void ae::tree::export_subtree(const Tree& tree, node_index_t root, const std::filesystem::path& filename)
 {
     const auto parent = tree.parent(root);
-    fmt::print(stderr, ">>>> export_subtree {} parent: {}\n", root, parent);
+    // fmt::print(stderr, ">>>> export_subtree {} parent: {}\n", root, parent);
     export_subtree(tree, tree.inode(parent), filename);
 
 } // ae::tree::export_subtree
