@@ -10,6 +10,7 @@ import ae_backend
 
 def main(args: argparse.Namespace):
     tree = ae_backend.tree.load(args.input_tree)
+    print(f">>> {tree.number_of_leaves()} leaves", file=sys.stderr)
     if bad_inodes := tree.select_inodes_with_just_one_child():
         bad_inodes_txt = "\n  ".join(f"{node.node_id()} --> {node.first_leaf().name()}" for node in bad_inodes)
         print(f">> tree has {len(bad_inodes)} inode(s) with just one child (raxml may fail)\n  {bad_inodes_txt}", file=sys.stderr)

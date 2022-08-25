@@ -236,7 +236,7 @@ std::shared_ptr<ae::tree::Tree> ae::tree::load_newick(const std::string& source)
 
 // ----------------------------------------------------------------------
 
-std::string ae::tree::export_newick(const Tree& tree)
+std::string ae::tree::export_newick(const Tree& tree, const Inode& root)
 {
     Timeit ti{"tree::export_newick", std::chrono::milliseconds{100}};
 

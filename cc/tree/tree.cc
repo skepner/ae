@@ -553,22 +553,7 @@ std::shared_ptr<ae::tree::Tree> ae::tree::load(const std::filesystem::path& file
 
 void ae::tree::export_tree(const Tree& tree, const std::filesystem::path& filename)
 {
-    Timeit ti{"export_tree", std::chrono::milliseconds{100}};
-    using namespace std::string_view_literals;
-    const auto has_suffix = [filename = filename.filename().native()](std::initializer_list<std::string_view> suffixes) {
-        return std::any_of(std::begin(suffixes), std::end(suffixes), [&filename](std::string_view suffix) { return filename.find(suffix) != std::string::npos; });
-    };
-
-    std::string data;
-    if (has_suffix({".newick"sv}))
-        data = export_newick(tree);
-    else if (has_suffix({".json"sv, ".tjz"sv}) || filename.native() == "=")
-        data = export_json(tree);
-    else if (filename.native() == "-" || has_suffix({".txt"sv, ".text"sv}))
-        data = export_text(tree);
-    else
-        throw std::runtime_error{AD_FORMAT("cannot export tree to \"{}\": unknown file format", filename)};
-    file::write(filename, data);
+    export_subtree(tree, tree.root(), filename);
 
 } // ae::tree::export_tree
 
@@ -578,6 +563,30 @@ void ae::tree::export_subtree(const Tree& tree, node_index_t root, const std::fi
 {
     const auto parent = tree.parent(root);
     fmt::print(stderr, ">>>> export_subtree {} parent: {}\n", root, parent);
+    export_subtree(tree, tree.inode(parent), filename);
+
+} // ae::tree::export_subtree
+
+// ----------------------------------------------------------------------
+
+void ae::tree::export_subtree(const Tree& tree, const Inode& root, const std::filesystem::path& filename)
+{
+    Timeit ti{"export (sub)tree", std::chrono::milliseconds{100}};
+    using namespace std::string_view_literals;
+    const auto has_suffix = [filename = filename.filename().native()](std::initializer_list<std::string_view> suffixes) {
+        return std::any_of(std::begin(suffixes), std::end(suffixes), [&filename](std::string_view suffix) { return filename.find(suffix) != std::string::npos; });
+    };
+
+    std::string data;
+    if (has_suffix({".newick"sv}))
+        data = export_newick(tree, root);
+    else if (has_suffix({".json"sv, ".tjz"sv}) || filename.native() == "=")
+        data = export_json(tree, root);
+    else if (filename.native() == "-" || has_suffix({".txt"sv, ".text"sv}))
+        data = export_text(tree, root);
+    else
+        throw std::runtime_error{AD_FORMAT("cannot export (sub)tree to \"{}\": unknown file format", filename)};
+    file::write(filename, data);
 
 } // ae::tree::export_subtree
 

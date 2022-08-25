@@ -15,14 +15,14 @@ static void export_inode(fmt::memory_buffer& text, const ae::tree::Inode& inode,
 
 // ======================================================================
 
-std::string ae::tree::export_text(const Tree& tree)
+std::string ae::tree::export_text(const Tree& tree, const Inode& root)
 {
     const double edge_step = 200.0 / *const_cast<Tree&>(tree).calculate_cumulative();
 
     fmt::memory_buffer text;
     fmt::format_to(std::back_inserter(text), "-*- Tal-Text-Tree -*-\n");
     prefix_t prefix;
-    export_inode(text, tree.root(), tree, edge_step, prefix);
+    export_inode(text, root, tree, edge_step, prefix);
     return fmt::to_string(text);
 
 } // ae::tree::export_text
@@ -92,7 +92,7 @@ void export_inode(fmt::memory_buffer& text, const ae::tree::Inode& inode, const 
 
 // ======================================================================
 
-std::string ae::tree::export_json(const Tree& tree)
+std::string ae::tree::export_json(const Tree& tree, const Inode& root)
 {
     Timeit ti{"tree::export_json", std::chrono::milliseconds{100}};
 
@@ -197,11 +197,19 @@ std::string ae::tree::export_json(const Tree& tree)
         fmt::print("> export_json format_leaf_post \"{}\"\n", leaf->name);
     };
 
+    bool within_subtree = false;
     for (const auto ref : tree.visit(tree_visiting::all_pre_post)) {
-        if (ref.pre())
-            ref.visit(format_inode_pre, format_leaf);
-        else
+        if (ref.pre()) {
+            if (!within_subtree && root.node_id_ == ref.node_id())
+                within_subtree = true;
+            if (within_subtree)
+                ref.visit(format_inode_pre, format_leaf);
+        }
+        else if (within_subtree) {
             ref.visit(format_inode_post, format_leaf_post);
+            if (root.node_id_ == ref.node_id())
+                within_subtree = false;
+        }
     }
     fmt::format_to(std::back_inserter(text), "\n}}\n");
     return fmt::to_string(text);
