@@ -190,6 +190,7 @@ namespace ae::tree
 
     std::shared_ptr<Tree> load(const std::filesystem::path& filename);
     void export_tree(const Tree& tree, const std::filesystem::path& filename);
+    void export_subtree(const Tree& tree, node_index_t root, const std::filesystem::path& filename);
 
     // ----------------------------------------------------------------------
 

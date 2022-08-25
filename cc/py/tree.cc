@@ -55,6 +55,11 @@ namespace ae::tree
         }
     };
 
+    inline void export_subtree(const Node_Ref& root, const std::filesystem::path& filename)
+    {
+        export_subtree(root.tree, root.node_index, filename);
+    }
+
 } // namespace ae::tree
 
 // ======================================================================
@@ -161,6 +166,7 @@ void ae::py::tree(pybind11::module_& mdl)
 
     tree_submodule.def("load", &load, "filename"_a);
     tree_submodule.def("export", &export_tree, "tree"_a, "filename"_a);
+    tree_submodule.def("export_subtree", pybind11::overload_cast<const Node_Ref&, const std::filesystem::path&>(&export_subtree), "root_node"_a, "filename"_a);
 
     // ----------------------------------------------------------------------
 }
