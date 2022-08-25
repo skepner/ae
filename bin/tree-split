@@ -13,6 +13,7 @@ def main(args: argparse.Namespace):
     print(f">>> {tree.number_of_leaves()} leaves", file=sys.stderr)
     root_node = tree.select_leaves().filter_seq_id([args.split_at])[0]
     ae_backend.tree.export_subtree(root_node, args.bottom_tree)
+    print(f">>> for re-join use \"{root_node.parent().parent().first_immediate_child_leaf().name()}\" as joining point", file=sys.stderr)
     tree.remove([root_node.parent()])
     ae_backend.tree.export(tree, args.top_tree)
 

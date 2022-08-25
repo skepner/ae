@@ -102,6 +102,7 @@ namespace ae::tree
         const Leaf& leaf(node_index_t index) const { return leaves_[static_cast<size_t>(*index)]; }
         Leaf& leaf(node_index_t index) { return leaves_[static_cast<size_t>(*index)]; }
         node_index_t first_leaf(node_index_t index) const;
+        node_index_t first_immediate_child_leaf(node_index_t index) const;  // throws if no immediate leaves found
 
         const_tree_iterator::reference node(node_index_t index) const
         {

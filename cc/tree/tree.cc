@@ -502,6 +502,20 @@ ae::tree::node_index_t ae::tree::Tree::first_leaf(node_index_t index) const
 
 // ----------------------------------------------------------------------
 
+ae::tree::node_index_t ae::tree::Tree::first_immediate_child_leaf(node_index_t index) const  // throws if no immediate leaves found
+{
+    if (is_leaf(index))
+        throw std::invalid_argument{AD_FORMAT("node {} is leaf, it cannot have immediate children", index)};
+    for (const auto child : inode(index).children) {
+        if (is_leaf(child))
+            return child;
+    }
+    throw std::invalid_argument{AD_FORMAT("node {} has no immediate leaves", index)};
+
+} // ae::tree::Tree::first_immediate_child_leaf
+
+// ----------------------------------------------------------------------
+
 ae::tree::Nodes& ae::tree::Nodes::sort_by_cumulative()
 {
     const auto cumulative_edge = [this](const auto& id) { return tree.node(id).visit([](const auto* node) { return node->cumulative_edge; }); };

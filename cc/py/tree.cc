@@ -39,6 +39,7 @@ namespace ae::tree
         }
 
         Node_Ref first_leaf() const { return Node_Ref{tree.first_leaf(node_index), tree}; }
+        Node_Ref first_immediate_child_leaf() const { return Node_Ref{tree.first_immediate_child_leaf(node_index), tree}; }
 
     };
 
@@ -117,7 +118,7 @@ void ae::py::tree(pybind11::module_& mdl)
         .def("number_of_leaves", &Tree::number_of_leaves)                                                                                 //
         .def(
             "fix_names_by_seqdb", [](Tree& tree, std::string_view subtype) { return tree.fix_names_by_seqdb(virus::type_subtype_t{subtype}); }, "subtype"_a,
-            pybind11::doc("fix names not found in the current seqdb using hash, returns list of messages")) //
+            pybind11::doc("fix names not found in the current seqdb using hash, returns list of messages"))                                       //
         .def("set_raxml_ancestral_state_reconstruction_data", &Tree::set_raxml_ancestral_state_reconstruction_data, "asr_tree"_a, "asr_states"_a) //
         ;
 
@@ -142,15 +143,16 @@ void ae::py::tree(pybind11::module_& mdl)
         .def("__next__", &Nodes_Iterator::next)                                    //
         ;
 
-    pybind11::class_<Node_Ref>(tree_submodule, "Node_Ref")        //
-        .def("name", &Node_Ref::name)                             //
-        .def("name", &Node_Ref::set_name)                         //
-        .def("edge", &Node_Ref::edge)                             //
-        .def("cumulative_edge", &Node_Ref::cumulative_edge)       //
-        .def("node_id", &Node_Ref::node_id)                       //
-        .def("parent", &Node_Ref::parent)                         //
-        .def("first_leaf", &Node_Ref::first_leaf)                 //
-        .def("number_of_children", &Node_Ref::number_of_children) //
+    pybind11::class_<Node_Ref>(tree_submodule, "Node_Ref")                        //
+        .def("name", &Node_Ref::name)                                             //
+        .def("name", &Node_Ref::set_name)                                         //
+        .def("edge", &Node_Ref::edge)                                             //
+        .def("cumulative_edge", &Node_Ref::cumulative_edge)                       //
+        .def("node_id", &Node_Ref::node_id)                                       //
+        .def("parent", &Node_Ref::parent)                                         //
+        .def("first_leaf", &Node_Ref::first_leaf)                                 //
+        .def("first_immediate_child_leaf", &Node_Ref::first_immediate_child_leaf) //
+        .def("number_of_children", &Node_Ref::number_of_children)                 //
         .def(
             "add_leaf",
             [](Node_Ref& parent, std::string_view name, double edge) {
