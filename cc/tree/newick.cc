@@ -278,11 +278,19 @@ std::string ae::tree::export_newick(const Tree& tree, const Inode& root)
         fmt::print("> export_newick format_leaf_post \"{}\"\n", leaf->name);
     };
 
+    bool within_subtree = false;
     for (const auto ref : tree.visit(tree_visiting::all_pre_post)) {
-        if (ref.pre())
-            ref.visit(format_inode_pre, format_leaf);
-        else
+        if (ref.pre()) {
+            if (!within_subtree && root.node_id_ == ref.node_id())
+                within_subtree = true;
+            if (within_subtree)
+                ref.visit(format_inode_pre, format_leaf);
+        }
+        else if (within_subtree) {
             ref.visit(format_inode_post, format_leaf_post);
+            if (root.node_id_ == ref.node_id())
+                within_subtree = false;
+        }
     }
     fmt::format_to(std::back_inserter(text), ";");
 
