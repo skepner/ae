@@ -23,13 +23,21 @@ alglib_src = files(
   'src/statistics.cpp'
 )
 
-simd = import('unstable_simd')
-simd_conf_data = simd.check('has_simd', sse: 'simd_sse.c', compiler: meson.get_compiler('cpp'))[1]
-if simd_conf_data.get('SSE', false)
+if build_machine.cpu_family() == 'x86_64'
   arg_sse = '-mfpmath=sse'
 else
   arg_sse = ''
 endif
+
+# 2022-05-18: does not work on ubuntu
+# simd = import('unstable_simd')
+# simd_conf_data = simd.check('has_simd', sse: 'simd_sse.c', compiler: meson.get_compiler('cpp'))[1]
+# message(simd_conf_data[1].get('SSE', false))
+# if simd_conf_data.get('SSE', false)
+#   arg_sse = '-mfpmath=sse'
+# else
+#   arg_sse = ''
+# endif
 
 alglib = shared_library(
   'alglib',

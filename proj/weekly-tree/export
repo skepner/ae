@@ -232,6 +232,16 @@ def h3(subtype: str, args: argparse.Namespace):
             "ACRE/181823-IEC/2021",
             # 2022-0819 potential long branch
             "CATALONIA/NSVH101883267/2022_OR_F79C7813",
+            # 2022-0825 long branch in the tree
+            "INDIANA/27/2018_SIAT1_26C3A2A4",
+            "SWINE/KENTUCKY/18TOSU1939/2018_26C3A2A4",
+            "SWINE/ILLINOIS/18TOSU1411/2018_26C3A2A4",
+            # 2022-0826 potential long branch
+            "FIJI/99/2022_OR_80B95BF8",
+            "FIJI/102/2022_OR_6AEB79D8",
+            "WEST_VIRGINIA/25/2022_SIAT1_3E592413",
+            "WEST_VIRGINIA/26/2022_SIAT1_3E592413",
+            "WEST_VIRGINIA/24/2022_SIAT1_2FDA4DA3",
         ])
         .remove_hash_duplicates()
         .replace_with_master()
