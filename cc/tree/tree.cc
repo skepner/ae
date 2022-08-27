@@ -565,6 +565,13 @@ std::shared_ptr<ae::tree::Tree> ae::tree::load(const std::filesystem::path& file
 
 // ----------------------------------------------------------------------
 
+void ae::tree::load_subtree(const std::filesystem::path& filename, Tree& tree, node_index_t join_at)
+{
+
+} // ae::tree::load_subtree
+
+// ----------------------------------------------------------------------
+
 void ae::tree::export_tree(const Tree& tree, const std::filesystem::path& filename)
 {
     export_subtree(tree, tree.root(), filename);
