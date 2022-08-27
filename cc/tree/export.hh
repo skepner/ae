@@ -16,6 +16,7 @@ namespace ae::tree
 
     bool is_json(std::string_view data);
     std::shared_ptr<Tree> load_json(const std::string& data, const std::filesystem::path& filename);
+    void load_join_json(const std::string& data, Tree& tree, Inode& join_at, const std::filesystem::path& filename);
 
 } // namespace ae::tree
 

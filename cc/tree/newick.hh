@@ -13,6 +13,7 @@ namespace ae::tree
 
     inline bool is_newick(std::string_view data) { return data.size() > 5 && data[0] == '('; }
     std::shared_ptr<Tree> load_newick(const std::string& data);
+    void load_join_newick(const std::string& data, Tree& tree, Inode& join_at);
     std::string export_newick(const Tree& tree, const Inode& root);
 
 } // namespace ae::tree

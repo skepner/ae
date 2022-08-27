@@ -541,4 +541,14 @@ std::shared_ptr<ae::tree::Tree> ae::tree::load_json(const std::string& data, con
 
 } // ae::tree::load_json
 
+// ----------------------------------------------------------------------
+
+void ae::tree::load_join_json(const std::string& data, Tree& tree, Inode& join_at, const std::filesystem::path& filename)
+{
+    fmt::print(stderr, "> load_join_json not implemented\n");
+    throw std::runtime_error{AD_FORMAT("load_join_json not implemented")};
+
+} // ae::tree::load_join_json
+
+
 // ======================================================================

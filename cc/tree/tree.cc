@@ -567,6 +567,15 @@ std::shared_ptr<ae::tree::Tree> ae::tree::load(const std::filesystem::path& file
 
 void ae::tree::load_subtree(const std::filesystem::path& filename, Tree& tree, node_index_t join_at)
 {
+    const auto data = file::read(filename, ::simdjson::SIMDJSON_PADDING);
+    if (is_newick(data))
+        load_join_newick(data, tree, tree.inode(join_at));
+    else if (is_json(data))
+        load_join_json(data, tree, tree.inode(join_at), filename);
+    else
+        throw std::runtime_error{AD_FORMAT("cannot load tree from \"{}\": unknown file format", filename)};
+    tree.calculate_cumulative();
+    tree.set_node_id(Tree::reset_node_id::no);
 
 } // ae::tree::load_subtree
 

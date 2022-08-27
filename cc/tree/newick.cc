@@ -236,6 +236,15 @@ std::shared_ptr<ae::tree::Tree> ae::tree::load_newick(const std::string& source)
 
 // ----------------------------------------------------------------------
 
+void ae::tree::load_join_newick(const std::string& data, Tree& tree, Inode& join_at)
+{
+    fmt::print(stderr, "> load_join_newick not implemented\n");
+    throw std::runtime_error{"load_join_newick not implemented"};
+
+} // ae::tree::load_join_newick
+
+// ----------------------------------------------------------------------
+
 std::string ae::tree::export_newick(const Tree& tree, const Inode& root)
 {
     Timeit ti{"tree::export_newick", std::chrono::milliseconds{100}};
