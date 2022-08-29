@@ -569,13 +569,14 @@ void ae::tree::load_subtree(const std::filesystem::path& filename, Tree& tree, n
 {
     const auto data = file::read(filename, ::simdjson::SIMDJSON_PADDING);
     if (is_newick(data))
-        load_join_newick(data, tree, tree.inode(join_at));
+        load_join_newick(data, tree, join_at);
     else if (is_json(data))
         load_join_json(data, tree, tree.inode(join_at), filename);
     else
         throw std::runtime_error{AD_FORMAT("cannot load tree from \"{}\": unknown file format", filename)};
-    tree.calculate_cumulative();
+    tree.calculate_cumulative(true);
     tree.set_node_id(Tree::reset_node_id::no);
+    // fmt::print(stderr, ">>>> subtree loaded: {}\n", tree.number_of_leaves());
 
 } // ae::tree::load_subtree
 

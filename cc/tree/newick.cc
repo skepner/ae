@@ -16,6 +16,7 @@ namespace ae::tree::newick
     struct tree_builder_t
     {
         tree_builder_t(Tree& a_tree) : tree{a_tree} {}
+        tree_builder_t(Tree& a_tree, node_index_t join_at) : tree{a_tree}, debug{true} { parents.push(join_at); }
 
         void subtree_begin() const
         {
@@ -23,6 +24,8 @@ namespace ae::tree::newick
                 parents.push(tree.root_index());
             else
                 parents.push(tree.add_inode(parents.top()).first);
+            // if (debug)
+            //     fmt::print(stderr, ">>>> subtree_begin {} leaves: {}\n", parents.size(), leaves);
             max_nesting_level = std::max(max_nesting_level, parents.size());
         }
 
@@ -32,6 +35,8 @@ namespace ae::tree::newick
             inode.edge = EdgeLength{edge};
             inode.name = name;
             parents.pop();
+            // if (debug)
+            //     fmt::print(stderr, ">>>> subtree_end {} leaves: {}\n", parents.size(), leaves);
         }
 
         void leaf(std::string_view name, double edge) const
@@ -43,6 +48,7 @@ namespace ae::tree::newick
 
         Tree& tree;
         mutable std::stack<node_index_t> parents{};
+        const bool debug{false};
         mutable size_t leaves{0};
         mutable size_t max_nesting_level{0};
     };
@@ -236,10 +242,19 @@ std::shared_ptr<ae::tree::Tree> ae::tree::load_newick(const std::string& source)
 
 // ----------------------------------------------------------------------
 
-void ae::tree::load_join_newick(const std::string& data, Tree& tree, Inode& join_at)
+void ae::tree::load_join_newick(const std::string& source, Tree& tree, node_index_t join_at)
 {
-    fmt::print(stderr, "> load_join_newick not implemented\n");
-    throw std::runtime_error{"load_join_newick not implemented"};
+    try {
+        newick::tree_builder_t tree_builder{tree, join_at};
+        if (!lexy::parse<newick::grammar::tree>(lexy::string_input<lexy::utf8_encoding>{source}, tree_builder, newick::report_error{}))
+            throw newick::grammar::invalid_input{"parsing failed"};
+        if (tree_builder.max_nesting_level >= newick::grammar::tree::max_recursion_depth)
+            fmt::print("> Tree read partially, increase newick::grammar::tree::max_recursion_depth, current value: {}, number of leaves read: {}\n", newick::grammar::tree::max_recursion_depth, tree_builder.leaves);
+        // fmt::print(">>>> {} leaves in the tree read from newick, meax nesting level: {}\n", tree_builder.leaves, tree_builder.max_nesting_level);
+    }
+    catch (newick::grammar::invalid_input& err) {
+        fmt::print(">> newick parsing error: {}\n", err.what());
+    }
 
 } // ae::tree::load_join_newick
 
