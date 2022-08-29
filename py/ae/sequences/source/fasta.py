@@ -33,6 +33,9 @@ class reader:
                 or regular_name_parser(en.raw_name, lab_hint=self.lab_hint, context=self.context)
             yield metadata, en.sequence # metadata may contain "excluded" key to manually exclude the sequence
 
+    def raw(self):
+        return self.reader_
+
     def get_and_clear_messages(self):
         messages = self.messages
         self.messages = []
