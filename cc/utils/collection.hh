@@ -333,15 +333,15 @@ namespace ae
 
 template <> struct fmt::formatter<ae::dynamic::value> : fmt::formatter<ae::fmt_helper::default_formatter>
 {
-    template <typename FormatCtx> auto format(const ae::dynamic::value& val, FormatCtx& ctx) const
+    template <typename FormatCtx> constexpr auto format(const ae::dynamic::value& val, FormatCtx& ctx) const
     {
-        return std::visit([&ctx](const auto& content) { return format_to(ctx.out(), "{}", content); }, val.data());
+        return std::visit([&ctx]<typename T>(const T& content) { return format_to(ctx.out(), "{}", content); }, val.data());
     }
 };
 
 template <> struct fmt::formatter<ae::dynamic::object> : fmt::formatter<ae::fmt_helper::default_formatter>
 {
-    template <typename FormatCtx> auto format(const ae::dynamic::object& obj, FormatCtx& ctx) const
+    template <typename FormatCtx> constexpr auto format(const ae::dynamic::object& obj, FormatCtx& ctx) const
     {
         format_to(ctx.out(), "{{");
         bool comma = false;
@@ -359,7 +359,7 @@ template <> struct fmt::formatter<ae::dynamic::object> : fmt::formatter<ae::fmt_
 
 template <> struct fmt::formatter<ae::dynamic::array> : fmt::formatter<ae::fmt_helper::default_formatter>
 {
-    template <typename FormatCtx> auto format(const ae::dynamic::array& arr, FormatCtx& ctx) const
+    template <typename FormatCtx> constexpr auto format(const ae::dynamic::array& arr, FormatCtx& ctx) const
     {
         return format_to(ctx.out(), fmt::runtime("[{}]"), fmt::join(arr.data(), ","));
     }

@@ -17,6 +17,9 @@
 // 9.0.0 clang 14
 #pragma GCC diagnostic ignored "-Wfloat-equal" // fmt/format.h:2484
 
+// 9.1.0 clang 14
+#pragma GCC diagnostic ignored "-Wextra-semi-stmt" // fmt/ranges.h:510
+
 #elif defined(__GNUG__)
 
 #pragma GCC diagnostic ignored "-Wdeprecated" // fmt/format.h: implicit capture of ‘this’ via ‘[=]’ is deprecated in C++20

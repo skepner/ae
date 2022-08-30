@@ -20,7 +20,7 @@ namespace ae::chart::v3
 
         bool empty() const { return data_.empty(); }
 
-        const auto& data() const { return data_; }
+        constexpr const auto& data() const { return data_; }
         auto& data() { return data_; }
 
         // ----------------------------------------------------------------------
