@@ -82,7 +82,7 @@ def main(args: argparse.Namespace):
         print(f">>> number of leaves: {tree.number_of_leaves()}", file=sys.stderr)
 
     if args.output:
-        ae_backend.tree.export(tree, args.output)
+        ae_backend.tree.export(tree, args.output, args.indent)
 
 # ----------------------------------------------------------------------
 
@@ -99,6 +99,7 @@ try:
     parser.add_argument("--important", "-I", "--keep-during-removal", help="comma separated list of important strains (seq_id prefixes) to keep in case of --remove-leaves-isolated-before")
     parser.add_argument("--asr-tree", type=Path, help="raxml --ancestral tree output (*.raxml.ancestralTree)")
     parser.add_argument("--asr-states", type=Path, help="raxml --ancestral states output (*.raxml.ancestralStates)")
+    parser.add_argument("--indent", type=int, default=0)
     args = parser.parse_args()
     exit_code = main(args) or 0
 except Exception as err:

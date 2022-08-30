@@ -14,7 +14,7 @@ def main(args: argparse.Namespace):
     # print(f">>> join node: {join_node}", file=sys.stderr)
     ae_backend.tree.load_subtree(args.bottom_tree, join_node)
     print(f">>> joined tree: {tree.number_of_leaves()} leaves", file=sys.stderr)
-    ae_backend.tree.export(tree, args.output_tree)
+    ae_backend.tree.export(tree, args.output_tree, args.indent)
 
 # ----------------------------------------------------------------------
 
@@ -24,6 +24,7 @@ try:
     parser.add_argument("bottom_tree", type=Path)
     parser.add_argument("join_at", help='name of the leaf in the top tree which sibling of the bottom tree (printed by tree-split)')
     parser.add_argument("output_tree", type=Path)
+    parser.add_argument("--indent", type=int, default=0)
     args = parser.parse_args()
     exit_code = main(args) or 0
 except Exception as err:

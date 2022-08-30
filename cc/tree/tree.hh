@@ -192,9 +192,9 @@ namespace ae::tree
     std::shared_ptr<Tree> load(const std::filesystem::path& filename);
     void load_subtree(const std::filesystem::path& filename, Tree& tree, node_index_t join_at);
 
-    void export_tree(const Tree& tree, const std::filesystem::path& filename);
-    void export_subtree(const Tree& tree, node_index_t root, const std::filesystem::path& filename);
-    void export_subtree(const Tree& tree, const Inode& root, const std::filesystem::path& filename);
+    void export_tree(const Tree& tree, const std::filesystem::path& filename, size_t indent = 0);
+    void export_subtree(const Tree& tree, node_index_t root, const std::filesystem::path& filename, size_t indent = 0);
+    void export_subtree(const Tree& tree, const Inode& root, const std::filesystem::path& filename, size_t indent = 0);
 
     // ----------------------------------------------------------------------
 

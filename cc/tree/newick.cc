@@ -260,17 +260,25 @@ void ae::tree::load_join_newick(const std::string& source, Tree& tree, node_inde
 
 // ----------------------------------------------------------------------
 
-std::string ae::tree::export_newick(const Tree& tree, const Inode& root)
+std::string ae::tree::export_newick(const Tree& tree, const Inode& root, size_t indent)
 {
     Timeit ti{"tree::export_newick", std::chrono::milliseconds{100}};
 
     fmt::memory_buffer text;
     std::vector<bool> commas{false};
     commas.reserve(tree.depth());
+    size_t current_indent = 0;
 
-    const auto format_comma = [&text, &commas]() {
-        if (commas.back())
+    const auto format_prefix = [&text, &current_indent, indent]() {
+        if (indent)
+            fmt::format_to(std::back_inserter(text), "\n{:{}s}", " ", current_indent);
+    };
+
+    const auto format_comma = [&text, &commas, format_prefix]() {
+        if (commas.back()) {
             fmt::format_to(std::back_inserter(text), ",");
+            format_prefix();
+        }
         else
             commas.back() = true;
     };
@@ -280,14 +288,19 @@ std::string ae::tree::export_newick(const Tree& tree, const Inode& root)
             fmt::format_to(std::back_inserter(text), ":{:.10g}", *edge);
     };
 
-    const auto format_inode_pre = [&text, &commas, format_comma](const Inode*) {
+    const auto format_inode_pre = [&text, &commas, format_comma, &current_indent, indent, format_prefix](const Inode*) {
         format_comma();
         fmt::format_to(std::back_inserter(text), "(");
+        current_indent += indent;
+        format_prefix();
         commas.push_back(false);
     };
 
-    const auto format_inode_post = [&text, &commas, format_edge](const Inode* inode) {
+    const auto format_inode_post = [&text, &commas, format_edge, &current_indent, indent, format_prefix](const Inode* inode) {
         commas.pop_back();
+        if (current_indent >= indent)
+            current_indent -= indent;
+        format_prefix();
         fmt::format_to(std::back_inserter(text), ")");
         format_edge(inode->edge);
     };

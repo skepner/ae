@@ -582,25 +582,25 @@ void ae::tree::load_subtree(const std::filesystem::path& filename, Tree& tree, n
 
 // ----------------------------------------------------------------------
 
-void ae::tree::export_tree(const Tree& tree, const std::filesystem::path& filename)
+void ae::tree::export_tree(const Tree& tree, const std::filesystem::path& filename, size_t indent)
 {
-    export_subtree(tree, tree.root(), filename);
+    export_subtree(tree, tree.root(), filename, indent);
 
 } // ae::tree::export_tree
 
 // ----------------------------------------------------------------------
 
-void ae::tree::export_subtree(const Tree& tree, node_index_t root, const std::filesystem::path& filename)
+void ae::tree::export_subtree(const Tree& tree, node_index_t root, const std::filesystem::path& filename, size_t indent)
 {
     const auto parent = tree.parent(root);
     // fmt::print(stderr, ">>>> export_subtree {} parent: {}\n", root, parent);
-    export_subtree(tree, tree.inode(parent), filename);
+    export_subtree(tree, tree.inode(parent), filename, indent);
 
 } // ae::tree::export_subtree
 
 // ----------------------------------------------------------------------
 
-void ae::tree::export_subtree(const Tree& tree, const Inode& root, const std::filesystem::path& filename)
+void ae::tree::export_subtree(const Tree& tree, const Inode& root, const std::filesystem::path& filename, size_t indent)
 {
     Timeit ti{"export (sub)tree", std::chrono::milliseconds{100}};
     using namespace std::string_view_literals;
@@ -610,7 +610,7 @@ void ae::tree::export_subtree(const Tree& tree, const Inode& root, const std::fi
 
     std::string data;
     if (has_suffix({".newick"sv}))
-        data = export_newick(tree, root);
+        data = export_newick(tree, root, indent);
     else if (has_suffix({".json"sv, ".tjz"sv}) || filename.native() == "=")
         data = export_json(tree, root);
     else if (filename.native() == "-" || has_suffix({".txt"sv, ".text"sv}))
