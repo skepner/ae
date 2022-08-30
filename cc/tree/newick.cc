@@ -301,7 +301,7 @@ std::string ae::tree::export_newick(const Tree& tree, const Inode& root, size_t 
         if (current_indent >= indent)
             current_indent -= indent;
         format_prefix();
-        fmt::format_to(std::back_inserter(text), ")");
+        fmt::format_to(std::back_inserter(text), "){}", inode->name);
         format_edge(inode->edge);
     };
 
