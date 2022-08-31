@@ -26,9 +26,14 @@ def attributes(chart: ae_backend.chart_v3.Chart, entries: list[dict[str, str]]):
         else:
             set_by_aa(**data)
 
+    # set sequenced
+    for no, ag_sr in chart.select_antigens(lambda en: en.is_sequenced()):
+        ag_sr.semantic.set("sequenced", True)
+    # print(f">>>> sequenced: {chart.select_antigens(lambda en: en.is_sequenced())}", file=sys.stderr)
+
 # ======================================================================
 
-def style(chart: ae_backend.chart_v3.Chart, style_name: str, data: list[dict[str, str]], add_counter: bool = True, legend_style: dict[str, Any] = {}, priority: int = 1000):
+def style(chart: ae_backend.chart_v3.Chart, style_name: str, data: list[dict[str, str]], add_counter: bool = True, legend_style: dict[str, Any] = {}, priority: int = 1000, mark_sequenced: dict = None):
     """expected data: [{"name": "3C.2a1b.2a.2 156S", "legend": "2a1b.2a.2 156S", "color": "red", **ignored}]"""
     sname = f"-{style_name}-sera"
     style = chart.styles()[sname]
@@ -42,6 +47,8 @@ def style(chart: ae_backend.chart_v3.Chart, style_name: str, data: list[dict[str
     style.legend.add_counter = add_counter
     front_style.legend_style(style.legend, legend_style)
     legend_priority = 99
+    if mark_sequenced:
+        style.add_modifier(selector={"sequenced": True}, **mark_sequenced, only="antigens")
     for modifier in data:
         style.add_modifier(selector={"C": modifier["name"]}, fill=modifier["color"], outline="black", rais=True, only="antigens", legend=modifier["legend"], legend_priority=legend_priority)
         legend_priority -= 1

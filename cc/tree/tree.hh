@@ -29,8 +29,6 @@ namespace ae::tree
         node_index_t node_id_{0};
         sequences::sequence_aa_t aa{};
         sequences::sequence_nuc_t nuc{};
-        std::vector<std::string> aa_transitions{};
-        std::vector<std::string> nuc_transitions{};
 
         template <typename Seq> const Seq& get_aa_nuc() const
         {
@@ -69,6 +67,9 @@ namespace ae::tree
 
         std::vector<node_index_t> children{};
         size_t number_of_leaves_{0};
+
+        std::vector<std::string> aa_transitions{};
+        std::vector<std::string> nuc_transitions{};
 
         // temporary data for raxml ancestral state reconstruction
         std::unordered_set<std::string> raxml_inode_names{};

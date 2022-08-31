@@ -138,10 +138,6 @@ std::string ae::tree::export_json(const Tree& tree, const Inode& root)
         fmt::format_to(std::back_inserter(text), "\n{}}}", indent); };
 
     const auto format_node_sequences = [&text, &indent](const Node* node) {
-        if (!node->aa_transitions.empty())
-            fmt::format_to(std::back_inserter(text), ", \"A\": [\"{}\"]", fmt::join(node->aa_transitions, "\", \""));
-        if (!node->nuc_transitions.empty())
-            fmt::format_to(std::back_inserter(text), ", \"B\": [\"{}\"]", fmt::join(node->nuc_transitions, "\", \""));
         if (!node->aa.empty())
             fmt::format_to(std::back_inserter(text), ",\n{} \"a\": \"{}\"", indent, node->aa);
         if (!node->nuc.empty())
@@ -156,6 +152,10 @@ std::string ae::tree::export_json(const Tree& tree, const Inode& root)
             if (inode->number_of_leaves() > 0)
                 fmt::format_to(std::back_inserter(text), ", \"L\": {}", inode->number_of_leaves());
         }
+        if (!inode->aa_transitions.empty())
+            fmt::format_to(std::back_inserter(text), ", \"A\": [\"{}\"]", fmt::join(inode->aa_transitions, "\", \""));
+        if (!inode->nuc_transitions.empty())
+            fmt::format_to(std::back_inserter(text), ", \"B\": [\"{}\"]", fmt::join(inode->nuc_transitions, "\", \""));
         format_node_sequences(inode);
         // "H": <true if hidden>,
 
@@ -363,14 +363,6 @@ namespace ae::tree
                 case 'H': // <true if hidden>,
                     //!!! TODO
                     break;
-                case 'A': // ["aa subst", "N193K"],
-                    for (auto transition : field.value().get_array())
-                        current_node_->aa_transitions.emplace_back(static_cast<std::string_view>(transition));
-                    break;
-                case 'B': // ["nuc subst", "A193T"],
-                    for (auto transition : field.value().get_array())
-                        current_node_->nuc_transitions.emplace_back(static_cast<std::string_view>(transition));
-                    break;
                 case 'l': // <edge-length: double>,
                     current_node_->edge = EdgeLength{static_cast<double>(field.value())};
                     break;
@@ -458,6 +450,14 @@ namespace ae::tree
                 throw std::runtime_error{AD_FORMAT("internal: inode_field() current_inode_==nullptr")};
 
             switch (key[0]) {
+                case 'A': // ["aa subst", "N193K"],
+                    for (auto transition : field.value().get_array())
+                        current_inode_->aa_transitions.emplace_back(static_cast<std::string_view>(transition));
+                    break;
+                case 'B': // ["nuc subst", "A193T"],
+                    for (auto transition : field.value().get_array())
+                        current_inode_->nuc_transitions.emplace_back(static_cast<std::string_view>(transition));
+                    break;
                 case 't': // subtree
                     push_subtree(field);
                     break;
