@@ -29,6 +29,13 @@ def main(args: argparse.Namespace):
         if args.print_transformation is not None:
             print("transformation", chart.projection(args.print_transformation).transformation())
 
+        if args.report_sequenced:
+            sequenced = 0
+            for no, ag in chart.select_all_antigens():
+                if ag.sequence_aa():
+                    sequenced += 1
+            print(f"sequenced: {sequenced} / {chart.number_of_antigens()}")
+
 # ----------------------------------------------------------------------
 
 try:
@@ -38,6 +45,7 @@ try:
     parser.add_argument("-p", dest="show_projections", action="store_true", default=False, help="show projections")
     parser.add_argument("--layout", dest="print_layout", type=int, default=None, help="print layout of the specified projection")
     parser.add_argument("--transformation", dest="print_transformation", type=int, default=None, help="print transformation of the specified projection")
+    parser.add_argument("--report-sequenced", action="store_true", default=False)
     args = parser.parse_args()
     exit_code = main(args) or 0
 except Exception as err:
