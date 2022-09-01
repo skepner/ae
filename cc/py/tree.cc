@@ -1,4 +1,5 @@
 #include "tree/tree.hh"
+#include "tree/aa-transitions.hh"
 #include "py/module.hh"
 
 // ======================================================================
@@ -176,6 +177,18 @@ void ae::py::tree(pybind11::module_& mdl)
     tree_submodule.def("load_subtree", pybind11::overload_cast<const std::filesystem::path&, const Node_Ref&>(&load_subtree), "filename"_a, "join_node"_a);
     tree_submodule.def("export", &export_tree, "tree"_a, "filename"_a, "indent"_a = 0);
     tree_submodule.def("export_subtree", pybind11::overload_cast<const Node_Ref&, const std::filesystem::path&, size_t>(&export_subtree), "root_node"_a, "filename"_a, "indent"_a = 0);
+
+    tree_submodule.def(
+        "set_aa_nuc_transition_labels",
+        [](Tree& tree, std::string_view method_str, bool set_aa_labels, bool set_nuc_labels) {
+            aa_nuc_transition_method method{aa_nuc_transition_method::consensus};
+            if (method_str == "consensus")
+                method = aa_nuc_transition_method::consensus;
+            else
+                throw std::invalid_argument{AD_FORMAT("Unrecognized aa/nuc transition method: \"{}\"", method_str)};
+            set_aa_nuc_transition_labels(tree, AANucTransitionSettings{.set_aa_labels = set_aa_labels, .set_nuc_labels = set_nuc_labels, .method = method});
+        },
+        "tree"_a, "method"_a = "consensus", "set_aa_labels"_a = true, "set_nuc_labels"_a = false);
 
     // ----------------------------------------------------------------------
 }

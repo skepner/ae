@@ -1,0 +1,43 @@
+#! /usr/bin/env python3
+
+import sys
+from pathlib import Path
+import argparse
+import datetime
+import ae_backend.tree
+
+# ======================================================================
+
+def main(args: argparse.Namespace):
+    s1 = datetime.datetime.now()
+    tree = ae_backend.tree.load(args.input_tree)
+    print(f">>> Tree: {tree.number_of_leaves()} leaves. Loaded in {datetime.datetime.now() - s1}", file=sys.stderr)
+
+    s2 = datetime.datetime.now()
+    ae_backend.tree.set_aa_nuc_transition_labels(tree=tree, method=args.method, set_aa_labels=args.set_aa, set_nuc_labels=args.set_nuc)
+    print(f">>> Labels set in {datetime.datetime.now() - s2}", file=sys.stderr)
+
+    if args.output_tree:
+        print(">>> exporting tree", file=sys.stderr)
+        s3 = datetime.datetime.now()
+        ae_backend.tree.export(tree, args.output_tree)
+        print(f">>> Tree exported in {datetime.datetime.now() - s3}", file=sys.stderr)
+
+# ----------------------------------------------------------------------
+
+try:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("input_tree", type=Path)
+    parser.add_argument("output_tree", nargs="?", type=Path)
+    parser.add_argument("--no-aa", dest="set_aa", action="store_false", default=True, help='do not set aa labels')
+    parser.add_argument("--nuc", dest="set_nuc", action="store_true", default=False, help='set nuc labels')
+    parser.add_argument("--method", default="consensus")
+    args = parser.parse_args()
+    exit_code = main(args) or 0
+except Exception as err:
+    import traceback
+    print(f"> {err}\n{traceback.format_exc()}", file=sys.stderr)
+    exit_code = 1
+exit(exit_code)
+
+# ======================================================================

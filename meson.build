@@ -100,6 +100,7 @@ sources_tree = [
   'cc/tree/newick.cc',
   'cc/tree/export.cc',
   'cc/tree/raxml-ancestral-state.cc',
+  'cc/tree/aa-transitions.cc'
 ]
 
 sources_sequences = [
