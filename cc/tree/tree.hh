@@ -1,8 +1,10 @@
 #pragma once
 
 #include <unordered_set>
+#include <memory>
 
 #include "ext/filesystem.hh"
+#include "utils/counter.hh"
 #include "virus/type-subtype.hh"
 #include "sequences/sequence.hh"
 #include "sequences/lineage.hh"
@@ -29,6 +31,7 @@ namespace ae::tree
         node_index_t node_id_{0};
         sequences::sequence_aa_t aa{};
         sequences::sequence_nuc_t nuc{};
+        bool shown{true};
 
         template <typename Seq> const Seq& get_aa_nuc() const
         {
@@ -47,7 +50,6 @@ namespace ae::tree
 
         size_t number_of_leaves() const { return 1; }
 
-        bool shown{true};
         std::string date{};
         std::string continent{};
         std::string country{};
@@ -63,6 +65,12 @@ namespace ae::tree
 
     struct Inode : public Node
     {
+        Inode() = default;
+        Inode(const Inode&) = delete;
+        Inode(Inode&&) = default;
+        Inode& operator=(const Inode&) = delete;
+        Inode& operator=(Inode&&) = default;
+
         size_t number_of_leaves() const { return number_of_leaves_; }
 
         std::vector<node_index_t> children{};
@@ -73,6 +81,17 @@ namespace ae::tree
 
         // temporary data for raxml ancestral state reconstruction
         std::unordered_set<std::string> raxml_inode_names{};
+
+        // aa transition labels
+        using counter_aa_t = counter_char_t<'-', '[', unsigned>;
+        std::unique_ptr<counter_aa_t> common_aa{};
+        void reset_common_aa()
+        {
+            if (common_aa)
+                common_aa.reset();
+            else
+                common_aa = std::make_unique<counter_aa_t>();
+        }
     };
 
     struct Nodes
@@ -91,6 +110,12 @@ namespace ae::tree
     class Tree
     {
       public:
+        Tree()
+        {
+            inodes_.emplace_back(); // root is always there
+            leaves_.emplace_back(); // first leaf is unused, node_index_t{0} is index of root inode
+        }
+
         const Inode& root() const { return inodes_[0]; }
         Inode& root() { return inodes_[0]; }
         static node_index_t root_index() { return node_index_t{0}; }
@@ -173,11 +198,14 @@ namespace ae::tree
 
         void set_raxml_ancestral_state_reconstruction_data(const std::filesystem::path& raxml_tree_file, const std::filesystem::path& raxml_states_file);
 
+        // longest aa, longest nuc
+        std::pair<size_t, size_t> longest_sequence() const;
+
       private:
         virus::type_subtype_t subtype_{};
         sequences::lineage_t lineage_{};
-        std::vector<Inode> inodes_{Inode{}}; // root is always there
-        std::vector<Leaf> leaves_{Leaf{}};   // first leaf is unused, node_index_t{0} is index of root inode
+        std::vector<Inode> inodes_{};
+        std::vector<Leaf> leaves_{};
         mutable size_t depth_{0};
         mutable EdgeLength max_cumulative{-1.0};
 

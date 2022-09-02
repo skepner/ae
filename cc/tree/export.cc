@@ -76,8 +76,7 @@ void export_inode(fmt::memory_buffer& text, const ae::tree::Inode& inode, const 
             }
         }
         else {
-            const auto& child_inode = tree.inode(*child_it);
-            if (true /* child_inode.shown() */) {
+            if (const auto& child_inode = tree.inode(*child_it); child_inode.shown) {
                 if (last_child)
                     prefix.back().back() = '\\';
                 export_inode(text, child_inode, tree, edge_step, prefix);

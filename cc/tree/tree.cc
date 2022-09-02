@@ -622,3 +622,17 @@ void ae::tree::export_subtree(const Tree& tree, const Inode& root, const std::fi
 } // ae::tree::export_subtree
 
 // ----------------------------------------------------------------------
+
+std::pair<size_t, size_t> ae::tree::Tree::longest_sequence() const
+{
+    size_t max_aa{0}, max_nuc{0};
+    for (auto ref : visit(tree_visiting::leaves)) {
+        const auto& leaf = *ref.leaf();
+        max_aa = std::max(max_aa, leaf.aa.size());
+        max_nuc = std::max(max_nuc, leaf.nuc.size());
+    }
+    return {max_aa, max_nuc};
+
+} // ae::tree::Tree::longest_sequence
+
+// ----------------------------------------------------------------------
