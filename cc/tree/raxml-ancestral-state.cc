@@ -218,12 +218,12 @@ void ae::tree::Tree::set_transition_labels_by_raxml_ancestral_state_reconstructi
                 child.nuc_transitions.clear();
                 for (const auto [pos1, aa] : ae::sequences::indexed(child.aa)) {
                     if (aa != parent->aa[pos1])
-                        child.aa_transitions.push_back(fmt::format("{}{}{}", parent->aa[pos1], pos1, aa));
+                        child.aa_transitions.add(parent->aa[pos1], pos1, aa);
                 }
                 // AD_DEBUG(!child.aa_transitions.empty(), "{} {}", child.node_id_, child.aa_transitions);
                 for (const auto [pos1, nuc] : ae::sequences::indexed(child.nuc)) {
                     if (nuc != parent->nuc[pos1])
-                        child.nuc_transitions.push_back(fmt::format("{}{}{}", parent->nuc[pos1], pos1, nuc));
+                        child.nuc_transitions.add(parent->nuc[pos1], pos1, nuc);
                 }
             }
         }
@@ -235,16 +235,16 @@ void ae::tree::Tree::set_transition_labels_by_raxml_ancestral_state_reconstructi
 
 void ae::tree::Tree::check_transition_label_flip()
 {
-    const auto extract_pos = [](const std::vector<std::string>& transitions) {
-        std::vector<std::string_view> pos;
-        for (const auto& tr : transitions)
-            pos.push_back(std::string_view(tr.data() + 1, tr.size() - 2));
+    const auto extract_pos = [](const transitions_t& transitions) {
+        std::vector<sequences::pos1_t> pos;
+        for (const auto& tr : transitions.transitions)
+            pos.push_back(tr.pos);
         return pos;
     };
 
     const auto check = [extract_pos](const Inode& parent, const Inode& child) {
         const auto parent_pos = extract_pos(parent.aa_transitions), child_pos = extract_pos(child.aa_transitions);
-        std::vector<std::string_view> common;
+        std::vector<sequences::pos1_t> common;
         std::set_intersection(parent_pos.begin(), parent_pos.end(), child_pos.begin(), child_pos.end(), std::back_inserter(common));
         if (!common.empty())
             AD_WARNING("potential aa transition label flip: parent: {} {}   child: {} {}", parent.node_id_, parent.aa_transitions, child.node_id_, child.aa_transitions);

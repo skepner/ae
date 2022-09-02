@@ -1,5 +1,6 @@
 #pragma once
 
+#include <charconv>
 #include <unordered_set>
 #include <memory>
 
@@ -56,12 +57,25 @@ namespace ae::tree
         sequences::clades_t clades{};
     };
 
-    // struct transition_t
-    // {
-    //     char left;
-    //     sequences::pos1_t pos;
-    //     char right;
-    // };
+    struct transition_t
+    {
+        transition_t(char a_left, sequences::pos1_t a_pos, char a_right) : left{a_left}, pos{a_pos}, right{a_right} {}
+        transition_t(std::string_view source) : left{source.front()}, pos{ae::from_chars<size_t>(source.substr(1, source.size() - 2))}, right{source.back()} {}
+        char left{' '};
+        sequences::pos1_t pos{999999};
+        char right{' '};
+    };
+
+    struct transitions_t
+    {
+        std::vector<transition_t> transitions{};
+
+        bool empty() const { return transitions.empty(); }
+        void clear() { transitions.clear(); }
+        void add(char left, sequences::pos1_t pos, char right) { transitions.emplace_back(left, pos, right); }
+        void add(sequences::pos1_t pos, char right) { transitions.emplace_back(' ', pos, right); }
+        void add(std::string_view source) { transitions.emplace_back(source); }
+    };
 
     struct Inode : public Node
     {
@@ -76,8 +90,8 @@ namespace ae::tree
         std::vector<node_index_t> children{};
         size_t number_of_leaves_{0};
 
-        std::vector<std::string> aa_transitions{};
-        std::vector<std::string> nuc_transitions{};
+        transitions_t aa_transitions{};
+        transitions_t nuc_transitions{};
 
         // temporary data for raxml ancestral state reconstruction
         std::unordered_set<std::string> raxml_inode_names{};
@@ -234,5 +248,36 @@ namespace ae::tree
     }
 
 } // namespace ae::tree
+
+// ----------------------------------------------------------------------
+
+template <> struct fmt::formatter<ae::tree::transition_t> : fmt::formatter<ae::fmt_helper::default_formatter>
+{
+    template <typename FormatCtx> constexpr auto format(const ae::tree::transition_t& tr, FormatCtx& ctx) const { return format_to(ctx.out(), "{}{}{}", tr.left, tr.pos, tr.right); }
+};
+
+// "{}" - format all
+// "{:3} - format 3 most important or all if total number of aa transitions <= 3
+template <> struct fmt::formatter<ae::tree::transitions_t> : fmt::formatter<ae::fmt_helper::default_formatter> // fmt::formatter<std::string>
+{
+
+    // template <typename ParseContext> constexpr auto parse(ParseContext& ctx)
+    // {
+    //     auto it = ctx.begin();
+    //     if (it != ctx.end() && *it == ':')
+    //         ++it;
+    //     if (it != ctx.end() && *it != '}') {
+    //         char* end{nullptr};
+    //         most_important_ = std::strtoul(&*it, &end, 10);
+    //         it = std::next(it, end - &*it);
+    //     }
+    //     return std::find(it, ctx.end(), '}');
+    // }
+
+    template <typename FormatCtx> constexpr auto format(const ae::tree::transitions_t& tr, FormatCtx& ctx) const { return format_to(ctx.out(), "{}", fmt::join(tr.transitions, " ")); }
+
+  private:
+    // size_t most_important_{0};
+};
 
 // ======================================================================

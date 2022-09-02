@@ -64,7 +64,7 @@ namespace ae::tree
             update_common(pos);
 
             //     // AD_DEBUG(parameters.debug, "eu-20200915 set aa transitions =============================================================");
-            //     set_aa_transitions_eu_20210205_for_pos(tree, pos, parameters);
+            set_transitions(pos);
             //     // AD_DEBUG(parameters.debug, "eu-20200915 update aa transitions ================================================================================");
 
             //     // AD_DEBUG("update aa transitions");
@@ -72,7 +72,15 @@ namespace ae::tree
             //     update_aa_transitions_eu_20200915_stage_3(tree, pos, root_sequence, parameters);
         }
 
-        char at(const Leaf& leaf, sequences::pos0_t pos)
+        sequences::pos0_t seq_size(const Leaf& leaf) const
+        {
+            if constexpr (aa_nuc == aa_nuc_e::aa)
+                return leaf.aa.size();
+            else
+                return leaf.nuc.size();
+        }
+
+        char seq_at(const Leaf& leaf, sequences::pos0_t pos) const
         {
             if constexpr (aa_nuc == aa_nuc_e::aa)
                 return leaf.aa[pos];
@@ -91,8 +99,8 @@ namespace ae::tree
                 for (const auto child_id : node.children) {
                     if (is_leaf(child_id)) {
                         if (auto& child = tree_.leaf(child_id); child.shown) {
-                            if (child.aa.size() > pos)
-                                node.common_aa->count(at(child, pos));
+                            if (seq_size(child) > pos)
+                                node.common_aa->count(seq_at(child, pos));
                         }
                     }
                     else {
@@ -104,6 +112,79 @@ namespace ae::tree
             }
         }
 
+        void set_transitions(sequences::pos0_t pos)
+        {
+            const auto non_common_tolerance = settings_.non_common_tolerance_for(pos);
+            for (auto ref : tree_.visit(tree_visiting::inodes_post))
+                set_transitions(*ref.inode(), pos, non_common_tolerance);
+        }
+
+        void set_transitions(Inode& node, sequences::pos0_t pos, double non_common_tolerance)
+        {
+            // if (!is_common_with_tolerance(node, pos, non_common_tolerance)) {
+            //     for (const auto child_id : node.children) {
+            //         if (!is_leaf(child_id)) {
+            //             if (auto& child = tree_.inode(child_id); is_common_with_tolerance_for_child(child, pos, non_common_tolerance))
+            //                 child.aa_transitions.add(pos, child.common_aa->at(pos, non_common_tolerance));
+            //         }
+            //     }
+            // }
+            // else {
+            //     for (const auto child_id : node.children) {
+            //         if (!is_leaf(child_id)) {
+            //             if (auto& child = tree_.inode(child_id); !child.common_aa->empty(pos)) {
+            //                 const auto child_aa = child.common_aa->at(pos, non_common_tolerance);
+            //                 if (const auto [common_child, msg_child] = is_common_with_tolerance_for_child(child, pos, non_common_tolerance /*, dbg*/); /* child_aa != node_aa && */ common_child)
+            //                     child.replace_aa_transition(pos, child_aa);
+            //             }
+            //         }
+            //     }
+            // }
+        }
+
+        // bool is_common_with_tolerance(const Inode& node, sequences::pos0_t pos, double tolerance)
+        // {
+        //     const auto aa = node.common_aa->at(pos, tolerance);
+        //     if (aa == NoCommon) {
+        //         if constexpr (dbg)
+        //             fmt::format_to_mb(msg, "common:no");
+        //         return {false, fmt::to_string(msg)};
+        //     }
+        //     // tolerance problem: aa is common with tolerance but in
+        //     // reality just 1 or 2 child nodes have this aa and other
+        //     // children (with much fewer leaves) have different
+        //     // aa's. In that case consider that aa to be not
+        //     // common. See H3 and M346L labelling in the 3a clade.
+        //     const auto [num_common_aa_children, common_children] = number_of_children_with_the_same_common_aa<dbg>(node, aa, pos, tolerance);
+        //     const auto not_common = // num_common_aa_children > 0 && number_of_children_with_the_same_common_aa <= 1 &&
+        //         node.subtree.size() > static_cast<size_t>(num_common_aa_children);
+        //     if constexpr (dbg) {
+        //         fmt::format_to_mb(msg, fmt::runtime("common:{} <-- {} {:5.3} aa:{} tolerance:{} number_of_children_with_the_same_common_aa:{} ({}) subtree-size:{}"), !not_common, pos, node.node_id,
+        //                           aa, tolerance, num_common_aa_children, common_children, node.subtree.size());
+        //     }
+        //     return !not_common;
+        // }
+
+        // bool is_common_with_tolerance_for_child(const Inode& node, sequences::pos0_t pos, double tolerance)
+        // {
+        //     fmt::memory_buffer msg;
+        //     const auto aa = node.common_aa_->at(pos, tolerance);
+        //     if (aa == NoCommon) {
+        //         if constexpr (dbg)
+        //             fmt::format_to_mb(msg, "common:no");
+        //         return {false, fmt::to_string(msg)};
+        //     }
+        //     else {
+        //         const auto [num_common_aa_children, common_children] = number_of_children_with_the_same_common_aa<dbg>(node, aa, pos, tolerance);
+        //         const auto not_common = num_common_aa_children <= 1; // && node.subtree.size() > static_cast<size_t>(num_common_aa_children);
+        //         if constexpr (dbg) {
+        //             fmt::format_to_mb(msg, fmt::runtime("common:{} <-- {} {:5.3} aa:{} tolerance:{} number_of_children_with_the_same_common_aa:{} ({}) subtree-size:{}"), !not_common, pos,
+        //                               node.node_id, aa, tolerance, num_common_aa_children, common_children, node.subtree.size());
+        //         }
+        //         return {!not_common, fmt::to_string(msg)};
+        //     }
+        // }
+
       private:
         Tree& tree_;
         sequences::pos0_t longest_seq_;
@@ -111,6 +192,8 @@ namespace ae::tree
         const AANucTransitionSettings& settings_;
     };
 } // namespace ae::tree
+
+// ----------------------------------------------------------------------
 
 void ae::tree::set_aa_nuc_transition_labels_consensus(Tree& tree, const AANucTransitionSettings& settings)
 {

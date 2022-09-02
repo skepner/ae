@@ -57,8 +57,8 @@ void export_inode(fmt::memory_buffer& text, const ae::tree::Inode& inode, const 
                    "edge_symbol"_a = edge_symbol, "edge"_a = inode.edge, "cumul"_a = inode.cumulative_edge,                                                                            //
                    "leaves"_a = inode.number_of_leaves(), // node.number_leaves_in_subtree()),
                    "node_id"_a = inode.node_id_,          //
-                   "aa_transitions"_a = inode.aa_transitions.empty() ? std::string{} : fmt::format(" [{}]", fmt::join(inode.aa_transitions, " ")),
-                   "nuc_transitions"_a = inode.nuc_transitions.empty() ? std::string{} : fmt::format(" [{}]", fmt::join(inode.nuc_transitions, " ")));
+                   "aa_transitions"_a = inode.aa_transitions.empty() ? std::string{} : fmt::format(" [{}]", inode.aa_transitions),
+                   "nuc_transitions"_a = inode.nuc_transitions.empty() ? std::string{} : fmt::format(" [{}]", inode.nuc_transitions));
     if (!prefix.empty()) {
         if (prefix.back().back() == '\\')
             prefix.back().back() = ' ';
@@ -152,9 +152,9 @@ std::string ae::tree::export_json(const Tree& tree, const Inode& root)
                 fmt::format_to(std::back_inserter(text), ", \"L\": {}", inode->number_of_leaves());
         }
         if (!inode->aa_transitions.empty())
-            fmt::format_to(std::back_inserter(text), ", \"A\": [\"{}\"]", fmt::join(inode->aa_transitions, "\", \""));
+            fmt::format_to(std::back_inserter(text), ", \"A\": [\"{}\"]", fmt::join(inode->aa_transitions.transitions, "\", \""));
         if (!inode->nuc_transitions.empty())
-            fmt::format_to(std::back_inserter(text), ", \"B\": [\"{}\"]", fmt::join(inode->nuc_transitions, "\", \""));
+            fmt::format_to(std::back_inserter(text), ", \"B\": [\"{}\"]", fmt::join(inode->nuc_transitions.transitions, "\", \""));
         format_node_sequences(inode);
         // "H": <true if hidden>,
 
@@ -451,11 +451,11 @@ namespace ae::tree
             switch (key[0]) {
                 case 'A': // ["aa subst", "N193K"],
                     for (auto transition : field.value().get_array())
-                        current_inode_->aa_transitions.emplace_back(static_cast<std::string_view>(transition));
+                        current_inode_->aa_transitions.add(static_cast<std::string_view>(transition));
                     break;
                 case 'B': // ["nuc subst", "A193T"],
                     for (auto transition : field.value().get_array())
-                        current_inode_->nuc_transitions.emplace_back(static_cast<std::string_view>(transition));
+                        current_inode_->nuc_transitions.add(static_cast<std::string_view>(transition));
                     break;
                 case 't': // subtree
                     push_subtree(field);
