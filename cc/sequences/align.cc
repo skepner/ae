@@ -132,13 +132,13 @@ bool ae::sequences::align(RawSequence& sequence, Messages& messages)
 
     if (aligned_data.has_value()) {
         if (aligned_data->aa_shift < 0) {
-            sequence.sequence.add_prefix_aa(-aligned_data->aa_shift);
+            sequence.sequence.add_prefix_aa(pos0_t{-aligned_data->aa_shift});
             sequence.issues.set(issue::prefix_x);
         }
         else {
             // if (aligned_data->type_subtype == ae::virus::type_subtype_t{"A(H3)"} && sequence.sequence.aa[aligned_data->aa_shift] != 'Q')
             //     AD_DEBUG("\"{}\" shift:{} \"{}\"\n{}\n", aligned_data->type_subtype, aligned_data->aa_shift, sequence.name, sequence.sequence.aa);
-            sequence.sequence.remove_prefix_aa(aligned_data->aa_shift);
+            sequence.sequence.remove_prefix_aa(pos0_t{aligned_data->aa_shift});
         }
         update_type_subtype(sequence, *aligned_data, messages); // after adjusting sequence.aa!
         find_deletions_insertions_set_lineage(sequence, messages);

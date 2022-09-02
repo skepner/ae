@@ -25,12 +25,12 @@ namespace ae::sequences
 
     const MasterSequence* master_sequence_for(const ae::virus::type_subtype_t& ts);
 
-    inline size_t ha_sequence_length_for(const ae::virus::type_subtype_t& ts)
+    inline pos0_t ha_sequence_length_for(const ae::virus::type_subtype_t& ts)
     {
         if (const auto* master = master_sequence_for(ts); master)
             return master->aa.size();
         else
-            return 0;
+            return pos0_t{0};
     }
 
 } // namespace ae::sequences

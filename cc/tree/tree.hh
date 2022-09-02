@@ -199,7 +199,7 @@ namespace ae::tree
         void set_raxml_ancestral_state_reconstruction_data(const std::filesystem::path& raxml_tree_file, const std::filesystem::path& raxml_states_file);
 
         // longest aa, longest nuc
-        std::pair<size_t, size_t> longest_sequence() const;
+        std::pair<sequences::pos0_t, sequences::pos0_t> longest_sequence() const;
 
       private:
         virus::type_subtype_t subtype_{};

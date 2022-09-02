@@ -116,13 +116,13 @@ void ae::sequences::aa_trim_absent(RawSequence& sequence, Messages& messages)
     if (sequence.sequence.is_translated()) {
         // remove trailing X and - in aa
         if (const auto found = sequence.sequence.aa->find_last_not_of("X-"); found != std::string::npos)
-            sequence.sequence.erase_aa(found + 1);
+            sequence.sequence.erase_aa(pos0_t{found + 1});
         else
             messages.add(Message::invalid_sequence, sequence.name, "just X and - in AA sequence");
 
         // remove leading X and -
         if (const auto found = sequence.sequence.aa->find_first_not_of("X-"); found > 0 && found != std::string::npos)
-            sequence.sequence.erase_aa(0, found);
+            sequence.sequence.erase_aa(pos0_t{0}, found);
     }
 
 } // aa_trim_absent

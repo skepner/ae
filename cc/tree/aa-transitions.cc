@@ -54,12 +54,12 @@ namespace ae::tree
     template <aa_nuc_e aa_nuc> class set_aa_nuc_transition_labels_consensus_t
     {
       public:
-        set_aa_nuc_transition_labels_consensus_t(Tree& tree, size_t longest_seq, const Leaf& root_leaf, const AANucTransitionSettings& settings)
+        set_aa_nuc_transition_labels_consensus_t(Tree& tree, sequences::pos0_t longest_seq, const Leaf& root_leaf, const AANucTransitionSettings& settings)
             : tree_{tree}, longest_seq_{longest_seq}, root_leaf_{root_leaf}, settings_{settings}
         {
         }
 
-        void for_pos(size_t pos)
+        void for_pos(sequences::pos0_t pos)
         {
             update_common(pos);
 
@@ -72,7 +72,15 @@ namespace ae::tree
             //     update_aa_transitions_eu_20200915_stage_3(tree, pos, root_sequence, parameters);
         }
 
-        void update_common(size_t pos)
+        char at(const Leaf& leaf, sequences::pos0_t pos)
+        {
+            if constexpr (aa_nuc == aa_nuc_e::aa)
+                return leaf.aa[pos];
+            else
+                return leaf.nuc[pos];
+        }
+
+        void update_common(sequences::pos0_t pos)
         {
             for (auto ref : tree_.visit(tree_visiting::inodes))
                 ref.inode()->reset_common_aa();
@@ -84,7 +92,7 @@ namespace ae::tree
                     if (is_leaf(child_id)) {
                         if (auto& child = tree_.leaf(child_id); child.shown) {
                             if (child.aa.size() > pos)
-                                node.common_aa->count(child.aa[pos]);
+                                node.common_aa->count(at(child, pos));
                         }
                     }
                     else {
@@ -98,7 +106,7 @@ namespace ae::tree
 
       private:
         Tree& tree_;
-        size_t longest_seq_;
+        sequences::pos0_t longest_seq_;
         const Leaf& root_leaf_;
         const AANucTransitionSettings& settings_;
     };
@@ -112,13 +120,13 @@ void ae::tree::set_aa_nuc_transition_labels_consensus(Tree& tree, const AANucTra
     set_aa_nuc_transition_labels_consensus_t<aa_nuc_e::aa> set_aa{tree, max_aa, root_leaf, settings};
     set_aa_nuc_transition_labels_consensus_t<aa_nuc_e::nuc> set_nuc{tree, max_nuc, root_leaf, settings};
     auto start = ae::clock_t::now(), chunk_start = start;
-    for (size_t pos{0}; pos < max_aa; ++pos) {
+    for (sequences::pos0_t pos{0}; pos < max_aa; ++pos) {
         if (settings.set_aa_labels)
             set_aa.for_pos(pos);
         if (settings.set_nuc_labels)
             set_nuc.for_pos(pos);
-        if ((pos % 100) == 99) {
-            AD_DEBUG("set_aa_nuc_transition_labels_consensus pos:{:5d}  time: {:%H:%M:%S}", pos, ae::elapsed(chunk_start));
+        if ((*pos % 100) == 99) {
+            AD_DEBUG("set_aa_nuc_transition_labels_consensus pos:{}  time: {:%H:%M:%S}", pos, ae::elapsed(chunk_start));
             chunk_start = ae::clock_t::now();
         }
     }

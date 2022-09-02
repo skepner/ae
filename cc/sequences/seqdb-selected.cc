@@ -246,7 +246,7 @@ ae::sequences::SeqdbSelected& ae::sequences::SeqdbSelected::find_clades(std::str
 
 ae::sequences::SeqdbSelected& ae::sequences::SeqdbSelected::length_stat()
 {
-    std::map<size_t, size_t> aa_length_count, nuc_length_count;
+    std::map<pos0_t, size_t> aa_length_count, nuc_length_count;
     for (const auto& ref : refs_) {
         if (const auto [iter, added] = aa_length_count.try_emplace(ref.aa().size(), 1); !added)
             ++iter->second;
@@ -255,10 +255,10 @@ ae::sequences::SeqdbSelected& ae::sequences::SeqdbSelected::length_stat()
     }
     fmt::print(">>> nuc size stat\n");
     for (const auto& [size, count]: nuc_length_count)
-        fmt::print("  {:4d}  {:4d}\n", size, count);
+        fmt::print("  {:4d}  {:4d}\n", *size, count);
     fmt::print(">>> aa size stat\n");
     for (const auto& [size, count]: aa_length_count)
-        fmt::print("  {:4d}  {:4d}\n", size, count);
+        fmt::print("  {:4d}  {:4d}\n", *size, count);
 
     return *this;
 
@@ -266,9 +266,9 @@ ae::sequences::SeqdbSelected& ae::sequences::SeqdbSelected::length_stat()
 
 // ----------------------------------------------------------------------
 
-std::pair<size_t, size_t> ae::sequences::SeqdbSelected::max_length() const // returns max nuc and aa length
+std::pair<ae::sequences::pos0_t, ae::sequences::pos0_t> ae::sequences::SeqdbSelected::max_length() const // returns max nuc and aa length
 {
-    size_t max_nuc{0}, max_aa{0};
+    pos0_t max_nuc{0}, max_aa{0};
     for (const auto& ref : refs_) {
         max_nuc = std::max(max_nuc, ref.nuc().size());
         max_aa = std::max(max_aa, ref.aa().size());

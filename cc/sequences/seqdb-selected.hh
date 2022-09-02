@@ -123,7 +123,7 @@ namespace ae::sequences
         }
 
         SeqdbSelected& length_stat();
-        std::pair<size_t, size_t> max_length() const; // returns max nuc and aa length
+        std::pair<pos0_t, pos0_t> max_length() const; // returns max nuc and aa length
 
       private:
         const Seqdb& seqdb_;

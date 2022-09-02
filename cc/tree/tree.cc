@@ -623,9 +623,9 @@ void ae::tree::export_subtree(const Tree& tree, const Inode& root, const std::fi
 
 // ----------------------------------------------------------------------
 
-std::pair<size_t, size_t> ae::tree::Tree::longest_sequence() const
+std::pair<ae::sequences::pos0_t, ae::sequences::pos0_t> ae::tree::Tree::longest_sequence() const
 {
-    size_t max_aa{0}, max_nuc{0};
+    sequences::pos0_t max_aa{0}, max_nuc{0};
     for (auto ref : visit(tree_visiting::leaves)) {
         const auto& leaf = *ref.leaf();
         max_aa = std::max(max_aa, leaf.aa.size());

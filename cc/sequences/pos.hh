@@ -29,7 +29,7 @@ namespace ae::sequences
 
     struct pos0_t : public named_number_t<size_t, struct seqdb_pos0_tag_t>
     {
-        template <std::integral T> constexpr pos0_t(T src) : named_number_t<size_t, struct seqdb_pos0_tag_t>{static_cast<size_t>(src)} {}
+        template <std::integral T> constexpr explicit pos0_t(T src) : named_number_t<size_t, struct seqdb_pos0_tag_t>{static_cast<size_t>(src)} {}
         constexpr pos0_t(const named_number_t<size_t, struct seqdb_pos0_tag_t>& src) : named_number_t<size_t, struct seqdb_pos0_tag_t>{src} {}
 
         constexpr explicit operator pos1_t() const;

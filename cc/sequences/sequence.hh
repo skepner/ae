@@ -36,6 +36,8 @@ namespace ae::sequences
 
         size_t number_of_x() const { return std::count(std::begin(this->get()), std::end(this->get()), 'X'); }
         size_t number_of_deletions() const { return std::count(std::begin(this->get()), std::end(this->get()), '-'); }
+
+        constexpr pos0_t size() const { return pos0_t{named_string_t<std::string, Tag>::size()}; }
     };
 
     using sequence_nuc_t = basic_sequence_t<struct sequence_nuc_t_tag>;
@@ -92,22 +94,22 @@ namespace ae::sequences
 
         bool is_translated() const { return !aa.empty(); }
 
-        void erase_aa(size_t pos, size_t count = std::string::npos)
+        void erase_aa(pos0_t pos, size_t count = std::string::npos)
         {
-            aa.get().erase(pos, count);
+            aa.get().erase(*pos, count);
             const auto count_nuc = count == std::string::npos ? count : count * 3;
-            nuc.get().erase(pos * 3, count_nuc);
+            nuc.get().erase(*pos * 3, count_nuc);
         }
 
-        void add_prefix_aa(size_t size, char symbol = 'X')
+        void add_prefix_aa(pos0_t size, char symbol = 'X')
         {
-            aa.add_prefix(size, symbol);
-            nuc.add_prefix(size * 3, symbol);
+            aa.add_prefix(*size, symbol);
+            nuc.add_prefix(*size * 3, symbol);
         }
-        void remove_prefix_aa(size_t size)
+        void remove_prefix_aa(pos0_t size)
         {
-            aa.remove_prefix(size);
-            nuc.remove_prefix(size * 3);
+            aa.remove_prefix(*size);
+            nuc.remove_prefix(*size * 3);
         }
     };
 
