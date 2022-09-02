@@ -88,7 +88,7 @@ namespace ae::tree
         void reset_common_aa()
         {
             if (common_aa)
-                common_aa.reset();
+                common_aa->reset();
             else
                 common_aa = std::make_unique<counter_aa_t>();
         }

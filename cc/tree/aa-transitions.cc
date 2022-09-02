@@ -74,15 +74,12 @@ namespace ae::tree
 
         void update_common(size_t pos)
         {
-            for (auto ref : tree_.visit(tree_visiting::inodes)) {
-                AD_DEBUG("reset_common_aa {}", ref.node_id());
+            for (auto ref : tree_.visit(tree_visiting::inodes))
                 ref.inode()->reset_common_aa();
-            }
 
             // unsigned max_count{0};
             for (auto ref : tree_.visit(tree_visiting::inodes_post)) {
                 auto& node = *ref.inode();
-                AD_DEBUG(!node.common_aa, "node.common_aa {} -- {} {}", fmt::ptr(node.common_aa.get()), ref.node_id(), node.children);
                 for (const auto child_id : node.children) {
                     if (is_leaf(child_id)) {
                         if (auto& child = tree_.leaf(child_id); child.shown) {
