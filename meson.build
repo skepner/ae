@@ -298,6 +298,9 @@ chart_v3_test = executable(
 test('ae test virus name parsing', test_virus_name)
 test('ae test date parsing', test_date)
 test('ae test passage parsing', test_passage)
+test('ae test_named_vector', test_named_vector)
+test('ae test_pos', test_pos)
+test('ae chart_v3_test', chart_v3_test)
 
 # ----------------------------------------------------------------------
 # python module
