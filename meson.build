@@ -66,6 +66,8 @@ else
   libomp_dir = []
 endif
 
+catch2 = dependency('catch2')
+
 # mylib = meson.get_compiler('cpp').find_library('omp', dirs: '/opt/homebrew/lib')
 message(host_machine.system())
 
@@ -291,7 +293,7 @@ chart_v3_test = executable(
   'chart-v3-test',
   sources : ['cc/test/chart-v3-test.cc'],
   include_directories : include_cc,
-  dependencies : [fmt, range_v3, simdjson],
+  dependencies : [fmt, range_v3, simdjson, catch2],
   link_with : [libae],
   install : true)
 

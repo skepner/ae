@@ -11,11 +11,12 @@
 - zlib
 - libbz2
 - liblzma
+- catch2
 
 ## Installing dependencies on macOS
 
 - install homebrew https://brew.sh
-- brew install llvm ninja meson libomp cmake brotli zlib xz gnu-time
+- brew install llvm ninja meson libomp cmake brotli zlib xz gnu-time catch2
 
 ## Installing dependencies on Ubuntu
 
