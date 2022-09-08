@@ -242,6 +242,8 @@ def h3(subtype: str, args: argparse.Namespace):
             "WEST_VIRGINIA/25/2022_SIAT1_3E592413",
             "WEST_VIRGINIA/26/2022_SIAT1_3E592413",
             "WEST_VIRGINIA/24/2022_SIAT1_2FDA4DA3",
+            # 2022-0902 potential long branch
+            "FRANCE/ARA-HCL022060609601/2022_65F4520B",
         ])
         .remove_hash_duplicates()
         .replace_with_master()

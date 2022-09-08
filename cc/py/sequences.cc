@@ -137,7 +137,7 @@ void ae::py::sequences(pybind11::module_& mdl)
         .def("remove_hash_duplicates", &SeqdbSelected::remove_hash_duplicates)                                             //
         .def("replace_with_master", &SeqdbSelected::replace_with_master)                                                   //
         .def("length_stat", &SeqdbSelected::length_stat)                                                                   //
-        .def("max_length", &SeqdbSelected::max_length)                                                                     //
+        .def("max_length", [](const SeqdbSelected& selected) { const auto ml = selected.max_length(); return std::pair(*ml.first, *ml.second); })                                                                     //
         ;
 
     pybind11::class_<SeqdbSeqRef>(seqdb_submodule, "SeqdbSeqRef")             //
@@ -170,7 +170,7 @@ void ae::py::sequences(pybind11::module_& mdl)
         .def(
             "__getitem__", [](const sequence_aa_t& seq, std::string_view pos_aa) { return matches_all(seq, pos_aa); }, "pos_aa"_a,
             pybind11::doc("pos_aa: \"193S\", \"!193S\", \"!56N 115E\" (matches all)")) //
-        .def("__len__", [](const sequence_aa_t& seq) { return seq.size(); })           //
+        .def("__len__", [](const sequence_aa_t& seq) { return *seq.size(); })           //
         .def("__str__", [](const sequence_aa_t& seq) { return *seq; })                 //
         .def("__bool__", [](const sequence_aa_t& seq) { return !seq.empty(); })        //
         .def(
@@ -194,7 +194,7 @@ void ae::py::sequences(pybind11::module_& mdl)
         .def(
             "__getitem__", [](const sequence_nuc_t& seq, std::string_view pos_nuc) { return matches_all(seq, pos_nuc); }, "pos_nuc"_a,
             pybind11::doc("pos_nuc: \"193A\", \"!193A\", \"!56T 115A\" (matches all)")) //
-        .def("__len__", [](const sequence_nuc_t& seq) { return seq.size(); })           //
+        .def("__len__", [](const sequence_nuc_t& seq) { return *seq.size(); })           //
         .def("__str__", [](const sequence_nuc_t& seq) { return *seq; })                 //
         .def("__bool__", [](const sequence_nuc_t& seq) { return !seq.empty(); })        //
         .def(
