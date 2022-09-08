@@ -1,3 +1,4 @@
+import re
 import ae_backend
 
 # ======================================================================
@@ -44,9 +45,16 @@ class DataFix:
     def fix_antigen_serum_field(self, source: str, field_name: str, ag_sr: str, no: str, table: list):
         fixed = source
         for rex, replacement in table:
+            # print(f"rex: {rex} repl: {replacement}")
             fixed = rex.sub(replacement, fixed)
         if fixed != source:
             print(f">>> {ag_sr} {no:3d} {field_name} \"{fixed}\" <- \"{source}\"")
         return fixed
+
+    def remove_antigen_serum_annotations(self, source: dict, ag_sr: str, no: str, pattern: re.Pattern):
+        if (annotations := source.get("annotations")) and pattern.match(annotations):
+            source["annotations"] = ""
+            print(f">>> {ag_sr} {no:3d} annotations removed: \"{annotations}\"")
+        return source
 
 # ======================================================================
