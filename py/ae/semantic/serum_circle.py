@@ -36,7 +36,14 @@ def style(chart: ae_backend.chart_v3.Chart, style_name: str, priority: int = 100
     sera = sera if sera is not None else list(range(num_sera))
     for serum_no in sera:
         if serum_no >= 0 and serum_no < num_sera:
-            serum_passage_type = chart.serum(serum_no).passage().passage_type()
+            serum = chart.serum(serum_no)
+            if not (passage := serum.passage()).empty():
+                serum_passage_type = passage.passage_type()
+            elif "EGG" in serum.serum_id():
+                serum_passage_type = "egg"
+            else:
+                serum_passage_type = "cell"
+            # print(f">>>> SR {serum_no} {serum.designation()} I:{serum.serum_id()} EI:{'EGG' in serum.serum_id()} P:[{serum.passage()}] PT:{serum_passage_type}", file=sys.stderr)
             this_circle_style = {**circle_style}
             if isinstance(this_circle_style.get("outline"), dict):
                 this_circle_style["outline"] = this_circle_style["outline"][serum_passage_type]
