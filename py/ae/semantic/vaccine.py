@@ -118,7 +118,8 @@ def set_semantic(vaccines_found: list[Vaccine], current_vaccine_years: list[str]
             # print(f">>>> V {vaccine}", file=sys.stderr)
             for passage in ["cell", "egg", "reassortant"]:
                 if (vaccines_per_passage := getattr(vaccine, passage)) and not is_disbaled(vaccine, disable.get(passage, {})):
-                    vaccine.semantic_vaccine(vaccines_per_passage[get_index(vaccine, choose.get(passage, []))], current_vaccine_years=current_vaccine_years)
+                    if (ind := get_index(vaccine, choose.get(passage, []))) < len(vaccines_per_passage):
+                        vaccine.semantic_vaccine(vaccines_per_passage[get_index(vaccine, choose.get(passage, []))], current_vaccine_years=current_vaccine_years)
 
 # ======================================================================
 

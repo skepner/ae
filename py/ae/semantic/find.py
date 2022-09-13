@@ -27,7 +27,7 @@ class AntigenFinder:
             if len(antigens):
                 if self.chart_has_layers and len(antigens) > 1:
                     antigens.sort_by_number_of_layers_descending()
-                result[psg] = [{"no": no, "antigen": antigen, "layers": self.chart.titers().layers_with_antigen(no)} for no, antigen in antigens]
+                result[psg] = [{"no": no, "antigen": antigen, "layers": self.chart.titers().layers_with_antigen(no) if self.chart.titers().number_of_layers() > 1 else [0]} for no, antigen in antigens]
         return result
 
     def _is_connected(self, point_no: int):

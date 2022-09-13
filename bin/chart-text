@@ -21,7 +21,7 @@ def main(args: argparse.Namespace):
 try:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("chart", nargs="+", type=Path)
-    parser.add_argument("-s", default=False, dest="populate_from_seqdb", action="store_true")
+    parser.add_argument("-s", default=False, dest="populate_from_seqdb", action="store_true", help="populate_from_seqdb")
     args = parser.parse_args()
     exit_code = main(args) or 0
 except Exception as err:
