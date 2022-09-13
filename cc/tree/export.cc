@@ -383,6 +383,8 @@ namespace ae::tree
                     leaf_field(key, field);
                     break;
                 case 't':
+                case 'A':
+                case 'B':
                     inode_field(key, field);
                     break;
                 default:
