@@ -20,6 +20,9 @@
 // 9.1.0 clang 14
 #pragma GCC diagnostic ignored "-Wextra-semi-stmt" // fmt/ranges.h:510
 
+// clang 15
+#pragma GCC diagnostic ignored "-Wdeprecated" // fmt/chrono.h:out-of-line definition of constexpr static data member is redundant in C++17 and is deprecated
+
 #elif defined(__GNUG__)
 
 #pragma GCC diagnostic ignored "-Wdeprecated" // fmt/format.h: implicit capture of ‘this’ via ‘[=]’ is deprecated in C++20

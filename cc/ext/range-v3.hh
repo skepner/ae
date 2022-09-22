@@ -11,6 +11,10 @@
 #pragma GCC diagnostic ignored "-Wold-style-cast"
 #pragma GCC diagnostic ignored "-Wpadded"
 #pragma GCC diagnostic ignored "-Wweak-vtables"
+
+// clang 15
+#pragma GCC diagnostic ignored "-Wdeprecated" // meta/meta.hpp out-of-line definition of constexpr static data member is redundant in C++17 and is deprecated
+
 #endif
 
 #ifdef __GNUG__

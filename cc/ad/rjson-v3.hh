@@ -85,10 +85,10 @@ namespace rjson::v3
             object& operator=(object&&) = default;
             object& operator=(const object&) = default;
 
-            /*constexpr*/ bool empty() const noexcept { return content_.empty(); }
-            /*constexpr*/ size_t size() const noexcept { return content_.size(); }
-            /*constexpr*/ auto begin() const noexcept { return content_.begin(); }
-            /*constexpr*/ auto end() const noexcept { return content_.end(); }
+            bool empty() const noexcept { return content_.empty(); }
+            size_t size() const noexcept;
+            auto begin() const noexcept { return content_.begin(); }
+            auto end() const noexcept { return content_.end(); }
 
             void insert(std::string_view aKey, value&& aValue);
             const value& operator[](std::string_view key) const noexcept; // returns null if not found
@@ -101,7 +101,7 @@ namespace rjson::v3
 
           private:
             using content_t = acmacs::small_map_with_unique_keys_t<std::string_view, value>; // to avoid sorting which invalidates string_view's
-            content_t content_{};
+            content_t content_;
         };
 
         class array
@@ -113,10 +113,10 @@ namespace rjson::v3
             array& operator=(array&&) = default;
             array& operator=(const array&) = default;
 
-            /*constexpr*/ bool empty() const noexcept { return content_.empty(); }
-            /*constexpr*/ size_t size() const noexcept { return content_.size(); }
-            /*constexpr*/ auto begin() const noexcept { return content_.begin(); }
-            /*constexpr*/ auto end() const noexcept { return content_.end(); }
+            bool empty() const noexcept { return content_.empty(); }
+            size_t size() const noexcept;
+            auto begin() const noexcept { return content_.begin(); }
+            auto end() const noexcept { return content_.end(); }
 
             void append(value&& aValue);
             const value& operator[](size_t index) const noexcept; // returns null if out of range
@@ -554,6 +554,7 @@ namespace rjson::v3
 
     // ----------------------------------------------------------------------
 
+    inline size_t detail::object::size() const noexcept { return content_.size(); }
     inline void detail::object::insert(std::string_view aKey, value&& aValue) { content_.emplace_not_replace(aKey, std::move(aValue)); }
 
     inline const value& detail::object::operator[](std::string_view key) const noexcept
@@ -577,6 +578,7 @@ namespace rjson::v3
             return r1;
     }
 
+    inline size_t detail::array::size() const noexcept { return content_.size(); }
     inline void detail::array::append(value&& aValue) { content_.push_back(std::move(aValue)); }
 
     inline const value& detail::array::operator[](size_t index) const noexcept

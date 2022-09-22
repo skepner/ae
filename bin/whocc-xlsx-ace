@@ -22,7 +22,8 @@ def main(args: argparse.Namespace):
             sheet = workbook.sheet(sheet_no)
             # print(f">>>> sheet {sheet_no} name: \"{sheet.name()}\" {sheet.number_of_rows()}:{sheet.number_of_columns()}")
             detected = detect_m.detect(sheet)
-            # print(detected)
+            if not detected:
+                raise RuntimeError(f"Sheet type not detected (by {ae.whocc.table_dir.detect_pathname()})")
             extractor = ae_backend.whocc.xlsx.extractor(sheet, detected)
             if extractor:
                 target_xlsx = check_output_existance(extractor=extractor, output_dir=args.output_dir, overwrite=args.overwrite)

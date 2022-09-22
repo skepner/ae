@@ -59,9 +59,9 @@ namespace ae
             bool operator==(const object&) const;
 
             bool empty() const { return data_.empty(); }
-            size_t size() const { return data_.size(); }
+            size_t size() const;
 
-            void add(std::string_view key, value&& val) { insert_or_assign(key, std::move(val)); }
+            void add(std::string_view key, value&& val);
             bool has_key(std::string_view key) const;
 
             auto begin() const { return data_.begin(); }
@@ -89,10 +89,10 @@ namespace ae
             bool operator==(const array&) const = default;
 
             bool empty() const { return data_.empty(); }
-            size_t size() const { return data_.size(); }
+            size_t size() const;
 
-            void add(value&& src) { data_.push_back(std::move(src)); }
-            void add_if_not_present(value&& src) { if (!contains(src)) data_.push_back(std::move(src)); }
+            void add(value&& src);
+            void add_if_not_present(value&& src);
             bool contains(const value& val) const;
             // void sort_unique();
 
@@ -285,6 +285,9 @@ namespace ae
         inline object::object() : data_{} {} // g++11 wants this
         inline bool object::operator==(const object& rhs) const { return data_ == rhs.data_; }
 
+        inline size_t object::size() const { return data_.size(); }
+        inline void object::add(std::string_view key, value&& val) { insert_or_assign(key, std::move(val)); }
+
         inline bool object::has_key(std::string_view key) const
         {
             return std::find_if(std::begin(data_), std::end(data_), [key](const auto& en) { return en.first == key; }) != std::end(data_);
@@ -317,6 +320,9 @@ namespace ae
         }
 
         // inline array::array() {}
+        inline size_t array::size() const { return data_.size(); }
+        inline void array::add(value&& src) { data_.push_back(std::move(src)); }
+        inline void array::add_if_not_present(value&& src) { if (!contains(src)) data_.push_back(std::move(src)); }
         inline bool array::contains(const value& val) const { return std::find(data_.begin(), data_.end(), val) != data_.end(); }
 
         // inline void array::sort_unique() { std::sort(data_.begin(), data_.end()); data_.erase(std::unique(data_.begin(), data_.end()), data_.end()); }

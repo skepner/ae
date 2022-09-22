@@ -72,7 +72,7 @@ namespace ae::sequences
     class Seqdb
     {
       public:
-        Seqdb(const virus::type_subtype_t& subtype) : subtype_{subtype} { load(); }
+        Seqdb(const virus::type_subtype_t& subtype);
         Seqdb(const Seqdb&) = delete;
         Seqdb(Seqdb&&) = delete;
         Seqdb& operator=(const Seqdb&) = delete;
@@ -249,6 +249,8 @@ namespace ae::sequences
     // ----------------------------------------------------------------------
 
     // ----------------------------------------------------------------------
+
+    inline Seqdb::Seqdb(const virus::type_subtype_t& subtype) : subtype_{subtype} { load(); }
 
     inline const SeqdbEntry* Seqdb::find_by_name(std::string_view name) const
     {

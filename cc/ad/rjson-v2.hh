@@ -140,15 +140,15 @@ namespace rjson::inline v2
     {
       public:
         array() = default;
-        array(std::initializer_list<value> init) : content_(init) {}
+        array(std::initializer_list<value> init);
         template <typename Iterator> array(Iterator first, Iterator last) : content_(first, last) {}
 
         bool empty() const noexcept { return content_.empty(); }
-        size_t size() const noexcept { return content_.size(); }
+        size_t size() const noexcept;
 
         const value& get(size_t index) const noexcept; // if index out of range, returns ConstNull
         value& operator[](size_t index) noexcept;      // if index out of range, returns ConstNull
-        size_t max_index() const { return content_.size() - 1; }
+        size_t max_index() const;
 
         value& append(value&& aValue); // returns ref to inserted
         void replace(const array& to_replace);
@@ -514,6 +514,10 @@ template <typename T> struct fmt::formatter<T, std::enable_if_t<std::is_same_v<r
 
 namespace rjson::inline v2
 {
+    inline array::array(std::initializer_list<value> init) : content_(init) {}
+    inline size_t array::size() const noexcept { return content_.size(); }
+    inline size_t array::max_index() const { return content_.size() - 1; }
+
     inline const value& array::get(size_t index) const noexcept // if index out of range, returns ConstNull
     {
         if (index < content_.size())
