@@ -120,6 +120,8 @@ def parse_date(date: str, metadata: dict, context: Context):
     preprocessed_date = context.preprocess_date(date, metadata)
     if not preprocessed_date:
         return preprocessed_date
+    elif date == "???":
+        return ""
     try:
         return ae_backend.date_format(preprocessed_date, allow_incomplete=True, throw_on_error=True, month_first=metadata.get("lab") == "CDC")
     except Exception as err:
