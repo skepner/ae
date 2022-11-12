@@ -169,6 +169,7 @@ void ae::py::sequences(pybind11::module_& mdl)
         .def("country", [](const SeqdbSeqRef& ref) { return ref.entry->country; })                                                                              //
         .def("continent", [](const SeqdbSeqRef& ref) { return ref.entry->continent; })                                                                          //
         .def("host", [](const SeqdbSeqRef& ref) { return ref.entry->host; })                                                                                    //
+        .def("hash", [](const SeqdbSeqRef& ref) { return *ref.seq->hash; })                                                                                    //
         ;
 
     pybind11::class_<sequence_aa_t>(mdl, "SequenceAA") //
