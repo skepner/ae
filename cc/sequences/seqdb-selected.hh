@@ -116,8 +116,13 @@ namespace ae::sequences
         SeqdbSelected& replace_with_master()
         {
             for (auto& ref : refs_) {
-                if (!ref.is_master())
+                if (!ref.is_master()) {
+                    const auto& hash = ref.seq->hash;
+                    AD_DEBUG("hash {}", hash);
                     ref = seqdb_.find_by_hash(ref.seq->hash);
+                    if (ref.empty())
+                        AD_WARNING("replace_with_master generated empty reference for {}", hash);
+                }
             }
             return *this;
         }
