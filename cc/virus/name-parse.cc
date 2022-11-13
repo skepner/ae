@@ -742,6 +742,7 @@ static const std::array sHosts{
     "MALLARD DUCK"sv,
     "MINK"sv, // otter, ferret
     "OSTRICH"sv,
+    "PAVO"sv,
     "PINTAIL DUCK"sv,
     "QUAIL"sv,
     "ROOK"sv,
