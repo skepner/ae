@@ -115,10 +115,19 @@ namespace ae::sequences
 
         SeqdbSelected& replace_with_master()
         {
+            size_t errors{0};
             for (auto& ref : refs_) {
-                if (!ref.is_master())
+                if (!ref.is_master()) {
+                    const auto& hash = ref.seq->hash;
                     ref = seqdb_.find_by_hash(ref.seq->hash);
+                    if (ref.empty()) {
+                        AD_ERROR("replace_with_master generated empty reference for {} (database corrupted?)", hash);
+                        ++errors;
+                    }
+                }
             }
+            if (errors)
+                throw Error{"replace_with_master generated {} errors", errors};
             return *this;
         }
 

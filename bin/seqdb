@@ -51,7 +51,7 @@ def find(subtype: str, lineage: str, names: list, args: argparse.Namespace):
         selected.lineage(lineage)
     selected.filter_dates(args.start_date, args.end_date)
 
-    reporting = args.aa or args.country or args.continent or names
+    reporting = args.aa or args.country or args.continent or args.hash or names
     if args.masters_only:
         selected.keep_masters_only()
     elif not reporting:
@@ -61,6 +61,8 @@ def find(subtype: str, lineage: str, names: list, args: argparse.Namespace):
 
     if names:
         selected.filter_name([fix_name(name).upper() for name in names])
+    if args.hash:
+        selected.filter(lambda ref: ref.hash() == args.hash)
     if args.country:
         args.country = args.country.upper()
         if args.country == "USA":
@@ -208,6 +210,7 @@ try:
     parser.add_argument("--host", dest="host")
     parser.add_argument("--country")
     parser.add_argument("--continent")
+    parser.add_argument("--hash", help="filter selection by hash")
     parser.add_argument("--aa")
     parser.add_argument("-f", "--format", help="output format: {seq_id} {date} {aa} {aa-163} {laa-163} {nuc} {nuc-163} {lnuc-163} {clades} {name} {country} {continent} {issues}")
     parser.add_argument("--from", dest="from_file", type=Path)

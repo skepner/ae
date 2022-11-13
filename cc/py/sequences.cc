@@ -110,6 +110,13 @@ void ae::py::sequences(pybind11::module_& mdl)
             "exclude", [](SeqdbSelected& selected, const std::function<bool(const SeqdbSeqRef&)>& predicate) { return selected.exclude(predicate); }, "predicate"_a,
             pybind11::doc("Passed predicate (function with one arg: SeqdbSeqRef object)\nis called for each earlier selected sequence, if it returns True, that sequence is removed.")) //
         .def(
+            "check", [](SeqdbSelected& selected) {
+                if (const auto empty_present = std::count_if(selected.begin(), selected.end(), [](const auto& ref) { return ref.empty(); }); empty_present)
+                    AD_WARNING("{} empty entries present in seqdb selection containing {} references", empty_present, selected.size());
+                return selected;
+            },
+            pybind11::doc("Checks if selection has null/empty entries")) //
+        .def(
             "sort",
             [](SeqdbSelected& selected, std::string_view sorting_order) -> SeqdbSelected& {
                 order ord = order::date_ascending;
@@ -162,6 +169,7 @@ void ae::py::sequences(pybind11::module_& mdl)
         .def("country", [](const SeqdbSeqRef& ref) { return ref.entry->country; })                                                                              //
         .def("continent", [](const SeqdbSeqRef& ref) { return ref.entry->continent; })                                                                          //
         .def("host", [](const SeqdbSeqRef& ref) { return ref.entry->host; })                                                                                    //
+        .def("hash", [](const SeqdbSeqRef& ref) { return *ref.seq->hash; })                                                                                    //
         ;
 
     pybind11::class_<sequence_aa_t>(mdl, "SequenceAA") //

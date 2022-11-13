@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
-import sys, os, argparse
+import sys, os, argparse, traceback
 from pathlib import Path
 sys.path[:0] = [str(Path(os.environ["AE_ROOT"], dir)) for dir in ["build", "py"]]
 import ae_backend
@@ -38,6 +38,7 @@ def bvic(subtype: str, args: argparse.Namespace):
         .include_name(outgroup)    # outgroup BRISBANE/60/2008, B/CHONGQING BANAN/1840/2017 (V1A)
         .remove_hash_duplicates()
         .replace_with_master()
+        .check()
         .sort("+date")
         .move_name_to_beginning(outgroup)
     )
