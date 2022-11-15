@@ -18,10 +18,10 @@ def main(args: argparse.Namespace):
     # child
     try:
         raxml_ng_asr(working_dir=working_dir, source_fas=source_fas, source_tree=source_tree, slurm_nodelist=args.slurm_nodelist, slurm_exclude_nodes=args.slurm_exclude_nodes)
-        subprocess.run(["/usr/bin/mail", "-s", f"completed {sys.argv[0]} {working_dir}", "eu@antigenic-cartography.org"], input=f"cd {working_dir}\n{argv}", text=True)
+        subprocess.run(["/usr/bin/mail", "-s", f"completed {sys.argv[0]} {working_dir}", "weekly-tree@antigenic-cartography.org"], input=f"cd {working_dir}\n{argv}", text=True)
         return 0
     except Exception as err:
-        subprocess.run(["/usr/bin/mail", "-s", f"FAILED {sys.argv[0]} {working_dir}", "eu@antigenic-cartography.org"], input=f"cd {working_dir}\n{argv}\n\n{traceback.format_exc()}\n", text=True)
+        subprocess.run(["/usr/bin/mail", "-s", f"FAILED {sys.argv[0]} {working_dir}", "weekly-tree@antigenic-cartography.org"], input=f"cd {working_dir}\n{argv}\n\n{traceback.format_exc()}\n", text=True)
         raise
 
 # ----------------------------------------------------------------------
