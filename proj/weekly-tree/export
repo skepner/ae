@@ -255,6 +255,7 @@ def h3(subtype: str, args: argparse.Namespace):
             "NEW_MEXICO/19/2022_IRX_4BA11056",
             # 2022-11-11 potential long branches
             "CATALONIA/NSVH534131326/2022_OR_4AC47F3F",
+            "A/ANAS_PLATYRHYNCHOS/BELGIUM/2499_0006/2021_MIXED_ECE1_DCC5FAD7",
             "ANAS_PLATYRHYNCHOS/BELGIUM/2499_0006/2021_ECE1_DCC5FAD7",
         ])
         .remove_hash_duplicates()
