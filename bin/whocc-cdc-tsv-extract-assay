@@ -1,0 +1,50 @@
+#! /usr/bin/env python3
+
+import sys
+from pathlib import Path
+import argparse
+import traceback
+import lzma
+import csv
+from io import StringIO
+
+# ======================================================================
+
+def main(args: argparse.Namespace):
+    if args.input.suffix == '.xz':
+        source = lzma.open(args.input).read().decode("utf-8")
+    else:
+        source = args.input.open().read()
+    reader = csv.DictReader(StringIO(source), delimiter="\t")
+    result = []
+    for row in reader:
+        if row["test_subtype"] == args.subtype and row["test_date"] == args.date:
+            # print(row)
+            # print(f"{row['ag_strain_name']:40s} {row['ag_passage']:10s}   {row['sr_strain_name']:40s} {row['sr_lot']:8s} {row['sr_passage']:10s}   {row['titer_value']:>6s}")
+            result.append([f"{row['ag_strain_name']} {row['ag_passage']}", f"{row['sr_strain_name']} {row['sr_lot']} {row['sr_passage']}", row['titer_value']])
+    result.sort()
+    longest_ag = max(len(res[0]) for res in result)
+    longest_sr = max(len(res[1]) for res in result)
+    longest_ti = max(len(res[2]) for res in result)
+    prev = None
+    for res in result:
+        if res[0] != prev:
+            print()
+        print(f"{res[0]:{longest_ag}s}  {res[1]:{longest_sr}s} {res[2]:>{longest_ti}s}")
+        prev = res[0]
+
+# ======================================================================
+
+try:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("input", type=Path)
+    parser.add_argument("subtype", help="H3 \"H1 swl\" \"B vic\"")
+    parser.add_argument("date", help="2020-06-02")
+    args = parser.parse_args()
+    exit_code = main(args)
+except Exception as err:
+    print(f"> {err}\n{traceback.format_exc()}", file=sys.stderr)
+    exit_code = 1
+exit(exit_code)
+
+# ======================================================================
