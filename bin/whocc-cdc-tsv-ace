@@ -311,17 +311,20 @@ def main(args: argparse.Namespace): # input_file :Path, output_dir :Path):
         # break
 
     output_dir = Path(args.output_dir)
-    output_dir.mkdir(exist_ok=True)
+    if args.make_output:
+        output_dir.mkdir(exist_ok=True)
     previous_table_type = None
     for table_name in sorted(tables):
+        print(f">>>> {table_name}", file=sys.stderr)
         table_type = table_name[:-9]
         if table_type != previous_table_type:
             if previous_table_type:
                 print("\n\n", file=sys.stderr)
             previous_table_type = table_type
         ace = tables[table_name]
-        merge_titers(table_name, ace["c"]["t"]["l"], ace)
+        merge_titers(table_name, ace["c"]["t"]["l"], ace, hint_small_to_less_than=ace["c"]["i"]["A"] == "HINT")
         populate_missing_titers(table_name, ace["c"]["t"]["l"], number_of_sera=len(ace["c"]["s"]))
+        remove_human_pool_sera(table_name, ace)
         sort_antigens_sera(ace)
         ae.whocc.ace.DataFixer(ace).process(report=False)
         # print(f"""{table_name:25s}   a:{len(ace["c"]["a"]):3d}   s:{len(ace["c"]["s"]):3d}""")
@@ -330,15 +333,18 @@ def main(args: argparse.Namespace): # input_file :Path, output_dir :Path):
         whocc_table_path = ae.whocc.table_dir.WHOCC_TABLES_DIR.joinpath(table_type, table_filename)
 
         table_dir = output_dir.joinpath(table_type)
-        table_dir.mkdir(exist_ok=True)
+        if args.make_output:
+            table_dir.mkdir(exist_ok=True)
         output_name = table_dir.joinpath(table_filename)
+        # print(f">>>> output_name {output_name}", file=sys.stderr)
 
-        with output_name.open("wb") as output:
-            output.write(lzma.compress(json_dumps(ace, indent=2, object_fields_sorting_key=object_fields_sorting_key).encode("utf-8"), preset=9|lzma.PRESET_EXTREME))
+        if args.make_output:
+            with output_name.open("wb") as output:
+                output.write(lzma.compress(json_dumps(ace, indent=2, object_fields_sorting_key=object_fields_sorting_key).encode("utf-8"), preset=9|lzma.PRESET_EXTREME))
 
         if not whocc_table_path.exists():
             print(f">> mv -i {output_name} {whocc_table_path}", file=sys.stderr)
-        elif diffs := table_diff(output_name, whocc_table_path):
+        elif args.make_output and (diffs := table_diff(output_name, whocc_table_path)):
             table_date = table_name[-8:]
             if table_date > "2021":
                 print(f">:a diff-charts {output_name} {whocc_table_path}", file=sys.stderr)
@@ -444,14 +450,23 @@ def check_titer(titer, row_no, column_no):
 
 # ----------------------------------------------------------------------
 
-def merge_titers(table_name, titers, ace):
+# if assay is HINT, all numeric titers less than 10 are converted to <10 before merging
+def merge_titers(table_name, titers, ace, hint_small_to_less_than: bool):
     for ag_no, row in enumerate(titers):
         for sr_no in range(len(row)):
             if isinstance(row[sr_no], list):
                 src = row[sr_no]
-                row[sr_no], message = ae_backend.chart_v2.titer_merge(src)
+                if hint_small_to_less_than:
+                    src = [("<10" if ti[0] not in ["*", "<", ">"] and int(ti) < 10 else ti) for ti in src]
+                try:
+                    row[sr_no], message = ae_backend.chart_v2.titer_merge(src)
+                except:
+                    print(f"> ERROR {traceback.format_exc()}", file=sys.stderr)
+                    raise
                 # if message:
-                #     print(f">>> titer merged {row[sr_no]} ({message}) <-- {src}", file=sys.stderr)
+                # print(f">>> {ag_no}:{sr_no} titer merged {row[sr_no]} ({message}) <-- {src}", file=sys.stderr)
+            elif hint_small_to_less_than and row[sr_no][0] not in ["*", "<", ">"] and int(row[sr_no]) < 10:
+                row[sr_no] = "<10"
             if row[sr_no] and row[sr_no][0] not in ["*", "<", ">"] and int(row[sr_no]) < 10:
                 print(f">> invalid titer {row[sr_no]} for ag:{ag_no} sr:{sr_no}", file=sys.stderr)
                 if int(row[sr_no]) == 0:
@@ -463,6 +478,19 @@ def populate_missing_titers(table_name, titers, number_of_sera):
     for row in titers:
         while len(row) < number_of_sera:
             row.append("*")
+
+# ----------------------------------------------------------------------
+
+def remove_human_pool_sera(table_name, ace):
+    to_remove = sorted((sr_no for sr_no, sr in enumerate(ace["c"]["s"]) if "HUMAN" in sr["I"].upper()), reverse=True)
+    if to_remove:
+        sera = ace["c"]["s"]
+        for sr_no in to_remove:
+            print(f">>> remove {sr_no:3d} {sera[sr_no]['N']} {sera[sr_no]['I']}")
+            del sera[sr_no]
+        for row in ace["c"]["t"]["l"]:
+            for sr_no in to_remove:
+                del row[sr_no]
 
 # ----------------------------------------------------------------------
 
