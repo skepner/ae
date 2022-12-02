@@ -260,6 +260,8 @@ def h3(subtype: str, args: argparse.Namespace):
             # 2022-11-26 potential long branches
             "CATALONIA/NSVH101954411/2022_OR_7A633967",
             "CATALONIA/NSVH510598655/2022_OR_57BCC58B",
+            # 2022-12-02 potential long branches
+            "MISSOURI/19/2022_OR_837C934E",
         ])
         .remove_hash_duplicates()
         .replace_with_master()
