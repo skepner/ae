@@ -139,6 +139,8 @@ def h1(subtype: str, args: argparse.Namespace):
             "INDIA/NIV-NICOBAR164/2020_OR_37A11133",
             # 2022-10-07 potential long branch
             "PARANA/20675/2022_OR_3D8D671C",
+            # 2022-12-10 potential long branch
+            "DAKAR/3124/2021_279E04A6",
         ])
         .remove_hash_duplicates()
         .replace_with_master()
@@ -262,6 +264,11 @@ def h3(subtype: str, args: argparse.Namespace):
             "CATALONIA/NSVH510598655/2022_OR_57BCC58B",
             # 2022-12-02 potential long branches
             "MISSOURI/19/2022_OR_837C934E",
+            # 2022-12-10 potential long branches
+            "CATALONIA/NSVH560028269/2022_OR_9C189CFA", # 159X 160X 162X 163X 164X
+            "ATHENS/355/2022_D9D4A86A",                 # 38X 40X 41X 42X 59X 67X 81X 128X
+            "MICHIGAN/48/2022_OR_910196F9",
+            "MICHIGAN/UOM10047284024/2022_OR_910196F9",
         ])
         .remove_hash_duplicates()
         .replace_with_master()
