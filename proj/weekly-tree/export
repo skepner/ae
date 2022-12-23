@@ -141,6 +141,8 @@ def h1(subtype: str, args: argparse.Namespace):
             "PARANA/20675/2022_OR_3D8D671C",
             # 2022-12-10 potential long branch
             "DAKAR/3124/2021_279E04A6",
+            # 2022-12-23 potential long branch
+            "NAVARRA/4050/2022_OR_BBC31B3A",
         ])
         .remove_hash_duplicates()
         .replace_with_master()
