@@ -11,10 +11,17 @@ import ae_backend
 
 def main(args: argparse.Namespace):
     chart = ae_backend.chart_v3.Chart(args.source)
-    if args.target:
-        chart.write(filename=args.target)
+    modified = False
+    if args.remove_all:
+        for ag_no, antigen in chart.select_all_antigens():
+            antigen.semantic.remove_all()
+        for sr_no, serum in chart.select_all_sera():
+            serum.semantic.remove_all()
+        modified = True
     for ag_no, antigen in chart.select_all_antigens():
         print(f"{ag_no:4d} {antigen.designation():70s} {antigen.semantic}")
+    if modified and args.target:
+        chart.write(filename=args.target)
 
 # ----------------------------------------------------------------------
 
@@ -22,6 +29,7 @@ try:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("source", type=Path)
     parser.add_argument("target", nargs="?", type=Path)
+    parser.add_argument("--remove-all", action="store_true")
     args = parser.parse_args()
     exit_code = main(args) or 0
 except Exception as err:

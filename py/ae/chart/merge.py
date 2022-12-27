@@ -34,9 +34,9 @@ def merge(sources: list[Path]|list[ae_backend.chart_v3.Chart], match: str, merge
         if report:
             print(report_chart(merge), report_chart(chart), merge_data.common(), "-" * 70, sep="\n", end="\n\n")
     if remove_semantic:
-        for ag_no, antigen in chart.select_all_antigens():
+        for ag_no, antigen in merge.select_all_antigens():
             antigen.semantic.remove_all()
-        for sr_no, serum in chart.select_all_sera():
+        for sr_no, serum in merge.select_all_sera():
             serum.semantic.remove_all()
     return merge
 
