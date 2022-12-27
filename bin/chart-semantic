@@ -14,7 +14,7 @@ def main(args: argparse.Namespace):
     if args.target:
         chart.write(filename=args.target)
     for ag_no, antigen in chart.select_all_antigens():
-        print(f"{ag_no:4d} {antigen.designation():70s} aaa", file=sys.stderr)
+        print(f"{ag_no:4d} {antigen.designation():70s} {antigen.semantic}")
 
 # ----------------------------------------------------------------------
 
