@@ -271,6 +271,8 @@ def h3(subtype: str, args: argparse.Namespace):
             "ATHENS/355/2022_D9D4A86A",                 # 38X 40X 41X 42X 59X 67X 81X 128X
             "MICHIGAN/48/2022_OR_910196F9",
             "MICHIGAN/UOM10047284024/2022_OR_910196F9",
+            # 2023-01-08 potential long branches
+            "BRITISH_COLUMBIA/PHL-480/2022_OR_EAAE7C01",
         ])
         .remove_hash_duplicates()
         .replace_with_master()
