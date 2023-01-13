@@ -143,6 +143,8 @@ def h1(subtype: str, args: argparse.Namespace):
             "DAKAR/3124/2021_279E04A6",
             # 2022-12-23 potential long branch
             "NAVARRA/4050/2022_OR_BBC31B3A",
+            # 2023-01-13 potential long branch
+            "SAO_PAULO/356765942-IAL/2022_OR_71BA8B9D",
         ])
         .remove_hash_duplicates()
         .replace_with_master()
@@ -273,6 +275,14 @@ def h3(subtype: str, args: argparse.Namespace):
             "MICHIGAN/UOM10047284024/2022_OR_910196F9",
             # 2023-01-08 potential long branches
             "BRITISH_COLUMBIA/PHL-480/2022_OR_EAAE7C01",
+            # 2023-01-13 potential long branch
+            "GALICIA/22034482/2022_2EE89148",
+            "GALICIA/22018524/2022_1EE46082",
+            "GALICIA/22033804/2022_0EE699D6",
+            "GALICIA/21987208/2022_F49E5748",
+            "GALICIA/22036079/2022_430E996A",
+            "GALICIA/22018743/2022_0116B017",
+            "GALICIA/22011636/2022_3D9F40AD",
         ])
         .remove_hash_duplicates()
         .replace_with_master()
