@@ -283,6 +283,9 @@ def h3(subtype: str, args: argparse.Namespace):
             "GALICIA/22036079/2022_430E996A",
             "GALICIA/22018743/2022_0116B017",
             "GALICIA/22011636/2022_3D9F40AD",
+            # 2023-01-20 potential long branch
+            "SINGAPORE/GP9117/2022_OR_69761A51",
+            "TURKEY/GIHSN_ANKARA-14020_7/2022_012CD2F7",
         ])
         .remove_hash_duplicates()
         .replace_with_master()
