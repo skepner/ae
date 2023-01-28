@@ -34,6 +34,8 @@ def bvic(subtype: str, args: argparse.Namespace):
             "ANHUI_JINGHU/63/2019", # garbage in 406-414 leading to a long branch (2021-0722)
             "LISBOA/NISU182_17-18/2018", # yamagata, long branch 2021-1117
             # "ZAMBIA/503/2021", # potential long branch 2022-0401
+            # 2023-01-28 potential long branch
+            "KRABI/FS002/2022",
             ])
         .include_name(outgroup)    # outgroup BRISBANE/60/2008, B/CHONGQING BANAN/1840/2017 (V1A)
         .remove_hash_duplicates()
@@ -145,6 +147,14 @@ def h1(subtype: str, args: argparse.Namespace):
             "NAVARRA/4050/2022_OR_BBC31B3A",
             # 2023-01-13 potential long branch
             "SAO_PAULO/356765942-IAL/2022_OR_71BA8B9D",
+            # 2023-01-28 potential long branches
+            "NAVARRA/4050/2022_OR_BBC31B3A",
+            "DAKAR/3124/2021_279E04A6 pdm09-like",
+            "PAKISTAN/GIHSN-GB-445/2022_OR_A20D55B6",
+            "PAKISTAN/GIHSN-ICT-152/2023_OR_572EBEB8",
+            "PAKISTAN/GIHSN-PB-15/2023_OR_484A375D",
+            "SAO_PAULO/356765942-IAL/2022_OR_71BA8B9D",
+            "CATALONIA/NSVH101996495/2023_OR_2E610047",
         ])
         .remove_hash_duplicates()
         .replace_with_master()
@@ -286,6 +296,18 @@ def h3(subtype: str, args: argparse.Namespace):
             # 2023-01-20 potential long branch
             "SINGAPORE/GP9117/2022_OR_69761A51",
             "TURKEY/GIHSN_ANKARA-14020_7/2022_012CD2F7",
+            # 2023-01-28 potential long branches
+            "MICHIGAN/48/2022_OR_910196F9",
+            "MACEDONIA/IPH-MKD-59729/2021_OR_837D0C9D",
+            "KHON_KAEN/FS005/2022_OR_1A5637D8",
+            "TURKEY/GIHSN_ANKARA-14020_7/2022_012CD2F7",
+            "ATHENS/355/2022_D9D4A86",
+            "CATALONIA/NSVH101994299/2023_OR_13A43DA9",
+            "MACEDONIA/IPH-MKD-HD/2021_OR_B52D1807",
+            "SOUTH_AFRICA/R07603/2022_OR_7937FE46",
+            "SOUTH_AFRICA/R05772/2022_OR_552B5F5E",
+            "GALICIA/22034482/2022_2EE89148",
+            "CATALONIA/NSVH560028269/2022_OR_9C189CFA",
         ])
         .remove_hash_duplicates()
         .replace_with_master()
