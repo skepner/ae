@@ -58,6 +58,10 @@ def main(args: argparse.Namespace):
         tree.set_clades(os.environ["AC_CLADES_JSON_V2"])
         print(f">>> number of leaves: {tree.number_of_leaves()}", file=sys.stderr)
 
+    if args.set_clades:
+        tree.set_clades(args.set_clades)
+        print(f">>> number of leaves after setting clades: {tree.number_of_leaves()}", file=sys.stderr)
+
     if args.ladderize:
         ladderize_method = "number-of-leaves"
         tree.ladderize(ladderize_method)
@@ -94,6 +98,7 @@ try:
     parser.add_argument("--remove-if-cumulative-more-than", dest="remove_if_cumulative_more_than", type=float, default=None)
     parser.add_argument("--remove-seq-id", default=None, help="comma separated list of seq_id to remove")
     parser.add_argument("--populate", "-p", dest="subtype")
+    parser.add_argument("--set-clades")
     parser.add_argument("--ladderize", "-l", action="store_true", default=False)
     parser.add_argument("--remove-leaves-isolated-before", help="removes leaves isolated before the date, but keep tree topology")
     parser.add_argument("--important", "-I", "--keep-during-removal", help="comma separated list of important strains (seq_id prefixes) to keep in case of --remove-leaves-isolated-before")
