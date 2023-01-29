@@ -1,4 +1,4 @@
-Time-stamp: <2022-12-23 12:43:57 eu>
+Time-stamp: <2023-01-28 08:48:13 eu>
 * already downloaded from gisaid: ~/ac/sequences
 ls -l ~/ac/sequences/gis*.fas.*
 
@@ -24,10 +24,10 @@ Isolate name_|_a=Isolate ID_|_b=Type_|_c=Passage details/history_|_d=Lineage_|_e
 
 #+BEGIN_SRC bash
   dos2unix /r/gisaid_epiflu_sequence*.fasta && ln -sf ~/ac/sequences/ae.py /r
-  ~/ae/bin/seqdb-update -m a -n /r/gisaid_epiflu_sequence*.fasta
+  $AE_ROOT/bin/seqdb-update -m a -n /r/gisaid_epiflu_sequence*.fasta
   # no=0; for f in /r/gisaid_epiflu_sequence*.fasta; do no=$((no+1)); t=gisaid-$(date +%Y-%m%d)-${no}.fas.xz; xz -9ec ${f} >/r/${t}; mv -i /r/${t} ~/ac/sequences/; done
   no=0; for f in /r/gisaid_epiflu_sequence*.fasta; do no=$((no+1)); t=gisaid-$(date +%Y-%m%d)-${no}.fas.br; brotli -c ${f} >/r/${t}; mv -i /r/${t} ~/ac/sequences/; done
-  ~/ae/bin/seqdb-update -m a ~/ac/sequences/gisaid-$(date +%Y-%m%d)-*.fas.*
+  $AE_ROOT/bin/seqdb-update -m a ~/ac/sequences/gisaid-$(date +%Y-%m%d)-*.fas.*
   seqdb-put
   ssa
 #+END_SRC
