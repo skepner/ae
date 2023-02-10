@@ -16,13 +16,15 @@ def org_table_to_dict(data: str) -> list[dict[str, str | bool | int | float]]:
             if not field_names:
                 field_names = fields
             else:
-                result.append({key: _convert_value(fields[no]) for no, key in enumerate(field_names) if fields[no]})
+                result.append({key: _convert_value(fields[no], field_name=key) for no, key in enumerate(field_names) if fields[no]})
         elif field_names:
             break
     return result
 
 
-def _convert_value(value: str) -> str | bool | int | float:
+def _convert_value(value: str, field_name: str) -> str | bool | int | float:
+    if field_name in ["designation", "name", "legend", "semantic"]:
+        return value
     if value in ["true", "True"]:
         return True
     if value in ["false", "False"]:
