@@ -23,7 +23,7 @@ def org_table_to_dict(data: str) -> list[dict[str, str | bool | int | float]]:
 
 
 def _convert_value(value: str, field_name: str) -> str | bool | int | float:
-    if field_name in ["designation", "name", "legend", "semantic"]:
+    if field_name in ["clade", "designation", "name", "legend", "semantic", "aa"]:
         return value
     if value in ["true", "True"]:
         return True
