@@ -1,0 +1,39 @@
+#! /usr/bin/env python3
+"""
+Copies chart file and check its content
+"""
+
+import os, sys, argparse, traceback
+from pathlib import Path
+import ae_backend
+
+# ----------------------------------------------------------------------
+
+def main(args: argparse.Namespace):
+    chart = ae_backend.chart_v3.Chart(args.source)
+    transformation = chart.projection(args.projection).transformation()
+    if args.flip_ns:
+        transformation.flip_ns()
+    if args.flip_ew:
+        transformation.flip_ew()
+    if args.angle:
+        transformation.rotate(args.angle)
+    if args.target:
+        chart.write(filename=args.target)
+
+# ----------------------------------------------------------------------
+
+try:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("source", type=Path)
+    parser.add_argument("target", type=Path)
+    parser.add_argument("-r", "--angle", type=float, default=None, help='angle to rotate, positive - clockwise, <3.15 - radians, >=3.15 - degrees')
+    parser.add_argument("--flip-ns", action='store_true', help='flip over horizontal line before rotating')
+    parser.add_argument("--flip-ew", action='store_true', help='flip over vertical line before rotating')
+    parser.add_argument("-p", "--projection", type=int, default=0)
+    args = parser.parse_args()
+    exit_code = main(args) or 0
+except Exception as err:
+    print(f"> {err}\n{traceback.format_exc()}", file=sys.stderr)
+    exit_code = 1
+exit(exit_code)
