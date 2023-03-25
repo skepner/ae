@@ -49,7 +49,7 @@ class Vaccine:
         val = f"{self.year or ''}{passage[0]}{'s' if self.surrogate else ''}"
         if self.year in current_vaccine_years:
             val += "C"
-        # print(f">>>> semantic_vaccine {entry.antigen.designation()} \"{val}\"", file=sys.stderr)
+        print(f">>>> semantic_vaccine {entry.antigen.designation()} \"{val}\"", file=sys.stderr)
         entry.antigen.semantic.vaccine(val)
 
     def __repr__(self):
@@ -108,6 +108,7 @@ def set_semantic(vaccines_found: list[Vaccine], current_vaccine_years: list[str]
         return any(getattr(vac, attr_name, None) in vals for attr_name, vals in selector.items())
 
     def get_index(vac: Vaccine, selector: list[dict[str, str|int]]) -> int:
+        # print(f">>>> get_index {vac}", file=sys.stderr)
         for sel in selector:
             if any(getattr(vac, attr_name, None) == val for attr_name, val in sel.items() if attr_name != "index"):
                 return sel["index"]
@@ -115,11 +116,11 @@ def set_semantic(vaccines_found: list[Vaccine], current_vaccine_years: list[str]
 
     for vaccine in vaccines_found:
         if not is_disbaled(vaccine, disable.get("any", {})):
-            # print(f">>>> V {vaccine}", file=sys.stderr)
+            print(f">>>> V {vaccine}", file=sys.stderr)
             for passage in ["cell", "egg", "reassortant"]:
                 if (vaccines_per_passage := getattr(vaccine, passage)) and not is_disbaled(vaccine, disable.get(passage, {})):
                     if (ind := get_index(vaccine, choose.get(passage, []))) < len(vaccines_per_passage):
-                        vaccine.semantic_vaccine(vaccines_per_passage[get_index(vaccine, choose.get(passage, []))], current_vaccine_years=current_vaccine_years)
+                        vaccine.semantic_vaccine(vaccines_per_passage[ind], current_vaccine_years=current_vaccine_years)
 
 # ======================================================================
 

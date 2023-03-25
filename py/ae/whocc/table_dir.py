@@ -1,4 +1,4 @@
-import os
+import os, sys
 from pathlib import Path
 import ae_backend
 
@@ -11,6 +11,7 @@ if not WHOCC_TABLES_DIR:
 # ======================================================================
 
 def subtype_assay_lab_output_dir(extractor: ae_backend.whocc.xlsx.Extractor):
+    print(extractor.format_assay_data(">>>> virus_type_lineage:{virus_type_lineage} assay_low_rbc:{assay_low_rbc} lab_low:{lab_low}"), file=sys.stderr)
     return WHOCC_TABLES_DIR.joinpath(extractor.format_assay_data("{virus_type_lineage}-{assay_low_rbc}-{lab_low}"))
 
 def subtype_assay_lab_stem(extractor: ae_backend.whocc.xlsx.Extractor):

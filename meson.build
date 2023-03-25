@@ -17,6 +17,8 @@ if meson.get_compiler('cpp').get_id() == 'clang'
     '-Wno-weak-vtables', '-Wno-padded', '-Wno-c++98-compat', '-Wno-c++98-c++11-compat', '-Wno-c++98-compat-pedantic',
     '-Wno-ambiguous-reversed-operator', # ISO C++20 considers use of overloaded operator '<=' to be ambiguous despite there being a unique best viable function
     '-Wno-zero-as-null-pointer-constant', # clang13 somtimes with operator<=>
+    '-Wno-unsafe-buffer-usage', # clang16
+    '-Wno-disabled-macro-expansion', # clang16 python 3.11
     language : 'cpp')
 else
   # add_project_arguments(
@@ -309,7 +311,7 @@ test('ae chart_v3_test', chart_v3_test)
 # https://github.com/mesonbuild/meson/issues/4677
 # ----------------------------------------------------------------------
 
-python3 = import('python').find_installation('python3.10')
+python3 = import('python').find_installation('python3')
 
 ae_backend = python3.extension_module(
   'ae_backend',
