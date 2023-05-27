@@ -341,6 +341,7 @@ def main(args: argparse.Namespace): # input_file :Path, output_dir :Path):
         if args.make_output:
             with output_name.open("wb") as output:
                 output.write(lzma.compress(json_dumps(ace, indent=2, object_fields_sorting_key=object_fields_sorting_key).encode("utf-8"), preset=9|lzma.PRESET_EXTREME))
+            subprocess.check_output(["seqdb-chart-populate", str(output_name)])
 
         if not whocc_table_path.exists():
             print(f">> mv -i {output_name} {whocc_table_path}", file=sys.stderr)
