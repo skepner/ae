@@ -57,7 +57,7 @@ static const std::regex re_AC21_empty{R"(^\s*$)", regex_icase};
 
 static const std::regex re_Crick_LabelOther{R"(^\s*other\s*$)", regex_icase};
 static const std::regex re_Crick_LabelInformation{R"(^\s*information\s*$)", regex_icase};
-static const std::regex re_CRICK_serum_name_1{"^([AB]/[A-Z '_-]+|NYMC\\s+X-[0-9]+[A-Z]*)$", regex_icase};
+static const std::regex re_CRICK_serum_name_1{"^([AB]/[A-Z '_-]+/?|NYMC\\s+X-[0-9]+[A-Z]*|IVR-?[0-9]+)$", regex_icase};
 static const std::regex re_CRICK_serum_name_2{"^[A-Z0-9-/]+$", regex_icase};
 #define pattern_CRICK_serum_id "F[0-9]+/[0-2][0-9]"
 static const std::regex re_CRICK_serum_id{R"(^(?:[A-Z\s]+\s+)?\s*((?:St +Jude's +)?F[0-9]+/[0-2][0-9]|SH[\s\d,/]+)(?:\*(\d)(?:,\d)?)?$)", regex_icase};
