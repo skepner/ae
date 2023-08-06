@@ -95,7 +95,7 @@ def garli(working_dir: Path, tree: Path, source_fas: Path, num_runs: int, stopti
                 required_memory = int(mm.group(1))
             elif (time.time() - start) > timeout:
                 required_memory = default_required_memory
-                module_logger.warning(f"Cannot obtain memory required by garli in {timeout} seconds: default for {working_dir.name}: {required_memory} will be used")
+                print(f"WARNING: Cannot obtain memory required by garli in {timeout} seconds: default for {working_dir.name}: {required_memory} will be used", file=sys.stderr)
         proc.kill()
         return required_memory
 
