@@ -295,7 +295,7 @@ ae::virus::passage::deconstructed_t ae::virus::passage::parse(std::string_view s
     }
 
     try {
-        // AD_DEBUG("[passage-parse] \"{}\"", source);
+        // fmt::print(">>> [passage-parse] \"{}\"", source);
         report_error error_reporter{messages, message_location};
         const auto parsing_result = lexy::parse<grammar::whole>(lexy::string_input<lexy::utf8_encoding>{source}, error_reporter);
         if (!parsing_result.has_value())

@@ -1,4 +1,4 @@
-import sys, pprint
+import sys, re, pprint
 import ae_backend
 from locdb_v2 import geonames, geonames_make_eval
 from ..utils import json
@@ -141,7 +141,11 @@ class DataFixer:
 
     def _passage(self, entry: dict, ag_sr: str, no: int):
         if orig_passage := entry["P"]:
+            if m1 := re.search(r"\s(10-[0-9]+)$", orig_passage): # concentration in Crick
+                entry.setdefault("a", []).append(m1.group(1))
+                orig_passage = orig_passage[:m1.start()]
             parsing_result = ae_backend.virus.passage_parse(orig_passage)
+            self.report_data.append(f">> passage_parse    {ag_sr} {no:3d} passage: {parsing_result.passage()} <- \"{orig_passage}\"")
             if parsing_result.good():
                 entry["P"] = parsing_result.passage()
                 if entry["P"] != orig_passage:
