@@ -151,6 +151,7 @@ class DataFixer:
                 if entry["P"] != orig_passage:
                     self.report_data.append(f"    {ag_sr} {no:3d} passage: \"{entry['P']}\" <- \"{orig_passage}\"")
             else:
+                entry["P"] = entry["P"].upper()
                 messages = [f"{msg.type}: {msg.value}" for msg in parsing_result.messages]
                 self.report_data.append(f">>  {ag_sr} {no:3d} passage parsing failed \"{orig_passage}\": {messages}")
 
