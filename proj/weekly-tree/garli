@@ -35,7 +35,7 @@ def main(args: argparse.Namespace):
 
 def garli(working_dir: Path, tree: Path, source_fas: Path, num_runs: int, stoptime: int, slurm_nodelist: str, slurm_exclude_nodes: str, new_output: bool):
 
-    default_required_memory = 7000
+    default_required_memory = 16000
 
     # the number of attachment branches evaluated for each taxon to be added to the tree during the creation of an ML stepwise-addition starting tree (when garli is run without raxml step)
     attachmentspertaxon =  1000000
@@ -88,7 +88,7 @@ def garli(working_dir: Path, tree: Path, source_fas: Path, num_runs: int, stopti
         start = time.time()
         proc = subprocess.Popen([garli_cmd, str(conf_file)], stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         required_memory = None # default, in case the code below fails or times out
-        timeout = 60
+        timeout = 300
         while required_memory is None:
             line = proc.stdout.readline().decode("utf-8")
             if mm := sGreat.match(line):
@@ -144,7 +144,7 @@ def garli(working_dir: Path, tree: Path, source_fas: Path, num_runs: int, stopti
         # scores in results are positive numbers
         results = [[log_file_name, float(sReFinalScore.search(log_file_name.open().read()).group(1))] for log_file_name in output_dir.glob("*.log00.log")]
         if not results:
-            raise Error(f"no results found in {output_dir}/*.log00.log")
+            raise RuntimeError(f"no results found in {output_dir}/*.log00.log")
         results.sort(key=lambda en: en[1])
         output_dir.parent.joinpath("garli-best.txt").open("w").write(str(results[0][0]).replace(".log00.log", ".best.phy"))
         output_dir.parent.joinpath("garli-all.txt").open("w").write("\n".join(f"{score:13.6f} {str(log_name).replace('.log00.log', '.best.phy')}" for log_name, score in results))
