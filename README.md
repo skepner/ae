@@ -17,6 +17,7 @@
 
 - install homebrew https://brew.sh
 - brew install llvm ninja meson libomp cmake brotli zlib xz gnu-time catch2
+- pip3 install mypy
 
 ## Installing dependencies on Ubuntu
 

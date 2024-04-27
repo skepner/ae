@@ -96,7 +96,7 @@ static const std::regex re_VIDRL_serum_name{"^(?:[AB]/)?([A-Z][A-Z ]+)/?([0-9]+)
 static const std::regex re_VIDRL_serum_id{"^(" pattern_VIDRL_serum_id "|" pattern_CRICK_serum_id ")$", regex_icase};
 static const std::regex re_VIDRL_serum_id_with_days{"^[AF][0-9][0-9][0-9][0-9]-[0-9]+D$", regex_icase};
 
-static const std::regex re_human_who_serum{R"(^\s*(.*(HUMAN|WHO|NORMAL)|GOAT|POST? VAX|VAX POOL)\b)", regex_icase}; // "POST VAX": VIDRL H3 HI 2021, "HUMAN VAX": VIDRL H3 HI 2022
+static const std::regex re_human_who_serum{R"(^\s*(.*(HUMAN|WHO|NORMAL)|GOAT|POST? VAX|VAX POOL|SERA POOL)\b)", regex_icase}; // "POST VAX": VIDRL H3 HI 2021, "HUMAN VAX": VIDRL H3 HI 2022
 
 #pragma GCC diagnostic pop
 
@@ -339,13 +339,16 @@ std::string ae::xlsx::v1::Extractor::titer(size_t ag_no, size_t sr_no) const
 void ae::xlsx::v1::Extractor::find_titers(warn_if_not_found winf)
 {
     std::vector<std::pair<nrow_t, range<ncol_t>>> rows;
-    // AD_DEBUG("Sheet {}", sheet().name());
+    AD_DEBUG("Sheet {} rows:{}", sheet().name(), sheet().number_of_rows());
     for (nrow_t row{0}; row < sheet().number_of_rows(); ++row) {
         auto titers = sheet().titer_range(row);
+        AD_DEBUG("Row:{} titers: ({} valid:{}) {}:{}", row, titers.length(), titers.valid(), titers.first, titers.second);
         adjust_titer_range(row, titers);
+        AD_DEBUG("Row:{} titers: ({} valid:{}) {}:{}", row, titers.length(), titers.valid(), titers.first, titers.second);
         if (titers.valid() && titers.length() > 2 && titers.first > ncol_t{0} && valid_titer_row(row, titers))
             rows.emplace_back(row, std::move(titers));
     }
+    AD_DEBUG("Rows with titers: {}", rows.size());
 
     if (!ranges::all_of(rows, [&rows](const auto& en) { return en.second == rows[0].second; })) {
         fmt::memory_buffer report; // fmt::format(rows, "{}", "\n  "));
