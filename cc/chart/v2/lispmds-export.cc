@@ -295,12 +295,12 @@ std::string plot_spec(const ae::chart::v2::Chart& aChart, const ae::chart::v2::D
                 if (point_no < number_of_antigens) {
                     auto antigen = (*antigens)[point_no];
                     name = lispmds_antigen_name_encode(antigen->name(), antigen->reassortant(), antigen->passage(), antigen->annotations()) + "-AG";
-                    nm = ae::string::join(" ", antigen->name(), antigen->reassortant(), antigen->passage(), ae::string::join(" ", antigen->annotations()));
+                    nm = ae::string::join(" ", antigen->name(), *antigen->reassortant(), antigen->passage(), ae::string::join(" ", antigen->annotations()));
                 }
                 else {
                     auto serum = (*sera)[point_no - number_of_antigens];
                     name = lispmds_serum_name_encode(serum->name(), serum->reassortant(), serum->annotations(), serum->serum_id()) + "-SR";
-                    nm = ae::string::join(" ", serum->name(), serum->reassortant(), ae::string::join(" ", serum->annotations()), serum->serum_id());
+                    nm = ae::string::join(" ", serum->name(), *serum->reassortant(), ae::string::join(" ", serum->annotations()), *serum->serum_id());
                 }
                 result.append('(' + name + " :NM \"" + nm + '"' + point_style(plot_spec->style(point_no)) + ')');
             }

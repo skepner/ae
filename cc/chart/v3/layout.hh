@@ -117,12 +117,12 @@ namespace ae::chart::v3
 
 template <> struct fmt::formatter<ae::chart::v3::Layout> : public fmt::formatter<ae::fmt_helper::float_formatter>
 {
-    template <typename FormatContext> auto format(const ae::chart::v3::Layout& layout, FormatContext& ctx) const
+    auto format(const ae::chart::v3::Layout& layout, format_context& ctx) const
     {
-        format_to(ctx.out(), "[\n");
+        fmt::format_to(ctx.out(), "[\n");
         for (const auto point_no : layout.number_of_points())
-            format_to(ctx.out(), "    {}\n", layout[point_no]);
-        return format_to(ctx.out(), "]");
+            fmt::format_to(ctx.out(), "    {}\n", layout[point_no]);
+        return fmt::format_to(ctx.out(), "]");
     }
 };
 

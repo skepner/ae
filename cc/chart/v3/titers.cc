@@ -4,6 +4,7 @@
 
 #include "ext/from_chars.hh"
 // #include "ext/range-v3.hh"
+#include "subprojects/fmt-9.0.0/include/fmt/core.h"
 #include "utils/statistics.hh"
 #include "chart/v3/chart.hh"
 
@@ -558,7 +559,7 @@ ae::chart::v3::Titers::titer_merge_report ae::chart::v3::Titers::set_from_layers
     auto merge_report = set_titers_from_layers(more_than_thresholded::to_dont_care);
     if (!cb.empty()) {
         chart.forced_column_bases(cb);
-        AD_INFO("forced column bases: {}", chart.forced_column_bases());
+        AD_INFO(fmt::runtime("forced column bases: {}"), chart.forced_column_bases());
     }
     return merge_report;
 
@@ -704,7 +705,7 @@ double ae::chart::v3::Titers::max_distance(const column_bases& cb) const
         for (const auto titer_ref : titers_existing()) {
             max_distance = std::max(max_distance, cb[titer_ref.serum] - titer_ref.titer.logged_with_thresholded());
             if (std::isnan(max_distance) || std::isinf(max_distance))
-                throw std::runtime_error{fmt::format("Titers::max_distance invalid: {} after titer [{}] column_bases:{} @@ {}:{}: {}", max_distance, titer_ref, cb, __builtin_FILE(), __builtin_LINE(),
+                throw std::runtime_error{fmt::format(fmt::runtime("Titers::max_distance invalid: {} after titer [{}] column_bases:{} @@ {}:{}: {}"), max_distance, titer_ref, cb, __builtin_FILE(), __builtin_LINE(),
                                                      __builtin_FUNCTION())};
         }
     }

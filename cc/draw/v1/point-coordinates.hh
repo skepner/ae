@@ -252,16 +252,16 @@ namespace ae::draw::v1
 
 template <> struct fmt::formatter<ae::draw::v1::PointCoordinates> : public fmt::formatter<ae::fmt_helper::float_formatter>
 {
-    template <typename FormatContext> auto format(const ae::draw::v1::PointCoordinates& coord, FormatContext& ctx) const
+    auto format(const ae::draw::v1::PointCoordinates& coord, format_context& ctx) const
     {
         ae::chart::v2::number_of_dimensions_t dim{0};
-        format_to(ctx.out(), "{{");
+        fmt::format_to(ctx.out(), "{{");
         format_val(coord[dim], ctx);
         for (++dim; dim < coord.number_of_dimensions(); ++dim) {
-            format_to(ctx.out(), ", ");
+            fmt::format_to(ctx.out(), ", ");
             format_val(coord[dim], ctx);
         }
-        return format_to(ctx.out(), "}}");
+        return fmt::format_to(ctx.out(), "}}");
     }
 };
 

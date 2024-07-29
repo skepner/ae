@@ -95,33 +95,33 @@ namespace ae::chart::v3
 // ----------------------------------------------------------------------
 
 template <> struct fmt::formatter<ae::chart::v3::avidity_test::per_adjust_t> : fmt::formatter<ae::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(const ae::chart::v3::avidity_test::per_adjust_t& per_adjust, FormatCtx& ctx) const
+    auto format(const ae::chart::v3::avidity_test::per_adjust_t& per_adjust, format_context& ctx) const
     {
-        return format_to(ctx.out(), "{:4.1f}  diff:{:8.4f} dist:{:7.4f} angle:{:7.4f} aver_pc_dist:{:7.4f}", per_adjust.logged_adjust, per_adjust.stress_diff, per_adjust.distance_test_antigen,
+        return fmt::format_to(ctx.out(), "{:4.1f}  diff:{:8.4f} dist:{:7.4f} angle:{:7.4f} aver_pc_dist:{:7.4f}", per_adjust.logged_adjust, per_adjust.stress_diff, per_adjust.distance_test_antigen,
                          per_adjust.angle_test_antigen, per_adjust.average_procrustes_distances_except_test_antigen);
     }
 };
 
 template <> struct fmt::formatter<ae::chart::v3::avidity_test::result_t> : fmt::formatter<ae::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(const ae::chart::v3::avidity_test::result_t& result, FormatCtx& ctx) const
+    auto format(const ae::chart::v3::avidity_test::result_t& result, format_context& ctx) const
     {
-        format_to(ctx.out(), "AG {}\n", result.antigen_no);
+        fmt::format_to(ctx.out(), "AG {}\n", result.antigen_no);
         if (!float_zero(result.best_logged_adjust))
-            format_to(ctx.out(), "    {}\n", result.best_adjust());
+            fmt::format_to(ctx.out(), "    {}\n", *result.best_adjust());
         else
-            format_to(ctx.out(), "    no adjust\n");
+            fmt::format_to(ctx.out(), "    no adjust\n");
         for (const auto& en : result.adjusts)
-            format_to(ctx.out(), "        {}\n", en);
+            fmt::format_to(ctx.out(), "        {}\n", en);
         return ctx.out();
     }
 };
 
 template <> struct fmt::formatter<ae::chart::v3::avidity_test::results_t> : fmt::formatter<ae::fmt_helper::default_formatter>
 {
-    template <typename FormatCtx> auto format(const ae::chart::v3::avidity_test::results_t& results, FormatCtx& ctx) const
+    auto format(const ae::chart::v3::avidity_test::results_t& results, format_context& ctx) const
     {
         for (const auto& result : results.results())
-            format_to(ctx.out(), "{}\n", result);
+            fmt::format_to(ctx.out(), "{}\n", result);
         return ctx.out();
     }
 };

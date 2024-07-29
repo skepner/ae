@@ -67,10 +67,10 @@ namespace ae
 template <typename Match> struct fmt::formatter<ae::fmt_regex_match_formatter<Match>> : fmt::formatter<ae::fmt_helper::default_formatter>
 {
     template <typename FormatCtx> auto format(const Match& mr, FormatCtx& ctx) const {
-        format_to(ctx.out(), "\"{}\" -> ({})[", mr.str(0), mr.size());
+        fmt::format_to(ctx.out(), "\"{}\" -> ({})[", mr.str(0), mr.size());
         for (size_t nr = 1; nr <= mr.size(); ++nr)
-            format_to(ctx.out(), " {}:\"{}\"", nr, mr.str(nr));
-        format_to(ctx.out(), " ]");
+            fmt::format_to(ctx.out(), " {}:\"{}\"", nr, mr.str(nr));
+        fmt::format_to(ctx.out(), " ]");
         return ctx.out();
     }
 };

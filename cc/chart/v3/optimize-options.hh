@@ -70,67 +70,67 @@ namespace ae::chart::v3
 
 template <> struct fmt::formatter<ae::chart::v3::optimization_method> : public fmt::formatter<ae::fmt_helper::default_formatter>
 {
-    template <typename FormatContext> auto format(const ae::chart::v3::optimization_method& method, FormatContext& ctx) const
+    auto format(const ae::chart::v3::optimization_method& method, format_context& ctx) const
     {
         using namespace ae::chart::v3;
         switch (method) {
           case optimization_method::alglib_lbfgs_pca:
-              return format_to(ctx.out(), "alglib_lbfgs_pca");
+              return fmt::format_to(ctx.out(), "alglib_lbfgs_pca");
           case optimization_method::alglib_cg_pca:
-              return format_to(ctx.out(), "alglib_cg_pca");
+              return fmt::format_to(ctx.out(), "alglib_cg_pca");
           // case optimization_method::optimlib_bfgs_pca:
-          //     return format_to(ctx.out(), "optimlib_bfgs_pca");
+          //     return fmt::format_to(ctx.out(), "optimlib_bfgs_pca");
           // case optimization_method::optimlib_differential_evolution:
-          //     return format_to(ctx.out(), "optimlib_differential_evolution");
+          //     return fmt::format_to(ctx.out(), "optimlib_differential_evolution");
         }
-        return format_to(ctx.out(), "unknown"); // g++9
+        return fmt::format_to(ctx.out(), "unknown"); // g++9
     }
 };
 
 template <> struct fmt::formatter<ae::chart::v3::optimization_precision> : public fmt::formatter<ae::fmt_helper::default_formatter>
 {
-    template <typename FormatContext> auto format(const ae::chart::v3::optimization_precision& precision, FormatContext& ctx) const
+    auto format(const ae::chart::v3::optimization_precision& precision, format_context& ctx) const
     {
         using namespace ae::chart::v3;
         switch (precision) {
           case optimization_precision::rough:
-              return format_to(ctx.out(), "rough");
+              return fmt::format_to(ctx.out(), "rough");
           case optimization_precision::very_rough:
-              return format_to(ctx.out(), "very_rough");
+              return fmt::format_to(ctx.out(), "very_rough");
           case optimization_precision::fine:
-              return format_to(ctx.out(), "fine");
+              return fmt::format_to(ctx.out(), "fine");
         }
-        return format_to(ctx.out(), "unknown"); // g++9
+        return fmt::format_to(ctx.out(), "unknown"); // g++9
     }
 };
 
 template <> struct fmt::formatter<ae::chart::v3::multiply_antigen_titer_until_column_adjust> : public fmt::formatter<ae::fmt_helper::default_formatter>
 {
-    template <typename FormatContext> auto format(const ae::chart::v3::multiply_antigen_titer_until_column_adjust& mul, FormatContext& ctx) const
+    auto format(const ae::chart::v3::multiply_antigen_titer_until_column_adjust& mul, format_context& ctx) const
     {
         using namespace ae::chart::v3;
         switch (mul) {
           case multiply_antigen_titer_until_column_adjust::no:
-              return format_to(ctx.out(), "no");
+              return fmt::format_to(ctx.out(), "no");
           case multiply_antigen_titer_until_column_adjust::yes:
-              return format_to(ctx.out(), "yes");
+              return fmt::format_to(ctx.out(), "yes");
         }
-        return format_to(ctx.out(), "unknown"); // g++9
+        return fmt::format_to(ctx.out(), "unknown"); // g++9
     }
 };
 
 template <> struct fmt::formatter<ae::chart::v3::dodgy_titer_is_regular_e> : public fmt::formatter<ae::fmt_helper::default_formatter>
 {
-    template <typename FormatContext> auto format(const ae::chart::v3::dodgy_titer_is_regular_e& dod, FormatContext& ctx) const
+    auto format(const ae::chart::v3::dodgy_titer_is_regular_e& dod, format_context& ctx) const
     {
         using namespace ae::chart::v3;
         switch (dod) {
           case dodgy_titer_is_regular_e::no:
-              return format_to(ctx.out(), "no");
+              return fmt::format_to(ctx.out(), "no");
           case dodgy_titer_is_regular_e::yes:
-              return format_to(ctx.out(), "yes");
+              return fmt::format_to(ctx.out(), "yes");
         }
-        return format_to(ctx.out(), "unknown"); // g++9
+        return fmt::format_to(ctx.out(), "unknown"); // g++9
     }
 };
 

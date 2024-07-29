@@ -108,7 +108,7 @@ namespace ae::chart::v3
         const auto& lab_ids() const { return lab_ids_; }
         LabIds& lab_ids() { return lab_ids_; }
 
-        std::string designation() const { return string::join(" ", name(), string::join(" ", annotations()), reassortant(), passage()); }
+        std::string designation() const { return string::join(" ", name(), string::join(" ", annotations()), *reassortant(), passage()); }
         size_t designation_size() const { return string::join_size(1, name().size(), annotations().join_size(1), reassortant().size(), passage().size()); }
 
         static inline const char* ag_sr = "AG";
@@ -142,7 +142,7 @@ namespace ae::chart::v3
         void forced_column_basis(double forced) { forced_column_basis_ = forced; }
         void not_forced_column_basis() { forced_column_basis_ = std::nullopt; }
 
-        std::string designation() const { return string::join(" ", name(), string::join(" ", annotations()), reassortant(), serum_id()); }
+        std::string designation() const { return string::join(" ", name(), string::join(" ", annotations()), *reassortant(), serum_id()); }
         size_t designation_size() const { return string::join_size(1, name().size(), annotations().join_size(1), reassortant().size(), serum_id().size()); }
 
         static inline const char* ag_sr = "SR";

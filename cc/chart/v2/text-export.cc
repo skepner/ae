@@ -202,7 +202,7 @@ std::string ae::chart::v2::export_info_to_text(const Chart& chart)
     fmt::memory_buffer result;
 
     const auto do_export = [&result](ae::chart::v2::InfoP info) {
-        fmt::format_to(std::back_inserter(result), "{}", ae::string::join(" ", info->virus(), info->virus_type(), info->assay(), info->date(), info->name(), info->lab(), info->rbc_species(), info->subset()));
+        fmt::format_to(std::back_inserter(result), "{}", ae::string::join(" ", *info->virus(), info->virus_type(), *info->assay(), *info->date(), info->name(), *info->lab(), *info->rbc_species(), info->subset()));
         // info->table_type()
     };
 

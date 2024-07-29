@@ -13,6 +13,9 @@
 // M1
 #pragma GCC diagnostic ignored "-Wreserved-identifier"
 // #pragma GCC diagnostic ignored ""
+
+#pragma GCC diagnostic ignored "-Wswitch-default"
+
 #endif
 
 #define XXH_INLINE_ALL

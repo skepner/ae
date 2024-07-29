@@ -94,7 +94,7 @@ namespace ae::file
                 return output;
             }
             else
-                throw compressor_failed{fmt::format("brotli decompression failed: {}", result)};
+                throw compressor_failed{fmt::format("brotli decompression failed: {}", static_cast<int>(result))};
         }
 
       private:

@@ -36,7 +36,7 @@ namespace ae::sequences
                     if (subtype_to_report(aligned_data.type_subtype, sequence.type_subtype))
                         messages.add(Message::subtype_mismatch, aligned_data.type_subtype, fmt::format("detected: {}", aligned_data.type_subtype),
                                      fmt::format("detected subtype {} does not correspond to the closest by hamming distance to master subtype {} {} for \"{}\"\n                M: {}\n                S: {}",
-                                                 aligned_data.type_subtype, master->type_subtype, hamming, sequence.name, master->aa, sequence.sequence.aa));
+                                                 *aligned_data.type_subtype, *master->type_subtype, hamming, sequence.name, *master->aa, *sequence.sequence.aa));
                 }
                 if (sequence.type_subtype.empty() || sequence.type_subtype.h_or_b() == "H0") {
                     sequence.type_subtype = aligned_data.type_subtype;
@@ -52,7 +52,7 @@ namespace ae::sequences
                     if (subtype_to_report(aligned_data.type_subtype, sequence.type_subtype))
                         messages.add(Message::subtype_mismatch, aligned_data.type_subtype, fmt::format("detected: {} provided: {}", aligned_data.type_subtype, sequence.type_subtype),
                                      fmt::format("provided subtype {} is used (detected: {}), confirmed by closest hamming distance subtype {} {}, for \"{}\"\n                M: {}\n                S: {}", sequence.type_subtype,
-                                                 aligned_data.type_subtype, master->type_subtype, hamming, sequence.name, master->aa, sequence.sequence.aa));
+                                                 *aligned_data.type_subtype, *master->type_subtype, hamming, sequence.name, *master->aa, *sequence.sequence.aa));
                 }
             }
             else {
@@ -67,11 +67,11 @@ namespace ae::sequences
                         if (const auto* master_provided_subtype = master_sequence_for(sequence.type_subtype); master_provided_subtype)
                             messages.add(Message::subtype_mismatch, aligned_data.type_subtype, fmt::format("detected: {} provided: {}", aligned_data.type_subtype, sequence.type_subtype),
                                          fmt::format("provided subtype {} is used, detected {}, no reasonable master found\n                S:  {}\n                MP: {}\n                MD: {}", sequence.type_subtype, aligned_data.type_subtype,
-                                                     sequence.sequence.aa, master_provided_subtype->aa, master_sequence_for(aligned_data.type_subtype)->aa));
+                                                     *sequence.sequence.aa, *master_provided_subtype->aa, *master_sequence_for(aligned_data.type_subtype)->aa));
                         else
                             messages.add(Message::subtype_mismatch, aligned_data.type_subtype, fmt::format("detected: {} provided: {}", aligned_data.type_subtype, sequence.type_subtype),
                                          fmt::format("provided subtype {} is used, detected {}, no reasonable master found\n                S:  {}\n                MD: {}", sequence.type_subtype, aligned_data.type_subtype,
-                                                     sequence.sequence.aa, master_sequence_for(aligned_data.type_subtype)->aa));
+                                                     *sequence.sequence.aa, *master_sequence_for(aligned_data.type_subtype)->aa));
                     }
                 }
             }
@@ -88,14 +88,14 @@ namespace ae::sequences
             }
             else if (s_length > master->aa.size()) {
                 if (hamming_distance(sequence.sequence.aa.at_end(ending_size), master->aa.at_end(ending_size)) <= 1) {
-                    messages.add(Message::not_detected_insertions, sequence.type_subtype, fmt::format("\"{}\"", sequence.name), fmt::format("\n                S:  {}\n                M:  {}", sequence.sequence.aa, master->aa));
+                    messages.add(Message::not_detected_insertions, sequence.type_subtype, fmt::format("\"{}\"", sequence.name), fmt::format("\n                S:  {}\n                M:  {}", *sequence.sequence.aa, *master->aa));
                     sequence.issues.set(issue::too_long);
                 }
                 else if (hamming_distance(sequence.sequence.aa.substr(master->aa.size() - ending_size, ending_size), master->aa.at_end(ending_size)) <= 1) {
                     sequence.sequence.erase_aa(master->aa.size());
                 }
                 else {
-                    messages.add(Message::garbage_at_the_end, sequence.type_subtype, fmt::format("\"{}\" (not detected deletions?)", sequence.name), fmt::format("\n                S:  {}\n                M:  {}", sequence.sequence.aa, master->aa));
+                    messages.add(Message::garbage_at_the_end, sequence.type_subtype, fmt::format("\"{}\" (not detected deletions?)", sequence.name), fmt::format("\n                S:  {}\n                M:  {}", *sequence.sequence.aa, *master->aa));
                     sequence.issues.set(issue::garbage_at_the_end);
                     sequence.issues.set(issue::too_long);
                 }
@@ -103,7 +103,7 @@ namespace ae::sequences
             else {
                 if (hamming_distance(sequence.sequence.aa.at_end(ending_size), master->aa.at_end(ending_size)) > 1) {
                     // unrecognized deletions or garbage at the end
-                    messages.add(Message::garbage_at_the_end, sequence.type_subtype, fmt::format("\"{}\" (not detected deletions?)", sequence.name), fmt::format("\n                S:  {}\n                M:  {}", sequence.sequence.aa, master->aa));
+                    messages.add(Message::garbage_at_the_end, sequence.type_subtype, fmt::format("\"{}\" (not detected deletions?)", sequence.name), fmt::format("\n                S:  {}\n                M:  {}", *sequence.sequence.aa, *master->aa));
                     sequence.issues.set(issue::garbage_at_the_end);
                 }
             }

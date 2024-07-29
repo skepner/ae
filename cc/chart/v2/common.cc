@@ -11,23 +11,23 @@ using namespace ae::chart::v2;
 enum class score_t : size_t { no_match = 0, passage_serum_id_ignored = 1, egg = 2, without_date = 3, full_match = 4 };
 
 template <> struct fmt::formatter<score_t> : fmt::formatter<ae::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(const score_t& value, FormatCtx& ctx) const
+    auto format(const score_t& value, format_context& ctx) const
     {
         switch (value) {
             case score_t::no_match:
-                format_to(ctx.out(), "no-match");
+                fmt::format_to(ctx.out(), "no-match");
                 break;
             case score_t::passage_serum_id_ignored:
-                format_to(ctx.out(), "passage-serum-id-mismatch");
+                fmt::format_to(ctx.out(), "passage-serum-id-mismatch");
                 break;
             case score_t::egg:
-                format_to(ctx.out(), "egg");
+                fmt::format_to(ctx.out(), "egg");
                 break;
             case score_t::without_date:
-                format_to(ctx.out(), "without-date");
+                fmt::format_to(ctx.out(), "without-date");
                 break;
             case score_t::full_match:
-                format_to(ctx.out(), "full");
+                fmt::format_to(ctx.out(), "full");
                 break;
         }
         return ctx.out();
@@ -308,8 +308,8 @@ score_t CommonAntigensSera::Impl::ChartData<AgSrEntry>::match(const AgSrEntry& p
     }
 
     AD_LOG(ae::log::common, "{} \"{} {} {}\" != \"{} {} {}\": {} {} {} {} {}", primary.ag_sr(), //
-           primary.name, primary.reassortant, primary.annotations,                                  //
-           secondary.name, secondary.reassortant, secondary.annotations,                            //
+           primary.name, *primary.reassortant, primary.annotations,                                  //
+           secondary.name, *secondary.reassortant, secondary.annotations,                            //
            name_neq, reassortant_neq, annotations_neq, primary_distict, secondary_distict);
     return score_t::no_match;
 

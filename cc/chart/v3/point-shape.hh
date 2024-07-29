@@ -77,27 +77,27 @@ namespace ae::chart::v3
 
 template <> struct fmt::formatter<ae::chart::v3::point_shape> : fmt::formatter<ae::fmt_helper::default_formatter>
 {
-    template <typename FormatCtx> auto format(const ae::chart::v3::point_shape& shape, FormatCtx& ctx) const
+    auto format(const ae::chart::v3::point_shape& shape, format_context& ctx) const
     {
         using namespace ae::chart::v3;
         switch (shape.get()) {
             case point_shape::Circle:
-                // return format_to(ctx.out(), "CIRCLE");
-                return format_to(ctx.out(), "C");
+                // return fmt::format_to(ctx.out(), "CIRCLE");
+                return fmt::format_to(ctx.out(), "C");
             case point_shape::Box:
-                // return format_to(ctx.out(), "BOX");
-                return format_to(ctx.out(), "B");
+                // return fmt::format_to(ctx.out(), "BOX");
+                return fmt::format_to(ctx.out(), "B");
             case point_shape::Triangle:
-                // return format_to(ctx.out(), "TRIANGLE");
-                return format_to(ctx.out(), "T");
+                // return fmt::format_to(ctx.out(), "TRIANGLE");
+                return fmt::format_to(ctx.out(), "T");
             case point_shape::Egg:
-                // return format_to(ctx.out(), "EGG");
-                return format_to(ctx.out(), "E");
+                // return fmt::format_to(ctx.out(), "EGG");
+                return fmt::format_to(ctx.out(), "E");
             case point_shape::UglyEgg:
-                // return format_to(ctx.out(), "UGLYEGG");
-                return format_to(ctx.out(), "U");
+                // return fmt::format_to(ctx.out(), "UGLYEGG");
+                return fmt::format_to(ctx.out(), "U");
         }
-        return format_to(ctx.out(), "C");
+        return fmt::format_to(ctx.out(), "C");
     }
 };
 

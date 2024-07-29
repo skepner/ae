@@ -58,10 +58,10 @@ namespace std
     // ----------------------------------------------------------------------
 
     // from g++ 11
-    template <typename Tp, typename Alloc> inline auto operator<=>(const vector<Tp, Alloc>& x, const vector<Tp, Alloc>& y)
-    {
-        return std::lexicographical_compare_three_way(x.begin(), x.end(), y.begin(), y.end());
-    }
+    // template <typename Tp, typename Alloc> inline auto operator<=>(const vector<Tp, Alloc>& x, const vector<Tp, Alloc>& y)
+    // {
+    //     return std::lexicographical_compare_three_way(x.begin(), x.end(), y.begin(), y.end());
+    // }
 
 } // namespace std
 

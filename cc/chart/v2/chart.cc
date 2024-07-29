@@ -328,7 +328,7 @@ ae::chart::v2::BLineage::Lineage ae::chart::v2::BLineage::from(std::string_view 
 std::string ae::chart::v2::Info::make_info() const
 {
     const auto n_sources = number_of_sources();
-    return ae::string::join(" ", name(), virus(Compute::Yes), lab(Compute::Yes), virus_type(Compute::Yes), subset(Compute::Yes), assay(Compute::Yes), rbc_species(Compute::Yes), date(Compute::Yes),
+    return ae::string::join(" ", name(), *virus(Compute::Yes), *lab(Compute::Yes), virus_type(Compute::Yes), subset(Compute::Yes), *assay(Compute::Yes), *rbc_species(Compute::Yes), *date(Compute::Yes),
                                   n_sources ? ("(" + std::to_string(n_sources) + " tables)") : std::string{});
 
 } // ae::chart::v2::Info::make_info
@@ -340,8 +340,8 @@ std::string ae::chart::v2::Info::make_name() const
     std::string n = name(Compute::No);
     if (n.empty()) {
         const auto vt = virus_type(Compute::Yes);
-        n = ae::string::join(" ", lab(Compute::Yes), virus_not_influenza(Compute::Yes), vt, subset(Compute::Yes), assay(Compute::Yes).HI_or_Neut(Assay::no_hi::yes), rbc_species(Compute::Yes),
-                             date(Compute::Yes));
+        n = ae::string::join(" ", *lab(Compute::Yes), *virus_not_influenza(Compute::Yes), vt, subset(Compute::Yes), assay(Compute::Yes).HI_or_Neut(Assay::no_hi::yes), *rbc_species(Compute::Yes),
+                             *date(Compute::Yes));
     }
     return n;
 

@@ -340,11 +340,11 @@ namespace ae::xlsx::inline v1
 
 template <> struct fmt::formatter<ae::xlsx::detect_result_t> : fmt::formatter<ae::fmt_helper::default_formatter>
 {
-    template <typename FormatCtx> auto format(const ae::xlsx::detect_result_t& detected, FormatCtx& ctx) const
+    auto format(const ae::xlsx::detect_result_t& detected, format_context& ctx) const
     {
         if (detected.ignore)
-            return format_to(ctx.out(), "[Sheet IGNORE]");
-        return format_to(ctx.out(), "[{} {}{} {} {} {}{}]", detected.lab, detected.subtype, detected.lineage, detected.assay, detected.rbc, detected.date,
+            return fmt::format_to(ctx.out(), "[Sheet IGNORE]");
+        return fmt::format_to(ctx.out(), "[{} {}{} {} {} {}{}]", detected.lab, detected.subtype, detected.lineage, detected.assay, detected.rbc, detected.date,
                          detected.sheet_format.empty() ? detected.sheet_format : fmt::format(" ({})", detected.sheet_format));
     }
 };

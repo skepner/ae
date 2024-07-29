@@ -430,14 +430,14 @@ namespace ae::chart::v3
     template <>
     struct fmt::formatter<ae::chart::v3::Titer> : fmt::formatter<ae::fmt_helper::default_formatter>
     {
-        template <typename FormatCtx> constexpr auto format(const ae::chart::v3::Titer& titer, FormatCtx& ctx) const { return fmt::format_to(ctx.out(), "{}", titer.get()); }
+         auto format(const ae::chart::v3::Titer& titer, format_context& ctx) const { return fmt::format_to(ctx.out(), "{}", titer.get()); }
     };
 
 template <> struct fmt::formatter<ae::chart::v3::Titers::iterator::ref> : fmt::formatter<ae::fmt_helper::default_formatter>
 {
-    template <typename FormatCtx> constexpr auto format(const ae::chart::v3::Titers::iterator::ref& value, FormatCtx& ctx) const
+     auto format(const ae::chart::v3::Titers::iterator::ref& value, format_context& ctx) const
     {
-        return format_to(ctx.out(), "ag:{} sr:{} t:{}", value.antigen, value.serum, value.titer);
+        return fmt::format_to(ctx.out(), "ag:{} sr:{} t:{}", value.antigen, value.serum, value.titer);
     }
 };
 

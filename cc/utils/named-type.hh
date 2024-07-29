@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ext/fmt.hh"
+#include "fmt/core.h"
 #include "utils/float.hh"
 #include "utils/concepts.hh"
 
@@ -166,17 +167,20 @@ namespace ae
 
 template <typename T, typename Tag> struct fmt::formatter<ae::named_string_t<T, Tag>> : fmt::formatter<std::string_view>
 {
-    template <typename FormatCtx> auto format(const ae::named_string_t<T, Tag>& nt, FormatCtx& ctx) const { return fmt::formatter<std::string_view>::format(static_cast<std::string_view>(nt), ctx); }
+    auto format(const ae::named_string_t<T, Tag>& nt, format_context& ctx) const { return fmt::formatter<std::string_view>::format(static_cast<std::string_view>(nt), ctx); }
 };
 
 template <typename T, typename Tag> struct fmt::formatter<ae::named_number_t<T, Tag>> : fmt::formatter<T>
 {
-    template <typename FormatCtx> auto format(const ae::named_number_t<T, Tag>& nt, FormatCtx& ctx) const { return fmt::formatter<T>::format(static_cast<T>(nt), ctx); }
+    auto format(const ae::named_number_t<T, Tag> &nt,
+                format_context &ctx) const {
+            return fmt::formatter<T>::format(static_cast<T>(nt), ctx);
+    }
 };
 
 template <typename Tag> struct fmt::formatter<ae::named_double_t<Tag>> : fmt::formatter<double>
 {
-    template <typename FormatCtx> auto format(const ae::named_double_t<Tag>& nt, FormatCtx& ctx) const { return fmt::formatter<double>::format(static_cast<double>(nt), ctx); }
+    auto format(const ae::named_double_t<Tag>& nt, format_context& ctx) const { return fmt::formatter<double>::format(static_cast<double>(nt), ctx); }
 };
 
 // ----------------------------------------------------------------------

@@ -138,9 +138,9 @@ std::string ae::tree::export_json(const Tree& tree, const Inode& root)
 
     const auto format_node_sequences = [&text, &indent](const Node* node) {
         if (!node->aa.empty())
-            fmt::format_to(std::back_inserter(text), ",\n{} \"a\": \"{}\"", indent, node->aa);
+            fmt::format_to(std::back_inserter(text), ",\n{} \"a\": \"{}\"", indent, *node->aa);
         if (!node->nuc.empty())
-            fmt::format_to(std::back_inserter(text), ",\n{} \"N\": \"{}\"", indent, node->nuc);
+            fmt::format_to(std::back_inserter(text), ",\n{} \"N\": \"{}\"", indent, *node->nuc);
     };
 
     const auto format_inode_pre = [&text, &indent, &tree, &commas, format_node_begin, format_node_sequences](const Inode* inode) {

@@ -127,46 +127,47 @@ namespace ae::sequences
 
 // ======================================================================
 
-template <> struct fmt::formatter<ae::sequences::issue> : fmt::formatter<ae::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(ae::sequences::issue issue, FormatCtx& ctx) const
+template <> struct fmt::formatter<ae::sequences::issue> : formatter<string_view> {
+    auto format(ae::sequences::issue issue, format_context& ctx) const
     {
-        using namespace ae::sequences;
+            using namespace ae::sequences;
+            std::string_view text;
         switch (issue) {
             case issue::not_translated:
-                format_to(ctx.out(), "{}", "not_translated");
+                text = "not_translated";
                 break;
             case issue::not_aligned:
-                format_to(ctx.out(), "{}", "not_aligned");
+                text = "not_aligned";
                 break;
             case issue::prefix_x:
-                format_to(ctx.out(), "{}", "prefix_x");
+                text = "prefix_x";
                 break;
             case issue::too_short:
-                format_to(ctx.out(), "{}", "too_short");
+                text = "too_short";
                 break;
             case issue::too_long:
-                format_to(ctx.out(), "{}", "too_long");
+                text = "too_long";
                 break;
             case issue::too_many_x:
-                format_to(ctx.out(), "{}", "too_many_x");
+                text = "too_many_x";
                 break;
             case issue::too_many_deletions:
-                format_to(ctx.out(), "{}", "too_many_deletions");
+                text = "too_many_deletions";
                 break;
             case issue::garbage_at_the_end:
-                format_to(ctx.out(), "{}", "garbage_at_the_end");
+                text = "garbage_at_the_end";
                 break;
             case issue::size_:
                 break;
         }
-        return ctx.out();
+        return formatter<string_view>::format(text, ctx);
     }
 };
 
 template <> struct fmt::formatter<ae::sequences::seqdb_issues_t> : fmt::formatter<ae::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(const ae::sequences::seqdb_issues_t& seqdb_issues, FormatCtx& ctx) const
+    auto format(const ae::sequences::seqdb_issues_t& seqdb_issues, format_context& ctx) const
     {
-        return format_to(ctx.out(), "{{{}}}", seqdb_issues.data_);
+        return fmt::format_to(ctx.out(), "{{{}}}", seqdb_issues.data_);
     }
 };
 

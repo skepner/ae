@@ -357,7 +357,7 @@ bool ae::sequences::SeqdbSeq::update(const RawSequence& raw_sequence, bool keep_
                 updated = true;
             }
             else
-                fmt::print(">> no hash \"{}\" {}\n", raw_sequence.name, raw_sequence.sequence.nuc);
+                fmt::print(">> no hash \"{}\" {}\n", raw_sequence.name, *raw_sequence.sequence.nuc);
         }
         else if (hash != raw_sequence.hash_nuc)
             throw Error{"SeqdbSeq::update keep_sequence={} raw_sequence.hash={} hash={} hash difference", keep_sequence, raw_sequence.hash_nuc, hash};

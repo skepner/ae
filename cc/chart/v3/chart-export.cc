@@ -484,12 +484,12 @@ std::string ae::chart::v3::Chart::export_to_json() const
     const auto put_table_source = [&out](const TableSource& source) -> bool {
         auto comma = put_str(out, source.name(), not_empty, "N", false);
         comma = put_str(
-            out, source.virus(), [](auto&& val) { return !val.empty() && val != ae::virus::virus_t{"INFLUENZA"}; }, "v", comma);
+            out, *source.virus(), [](auto&& val) { return !val.empty() && ae::virus::virus_t{val} != ae::virus::virus_t{"INFLUENZA"}; }, "v", comma);
         comma = put_str(out, source.type_subtype(), not_empty, "V", comma);
-        comma = put_str(out, source.lab(), not_empty, "l", comma);
-        comma = put_str(out, source.assay(), not_empty, "A", comma);
-        comma = put_str(out, source.date(), not_empty, "D", comma);
-        comma = put_str(out, source.rbc_species(), not_empty, "r", comma);
+        comma = put_str(out, *source.lab(), not_empty, "l", comma);
+        comma = put_str(out, *source.assay(), not_empty, "A", comma);
+        comma = put_str(out, *source.date(), not_empty, "D", comma);
+        comma = put_str(out, *source.rbc_species(), not_empty, "r", comma);
         return comma;
     };
 
@@ -533,14 +533,14 @@ std::string ae::chart::v3::Chart::export_to_json() const
         fmt::format_to(std::back_inserter(out), "\n   {{");
         auto comma4 = put_str(out, antigen.name(), not_empty, "N", false);
         comma4 = put_array_str(out, antigen.annotations(), not_empty, "a", comma4);
-        comma4 = put_str(out, antigen.reassortant(), not_empty, "R", comma4);
+        comma4 = put_str(out, *antigen.reassortant(), not_empty, "R", comma4);
         comma4 = put_str(out, antigen.date(), not_empty, "D", comma4);
         comma4 = put_str(out, antigen.lineage(), not_empty, "L", comma4);
         comma4 = put_str(out, antigen.passage(), not_empty, "P", comma4);
         comma4 = put_array_str(out, antigen.lab_ids(), not_empty, "l", comma4);
         comma4 = put_semantic(out, antigen.semantic(), not_empty, "T", comma4);
-        comma4 = put_str(out, antigen.aa(), not_empty, "A", comma4);  // , "\n    ");
-        comma4 = put_str(out, antigen.nuc(), not_empty, "B", comma4); // , "\n    ");
+        comma4 = put_str(out, *antigen.aa(), not_empty, "A", comma4);  // , "\n    ");
+        comma4 = put_str(out, *antigen.nuc(), not_empty, "B", comma4); // , "\n    ");
         comma4 = put_insertions(out, antigen.aa_insertions(), "Ai", comma4);
         comma4 = put_insertions(out, antigen.nuc_insertions(), "Bi", comma4);
         fmt::format_to(std::back_inserter(out), "}}");
@@ -572,15 +572,15 @@ std::string ae::chart::v3::Chart::export_to_json() const
         fmt::format_to(std::back_inserter(out), "\n   {{");
         auto comma6 = put_str(out, serum.name(), not_empty, "N", false);
         comma6 = put_array_str(out, serum.annotations(), not_empty, "a", comma6);
-        comma6 = put_str(out, serum.reassortant(), not_empty, "R", comma6);
+        comma6 = put_str(out, *serum.reassortant(), not_empty, "R", comma6);
         comma6 = put_str(out, serum.lineage(), not_empty, "L", comma6);
         comma6 = put_str(out, serum.passage(), not_empty, "P", comma6);
         comma6 = put_str(out, serum.serum_id(), not_empty, "I", comma6);
         comma6 = put_str(out, serum.serum_species(), not_empty, "s", comma6);
         // DEPRECATED comma6 = put_array_int(out, serum.homologous_antigens(), not_empty, "h", comma6);
         comma6 = put_semantic(out, serum.semantic(), not_empty, "T", comma6);
-        comma6 = put_str(out, serum.aa(), not_empty, "A", comma6);    // , "\n    ");
-        comma6 = put_str(out, serum.nuc(), not_empty, "B", comma6);   // , "\n    ");
+        comma6 = put_str(out, *serum.aa(), not_empty, "A", comma6);    // , "\n    ");
+        comma6 = put_str(out, *serum.nuc(), not_empty, "B", comma6);   // , "\n    ");
         comma6 = put_insertions(out, serum.aa_insertions(), "Ai", comma6); // , "\n    ");
         comma6 = put_insertions(out, serum.aa_insertions(), "Ai", comma6);
         comma6 = put_insertions(out, serum.nuc_insertions(), "Bi", comma6);

@@ -341,7 +341,7 @@ template <> struct fmt::formatter<ae::dynamic::value> : fmt::formatter<ae::fmt_h
 {
     template <typename FormatCtx> constexpr auto format(const ae::dynamic::value& val, FormatCtx& ctx) const
     {
-        return std::visit([&ctx]<typename T>(const T& content) { return format_to(ctx.out(), "{}", content); }, val.data());
+        return std::visit([&ctx]<typename T>(const T& content) { return fmt::format_to(ctx.out(), "{}", content); }, val.data());
     }
 };
 
@@ -349,16 +349,16 @@ template <> struct fmt::formatter<ae::dynamic::object> : fmt::formatter<ae::fmt_
 {
     template <typename FormatCtx> constexpr auto format(const ae::dynamic::object& obj, FormatCtx& ctx) const
     {
-        format_to(ctx.out(), "{{");
+        fmt::format_to(ctx.out(), "{{");
         bool comma = false;
         for (const auto& field : obj) {
             if (comma)
-                format_to(ctx.out(), ",");
+                fmt::format_to(ctx.out(), ",");
             else
                 comma = true;
-            format_to(ctx.out(), "\"{}\":{}", field.first, field.second);
+            fmt::format_to(ctx.out(), "\"{}\":{}", field.first, field.second);
         }
-        format_to(ctx.out(), "}}");
+        fmt::format_to(ctx.out(), "}}");
         return ctx.out();
     }
 };
@@ -367,7 +367,7 @@ template <> struct fmt::formatter<ae::dynamic::array> : fmt::formatter<ae::fmt_h
 {
     template <typename FormatCtx> constexpr auto format(const ae::dynamic::array& arr, FormatCtx& ctx) const
     {
-        return format_to(ctx.out(), fmt::runtime("[{}]"), fmt::join(arr.data(), ","));
+        return fmt::format_to(ctx.out(), fmt::runtime("[{}]"), fmt::join(arr.data(), ","));
     }
 };
 
@@ -375,7 +375,7 @@ template <> struct fmt::formatter<ae::dynamic::null> : fmt::formatter<ae::fmt_he
 {
     template <typename FormatCtx> constexpr auto format(const ae::dynamic::null&, FormatCtx& ctx) const
     {
-        return format_to(ctx.out(), "null");
+        return fmt::format_to(ctx.out(), "null");
     }
 };
 
@@ -383,7 +383,7 @@ template <> struct fmt::formatter<ae::dynamic::string> : fmt::formatter<ae::fmt_
 {
     template <typename FormatCtx> constexpr auto format(const ae::dynamic::string& str, FormatCtx& ctx) const
     {
-        return format_to(ctx.out(), "\"{}\"", static_cast<std::string_view>(str));
+        return fmt::format_to(ctx.out(), "\"{}\"", static_cast<std::string_view>(str));
     }
 };
 

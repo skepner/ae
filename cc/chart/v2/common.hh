@@ -57,7 +57,7 @@ namespace ae::chart::v2
             }
             std::string full_name() const override
             {
-                auto fname = ae::string::join(" ", name, reassortant, ae::string::join(" ", annotations), passage);
+                auto fname = ae::string::join(" ", name, *reassortant, ae::string::join(" ", annotations), passage);
                 if (!orig_full_name_.empty())
                     fname += fmt::format(" (orig: {})", orig_full_name_);
                 return fname;
@@ -93,7 +93,7 @@ namespace ae::chart::v2
             }
             std::string full_name() const override
             {
-                auto fname = ae::string::join(" ", name, reassortant, ae::string::join(" ", annotations), serum_id, passage);
+                auto fname = ae::string::join(" ", name, *reassortant, ae::string::join(" ", annotations), *serum_id, passage);
                 if (!orig_full_name_.empty())
                     fname += fmt::format(" (orig: {})", orig_full_name_);
                 return fname;

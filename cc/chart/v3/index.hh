@@ -267,7 +267,7 @@ namespace ae
 
 template <typename Tag> struct fmt::formatter<ae::index_tt<Tag>> : fmt::formatter<typename ae::index_tt<Tag>::value_type>
 {
-    template <typename FormatCtx> auto format(const ae::index_tt<Tag>& nt, FormatCtx& ctx) const { return fmt::formatter<typename ae::index_tt<Tag>::value_type>::format(*nt, ctx); }
+    auto format(const ae::index_tt<Tag>& nt, format_context& ctx) const { return fmt::formatter<typename ae::index_tt<Tag>::value_type>::format(*nt, ctx); }
 };
 
 // ----------------------------------------------------------------------

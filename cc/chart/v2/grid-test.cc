@@ -315,7 +315,7 @@ std::string ae::chart::v2::GridTest::Results::export_to_json(const ChartModify& 
         }
     }
 
-    return fmt::format("{}\n", to_json::object{
+    return fmt::format(fmt::runtime("{}\n"), to_json::object{
             to_json::key_val{"  version", "grid-test-v1"},
             to_json::key_val{"chart", chart.make_name()},
             // to_json::key_val{"tested", std::move(tested)},

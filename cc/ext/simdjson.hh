@@ -74,7 +74,7 @@ namespace ae::simdjson
 
 template <typename RT> struct fmt::formatter<simdjson::simdjson_result<RT>> : fmt::formatter<std::string_view>
 {
-    template <typename FormatCtx> constexpr auto format(simdjson::simdjson_result<RT> value, FormatCtx& ctx) const
+    auto format(simdjson::simdjson_result<RT> value, format_context& ctx) const
     {
         if constexpr (std::is_same_v<RT, simdjson::ondemand::field>)
             static_assert(std::is_same_v<RT, int>, "cannot format object field (key: value) because simdjson consumes data, use \"{}: {}\", static_cast<std::string_view>(field.unescaped_key()), field.value() if necessary");

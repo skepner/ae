@@ -8,7 +8,7 @@
 
 template <typename AgSr> static std::string name_full_without_passage(const AgSr& ag_sr)
 {
-    return ae::string::join(" ", ag_sr.name(), fmt::format("{: }", ag_sr.annotations()), ag_sr.reassortant());
+    return ae::string::join(" ", ag_sr.name(), fmt::format("{: }", ag_sr.annotations()), *ag_sr.reassortant());
 }
 
 inline static std::string name_full(const ae::chart::v2::Antigen& ag)
@@ -18,7 +18,7 @@ inline static std::string name_full(const ae::chart::v2::Antigen& ag)
 
 inline static std::string name_full(const ae::chart::v2::Serum& sr)
 {
-    return ae::string::join(" ", name_full_without_passage(sr), sr.serum_id());
+    return ae::string::join(" ", name_full_without_passage(sr), *sr.serum_id());
 }
 
 template <typename AgSr> static std::string name_full_passage(const AgSr& ag_sr)
@@ -46,7 +46,7 @@ template <typename AgSr> static std::string year2(const AgSr& ag_sr)
 
 template <typename AgSr> static std::string name_abbreviated(const AgSr& ag_sr)
 {
-    return ae::string::join("-", ae::string::join("/", location_abbreviated(ag_sr), ae::virus::name::isolation(ag_sr.name()), year2(ag_sr)), ag_sr.reassortant());
+    return ae::string::join("-", ae::string::join("/", location_abbreviated(ag_sr), ae::virus::name::isolation(ag_sr.name()), year2(ag_sr)), *ag_sr.reassortant());
 }
 
 template <typename AgSr> static std::string fields(const AgSr& ag_sr)
@@ -129,12 +129,12 @@ template <> struct fmt::formatter<sequence_aligned_t>
         return it;
     }
 
-    template <typename Seq, typename FormatContext> auto format(const Seq& seq, FormatContext& ctx) const
+    template <typename Seq> auto format(const Seq& seq, format_context& ctx) const
     {
         if (first_ == 0)
-            return format_to(ctx.out(), "{}", *seq);
+            return fmt::format_to(ctx.out(), "{}", *seq);
         else
-            return format_to(ctx.out(), "{}", seq->substr(first_ - 1, len_ ? len_ : 1));
+            return fmt::format_to(ctx.out(), "{}", seq->substr(first_ - 1, len_ ? len_ : 1));
     }
 
   private:
@@ -170,10 +170,10 @@ const std::tuple format_subst_ag_sr{
     FKF("name_full", name_full(ag_sr)),                                                                                                       //
     FKF("name_full_passage", name_full_passage(ag_sr)),                                                                                       //
     FKF("name_without_subtype", ae::virus::name::without_subtype(ag_sr.name())),                                                              //
-    FKF("name_anntotations_reassortant", ae::string::join(" ", ag_sr.name(), fmt::format("{: }", ag_sr.annotations()), ag_sr.reassortant())), //
+    FKF("name_anntotations_reassortant", ae::string::join(" ", ag_sr.name(), fmt::format("{: }", ag_sr.annotations()), *ag_sr.reassortant())), //
     FKF("passage", ag_sr.passage()),                                                                                                          //
     FKF("passage_type", ag_sr.passage().passage_type()),                                                                                      //
-    FKF("reassortant", ag_sr.reassortant()),                                                                                                  //
+    FKF("reassortant", *ag_sr.reassortant()),                                                                                                  //
     FKF("year", year4(ag_sr)),                                                                                                                //
     FKF("year2", year2(ag_sr)),                                                                                                               //
     FKF("year4", year4(ag_sr)),                                                                                                               //
@@ -183,8 +183,8 @@ const std::tuple format_subst_ag_sr{
 
 const std::tuple format_subst_antigen{
     FKF("ag_sr", "AG"),                                         //
-    FKF("date", ag_sr.date()),                                  //
-    FKF("date_in_brackets", fmt::format("[{}]", ag_sr.date())), //
+    FKF("date", *ag_sr.date()),                                  //
+    FKF("date_in_brackets", fmt::format("[{}]", *ag_sr.date())), //
     FKF("designation", name_full(ag_sr)),                       //
     FKF("lab_ids", ag_sr.lab_ids().join()),                     //
     FKF("ref", ag_sr.reference() ? "Ref" : ""),                 //
@@ -195,12 +195,11 @@ const std::tuple format_subst_antigen{
 
 const std::tuple format_subst_serum{
     FKF("ag_sr", "SR"),                                                                            //
-    FKF("designation", ae::string::join(" ", name_full_without_passage(ag_sr), ag_sr.serum_id())), //
+    FKF("designation", ae::string::join(" ", name_full_without_passage(ag_sr), *ag_sr.serum_id())), //
     FKF("designation_without_serum_id", name_full_without_passage(ag_sr)),                         //
-    FKF("serum_id", ag_sr.serum_id()),                                                             //
-    FKF("serum_species", ag_sr.serum_species()),                                                   //
-    FKF("serum_species", ag_sr.serum_species()),                                                   //
-    FKF("species", ag_sr.serum_species()),                                                         //
+    FKF("serum_id", *ag_sr.serum_id()),                                                             //
+    FKF("serum_species", *ag_sr.serum_species()),                                                   //
+    FKF("species", *ag_sr.serum_species()),                                                         //
     FKF("date_in_brackets", ""),                                                                   //
     FKF("clades", ""),                                                                             //
     FKF("lab_ids", ""),                                                                            //
@@ -290,12 +289,12 @@ namespace fmt
             static_assert(std::is_same_v<std::decay_t<decltype(std::get<0>(key_value))>, const char*>);
             if constexpr (std::tuple_size<std::decay_t<decltype(key_value)>>::value == 2) {
                 if constexpr (std::is_invocable_v<decltype(std::get<1>(key_value))>)
-                    format_to(std::back_inserter(output), fmt::runtime(pattern_arg), arg(std::get<0>(key_value), std::invoke(std::get<1>(key_value))));
+                    fmt::format_to(std::back_inserter(output), fmt::runtime(pattern_arg), arg(std::get<0>(key_value), std::invoke(std::get<1>(key_value))));
                 else
-                    format_to(std::back_inserter(output), fmt::runtime(pattern_arg), arg(std::get<0>(key_value), std::get<1>(key_value)));
+                    fmt::format_to(std::back_inserter(output), fmt::runtime(pattern_arg), arg(std::get<0>(key_value), std::get<1>(key_value)));
             }
             else if constexpr (std::tuple_size<std::decay_t<decltype(key_value)>>::value == 4) {
-                format_to(std::back_inserter(output), fmt::runtime(pattern_arg), arg(std::get<0>(key_value), std::get<1>(key_value)), arg(std::get<2>(key_value), std::get<3>(key_value)));
+                fmt::format_to(std::back_inserter(output), fmt::runtime(pattern_arg), arg(std::get<0>(key_value), std::get<1>(key_value)), arg(std::get<2>(key_value), std::get<3>(key_value)));
             }
             else
                 static_assert(

@@ -39,6 +39,9 @@ namespace ae::virus::inline v2
                                     return std::string_view(value_.data() + 2, 3);
                             }
                         }
+                        break;
+                    default:
+                        break;
                 }
             }
             return value_;
@@ -53,6 +56,8 @@ namespace ae::virus::inline v2
                         return std::string_view(value_.data(), 1);
                     case 'A':
                         return std::string_view(value_.data() + 2, value_.size() - 3);
+                    default:
+                        break;
                 }
             }
             return value_;
@@ -79,7 +84,7 @@ namespace ae::virus::inline v2
 
 template <> struct fmt::formatter<ae::virus::type_subtype_t> : public fmt::formatter<ae::fmt_helper::default_formatter>
 {
-    template <typename FormatContext> auto format(const ae::virus::type_subtype_t& ts, FormatContext& ctx) const { return format_to(ctx.out(), "{}", static_cast<std::string_view>(ts)); }
+    auto format(const ae::virus::type_subtype_t& ts, format_context& ctx) const { return fmt::format_to(ctx.out(), "{}", static_cast<std::string_view>(ts)); }
 };
 
 // ----------------------------------------------------------------------

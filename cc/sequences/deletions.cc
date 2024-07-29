@@ -61,24 +61,24 @@ struct deletions_insertions_t
 }; // struct deletions_insertions_t
 
 template <> struct fmt::formatter<deletions_insertions_t::pos_num_t> : fmt::formatter<ae::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(const deletions_insertions_t::pos_num_t& value, FormatCtx& ctx) const
+    auto format(const deletions_insertions_t::pos_num_t& value, format_context& ctx) const
     {
-        return format_to(ctx.out(), "{}:{}", value.pos, value.num);
+        return fmt::format_to(ctx.out(), "{}:{}", value.pos, value.num);
     }
 };
 
 template <> struct fmt::formatter<deletions_insertions_t> : fmt::formatter<ae::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(const deletions_insertions_t& value, FormatCtx& ctx) const
+    auto format(const deletions_insertions_t& value, format_context& ctx) const
     {
         if (!value.empty()) {
             if (!value.deletions.empty())
-                format_to(ctx.out(), "del:{}", value.deletions);
+                fmt::format_to(ctx.out(), "del:{}", value.deletions);
             if (!value.insertions.empty())
-                format_to(ctx.out(), "ins:{}", value.insertions);
+                fmt::format_to(ctx.out(), "ins:{}", value.insertions);
             return ctx.out();
         }
         else
-            return format_to(ctx.out(), "{}", "{}");
+            return fmt::format_to(ctx.out(), "{}", "{}");
     }
 };
 
@@ -333,7 +333,7 @@ void ae::sequences::find_deletions_insertions_set_lineage(RawSequence& sequence,
         else if (sequence.lineage != lineage_t{lineage}) {
             if (sequence.sequence.aa.size() > 500)
                 messages.add(Message::lineage_mismatch, sequence.type_subtype, fmt::format("detected: {} provided: {}", lineage, sequence.lineage),
-                             fmt::format("lineage difference \"{}\" provided:{} detected:{}\nS:  {}", sequence.name, sequence.lineage, lineage, sequence.sequence.aa));
+                             fmt::format("lineage difference \"{}\" provided:{} detected:{}\nS:  {}", sequence.name, sequence.lineage, lineage, *sequence.sequence.aa));
             sequence.lineage = lineage;
         }
     };
@@ -369,7 +369,7 @@ void ae::sequences::find_deletions_insertions_set_lineage(RawSequence& sequence,
             apply_deletions(deletions);
             if (sequence.sequence.aa.size() > 500)
                 messages.add(Message::unrecognized_deletions, sequence.type_subtype, fmt::format("\"{}\" {}", sequence.name, sequence.lineage),
-                             fmt::format("{}\n                S:  {}\n                M:  {}", deletions, sequence.sequence.aa, master_sequence_for(ae::virus::type_subtype_t{"B"})->aa));
+                             fmt::format("{}\n                S:  {}\n                M:  {}", deletions, *sequence.sequence.aa, *master_sequence_for(ae::virus::type_subtype_t{"B"})->aa));
         }
     }
 

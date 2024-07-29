@@ -2,6 +2,7 @@
 
 #include "ext/fmt.hh"
 #include "ext/compare.hh"
+#include "fmt/core.h"
 
 // ======================================================================
 
@@ -52,7 +53,7 @@ namespace ae::sequences
 
 template <> struct fmt::formatter<ae::sequences::lineage_t> : fmt::formatter<std::string>
 {
-    template <typename FormatCtx> constexpr auto format(const ae::sequences::lineage_t& lineage, FormatCtx& ctx) const { return fmt::formatter<std::string>::format(lineage, ctx); }
+    auto format(const ae::sequences::lineage_t& lineage, format_context& ctx) const { return fmt::format_to(ctx.out(), "{}", static_cast<std::string_view>(lineage)); }
 };
 
 // ======================================================================

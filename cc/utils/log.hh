@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "ext/fmt.hh"
+#include "subprojects/fmt-9.0.0/include/fmt/core.h"
 
 // ----------------------------------------------------------------------
 
@@ -28,6 +29,23 @@ namespace ae
             const char* function{__builtin_FUNCTION()};
         };
 
+    } // namespace log::inline v1
+} // namespace ae
+
+template <> struct fmt::formatter<ae::log::source_location> : formatter<ae::fmt_helper::default_formatter> {
+    auto format(const ae::log::source_location& sl, format_context& ctx) const
+    {
+        if (sl.file)
+            return fmt::format_to(ctx.out(), " @@ {}:{}", sl.file, sl.line);
+        else
+            return ctx.out();
+    }
+};
+
+namespace ae
+{
+    namespace log::inline v1
+    {
         constexpr const source_location no_source_location { .file = nullptr, .line = 0, .function = nullptr };
 
         struct log_key_t
@@ -95,7 +113,7 @@ namespace ae
                 return fmt::format(format, std::forward<Ts>(ts)...);
             }
             catch (fmt::format_error& err) {
-                fmt::print(stderr, "> fmt::format_error ({}) format: \"{}\"{}", err.what(), format, sl);
+                fmt::print(stderr, "> fmt::format_error ({}){}", err.what(), sl);
                 throw;
             }
         }
@@ -129,16 +147,6 @@ namespace ae
 } // namespace ae
 
 // ----------------------------------------------------------------------
-
-template <> struct fmt::formatter<ae::log::source_location> : fmt::formatter<ae::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(const ae::log::source_location& sl, FormatCtx& ctx) const
-    {
-        if (sl.file)
-            return format_to(ctx.out(), " @@ {}:{}", sl.file, sl.line);
-        else
-            return ctx.out();
-    }
-};
 
 // ======================================================================
 
@@ -257,7 +265,7 @@ template <typename... Ts> AD_FORMAT(fmt::format_string<Ts...>, Ts&&...) -> AD_FO
 template <typename... Ts> struct fmt::formatter<AD_FORMAT<Ts...>> : fmt::formatter<ae::fmt_helper::default_formatter> {
     template <typename FormatCtx> auto format(const AD_FORMAT<Ts...>& value, FormatCtx& ctx) const
     {
-        return format_to(ctx.out(), "{}", value.text);
+        return fmt::format_to(ctx.out(), "{}", value.text);
     }
 };
 

@@ -151,7 +151,7 @@ namespace ae
 
 template <> struct fmt::formatter<ae::Message::message_type> : fmt::formatter<ae::fmt_helper::default_formatter>
 {
-    template <typename FormatCtx> auto format(ae::Message::message_type type, FormatCtx& ctx) const { return format_to(ctx.out(), "{}", ae::Message::format_long(type)); }
+    auto format(ae::Message::message_type type, format_context& ctx) const { return fmt::format_to(ctx.out(), "{}", ae::Message::format_long(type)); }
 };
 
 // ----------------------------------------------------------------------

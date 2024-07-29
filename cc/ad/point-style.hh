@@ -248,29 +248,29 @@ namespace acmacs
 // ----------------------------------------------------------------------
 
 template <> struct fmt::formatter<acmacs::PointShape> : fmt::formatter<ae::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(const acmacs::PointShape& shape, FormatCtx& ctx) const
+    auto format(const acmacs::PointShape& shape, format_context& ctx) const
     {
         switch (shape.get()) {
             case acmacs::PointShape::Circle:
-                return format_to(ctx.out(), "CIRCLE");
+                return fmt::format_to(ctx.out(), "CIRCLE");
             case acmacs::PointShape::Box:
-                return format_to(ctx.out(), "BOX");
+                return fmt::format_to(ctx.out(), "BOX");
             case acmacs::PointShape::Triangle:
-                return format_to(ctx.out(), "TRIANGLE");
+                return fmt::format_to(ctx.out(), "TRIANGLE");
             case acmacs::PointShape::Egg:
-                return format_to(ctx.out(), "EGG");
+                return fmt::format_to(ctx.out(), "EGG");
             case acmacs::PointShape::UglyEgg:
-                return format_to(ctx.out(), "UGLYEGG");
+                return fmt::format_to(ctx.out(), "UGLYEGG");
         }
-        return format_to(ctx.out(), "CIRCLE");
+        return fmt::format_to(ctx.out(), "CIRCLE");
     }
 };
 
 template <> struct fmt::formatter<acmacs::PointStyle> : fmt::formatter<ae::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(const acmacs::PointStyle& style, FormatCtx& ctx) const
+    auto format(const acmacs::PointStyle& style, format_context& ctx) const
     {
-        return format_to(ctx.out(), R"({{"shape": {}, "shown": {}, "fill": "{}", "outline": "{}", "outline_width": {}, "size": {}, "aspect": {}, "rotation": {}, "label": {}, "label_text": "{}"}})",
-                         style.shape(), style.shown(), style.fill(), style.outline(), style.outline_width(), style.size(), style.aspect(), style.rotation(), style.label(), style.label_text());
+        return fmt::format_to(ctx.out(), R"({{"shape": {}, "shown": {}, "fill": "{}", "outline": "{}", "outline_width": {}, "size": {}, "aspect": {}, "rotation": {}, "label": {}, "label_text": "{}"}})",
+                         style.shape(), style.shown(), style.fill(), style.outline(), *style.outline_width(), *style.size(), *style.aspect(), *style.rotation(), style.label(), style.label_text());
     }
 };
 

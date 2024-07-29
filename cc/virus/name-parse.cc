@@ -124,17 +124,17 @@ namespace ae::virus::name::inline v1
 // ======================================================================
 
 template <> struct fmt::formatter<ae::virus::name::part_t::type_t> : fmt::formatter<ae::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(const ae::virus::name::part_t::type_t& value, FormatCtx& ctx) const
+    auto format(const ae::virus::name::part_t::type_t& value, format_context& ctx) const
     {
         using namespace ae::virus::name;
 
         bool empty = true;
         const auto add = [&empty, &ctx](const char* text) {
             if (!empty)
-                format_to(ctx.out(), "{}", '|');
+                fmt::format_to(ctx.out(), "{}", '|');
             else
                 empty = false;
-            format_to(ctx.out(), "{}", text);
+            fmt::format_to(ctx.out(), "{}", text);
         };
 
         for (size_t pt = 0; pt < value.size(); ++pt)
@@ -178,10 +178,10 @@ template <> struct fmt::formatter<ae::virus::name::part_t::type_t> : fmt::format
 };
 
 template <> struct fmt::formatter<ae::virus::name::part_t> : fmt::formatter<ae::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(const ae::virus::name::part_t& value, FormatCtx& ctx) const
+    auto format(const ae::virus::name::part_t& value, format_context& ctx) const
     {
         if (value.type.any())
-            format_to(ctx.out(), "<{}>\"{}{}\"", value.type, value.head, value.tail);
+            fmt::format_to(ctx.out(), "<{}>\"{}{}\"", value.type, value.head, value.tail);
         return ctx.out();
     }
 };

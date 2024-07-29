@@ -113,7 +113,7 @@ namespace ae::chart::v2
     inline std::string assay_rbc_short(const Assay& assay, const RbcSpecies& rbc)
     {
         if (assay.empty() || assay.get() == "HI" || !rbc.empty())
-            return fmt::format("{} {}", assay.short_name(), rbc);
+            return fmt::format("{} {}", assay.short_name(), *rbc);
         else
             return assay.short_name();
     }
@@ -1032,18 +1032,18 @@ namespace ae::chart::v2
 // ----------------------------------------------------------------------
 
 template <> struct fmt::formatter<ae::chart::v2::BLineage> : fmt::formatter<ae::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(const ae::chart::v2::BLineage& lineage, FormatCtx& ctx) const { return format_to(ctx.out(), "{}", lineage.to_string()); }
+    auto format(const ae::chart::v2::BLineage& lineage, format_context& ctx) const { return fmt::format_to(ctx.out(), "{}", lineage.to_string()); }
 };
 
 template <> struct fmt::formatter<ae::chart::v2::Antigen> : fmt::formatter<ae::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(const ae::chart::v2::Antigen& antigen, FormatCtx& ctx) const
+    auto format(const ae::chart::v2::Antigen& antigen, format_context& ctx) const
     {
         return fmt::format_to(ctx.out(), fmt::runtime(antigen.format("{name_full} [{date}]{ }{lab_ids}{ }{lineage}", ae::chart::v2::collapse_spaces_t::yes)));
     }
 };
 
 template <> struct fmt::formatter<ae::chart::v2::Serum> : fmt::formatter<ae::fmt_helper::default_formatter> {
-    template <typename FormatCtx> auto format(const ae::chart::v2::Serum& serum, FormatCtx& ctx) const
+    auto format(const ae::chart::v2::Serum& serum, format_context& ctx) const
     {
         return fmt::format_to(ctx.out(), fmt::runtime(serum.format("{name_full}{ }{lineage}{ }{species}", ae::chart::v2::collapse_spaces_t::yes)));
     }

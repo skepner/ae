@@ -43,7 +43,7 @@ acmacs::lispmds::value acmacs::lispmds::parse_string(std::string_view aData)
     if (tokenizer.next().first != Tokenizer::OpenList)
         throw ae::chart::v2::import_error("[lispmds]: '(' expected at the beginning of the file");
     if (auto [token, text] = tokenizer.next(); token != Tokenizer::Symbol || text != "MAKE-MASTER-MDS-WINDOW")
-        throw ae::chart::v2::import_error(fmt::format("[lispmds]: \"(MAKE-MASTER-MDS-WINDOW\" expected at the beginning of the file, got token: {} {}", token, text));
+        throw ae::chart::v2::import_error(fmt::format("[lispmds]: \"(MAKE-MASTER-MDS-WINDOW\" expected at the beginning of the file, got token: {} {}", static_cast<char>(token), text));
     value result{list{}};
     std::stack<value*> stack;
     stack.push(&result);

@@ -51,29 +51,29 @@ template <> struct fmt::formatter<ae::chart::v2::Annotations>
         return end;
     }
 
-    template <typename FormatContext> auto format(const ae::chart::v2::Annotations& annotations, FormatContext& ctx) const
+    auto format(const ae::chart::v2::Annotations& annotations, format_context& ctx) const
     {
         if (join_) {
             bool put_join{ false };
             for (const auto& ann : annotations) {
                 if (put_join)
-                    format_to(ctx.out(), "{:c}", join_);
+                    fmt::format_to(ctx.out(), "{:c}", join_);
                 else
                     put_join = true;
-                format_to(ctx.out(), "{}", ann);
+                fmt::format_to(ctx.out(), "{}", ann);
             }
         }
         else {
             bool put_join{ false };
-            format_to(ctx.out(), "[");
+            fmt::format_to(ctx.out(), "[");
             for (const auto& ann : annotations) {
                 if (put_join)
-                    format_to(ctx.out(), ", ");
+                    fmt::format_to(ctx.out(), ", ");
                 else
                     put_join = true;
-                format_to(ctx.out(), "\"{}\"", ann);
+                fmt::format_to(ctx.out(), "\"{}\"", ann);
             }
-            format_to(ctx.out(), "]");
+            fmt::format_to(ctx.out(), "]");
         }
         return ctx.out();
     }

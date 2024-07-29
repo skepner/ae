@@ -226,7 +226,7 @@ template <typename Key> struct fmt::formatter<acmacs::Counter<Key>> : public fmt
 {
     template <typename FormatContext> auto format(const acmacs::Counter<Key>& counter, FormatContext& ctx) const
     {
-        return format_to(ctx.out(), "counter{{{}}}", counter.counter());
+        return fmt::format_to(ctx.out(), "counter{{{}}}", counter.counter());
     }
 };
 
@@ -234,14 +234,14 @@ template <> struct fmt::formatter<acmacs::CounterChar> : public fmt::formatter<a
 {
     template <typename FormatContext> auto format(const acmacs::CounterChar& counter, FormatContext& ctx) const
     {
-        auto out = format_to(ctx.out(), "counter{{");
+        auto out = fmt::format_to(ctx.out(), "counter{{");
         const auto keys = counter.sorted();
         for (auto it = keys.begin(); it != keys.end(); ++it) {
             if (it != keys.begin())
-                out = format_to(out, ", ");
-            out = format_to(out, "{}: {}", *it, counter[*it]);
+                out = fmt::format_to(out, ", ");
+            out = fmt::format_to(out, "{}: {}", *it, counter[*it]);
         }
-        return format_to(out, "}}");
+        return fmt::format_to(out, "}}");
     }
 };
 

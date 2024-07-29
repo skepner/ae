@@ -60,7 +60,7 @@ namespace ae::chart::v3
         std::string assay_rbc_short()
             {
                 if (assay_.empty() || assay_ == Assay{"HI"} || !rbc_species_.empty())
-                    return fmt::format("{} {}", assay_.short_name(), rbc_species_);
+                    return fmt::format("{} {}", assay_.short_name(), *rbc_species_);
                 else
                     return assay_.short_name();
             }

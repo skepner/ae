@@ -23,6 +23,9 @@
 // clang 15
 #pragma GCC diagnostic ignored "-Wdeprecated" // fmt/chrono.h:out-of-line definition of constexpr static data member is redundant in C++17 and is deprecated
 
+// fmt 10, clang 18
+#pragma GCC diagnostic ignored "-Wswitch-default"
+
 #elif defined(__GNUG__)
 
 #pragma GCC diagnostic ignored "-Wdeprecated" // fmt/format.h: implicit capture of ‘this’ via ‘[=]’ is deprecated in C++20
@@ -81,7 +84,7 @@ template <> struct fmt::formatter<ae::fmt_helper::float_formatter>
 
     template <typename Val, typename FormatContext> auto format_val(Val&& val, FormatContext& ctx) const
     {
-        return format_to(ctx.out(), fmt::runtime(format_), std::forward<Val>(val));
+        return fmt::format_to(ctx.out(), fmt::runtime(format_), std::forward<Val>(val));
     }
 
   private:
@@ -93,8 +96,8 @@ template <> struct fmt::formatter<ae::fmt_helper::float_formatter>
 // template <> struct fmt::formatter<###> : fmt::formatter<ae::fmt_helper::default_formatter> {
 //     template <typename FormatCtx> constexpr auto format(const ###& value, FormatCtx& ctx) const
 //     {
-//         format_to(ctx.out(), "{} {}", );
-//         return format_to(ctx.out(), "{} {}", );
+//         fmt::format_to(ctx.out(), "{} {}", );
+//         return fmt::format_to(ctx.out(), "{} {}", );
 //         return ctx.out();
 //     }
 // };
@@ -134,12 +137,12 @@ namespace ae
 
 template <> struct fmt::formatter<std::optional<std::string>> : fmt::formatter<ae::fmt_helper::default_formatter>
 {
-    template <typename FormatCtx> constexpr auto format(const std::optional<std::string>& str, FormatCtx& ctx) const
+    constexpr auto format(const std::optional<std::string>& str, format_context& ctx) const
     {
         if (str.has_value())
-            return format_to(ctx.out(), "\"{}\"", *str);
+            return fmt::format_to(ctx.out(), "\"{}\"", *str);
         else
-            return format_to(ctx.out(), "<none>");
+            return fmt::format_to(ctx.out(), "<none>");
     }
 };
 

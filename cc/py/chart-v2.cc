@@ -479,7 +479,7 @@ Usage:
         ;
 
     pybind11::class_<ae::chart::v2::Area>(chart_v2_submodule, "Area")                                                //
-        .def("__str__", [](const ae::chart::v2::Area& transformation) { return fmt::format("{}", transformation); }) //
+        .def("__str__", [](const ae::chart::v2::Area& transformation) { return fmt::format(fmt::runtime("{}"), transformation); }) //
         .def_property_readonly("min", [](const ae::chart::v2::Area& area) { return area.min.as_vector(); })          //
         .def_property_readonly("max", [](const ae::chart::v2::Area& area) { return area.max.as_vector(); })          //
         .def("area", &ae::chart::v2::Area::area)                                                                     //

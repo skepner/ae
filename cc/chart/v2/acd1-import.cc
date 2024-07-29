@@ -366,7 +366,7 @@ std::string Acd1Info::name(Compute aCompute) const
         }
     }
     if (result.empty() && aCompute == Compute::Yes) {
-        result = ae::string::join(" ", *virus_not_influenza(aCompute), virus_type(aCompute), subset(aCompute), assay(aCompute), lab(aCompute), rbc_species(aCompute), date(aCompute));
+        result = ae::string::join(" ", *virus_not_influenza(aCompute), virus_type(aCompute), subset(aCompute), *assay(aCompute), *lab(aCompute), *rbc_species(aCompute), *date(aCompute));
     }
     return result;
 

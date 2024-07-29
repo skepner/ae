@@ -45,11 +45,11 @@ template <> struct fmt::formatter<std::chrono::year_month_day>
     {
         const auto begin = ctx.begin();
         const auto end = std::find(begin, ctx.end(), '}');
-        format_ = fmt::format("{{:{}}}", std::string_view(begin, static_cast<size_t>(end - begin)));
+        format_ = std::string{"{:"} + std::string(begin, static_cast<size_t>(end - begin)) + "}";
         return end;
     }
 
-    template <typename FormatCtx> constexpr auto format(const std::chrono::year_month_day& date, FormatCtx& ctx) const { return format_to(ctx.out(), fmt::runtime(format_), std::chrono::sys_days(date)); }
+    auto format(const std::chrono::year_month_day& date, format_context& ctx) const { return fmt::format_to(ctx.out(), fmt::runtime(format_), std::chrono::sys_days(date)); }
 
   private:
     std::string format_{};

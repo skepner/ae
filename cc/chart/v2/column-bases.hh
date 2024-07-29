@@ -91,28 +91,28 @@ namespace ae::chart::v2
 // ----------------------------------------------------------------------
 
 template <> struct fmt::formatter<ae::chart::v2::ColumnBases> : fmt::formatter<ae::fmt_helper::float_formatter> {
-    template <typename FormatCtx> auto format(const ae::chart::v2::ColumnBases& cb, FormatCtx& ctx) const {
-        format_to(ctx.out(), "[");
+    auto format(const ae::chart::v2::ColumnBases& cb, format_context& ctx) const {
+        fmt::format_to(ctx.out(), "[");
         for (size_t sr_no{0}; sr_no < cb.size(); ++sr_no) {
             if (sr_no)
                 fmt::format_to(ctx.out(), " ");
             format_val(cb.column_basis(sr_no), ctx);
         }
-        return format_to(ctx.out(), "]");
+        return fmt::format_to(ctx.out(), "]");
     }
 };
 
 template <> struct fmt::formatter<std::shared_ptr<ae::chart::v2::ColumnBases>> : fmt::formatter<ae::chart::v2::ColumnBases> {
-    template <typename FormatCtx> auto format(const std::shared_ptr<ae::chart::v2::ColumnBases>& cb, FormatCtx& ctx) const {
+    auto format(const std::shared_ptr<ae::chart::v2::ColumnBases>& cb, format_context& ctx) const {
         if (cb)
             return fmt::formatter<ae::chart::v2::ColumnBases>::format(*cb, ctx);
         else
-            return format_to(ctx.out(), "<none>");
+            return fmt::format_to(ctx.out(), "<none>");
     }
 };
 
 template <> struct fmt::formatter<ae::chart::v2::MinimumColumnBasis> : fmt::formatter<std::string> {
-    template <typename FormatCtx> auto format(const ae::chart::v2::MinimumColumnBasis& mcb, FormatCtx& ctx) const { return fmt::formatter<std::string>::format(static_cast<std::string>(mcb), ctx); }
+    auto format(const ae::chart::v2::MinimumColumnBasis& mcb, format_context& ctx) const { return fmt::formatter<std::string>::format(static_cast<std::string>(mcb), ctx); }
 };
 
 // ----------------------------------------------------------------------

@@ -71,61 +71,61 @@ namespace acmacs::color
 
 template <> struct fmt::formatter<acmacs::color::Modifier::hue_set> : fmt::formatter<ae::fmt_helper::default_formatter>
 {
-    template <typename FormatContext> auto format(const acmacs::color::Modifier::hue_set& hue, FormatContext& ctx) const
+    auto format(const acmacs::color::Modifier::hue_set& hue, format_context& ctx) const
     {
         if (*hue < 1.0)
-            return format_to(ctx.out(), ":h={:+.4f}", *hue);
+            return fmt::format_to(ctx.out(), ":h={:+.4f}", *hue);
         else
-            return format_to(ctx.out(), ":h={:.0f}", *hue);
+            return fmt::format_to(ctx.out(), ":h={:.0f}", *hue);
     }
 };
 
 template <> struct fmt::formatter<acmacs::color::Modifier::hue_adjust> : fmt::formatter<ae::fmt_helper::default_formatter>
 {
-    template <typename FormatContext> auto format(const acmacs::color::Modifier::hue_adjust& hue, FormatContext& ctx) const { return format_to(ctx.out(), ":h{:+.4f}", *hue); }
+    auto format(const acmacs::color::Modifier::hue_adjust& hue, format_context& ctx) const { return fmt::format_to(ctx.out(), ":h{:+.4f}", *hue); }
 };
 
 template <> struct fmt::formatter<acmacs::color::Modifier::saturation_set> : fmt::formatter<ae::fmt_helper::default_formatter>
 {
-    template <typename FormatContext> auto format(const acmacs::color::Modifier::saturation_set& saturation, FormatContext& ctx) const { return format_to(ctx.out(), ":s={:.4f}", *saturation); }
+    auto format(const acmacs::color::Modifier::saturation_set& saturation, format_context& ctx) const { return fmt::format_to(ctx.out(), ":s={:.4f}", *saturation); }
 };
 
 template <> struct fmt::formatter<acmacs::color::Modifier::saturation_adjust> : fmt::formatter<ae::fmt_helper::default_formatter>
 {
-    template <typename FormatContext> auto format(const acmacs::color::Modifier::saturation_adjust& saturation, FormatContext& ctx) const { return format_to(ctx.out(), ":s{:+.4f}", *saturation); }
+    auto format(const acmacs::color::Modifier::saturation_adjust& saturation, format_context& ctx) const { return fmt::format_to(ctx.out(), ":s{:+.4f}", *saturation); }
 };
 
 template <> struct fmt::formatter<acmacs::color::Modifier::brightness_set> : fmt::formatter<ae::fmt_helper::default_formatter>
 {
-    template <typename FormatContext> auto format(const acmacs::color::Modifier::brightness_set& brightness, FormatContext& ctx) const { return format_to(ctx.out(), ":b={:.4f}", *brightness); }
+    auto format(const acmacs::color::Modifier::brightness_set& brightness, format_context& ctx) const { return fmt::format_to(ctx.out(), ":b={:.4f}", *brightness); }
 };
 
 template <> struct fmt::formatter<acmacs::color::Modifier::brightness_adjust> : fmt::formatter<ae::fmt_helper::default_formatter>
 {
-    template <typename FormatContext> auto format(const acmacs::color::Modifier::brightness_adjust& brightness, FormatContext& ctx) const { return format_to(ctx.out(), ":b{:+.4f}", *brightness); }
+    auto format(const acmacs::color::Modifier::brightness_adjust& brightness, format_context& ctx) const { return fmt::format_to(ctx.out(), ":b{:+.4f}", *brightness); }
 };
 
 template <> struct fmt::formatter<acmacs::color::Modifier::transparency_set> : fmt::formatter<ae::fmt_helper::default_formatter>
 {
-    template <typename FormatContext> auto format(const acmacs::color::Modifier::transparency_set& transparency, FormatContext& ctx) const { return format_to(ctx.out(), ":t={:.4f}", *transparency); }
+    auto format(const acmacs::color::Modifier::transparency_set& transparency, format_context& ctx) const { return fmt::format_to(ctx.out(), ":t={:.4f}", *transparency); }
 };
 
 template <> struct fmt::formatter<acmacs::color::Modifier::transparency_adjust> : fmt::formatter<ae::fmt_helper::default_formatter>
 {
-    template <typename FormatContext> auto format(const acmacs::color::Modifier::transparency_adjust& transparency, FormatContext& ctx) const { return format_to(ctx.out(), ":t{:+.4f}", *transparency); }
+    auto format(const acmacs::color::Modifier::transparency_adjust& transparency, format_context& ctx) const { return fmt::format_to(ctx.out(), ":t{:+.4f}", *transparency); }
 };
 
 template <> struct fmt::formatter<acmacs::color::Modifier> : fmt::formatter<Color>
 {
-    template <typename FormatCtx> auto format(const acmacs::color::Modifier& modifier, FormatCtx& ctx) const
+    auto format(const acmacs::color::Modifier& modifier, format_context& ctx) const
     {
         for (const auto& app : modifier.applicators()) {
             std::visit(
                 [&ctx, this]<typename Col>(const Col& value) {
                     if constexpr (std::is_same_v<Col, Color>)
-                        return format_to(ctx.out(), fmt::runtime(fmt::format("{{:{}}}", format_code())), value);
+                        return fmt::format_to(ctx.out(), fmt::runtime(fmt::format("{{:{}}}", format_code())), value);
                     else
-                        return format_to(ctx.out(), "{}", value);
+                        return fmt::format_to(ctx.out(), "{}", value);
                 },
                 app);
         }
