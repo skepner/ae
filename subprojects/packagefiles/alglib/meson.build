@@ -59,6 +59,7 @@ alglib = shared_library(
     '-Wno-unused-parameter',
     '-Wno-null-pointer-subtraction',
     '-Wno-deprecated-volatile',
+    '-Wno-deprecated-declarations',
     '-Wno-uninitialized',       # g++13
     # '-Wno-volatile',            # g++13, clang 13 complains
   ]

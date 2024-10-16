@@ -4,7 +4,7 @@
 
 #include "ext/from_chars.hh"
 // #include "ext/range-v3.hh"
-#include "subprojects/fmt-9.0.0/include/fmt/core.h"
+#include <fmt/core.h>
 #include "utils/statistics.hh"
 #include "chart/v3/chart.hh"
 

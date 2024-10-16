@@ -62,7 +62,7 @@ std::vector<double> native_column_bases(const acmacs::lispmds::value& aData)
     for (const auto& row : std::get<acmacs::lispmds::list>(acmacs::lispmds::get(aData, 0, 3))) {
         for (auto [sr_no, titer_v] : acmacs::enumerate(std::get<acmacs::lispmds::list>(row))) {
             std::visit(
-                [&cb, sr_no = sr_no](auto&& titer) {
+                [&cb, sr_no](auto&& titer) {
                     using T = std::decay_t<decltype(titer)>;
                     if constexpr (std::is_same_v<T, acmacs::lispmds::symbol>) {
                         double titer_d;

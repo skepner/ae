@@ -3,7 +3,6 @@
 #include <vector>
 
 #include "ext/fmt.hh"
-#include "subprojects/fmt-9.0.0/include/fmt/core.h"
 
 // ----------------------------------------------------------------------
 

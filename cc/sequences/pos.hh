@@ -5,7 +5,7 @@
 #include <algorithm>
 
 #include <utils/named-type.hh>
-#include "subprojects/fmt-9.0.0/include/fmt/core.h"
+#include <fmt/core.h>
 #include "utils/string.hh"
 
 // ======================================================================

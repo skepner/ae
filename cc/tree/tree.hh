@@ -5,7 +5,7 @@
 #include <memory>
 
 #include "ext/filesystem.hh"
-#include "subprojects/fmt-9.0.0/include/fmt/core.h"
+#include "fmt/core.h"
 #include "utils/counter.hh"
 #include "virus/type-subtype.hh"
 #include "sequences/sequence.hh"

@@ -123,7 +123,7 @@ namespace ae::tree
         //     {
         //     }
 
-        void set_transitions(Inode& node, sequences::pos0_t pos, double non_common_tolerance)
+        void set_transitions(Inode& /*node*/, sequences::pos0_t /*pos*/, double /*non_common_tolerance*/)
         {
             // if (!is_common_with_tolerance(node, pos, non_common_tolerance)) {
             //     for (const auto child_id : node.children) {
@@ -146,7 +146,7 @@ namespace ae::tree
             // }
         }
 
-        bool is_common_with_tolerance(const Inode& node, sequences::pos0_t pos, double tolerance)
+        bool is_common_with_tolerance(const Inode& /*node*/, sequences::pos0_t /*pos*/, double /*tolerance*/)
         {
         //     const auto aa = node.common_aa->at(pos, tolerance);
         //     if (aa == NoCommon) {
