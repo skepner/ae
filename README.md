@@ -14,6 +14,7 @@
 - ninja ~= 1.12
 - pyenv ~= 2.4
 - python ~= 3.13
+- unidecode ~= 1.3
 - zlib ~= 1.3 (may be included on system)
 
 
@@ -28,7 +29,7 @@ Dependencies managed by brew can me installed by running the following line in t
 brew install brotli catch2 cmake gnu-time libomp llvm meson mypy ninja pyenv zlib
 ```
 
-### Python
+### Python and unidecode
 
 This uses pyenv to install python.
 
@@ -58,6 +59,9 @@ To install and set python version:
 pyenv install 3.13 && pyenv local 3.13
 ```
 
+To install unidecode:
+```pip3 install unidecode```
+
 ## Building ae
 
 To build ae run the following line n temrinal from the ae directory:
@@ -67,6 +71,16 @@ To build ae run the following line n temrinal from the ae directory:
 
 ### If build fails
 Delete the build directory, empty the trash and attempt to build again
+
+## Getting python and system to find ae
+Add the following lines to ~/.zshrc (where the paths direct to where ae is), then run ```source ./zshrc```
+```
+PYTHONPATH=/Users/${USER}/Desktop/pipeline/ae/build:/Users/${USER}/Desktop/pipeline/ae/py:$PYTHONPATH
+export PYTHONPATH
+
+PATH=$AE_ROOT/bin:$PATH
+export $PATH
+```
 
 
 # Old install instructions
