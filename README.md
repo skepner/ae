@@ -10,10 +10,10 @@
 - libomp ~= 19.1 (may be included on system)
 - llvm ~= 19.1 (clang-18/ Apple Clang 16.0) (may be included on system)
 - meson ~= 1.5
-- mypy ~= 1.12
+- mypy ~= 1.13
 - ninja ~= 1.12
 - pyenv ~= 2.4
-- python ~= 3.13
+- python ~= 3.12.7
 - unidecode ~= 1.3
 - zlib ~= 1.3 (may be included on system)
 
@@ -56,11 +56,14 @@ source ~/.zshrc
 
 To install and set python version:
 ```
-pyenv install 3.13 && pyenv local 3.13
+pyenv install 3.12 && pyenv local 3.12
 ```
 
 To install unidecode:
 ```pip3 install unidecode```
+
+To install mypy:
+```pip install mypy```
 
 ## Building ae
 
