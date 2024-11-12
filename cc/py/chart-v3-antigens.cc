@@ -3,6 +3,8 @@
 #include "chart/v3/selected-antigens-sera.hh"
 #include "chart/v3/merge.hh"
 
+#include "ext/fmt.hh"
+
 // ----------------------------------------------------------------------
 
 namespace ae::py
@@ -174,7 +176,7 @@ void ae::py::chart_v3_antigens(pybind11::module_& chart_v3_submodule)
         .def("__getitem__", &SelectedAntigens::operator[], pybind11::return_value_policy::reference_internal) //
         .def("__bool_", [](const SelectedAntigens& antigens) { return !antigens.empty(); })                   //
         .def(
-            "__iter__", [](const SelectedAntigens& antigens) { return pybind11::make_iterator(antigens.begin(), antigens.end()); }, pybind11::keep_alive<0, 1>()) //
+            "__iter__", [](const SelectedAntigens& antigens) { return pybind11::make_iterator(antigens.begin(), antigens.end()); }, pybind11::keep_alive<0, 1>()) // Keep SelectedAntigens alive while iterator is used
         .def("indexes", [](const SelectedAntigens& selected) { return ae::to_vector_base_t(selected.indexes); })                                                  //
         .def(
             "points", [](const SelectedAntigens& selected) { return ae::to_vector_base_t(selected.points()); }, pybind11::doc("return point numbers")) //

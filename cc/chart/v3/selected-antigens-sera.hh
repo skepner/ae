@@ -178,7 +178,7 @@ namespace ae::chart::v3
         bool operator==(const SelectedIterator& rhs) const { return current_ == rhs.current_; }
 
       private:
-        Selected<AgSr> parent_;
+        const Selected<AgSr>& parent_;
         typename AgSr::indexes_t::const_iterator current_;
     };
 

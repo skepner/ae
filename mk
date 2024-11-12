@@ -35,7 +35,7 @@ build_default()
 
 build_debug_asan()
 {
-    # run python using ~/bin/python-address-sanitizer
+    # run python using ./python-address-sanitizer
     BUILD_DIR="${BUILD_DEBUG_DIR}"
     SETUP_ARGS="-Doptimization=g -Db_sanitize=address"
     if [[ $(uname) == "Darwin" ]]; then
@@ -156,8 +156,8 @@ for arg in "$@"; do
         debug)
             build_debug
             ;;
-        debug_no_asan|debug-no-asan)
-            build_debug_no_asan
+        debug_asan|debug-asan)
+            build_debug_asan
             ;;
         test)
             run_test
