@@ -8,13 +8,14 @@ submit_tree()
     NODE="$1"
     SUBTYPE="$2"
     (
-        ${AE_ROOT}/proj/weekly-tree/raxml --node ${NODE} ${SUBTYPE} &&
+        ${AE_ROOT}/proj/weekly-tree/make-cmaple --node ${NODE} ${SUBTYPE} &&
+            ${AE_ROOT}/R/rotate.R ${SUBTYPE}/cmaple_tree.txt ${SUBTYPE}/source.fas &&
             ${AE_ROOT}/proj/weekly-tree/raxml-asr --node ${NODE} ${SUBTYPE} &&
-            ${AE_ROOT}/proj/weekly-tree/garli --node ${NODE} ${SUBTYPE} &&
+            ${AE_ROOT}/R/collapse_short_branches.R ${SUBTYPE}/cmaple_tree-rot.txt 0.00005 &&
             ${AE_ROOT}/proj/weekly-tree/pdf ${SUBTYPE}
     ) >${SUBTYPE}/submit.log 2>&1 &
 }
 
 submit_tree i20 h1
 submit_tree i22 h3
-submit_tree i19 bvic
+submit_tree i21 bvic

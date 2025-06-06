@@ -1,0 +1,143 @@
+#! /usr/bin/env python3
+
+import sys, os, re, argparse, logging, datetime, concurrent.futures, subprocess, random, traceback
+from pathlib import Path
+
+# ======================================================================
+
+sSubtypeNorm = {"BV": "BVIC", "BVIC": "BVIC", "BY": "BYAM", "BYAM": "BYAM", "A(H1N1)": "A(H1N1)", "H1": "A(H1N1)", "1": "A(H1N1)", "A(H3N2)": "A(H3N2)", "H3": "A(H3N2)", "3": "A(H3N2)"}
+sSubdirforSubtype = {"BVIC": "bvic", "BYAM": "byam", "A(H1N1)": "h1", "A(H3N2)": "h3"}
+
+sRandomGen = random.SystemRandom()
+
+sMailTo = "sat65@cam.ac.uk"
+
+# ----------------------------------------------------------------------
+
+def main(args: argparse.Namespace):
+    argv = '"' + '" "'.join(sys.argv) + '"'
+    working_dir = Path(args.subdir).resolve()
+    source_fas = working_dir.joinpath("source.fas")
+    # source_tree = working_dir.joinpath("source.newick") no source tree, we make from scratch each time
+    outgroup = source_fas.open().readline().strip()[1:]
+    try:
+        best_tree_file = cmaple(working_dir=working_dir, source_fas=source_fas, outgroup=outgroup, num_runs=args.num_runs, slurm_nodelist=args.slurm_nodelist, slurm_exclude_nodes=args.slurm_exclude_nodes)
+        subprocess.run(["/usr/bin/mail", "-s", f"completed {sys.argv[0]} {working_dir}", sMailTo], input=f"cd {working_dir}\n{argv}\n{best_tree_file}\n", text=True)
+        logging.info(f"mail to {sMailTo} about completion sent")
+        return 0
+    except Exception as err:
+        logging.error(f"", exc_info=True)
+        subprocess.run(["/usr/bin/mail", "-s", f"FAILED {sys.argv[0]} {working_dir}", sMailTo], input=f"cd {working_dir}\n{argv}\n\n{traceback.format_exc()}\n", text=True)
+        logging.info(f"mail to {sMailTo} about FAILURE sent")
+        raise
+
+# ----------------------------------------------------------------------
+
+def cmaple(working_dir: Path, source_fas: Path, outgroup: str, slurm_nodelist: str, slurm_exclude_nodes: str, num_runs: int):
+
+    output_dir = get_output_dir(working_dir, "cmaple.")
+
+    cmaple_cmd = [
+        "/syn/bin/cmaple",
+        "-aln", str(source_fas),
+        "-st", "DNA",
+        "-m", "GTR",
+        "--search", "EXHAUSTIVE",
+        "--min-blength", "0.0001",
+        "-nt", "1",
+        "--overwrite"
+    ]
+
+    # ----------------------------------------------------------------------
+
+    def prefix(run_id):
+        return f"{output_dir.joinpath(run_id)}"
+
+    def run_cmaple(run_id):
+        cmd = (srun_cmd()
+               + [f"--job-name=vcm_cmaple {working_dir.name} {run_id}", f"--output={output_dir.joinpath(run_id).with_suffix('.stdout')}", f"--error={output_dir.joinpath(run_id).with_suffix('.stderr')}"]
+               + cmaple_cmd
+               + ["--prefix", prefix(run_id), "--seed", str(sRandomGen.randint(1, 0xFFFFFFF))])
+        with output_dir.joinpath("commands.txt").open("a") as commands_txt:
+            print(" ".join(cmd), file=commands_txt)
+        # print(cmd)
+        subprocess.check_call(cmd)
+
+    def srun_cmd():
+        cmd = [
+            "srun",
+            "--cpus-per-task=2",
+            "--ntasks=1",
+            "--threads=1",
+            f"--nodelist={slurm_nodelist}",
+        ]
+        if slurm_exclude_nodes:
+            cmd.append(f"--exclude={slurm_exclude_nodes}")
+        return cmd
+
+    # ----------------------------------------------------------------------
+
+    def submit():
+        failures = 0
+        logging.info(f"submitting {num_runs} jobs")
+        with concurrent.futures.ThreadPoolExecutor(max_workers=num_runs) as executor:
+            future_to_runid = {executor.submit(run_cmaple, run_id): run_id for run_id in (f"{ri:03d}" for ri in range(num_runs))}
+            for future in concurrent.futures.as_completed(future_to_runid):
+                try:
+                    future.result()
+                except Exception as err:
+                    logging.error(f"cmaple {working_dir} {future_to_runid[future]} FAILED: {err}")
+                    failures += 1
+                else:
+                    logging.info(f"cmaple run {working_dir} {future_to_runid[future]} completed")
+        if failures:
+            logging.error(f"cmaple {working_dir} FAILED: {failures} runs failed")
+        else:
+            logging.info("cmaple completed")
+
+    # ----------------------------------------------------------------------
+
+    def results_available():
+        return len(list(output_dir.glob("*000.treefile"))) > 0
+    
+    tree_file = output_dir.joinpath("000.treefile")
+    
+    if not results_available():
+        start = datetime.datetime.now()
+        submit()
+        logging.info(f"cmaple elapsed: {datetime.datetime.now() - start}")
+
+        output_dir.parent.joinpath("cmaple_tree.txt").open("w").write(str(tree_file))
+
+    return tree_file
+
+# ----------------------------------------------------------------------
+
+def get_output_dir(working_dir, prefix):
+    output_dirs = list(working_dir.glob(prefix + "*"))
+    if output_dirs:
+        output_dir = max(output_dirs)
+    else:
+        output_dir = working_dir.joinpath(prefix + datetime.datetime.now().strftime('%Y-%m%d-%H%M%S'))
+        output_dir.mkdir()
+        output_dir.chmod(0o777)
+    return output_dir
+
+# ======================================================================
+
+try:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("subdir")
+    # parser.add_argument("outgroup")
+    parser.add_argument("-n", "--num-runs", dest="num_runs", type=int, default=1)
+    parser.add_argument("--node", dest="slurm_nodelist", default="i22")
+    parser.add_argument("--exclude-nodes", dest="slurm_exclude_nodes", default=None)
+    args = parser.parse_args()
+    logging.basicConfig(level=logging.DEBUG, format="%(levelname)s %(asctime)s: %(message)s")
+    exit_code = main(args) or 0
+except Exception as err:
+    logging.error(f"> {err}\n{traceback.format_exc()}")
+    exit_code = 1
+exit(exit_code)
+
+# ======================================================================
