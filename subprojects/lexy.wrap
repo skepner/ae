@@ -3,7 +3,9 @@ directory = lexy
 url = https://github.com/foonathan/lexy.git
 ; revision = HEAD
 ; 2024-10-16
-revision = 447489a19954e01047a488631bdeed8339de99ec
+; revision = 447489a19954e01047a488631bdeed8339de99ec
+; 2025-05.0
+revision = 982f36fe0f663153463657a166e4f173099dea6f
 # patch_directory = lexy
 
 [provide]

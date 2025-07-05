@@ -1,8 +1,15 @@
 [wrap-file]
 directory = alglib-cpp
-source_url = https://www.alglib.net/translator/re/alglib-3.19.0.cpp.gpl.tgz
-source_filename = alglib-3.19.0.cpp.gpl.tgz
-source_hash = fbe7855f35a6a7f84538485ef7768c5442faf65e066edf85563797d65185f40f
+; https://www.alglib.net/
+
+source_url = https://www.alglib.net/translator/re/alglib-4.05.0.cpp.gpl.tgz
+source_filename = alglib-4.05.0.cpp.gpl.tgz
+source_hash = 73380187388a8c03b5ed9c170a1b2339acc868d38346b1b2b3085ce23e3f4fdb
+
+; source_url = https://www.alglib.net/translator/re/alglib-3.19.0.cpp.gpl.tgz
+; source_filename = alglib-3.19.0.cpp.gpl.tgz
+; source_hash = fbe7855f35a6a7f84538485ef7768c5442faf65e066edf85563797d65185f40f
+
 patch_directory = alglib
 
 [provide]

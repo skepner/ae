@@ -71,6 +71,7 @@ else
   libomp_dir = []
 endif
 
+# brew install catch2
 catch2 = dependency('catch2')
 
 # mylib = meson.get_compiler('cpp').find_library('omp', dirs: '/opt/homebrew/lib')
@@ -324,17 +325,17 @@ ae_backend = python3.extension_module(
   link_with : [libae],
   install : true)
 
-if host_machine.system() == 'darwin'
-    # stubs for mypy
-    stubgen = find_program('stubgen')
-    ae_backend_stubs = custom_target(
-      'ae_backend_stubs',
-      build_by_default: true,
-      input : [ae_backend],
-      output: ['stubs'],
-      command: [stubgen, '--package', 'ae_backend', '--output', '@OUTPUT@']
-               )
-endif
+# if host_machine.system() == 'darwin'
+#     # stubs for mypy
+#     stubgen = find_program('stubgen')
+#     ae_backend_stubs = custom_target(
+#       'ae_backend_stubs',
+#       build_by_default: true,
+#       input : [ae_backend],
+#       output: ['stubs'],
+#       command: [stubgen, '--package', 'ae_backend', '--output', '@OUTPUT@']
+#                )
+# endif
 
 # https://gabmus.org/posts/python-unittest-meson/
 # envdata = environment()

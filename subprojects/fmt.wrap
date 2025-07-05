@@ -1,8 +1,16 @@
 [wrap-file]
-directory = fmt-10.2.1
-source_url = https://github.com/fmtlib/fmt/archive/refs/tags/10.2.1.tar.gz
-source_filename = fmt-10.2.1.tar.gz
-source_hash = 1250e4cc58bf06ee631567523f48848dc4596133e163f02615c97f78bab6c811
+; https://github.com/fmtlib/fmt
+
+directory = fmt-11.2.0
+source_url = https://github.com/fmtlib/fmt/archive/refs/tags/11.2.0.tar.gz
+source_filename = fmt-11.2.0.tar.gz
+source_hash = bc23066d87ab3168f27cef3e97d545fa63314f5c79df5ea444d41d56f962c6af
+
+; directory = fmt-10.2.1
+; source_url = https://github.com/fmtlib/fmt/archive/refs/tags/10.2.1.tar.gz
+; source_filename = fmt-10.2.1.tar.gz
+; source_hash = 1250e4cc58bf06ee631567523f48848dc4596133e163f02615c97f78bab6c811
+
 patch_directory = fmt
 
 [provide]
