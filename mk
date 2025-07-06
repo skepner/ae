@@ -6,6 +6,10 @@ BUILD_DIR="${BUILD_DEFAULT_DIR}"
 SETUP_ARGS=-Doptimization=3
 BUILT=NO
 
+if [[ -x /opt/cmake/bin/cmake ]]; then
+    export PATH="/opt/cmake/bin:${PATH}"
+fi
+
 # ----------------------------------------------------------------------
 
 build()
