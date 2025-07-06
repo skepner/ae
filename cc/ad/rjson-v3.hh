@@ -87,8 +87,8 @@ namespace rjson::v3
 
             bool empty() const noexcept { return content_.empty(); }
             size_t size() const noexcept;
-            auto begin() const noexcept { return content_.begin(); }
-            auto end() const noexcept { return content_.end(); }
+            auto begin() const noexcept;
+            auto end() const noexcept;
 
             void insert(std::string_view aKey, value&& aValue);
             const value& operator[](std::string_view key) const noexcept; // returns null if not found
@@ -115,8 +115,8 @@ namespace rjson::v3
 
             bool empty() const noexcept { return content_.empty(); }
             size_t size() const noexcept;
-            auto begin() const noexcept { return content_.begin(); }
-            auto end() const noexcept { return content_.end(); }
+            auto begin() const noexcept;
+            auto end() const noexcept;
 
             void append(value&& aValue);
             const value& operator[](size_t index) const noexcept; // returns null if out of range
@@ -555,6 +555,9 @@ namespace rjson::v3
     // ----------------------------------------------------------------------
 
     inline size_t detail::object::size() const noexcept { return content_.size(); }
+    inline auto detail::object::begin() const noexcept { return content_.begin(); }
+    inline auto detail::object::end() const noexcept { return content_.end(); }
+            
     inline void detail::object::insert(std::string_view aKey, value&& aValue) { content_.emplace_not_replace(aKey, std::move(aValue)); }
 
     inline const value& detail::object::operator[](std::string_view key) const noexcept
@@ -579,6 +582,8 @@ namespace rjson::v3
     }
 
     inline size_t detail::array::size() const noexcept { return content_.size(); }
+    inline auto detail::array::begin() const noexcept { return content_.begin(); }
+    inline auto detail::array::end() const noexcept { return content_.end(); }
     inline void detail::array::append(value&& aValue) { content_.push_back(std::move(aValue)); }
 
     inline const value& detail::array::operator[](size_t index) const noexcept

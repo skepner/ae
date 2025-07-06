@@ -64,8 +64,8 @@ namespace ae
             void add(std::string_view key, value&& val);
             bool has_key(std::string_view key) const;
 
-            auto begin() const { return data_.begin(); }
-            auto end() const { return data_.end(); }
+            auto begin() const;
+            auto end() const;
             const auto& data() const { return data_; }
 
             value& operator[](std::string_view key) { return find_or_add(key); }
@@ -96,8 +96,8 @@ namespace ae
             bool contains(const value& val) const;
             // void sort_unique();
 
-            auto begin() const { return data_.begin(); }
-            auto end() const { return data_.end(); }
+            auto begin() const;
+            auto end() const;
             const auto& data() const { return data_; }
 
           private:
@@ -319,12 +319,18 @@ namespace ae
             data_.erase(std::remove_if(std::begin(data_), std::end(data_), [key](const auto& en) { return en.first == key; }), std::end(data_));
         }
 
+        inline auto object::begin() const { return data_.begin(); }
+        inline auto object::end() const { return data_.end(); }
+
         // inline array::array() {}
         inline size_t array::size() const { return data_.size(); }
         inline void array::add(value&& src) { data_.push_back(std::move(src)); }
         inline void array::add_if_not_present(value&& src) { if (!contains(src)) data_.push_back(std::move(src)); }
         inline bool array::contains(const value& val) const { return std::find(data_.begin(), data_.end(), val) != data_.end(); }
 
+        inline auto array::begin() const { return data_.begin(); }
+        inline auto array::end() const { return data_.end(); }
+        
         // inline void array::sort_unique() { std::sort(data_.begin(), data_.end()); data_.erase(std::unique(data_.begin(), data_.end()), data_.end()); }
 
     } // namespace dynamic
@@ -347,7 +353,7 @@ template <> struct fmt::formatter<ae::dynamic::value> : fmt::formatter<ae::fmt_h
 
 template <> struct fmt::formatter<ae::dynamic::object> : fmt::formatter<ae::fmt_helper::default_formatter>
 {
-    template <typename FormatCtx> constexpr auto format(const ae::dynamic::object& obj, FormatCtx& ctx) const
+    template <typename FormatCtx> auto format(const ae::dynamic::object& obj, FormatCtx& ctx) const
     {
         fmt::format_to(ctx.out(), "{{");
         bool comma = false;
@@ -356,7 +362,7 @@ template <> struct fmt::formatter<ae::dynamic::object> : fmt::formatter<ae::fmt_
                 fmt::format_to(ctx.out(), ",");
             else
                 comma = true;
-            fmt::format_to(ctx.out(), "\"{}\":{}", field.first, field.second);
+            fmt::format_to(ctx.out(), fmt::runtime("\"{}\":{}"), field.first, field.second);
         }
         fmt::format_to(ctx.out(), "}}");
         return ctx.out();

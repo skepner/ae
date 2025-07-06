@@ -62,6 +62,7 @@ size_t ae::tree::Tree::depth() const
 
 ae::tree::EdgeLength ae::tree::Tree::calculate_cumulative(bool force)
 {
+    fmt::print(">>>> Tree::calculate_cumulative this {}\n", fmt::ptr(this));
     if (force || max_cumulative < EdgeLength{0}) {
         EdgeLength cumulative{0.0};
         max_cumulative = EdgeLength{0.0};

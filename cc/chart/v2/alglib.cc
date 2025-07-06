@@ -254,7 +254,7 @@ void ae::alglib::pca_full(ae::chart::v2::OptimiserCallbackData& callback_data, a
 
         aint_t info{0}; // -4, if SVD subroutine haven't converged; -1, if wrong parameters has been passed (NPoints<0, NVars<1); 1, if task is solved
         ::alglib::pcabuildbasis(x, number_of_points, cint(number_of_dimensions), // input
-                              info, s2, v);                                    // output
+                              /*info,*/ s2, v);                                    // output
         switch (info) {
             case -4:
                 throw std::runtime_error{"alglib pca failed: SVD subroutine haven't converged"};

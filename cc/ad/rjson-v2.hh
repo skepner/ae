@@ -157,7 +157,7 @@ namespace rjson::inline v2
 
         void remove_comments();
 
-        template <typename Func> inline bool all_of(Func func) const { return std::all_of(content_.begin(), content_.end(), func); }
+        template <typename Func> bool all_of(Func func) const;
 
         template <typename T> void copy_to(T&& target) const;
         template <typename T, typename F> void transform_to(T&& target, F&& transformer) const;
@@ -560,6 +560,8 @@ namespace rjson::inline v2
         std::for_each(content_.begin(), content_.end(), [](auto& val) { val.remove_comments(); });
     }
 
+    template <typename Func> inline bool array::all_of(Func func) const { return std::all_of(content_.begin(), content_.end(), func); }
+    
     template <typename T> inline void array::copy_to(T&& target) const
     {
         if constexpr (acmacs::sfinae::container_has_iterator_v<T>) {

@@ -174,7 +174,7 @@ namespace ae::tree::newick
         {
             static constexpr auto whitespace = dsl::ascii::space / dsl::ascii::newline;
             static constexpr auto rule = dsl::p<internal_node> + dsl::semicolon + dsl::eof;
-            static constexpr auto max_recursion_depth = 1000;
+            static constexpr auto max_recursion_depth = 10000;
 
             static constexpr auto value = lexy::forward<result_t>;
         };
