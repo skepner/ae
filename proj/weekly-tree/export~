@@ -1,3 +1,4 @@
+
 #! /usr/bin/env python3
 
 import sys, os, argparse, traceback
@@ -62,45 +63,6 @@ def bvic(subtype: str, args: argparse.Namespace):
             "PARANA/5012/2023_OR_D54659DC",
             # 2023-1005 XXXX
             "UNITED_KINGDOM/UO-476/2023",
-            # 2024-0130
-            "SANTA_CATARINA/10748/2023_OR_7B192215",
-            # 2024-0703
-            "MADRID/HULP-200063972/2024_C98ADFD1", # unknown at deletion positions 162-164
-            "MADRID/HULP-200041842/2024_5D4B7141", # unknown at deletion positions 162-164
-            # 2024-0718
-            "AUSTRIA/MUW1681066/2024_OR_3D9C21FB", # XXXX
-            "ATHENS/ILI411/2024_OR_556F1400", # XXXX
-            # 2024-0411
-            "PAIS_VASCO/1919/2024_OR_1D682639",
-            "GALICIA/52314290/2024_AF2005E4",
-            # 2025-2411
-            "MADAGASCAR/3422/2024_OR_DF3D589F",
-            "MEXICO/2429277701/2024_OR_3BF2F243",
-            "GALICIA/GA-CHUAC-250/2025_OR_AC92C5F3",
-            # 2025-1202
-            "PAKISTAN/NIC-JHL/2010_OR_EC56A7FD",
-            "PAKISTAN/NIC-ICT-284/2025_OR_8DAE4B6A",
-            "PAKISTAN/NIC-ICT-218/2025_OR_362FAB6C",
-            "PAKISTAN/NMC-12/2025_OR_7B217EEC",
-            "PAKISTAN/NIC-ICT-190/2025_OR_D4D6D601",
-            "ANDALUCIA/PMC-00528/2025_OR_549D6405",
-            # 2025-0313
-            "GALICIA/52463655/2025_0971E6C6",
-            # 2025-0507
-            "THUERINGEN/31/2025_OR_758A40BD",
-            "FRANCE/ARA-HCL025053223301/2025_OR_1C544F25",
-            "ABAY/NRL-2330/2025_C2E364F7",
-            "RIO_DE_JANEIRO/533/2025_OR_C04A6642",
-            "LA_REUNION/HCL023041635201/2022_OR_103E7754",
-            "ASTURIAS/232465739/2024_EA8BEFAB",
-            "UKRAINE/3471/2025_6E494813",
-            # 2025-0521
-            "GALICIA/52475765/2025_F76C5888",
-            # 2025-0611  no exclusions
-            # 2025-0618  no exclusions
-            # 2025-0625  no exclusions
-            # 2025-0702
-            "PHUKET/P1187/2025_5A09E7D5",
              ])
         .include_name(outgroup)    # outgroup BRISBANE/60/2008, B/CHONGQING BANAN/1840/2017 (V1A)
         .remove_hash_duplicates()
@@ -249,96 +211,6 @@ def h1(subtype: str, args: argparse.Namespace):
             "BADAJOZ/18570374/2023_58158069",
             # 2023-09-15 XXXX
             "ALGIERS/251/2023_OR_1A27768",
-            # 2023-10-23 XXX & odd start for SAO_PAULO
-            "SAO_PAULO/CEVI_2300134/2023_OR_BB923F69",
-            "CAMBODIA/KVH230151/2023_OR_1F665D9C",
-            "CAMBODIA/AHC230229/2023_OR_3241A3FC",
-            # 2023-20-28
-            "BULGARIA/725/2023_8A6AF67F",  # nonsense 1-29
-            "CAMBODIA/CCH230213/2023_OR_BE937275",   # XXXX
-            # 2023-12-04
-            "BANGKOK/P5113/2023_OR_CB7624FD", # long branch
-            # 2024-01-01
-            "SWITZERLAND/114/2023_MDCK1_A2D22DAA", # long branch
-            # 2024-01-30
-            "CATALONIA/NSAV198289092/2023_OR_291AD7ED"
-            "PARANA/13897/2023_OR_0A657176",
-            "BELGIUM/H00082/2023_56A80548",
-            "CACERES/59816382/2023_A1324011",
-            "SENEGAL/2098/2023_OR_2EC7BF97",
-            # 2024-0703
-            "GALICIA/GA-CHUAC-98/2024_OR_988888E6", # 29 nuc differences, 19 nuc differences
-            "MEXICO/2271/2021_338E9C30", # run of differences, 35-38, 40-42
-            "ALAGOAS/CEVI_2200198/2021_OR_0811FCC2", # 6 X
-            "MADRID/1832324191549/2024_OR_988BC424", # 9 X
-            "HUMAN/KENYA/5866/2023_3F1D8A0B", # 9X
-            # 2024-0718
-            "SAO_PAULO/CEVI_24000816/2024_OR_BC9F903C", # XXXX
-            "SAO_PAULO/CEVI_24000889/2024_OR_C69399E2", # dels 
-            # 2024-0727
-            "LUXEMBOURG/LNS3963248/2024_04C1C479", # XXXX
-            "COSTA_RICA/INC-0552-822365/2024_OR_9E1DE43D", # XXXX
-            # 2024-08-06
-            "CHANTHABURI/P2877/2024_OR_5B993EF6",    # XXXXX
-            "SRI_LANKA/R4_BC75/2024_50C5FC20"     # XXXXX
-            # 2024-0830 XXXX & many changes
-            "OHIO/251/2024_OR_30CB2DAF",
-            "HANOI/PF324163/2024_OR_402B095E",
-            "SOUTH_AFRICA/PET32788/2024_OR_47322CBB",
-            # 2024-0902 long branch
-            "YAOUNDE/24V-3413/2024_8196548B",
-            # 2024-1004
-            "PHUKET/P3423/2024_OR_5E3C7D19", # XXXX
-            # 2024-1025
-            "PARANA/10835/2021_OR_8025A28A",
-            "TOLEDO/PARANA_10835/2021_OR_8025A28A",
-            "ENGLAND/3640434/2024_OR_A126DDAB",
-            "CATALONIA/NSAV198309324/2024_OR_29D1522E",
-            # 2024-1126
-            "OREGON/FLU-OHSU-242090049/2024_05BD35BD",
-            "OREGON/FLU-OHSU-242090044/2024_DEC6E084",
-            # 2024-1209
-            "NAKHON_PHANOM/F2539/2024_OR_276AD388",
-            # 2025-0901
-            "CAMBODIA/KPH240133/2024_OR_CD9DB776",
-            "ENGLAND/4820116/2024_OR_F5C11575",
-            # 2025-2401
-            "GALICIA/GA-CHUAC-172/2024_OR_000994B0",
-            "ROMANIA/2920/2024_F73C0E92",
-            # 2025-1202
-            "BALTIMORE/JH-173/2025_A2FCE291",
-            "CROATIA/HZJZ-8235/2025_170E7DD7",
-            "ENGLAND/340238/2025_OR_EA36F218",
-            "ENGLAND/121421/2024_OR_2094499C",
-            "ANDALUCIA/PMC-00542/2025_OR_BD2FE74E",
-            "PAKISTAN/NIC-ICT-576/2025_OR_6924EA8E",
-            "ANDALUCIA/PMC-00549/2025_OR_A6464885",
-            "CASTELLON/VAHNSI-GIHSN-02_0386/2025_OR_2E26A6D3",
-            # 2025-0313
-            "QUEENSLAND/IN000908/2025_91CEAA08",
-            "FRANCE/HDF-RELAB-IPP01090/2025_OR_096FF1D6",
-            "CATALONIA/NSVH171785721/2025_OR_C896185E",
-            "KAMCHATKA/205-20V/2025_OR_68CABAFF",
-            # 2025-0507
-            "ENGLAND/5100240/2024_OR_EB872B9D",
-            "CAMBODIA/CCH250029/2025_OR_A4964B9E",
-            "ASTURIAS/232523061/2025_58877E98",
-            "PAKISTAN/NIC_SD193/2025_OR_3A27DCA6",
-            "ESPIRITO_SANTO/475/2025_OR_4FB190FF",
-            "PAKISTAN/NIC_SD184/2025_OR_66AF2F25",
-            "PAKISTAN/NIC_JHL115/2025_OR_53A17665",
-            "GALICIA/22647653/2025_DE4A5E72",
-            "IRELAND/4321/2025_8EB775D5",
-            "ENGLAND/640250/2025_OR_01187600",
-            "PAKISTAN/NIC_NIH749/2025_OR_40914714",
-            "BELGIUM/S4050/2025_OR_E331B39E",
-            "GALICIA/GA-CHUAC-314/2025_OR_59908BA2",
-            "MURCIA/528/2025_OR_E7444F60",
-            "OREL/SWINE-RII-WD2678S/2025_OR_6C9DA738",
-            "OREL/SWINE-RII-WD2681S/2025_OR_B004CABD",
-            "VERMONT/UVM-0478/2022_OR_DFD37A87",
-            "VERMONT/UVM-1652/2022_OR_42E6DF65",
-            "FRANCE/NOR-IPP04189/2025_OR_88070E22", # caused tree failure
         ])
         .remove_hash_duplicates()
         .replace_with_master()
@@ -413,6 +285,13 @@ def h3(subtype: str, args: argparse.Namespace):
             "HONG_KONG/2286/2017",
             "HONG_KONG/2286/2017",
             "HONG_KONG/2286/2017",
+            # XXXXX 2023-0811
+            "BAHIA/292038965/2021_70230607",
+            "BAHIA/292104308/2022_D4526D62",
+            # XXXXX 2023-0829
+            "SOUTH_AFRICA/PET28428/2023_7572E223",
+            "SOUTH_AFRICA/PET28193/2023_BF46BBB4",
+            "NORWAY/8084/2023_OR_4548A267",
         ])
         .exclude_name([
             "SWINE/",
@@ -502,101 +381,8 @@ def h3(subtype: str, args: argparse.Namespace):
             # XXX & long branch 2023-0731
             "BAHIA/PVM105707/2021_OR_BCE07E46",
             "SOUTH_AFRICA/K056301/2023_30E0E639",
-            # XXXXX 2023-0811 CORRECTED 2023-1023
-            "BAHIA/292038965/2021_70230607",
-            "BAHIA/292104308/2022_D4526D62",
-            # XXXXX 2023-0829 CORRECTED 2023-1023
-            "SOUTH_AFRICA/PET28428/2023_7572E223",
-            "SOUTH_AFRICA/PET28193/2023_BF46BBB4",
-            "NORWAY/8084/2023_OR_4548A267",
             # 2023-09-08 potential long branch ?why
             "SOUTH_AFRICA/K056301/2023_CC1FE952"
-            # 2023-10-23 XXX
-            "PARA/CEVI_2200263/2021_OR_6D24213E",
-            "SAO_PAULO/CEVI_2200855/2022_OR_D4E825BF",
-            "SAO_PAULO/CEVI_2200871/2022_OR_280FCE18",
-            # 2023-10-28
-            "SOUTH_AFRICA/K056301/2023_CC1FE952",   # very divergent
-            # 2023-12-04 XXXX
-            "OMAN/CPHL_52323056/2023_OR_297A7E60",
-            "LUSAKA/1-NIC-332/2023_OR_BA018CE9",
-            "NORWAY/11072/2023_OR_EB1EA580",
-            # 2024-01-01
-            "SAINT_PETERSBURG/RII-MH151473S/2023_OR_D20D279D", # XX
-            "SAINT_PETERSBURG/RII-4937S/2023_OR_95887A8C", # XX
-            "CANADA/NOVASCOTIA-32036/2022_A90EF453", # first 7 aa
-            "BRITISH_COLUMBIA/PHL-602/2022_OR_A1B8E845", # XX
-            # 2024-01-22 for 2024-01-16 file
-            "INDONESIA/BIOKES-IBKL1127/2023_OR_791937E7", # long branch
-            "SAO_PAULO/CEVI_2201055/2022_OR_BF9D3752", # XX
-            "ROMANIA/3227/2023_E20D207E", #XX
-            "SAO_PAULO/CEVI_2200903/2022_OR_BB30A339", # XX
-            "CACERES/50644480/2023_361FA786", # long branch
-            "BELGIUM/S1112/2023_OR_D7ABA060", # long branch
-            "BELGIUM/S0576/2023_OR_CEC5B896",  # long branch
-            "BELGIUM/S0220/2023_OR_0B549607", # long branch
-            "BELGIUM/H0592/2022_OR_22BD830C", # long branch
-            # 2024-01-30
-            "SPAIN/GA-HULA-615019/2023_B7077195",
-            "BELGIUM/S03941/2023_F4250630",
-            "NEW_YORK/392/2004_CFB2F75C",
-            "SPAIN/GA-HULA-615037/2023_E8183B9E",
-            "CACERES/59816379/2023_4D9F91F8",
-            "TURKEY/GIHSN_ANKARA-140111_950/2023_E0D8B88D",
-            # 2024-02-11 XXXX Indonesia is long branch
-            "KENYA/AFI-KDH-1820/2023_B3509344",
-            "INDONESIA/BIOKES-IDSW0063/2023_OR_5962326E",
-            "KENYA/AFI-ISB-1107/2023_E5F19B22",
-            "KENYA/AFI-MNB-1100/2023_6D42271",
-            # 2024-0703
-            "CHIANG_RAI/P2287/2024_OR_2744AA9C", # 3 deletions
-            # 2024-0727
-            "SASKATCHEWAN/RV03900/2024_OR_029CB62D",  # 198 diffs
-            "WASHINGTON/S25532/2024_OR_13A107A6",   # XXXX
-            "OREGON/S25529/2024_OR_5502D106",   # XXXX
-            "OREGON/S25537/2023_OR_BE6502FF",   # XXXX
-            "CAMBODIA/CCH230307/2023_7CC43803",   # XXXX
-            "CAMBODIA/IAHC230253/2023_50A155E0",   # XXXX
-            # 2024-08-06
-            "VIRGINIA/H20-355-5372/2024_OR_53F1E92E",     # XXXXX
-            "PANAMA/M273491/2024_OR_27E79A9B"     # XXXXX
-            # 2024-0830 many changes
-            "COLORADO/150/2024_OR_2BD9D59A",
-            "COLORADO/150/2024_SIAT1_14B3FB98",
-            "MICHIGAN/113/2024_SIAT1_B0E6BEF3",
-            # 2024-0902 
-            "SASKATCHEWAN/RV03900/2024_OR_029CB62D", # long branch
-            "PANAMA/M273491/2024_OR_27E79A9B", # XXXX
-            # 2024-1004
-            "CAMBODIA/NPH240499/2024_OR_F38419C8", #XXXX
-            # 2024-1025
-            "CAMBODIA/NPH240575/2024_OR_33D3499A",
-            # 2024-1115
-            "PARANA/44706/2021_OR_25BFEB40",
-            "SANTA_HELENA/PARANA_44706/2021_OR_25BFEB40",
-            # 2024-0111 (tree built 2024-1811)
-            "GREATER_ACCRA_REGION/FS-24-4832/2024_B7004939",
-            "GREATER_ACCRA_REGION/FS-24-4779/2024_1393BD1C",
-            # 2024-2611
-            "QUEENSLAND/IN000643/2024_1ACA7E5A",
-            "QUEENSLAND/IN000245/2024_0854A342",
-            "WASHINGTON/S26082/2022_OR_7462BFDE",
-            "WASHINGTON/S26079/2022_OR_07B0CEEC",
-            "WASHINGTON/S26107/2023_OR_A56901B3",
-            "WASHINGTON/S26104/2022_OR_E80CAD50",
-            "WASHINGTON/S26097/2022_OR_40AE3B8C",
-            "WASHINGTON/S26077/2022_OR_C294BE90",
-            "WASHINGTON/S26098/2022_OR_1EDB1957",
-            "WASHINGTON/S26088/2022_OR_C6B3FAA9",
-            # 2024-0912
-            "GALICIA/28220935/2023_C495745E",
-            "GALICIA/33341960/2023_0FF7D1C8",
-            # 2025-2401
-            "TURKMENISTAN/784/2025_OR_F898A707",
-            # 2025-1202
-            "COTE_DIVOIRE/4331/2024_OR_E0FF092D",
-            # 2025-1202
-            "WISCONSIN/67/2005_XXMDCK2_8C52B46C",
         ])
         .remove_hash_duplicates()
         .replace_with_master()

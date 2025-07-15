@@ -1,5 +1,3 @@
-
-
 #! /usr/bin/env bash
 set -o errexit -o errtrace -o pipefail -o nounset # -o xtrace
 
@@ -10,11 +8,11 @@ submit_tree()
     (
         ${AE_ROOT}/proj/weekly-tree/raxml --node ${NODE} ${SUBTYPE} &&
             ${AE_ROOT}/proj/weekly-tree/raxml-asr --node ${NODE} ${SUBTYPE} &&
-            ${AE_ROOT}/proj/weekly-tree/garli --node ${NODE} ${SUBTYPE} &&
+            ${AE_ROOT}/proj/weekly-tree/garli-memvar --node ${NODE} ${SUBTYPE} &&
             ${AE_ROOT}/proj/weekly-tree/pdf ${SUBTYPE}
     ) >${SUBTYPE}/submit.log 2>&1 &
 }
 
-submit_tree i20 h1
-submit_tree i22 h3
-submit_tree i19 bvic
+# submit_tree i21 h1
+# submit_tree i22 h3
+submit_tree i22 bvic

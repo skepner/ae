@@ -39,8 +39,6 @@ def main(args: argparse.Namespace):
                         # only aligned are stored
                         ae_backend.raw_sequence.calculate_hash(sequence)
                         sequences_by_subtype.setdefault(sequence.type_subtype, []).append(sequence)
-                    else:
-                        print(f"{sequence.name:40s} {sequence.aa}")
                 except Exception as err:
                     print(f"> {err}: {sequence.name}\n    {sequence.aa}")
                 reader.context.messages_from_backend(sequence_messages)
