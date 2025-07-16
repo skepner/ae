@@ -31,11 +31,11 @@ def init_subtype(subtype: str, previous_dir: Path):
     subtype_dir = TODAY_DIR.joinpath(subtype)
     subtype_dir.mkdir(exist_ok=True)
     if not (previous_newick := subtype_dir.joinpath("previous.newick")).exists():
-        previous_raxml_best = previous_dir.joinpath(subtype, "raxml-best.txt")
-        if not previous_raxml_best.exists():
-            print(f">> no previous raxml best run report: {previous_raxml_best}", file=sys.stderr)
+        previous_tree = previous_dir.joinpath(subtype, "cmaple_tree.txt")
+        if not previous_tree.exists():
+            print(f">> no previous tree run report: {previous_tree}", file=sys.stderr)
             return
-        previous_newick_link_target = Path(previous_raxml_best.open().read().strip())
+        previous_newick_link_target = Path(previous_tree.open().read().strip())
         link = relative_path(previous_newick_link_target, subtype_dir)
         print(f">>> {previous_newick} -> {link}", file=sys.stderr)
         previous_newick.symlink_to(link)
