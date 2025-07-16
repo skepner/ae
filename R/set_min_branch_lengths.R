@@ -1,13 +1,26 @@
 #! /usr/bin/env Rscript
 
-args <- commandArgs(trailingOnly = TRUE)
+main = function() {
+  message("SET MINIMUM BRANCH LENGTHS")
 
-infile = args[[1]]
-outfile = args[[2]]
-min_bl = as.numeric(args[[3]])
+  args <- commandArgs(trailingOnly = TRUE)
 
-t = ape::read.tree(file = infile)
+  infile = args[[1]]
+  outfile = args[[2]]
+  min_bl = as.numeric(args[[3]])
 
-t$edge.length[t$edge.length < min_bl] = min_bl
+  if (fs::file_exists(outfile)) {
+    message(outfile, " already exists. Not remaking.")
+  }
 
-ape::write.tree(phy = t, file = outfile)
+  message("Reading tree")
+  t = ape::read.tree(file = infile)
+
+  message("Setting minimum branch lengths to ", min_bl)
+  t$edge.length[t$edge.length < min_bl] = min_bl
+
+  message("Writing tree")
+  ape::write.tree(phy = t, file = outfile)
+}
+
+main()
