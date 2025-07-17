@@ -10,7 +10,7 @@ sSubdirforSubtype = {"BVIC": "bvic", "BYAM": "byam", "A(H1N1)": "h1", "A(H3N2)":
 
 sRandomGen = random.SystemRandom()
 
-sMailTo = "sat65@cam.ac.uk"
+sMailTo = "weekly-tree@antigenic-cartography.org"
 
 # ----------------------------------------------------------------------
 

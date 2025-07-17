@@ -31,7 +31,7 @@ main = function() {
             outphy,
             " and ",
             outphy.txt,
-            " already exist! Continuing without re-rotating tree."
+            " already exist! Continuing without re-collapsing branches"
         )
         return(0)
     }
