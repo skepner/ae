@@ -18,7 +18,7 @@ if [[ ${HIDB_SUBTYPE:0:1} == "b" ]]; then HIDB_SUBTYPE=b; fi
 # ----------------------------------------------------------------------------------------------------
 
 if [[ ! -f ${SUBTYPE}/${SUBTYPE}.tjz ]]; then
-    ${AE_ROOT}/bin/tree-to-json --populate ${SUBTYPE} --ladderize --print-cumulative 20 --remove-if-cumulative-more-than ${CUMUL[${SUBTYPE}]} $(cat ${SUBTYPE}/garli-best.txt) ${SUBTYPE}/${SUBTYPE}.tjz
+    ${AE_ROOT}/bin/tree-to-json --populate ${SUBTYPE} --ladderize --print-cumulative 20 --remove-if-cumulative-more-than ${CUMUL[${SUBTYPE}]} $(cat ${SUBTYPE}/cmaple_tree-rot-col.txt) ${SUBTYPE}/${SUBTYPE}.tjz
 fi
 if [[ ! -f ${SUBTYPE}/${SUBTYPE}.pdf ]]; then
     tal -s ${TAL} ${SUBTYPE}/${SUBTYPE}.tjz ${SUBTYPE}/${SUBTYPE}.txt ${SUBTYPE}/${SUBTYPE}.pdf
@@ -30,7 +30,7 @@ if [[ ${HIDB_SUBTYPE:0:1} == "h" ]]; then
     ASR_INFIX=".asr"
     if [[ ! -f ${SUBTYPE}/${SUBTYPE}${ASR_INFIX}.tjz ]]; then
         ASR_STATES=$(cat ${SUBTYPE}/raxml-asr-best.txt | sed 's/ancestralTree/ancestralStates/')
-        ${AE_ROOT}/bin/tree-to-json --populate ${SUBTYPE} --asr-tree $(cat ${SUBTYPE}/raxml-asr-best.txt) --asr-states ${ASR_STATES} --ladderize --print-cumulative 20 --remove-if-cumulative-more-than ${CUMUL[${SUBTYPE}]} $(cat ${SUBTYPE}/garli-best.txt) ${SUBTYPE}/${SUBTYPE}${ASR_INFIX}.tjz
+        ${AE_ROOT}/bin/tree-to-json --populate ${SUBTYPE} --asr-tree $(cat ${SUBTYPE}/raxml-asr-best.txt) --asr-states ${ASR_STATES} --ladderize --print-cumulative 20 --remove-if-cumulative-more-than ${CUMUL[${SUBTYPE}]} $(cat ${SUBTYPE}/cmaple_tree-rot-col.txt) ${SUBTYPE}/${SUBTYPE}${ASR_INFIX}.tjz
     fi
     if [[ ! -f ${SUBTYPE}/${SUBTYPE}${ASR_INFIX}.pdf ]]; then
         tal -s ${TAL} -D aa-transitions-method=imported ${SUBTYPE}/${SUBTYPE}${ASR_INFIX}.tjz ${SUBTYPE}/${SUBTYPE}${ASR_INFIX}.txt ${SUBTYPE}/${SUBTYPE}${ASR_INFIX}.pdf

@@ -11,7 +11,8 @@ def main(args: argparse.Namespace):
     argv = '"' + '" "'.join(sys.argv) + '"'
     working_dir = Path(args.subdir).resolve()
     source_fas = working_dir.joinpath("source.fas")
-    source_tree = Path(working_dir.joinpath("raxml-best.txt").open().read().strip()).resolve()
+    source_tree = Path(working_dir.joinpath("cmaple_tree-rot.txt").open().read().strip()).resolve()
+
     if os.fork():
         # parent
         exit(0)
@@ -30,13 +31,25 @@ def raxml_ng_asr(working_dir: Path, source_fas: Path, source_tree: Path, slurm_n
 
     output_dir = get_output_dir(working_dir, "raxml-ng-asr.")
 
+    source_tree_with_min_branch_lengths = source_tree.parent.joinpath("000_minbl.treefile")
+    bl_script_path = os.environ["AE_ROOT"] + "/R/set_min_branch_lengths.R"
+
+    set_min_bl_cmd = [
+        bl_script_path, 
+        str(source_tree.resolve()), 
+        str(source_tree_with_min_branch_lengths.resolve()),
+        "0.0001"
+        ]
+
+    # ----------------------------------------------------------------------
+
     raxml_cmd = [
         "/syn/bin/raxml-ng",
         "--ancestral",
         "--model", "GTR+G+I", # raxml: -m GTRGAMMAI -c 4
         "--msa", str(source_fas),
         "--msa-format", "FASTA",
-        "--tree", str(source_tree),
+        "--tree", str(source_tree_with_min_branch_lengths),
         "--log", "PROGRESS", # VERBOSE, DEBUG
         "--threads", "1",
     ]
@@ -53,6 +66,7 @@ def raxml_ng_asr(working_dir: Path, source_fas: Path, source_tree: Path, slurm_n
         with output_dir.joinpath("commands.txt").open("a") as commands_txt:
             print(" ".join(cmd), file=commands_txt)
         # print(cmd)
+        subprocess.call(set_min_bl_cmd)
         subprocess.check_call(cmd)
 
     def srun_cmd():
