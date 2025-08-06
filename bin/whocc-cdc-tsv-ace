@@ -483,7 +483,7 @@ def populate_missing_titers(table_name, titers, number_of_sera):
 # ----------------------------------------------------------------------
 
 def remove_human_pool_sera(table_name, ace):
-    to_remove = sorted((sr_no for sr_no, sr in enumerate(ace["c"]["s"]) if "HUMAN" in sr["I"].upper()), reverse=True)
+    to_remove = sorted((sr_no for sr_no, sr in enumerate(ace["c"]["s"]) if "POOL" in sr["I"].upper()), reverse=True)
     if to_remove:
         sera = ace["c"]["s"]
         for sr_no in to_remove:
