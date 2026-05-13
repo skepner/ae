@@ -1,0 +1,93 @@
+#! /usr/bin/env python3
+import sys, os, datetime, subprocess
+from pathlib import Path
+
+WEEKLY_TREE_ROOT_DIR = Path("/syn/eu/ac/results/trees")
+TODAY = datetime.date.today().strftime("%Y-%m%d")
+TODAY_DIR = WEEKLY_TREE_ROOT_DIR.joinpath(TODAY)
+SUBTYPES = ["h3"]
+
+CMD_DIR = Path(sys.argv[0]).parent
+EXPORT_CMD = CMD_DIR.joinpath("export")
+UPDATE_TREE_CMD = CMD_DIR.joinpath("update-tree")
+
+# ======================================================================
+
+def main():
+    previous_dir = find_previous_dir()
+    print(f">>> previous dir: {previous_dir}", file=sys.stderr)
+    init_today_dir(previous_dir)
+
+# ----------------------------------------------------------------------
+
+def init_today_dir(previous_dir: Path):
+    TODAY_DIR.mkdir(exist_ok=True)
+    for subtype in SUBTYPES:
+        init_subtype(subtype, previous_dir=previous_dir)
+
+# ----------------------------------------------------------------------
+
+def init_subtype(subtype: str, previous_dir: Path):
+    subtype_dir = TODAY_DIR.joinpath(subtype)
+    subtype_dir.mkdir(exist_ok=True)
+    if not (previous_newick := subtype_dir.joinpath("previous.newick")).exists():
+        previous_raxml_best = previous_dir.joinpath(subtype, "raxml-best.txt")
+        if not previous_raxml_best.exists():
+            print(f">> no previous raxml best run report: {previous_raxml_best}", file=sys.stderr)
+            return
+        previous_newick_link_target = Path(previous_raxml_best.open().read().strip())
+        link = relative_path(previous_newick_link_target, subtype_dir)
+        print(f">>> {previous_newick} -> {link}", file=sys.stderr)
+        previous_newick.symlink_to(link)
+
+    if not (source_fas := subtype_dir.joinpath("source.fas")).exists():
+        export_source_fas(subtype=subtype, source_fas=source_fas, previous_dir=previous_dir)
+
+    if not (source_newick := subtype_dir.joinpath("source.newick")).exists():
+        update_source_newick(subtype=subtype, source_newick=source_newick, previous_dir=previous_dir)
+
+# ----------------------------------------------------------------------
+
+def update_source_newick(subtype: str, source_newick: Path, previous_dir: Path):
+    print(f">>> updating {source_newick}", file=sys.stderr)
+    log = subprocess.check_output([UPDATE_TREE_CMD, subtype], cwd=source_newick.parents[1]).decode("utf-8")
+    source_newick.with_name("update-tree.log").open("w").write(log)
+    print(log)
+
+# ----------------------------------------------------------------------
+
+def export_source_fas(subtype: str, source_fas: Path, previous_dir: Path):
+    print(f">>> exporting {source_fas}", file=sys.stderr)
+    subprocess.check_call([EXPORT_CMD, subtype], cwd=source_fas.parents[1])
+    subprocess.check_call(["fasta-size", source_fas, previous_dir.joinpath(subtype, source_fas.name)])
+
+# ----------------------------------------------------------------------
+
+def relative_path(target: Path, source_dir: Path):
+    # print(target.parts, source_dir.parts)
+    for initial_parts in range(min(len(target.parts), len(source_dir.parts))):
+        # print(initial_parts, target.parts[initial_parts], source_dir.parts[initial_parts], target.parts[initial_parts] == source_dir.parts[initial_parts])
+        if target.parts[initial_parts] != source_dir.parts[initial_parts]:
+            break
+    # print(initial_parts, target.parts[initial_parts:], source_dir.parts[initial_parts:])
+    return Path(*([".."] * (len(source_dir.parts) - initial_parts)), *target.parts[initial_parts:])
+
+# ----------------------------------------------------------------------
+
+def find_previous_dir():
+    dirs = list(WEEKLY_TREE_ROOT_DIR.glob("2*"))
+    found = None
+    use = len(dirs) - 1
+    while not found and use >= 0:
+        use_date = dirs[use].stem[:9]
+        if use_date != TODAY:
+            found = dirs[use]
+        use -= 1
+    if not found:
+        dirs_s = "\n    ".join(str(dd) for dd in dirs)
+        raise RuntimeError(f"previous dir not found in\n    {dirs_s}")
+    return found
+
+# ======================================================================
+
+main()

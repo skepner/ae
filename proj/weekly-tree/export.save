@@ -1,0 +1,825 @@
+#! /usr/bin/env python3
+
+import sys, os, argparse, traceback
+from pathlib import Path
+
+sys.path[:0] = [str(Path(os.environ["AE_ROOT"], dir)) for dir in ["build", "py"]]
+import ae_backend
+from ae.sequences.source import fasta
+
+# ======================================================================
+
+sSubtypeForSeqdb = {
+    "B": "B",
+    "BVIC": "B",
+    "BYAM": "B",
+    "A(H1N1)": "A(H1N1)",
+    "H1": "A(H1N1)",
+    "1": "A(H1N1)",
+    "A(H3N2)": "A(H3N2)",
+    "H3": "A(H3N2)",
+    "3": "A(H3N2)",
+}
+sSubtypeNorm = {
+    "BV": "BVIC",
+    "BVIC": "BVIC",
+    "BY": "BYAM",
+    "BYAM": "BYAM",
+    "A(H1N1)": "A(H1N1)",
+    "H1": "A(H1N1)",
+    "1": "A(H1N1)",
+    "A(H3N2)": "A(H3N2)",
+    "H3": "A(H3N2)",
+    "3": "A(H3N2)",
+}
+sSubdirforSubtype = {"BVIC": "bvic", "BYAM": "byam", "A(H1N1)": "h1", "A(H3N2)": "h3"}
+
+
+def main(args: argparse.Namespace):
+    subtypes = [
+        sSubtypeNorm[st] for st in (args.subtype or ["BVIC", "BYAM", "H1", "H3"])
+    ]
+    for subtype in subtypes:
+        sSubtypeToFunc[subtype](subtype=subtype, args=args)
+
+
+# ----------------------------------------------------------------------
+
+
+def bvic(subtype: str, args: argparse.Namespace):
+    outgroup = "VICTORIA/830/2013"
+    selected = (
+        ae_backend.seqdb.for_subtype(sSubtypeForSeqdb[subtype])
+        .select_all()
+        .human()
+        .lineage("VICTORIA")
+        .exclude_with_issue()
+        .filter_dates(first="2016-06")
+        .find_masters()  # to be able to use .filter below
+        .exclude(
+            lambda ref: ref.aa["165-"]
+        )  # exclude 6-del and MIE/1/2019 with garbage in the middle
+        .exclude_name(
+            [
+                "ANHUI_JINGHU/63/2019",  # garbage in 406-414 leading to a long branch (2021-0722)
+                "LISBOA/NISU182_17-18/2018",  # yamagata, long branch 2021-1117
+                # "ZAMBIA/503/2021", # potential long branch 2022-0401
+                # 2023-01-28 potential long branch
+                "KRABI/FS002/2022",
+                "CATALONIA/NSVH151199301/2023_OR_0ACCE47F",  # XXXX 2023-0421
+                "SOUTH_AFRICA/R10785/2022_OR_0EB8BBEA",  # XXX 2023-0515
+                "SOUTH_AFRICA/R10907/2022_OR_BA5B358C",
+                "SOUTH_AFRICA/R09298/2022_OR_1A5C630A",
+                "SOUTH_AFRICA/R10914/2022_OR_ADA6D682",
+                "SOUTH_AFRICA/R10638/2022_OR_5EAB4CBB",
+                "SOUTH_AFRICA/R11310/2022_OR_12125C84",
+                "SOUTH_AFRICA/R11575/2022_OR_FED84F4F",
+                "SOUTH_AFRICA/R08092/2022_OR_93DDF2B2",
+                # XXX 2023-0602
+                "LA_REUNION/HCL023041635201/2022_103E7754",
+                "ROMANIA/550950/2023_MDCK-SIAT_E0DECCD2",
+                "SAINT_PETERSBURG/RII-10866S/2023_OR_477275F7",
+                # XXX2023-0629
+                "ABU_DHABI/4030/2022_AEC2DE48",
+                "RIO_GRANDE_DO_SUL/28773/2022_455F4FFF",
+                # 2023-0731
+                "MALAYSIA/IMR-SARI0563/2023_25FE3E0E",
+                # 2023-0811 Yam
+                "KENYA/KCH157321/2019_OR_308AC34A",
+                # 2023-0822 XXX
+                "ALAGOAS/5742/2023_OR_441065AD",
+                "ALAGOAS/4659/2023_OR_558AC3D6",
+                "PARANA/5012/2023_OR_D54659DC",
+                # 2023-1005 XXXX
+                "UNITED_KINGDOM/UO-476/2023",
+                # 2024-0130
+                "SANTA_CATARINA/10748/2023_OR_7B192215",
+                # 2024-0703
+                "MADRID/HULP-200063972/2024_C98ADFD1",  # unknown at deletion positions 162-164
+                "MADRID/HULP-200041842/2024_5D4B7141",  # unknown at deletion positions 162-164
+                # 2024-0718
+                "AUSTRIA/MUW1681066/2024_OR_3D9C21FB",  # XXXX
+                "ATHENS/ILI411/2024_OR_556F1400",  # XXXX
+                # 2024-0411
+                "PAIS_VASCO/1919/2024_OR_1D682639",
+                "GALICIA/52314290/2024_AF2005E4",
+                # 2025-2411
+                "MADAGASCAR/3422/2024_OR_DF3D589F",
+                "MEXICO/2429277701/2024_OR_3BF2F243",
+                "GALICIA/GA-CHUAC-250/2025_OR_AC92C5F3",
+                # 2025-1202
+                "PAKISTAN/NIC-JHL/2010_OR_EC56A7FD",
+                "PAKISTAN/NIC-ICT-284/2025_OR_8DAE4B6A",
+                "PAKISTAN/NIC-ICT-218/2025_OR_362FAB6C",
+                "PAKISTAN/NMC-12/2025_OR_7B217EEC",
+                "PAKISTAN/NIC-ICT-190/2025_OR_D4D6D601",
+                "ANDALUCIA/PMC-00528/2025_OR_549D6405",
+                # 2025-0313
+                "GALICIA/52463655/2025_0971E6C6",
+                # 2025-0507
+                "THUERINGEN/31/2025_OR_758A40BD",
+                "FRANCE/ARA-HCL025053223301/2025_OR_1C544F25",
+                "ABAY/NRL-2330/2025_C2E364F7",
+                "RIO_DE_JANEIRO/533/2025_OR_C04A6642",
+                "LA_REUNION/HCL023041635201/2022_OR_103E7754",
+                "ASTURIAS/232465739/2024_EA8BEFAB",
+                "UKRAINE/3471/2025_6E494813",
+                # 2025-0521
+                "GALICIA/52475765/2025_F76C5888",
+                # 2025-0611  no exclusions
+                # 2025-0618  no exclusions
+                # 2025-0625  no exclusions
+                # 2025-0702
+                "PHUKET/P1187/2025_5A09E7D5",
+                # 2025-0716 (omitted exclusions in error,later added in 0723)
+                # 2025-0723
+                "ODISHA/1421/2023_6422458A",
+                # 2025-0729 no exclusions
+                # 2025-0818
+                "INDIA/PUD-NIV25-1188/2025_MDCK3_935FB615",
+                # 2025-0827 no exclusions
+                # 2025-0910 no exclusions
+                # 2025-0917
+                "INDIA/PUD-NIV25-1188/2025_MDCK3_935FB615",
+                "AVILA/227/2024_FLU0789_03C986A9",
+                "AVILA/43/2025_FLU0874_624F5516",
+                "SALAMANCA/214/2024_FLU0771_DF1DA731",
+                "LA_REUNION/CHU725061509401/2025_7A8734BB",
+                # 2025-1006
+                "MEXICO/240450000409/2024_OR_1174529C",
+                # 2025-1028 no exclusions
+            ]
+        )
+        .include_name(
+            outgroup
+        )  # outgroup BRISBANE/60/2008, B/CHONGQING BANAN/1840/2017 (V1A)
+        .remove_hash_duplicates()
+        .replace_with_master()
+        .check()
+        .sort("+date")
+        .move_name_to_beginning(outgroup)
+    )
+    report(subtype, selected, expected_nuc_size=1710, limit=0)
+    export(subtype, selected)
+
+
+# ----------------------------------------------------------------------
+
+
+def byam(subtype: str, args: argparse.Namespace):
+    outgroup = "MINNESOTA/2/2014"
+    selected = (
+        ae_backend.seqdb.for_subtype(sSubtypeForSeqdb[subtype])
+        .select_all()
+        .human()
+        .lineage("YAMAGATA")
+        .exclude_with_issue()
+        .filter_dates(first="2015")
+        .find_masters()  # to be able to use .filter below
+        .include_name([outgroup])  # , "IDAHO/1/2014", "MASSACHUSETTS/7/2014"])
+        .exclude_name(
+            [
+                lin
+                for lin in (line.strip() for line in Path("byam-exclude.txt").open())
+                if lin and lin[0] != "#"
+            ]
+        )
+        .remove_hash_duplicates()
+        .replace_with_master()
+        .sort("+date")
+        .move_name_to_beginning(outgroup)
+    )
+    report(subtype, selected, expected_nuc_size=1710, limit=0)
+    export(subtype, selected)
+
+
+# ----------------------------------------------------------------------
+
+
+def h1(subtype: str, args: argparse.Namespace):
+    h1_include_txt = Path("h1-include.txt")
+    if not h1_include_txt.exists():
+        h1_include_txt = Path(sys.argv[0]).parent.joinpath(h1_include_txt.name)
+        if not h1_include_txt.exists():
+            raise RuntimeError("> cannot find {h1_include_txt}")
+    to_include = [
+        lin
+        for lin in (line.strip() for line in h1_include_txt.open())
+        if lin and lin[0] != "#"
+    ]
+    # to_include = to_include[:-500]
+    outgroup = "SOUTH_AUSTRALIA/30/2013"
+    selected = (
+        ae_backend.seqdb.for_subtype(sSubtypeForSeqdb[subtype])
+        .select_all()
+        .human()
+        .exclude_with_issue()
+        .filter_dates(first="2019")
+        .find_masters()  # to be able to use .filter below
+        .include_name(
+            [
+                outgroup,
+                "MICHIGAN/45/2015",
+                "BRAZIL/5026/2017",  # # 183S, trying to show "the different 183P clades has S183P independently", inferred from 2018-0924-ssm tree
+            ]
+            + to_include
+        )  # ~/AD/share/conf/h1.183S.2017-2018.seqids
+        .exclude_name(
+            [
+                "SWINE/",
+                # 2020-08-10 Sarah: They're not sequenced by a CC or NIC, but by a company.  The sequences don't have obvious errors, but are very different (obviously) from the rest. My feeling is they're either variant viruses (from swine) or a sequencing error.
+                "ANKARA/14015-724/2019",
+                "ANKARA/14017-004/2019",
+                "ANKARA/14015-736/2019",
+                # 2021-06-22 deletion at the end
+                # "BADEN-WURTTEMBERG/1/2020",
+                # long branch 2021-0622
+                "DENMARK/1/2021",
+                "MANITOBA/2/2021",
+                # 2021-1117 long branches
+                "MECKLENBURG-VORPOMMERN/1/2021",
+                "MECKLENBURG-VORPOMMERN/1-A/2021",  # refers to MECKLENBURG-VORPOMMERN/1/2021
+                "NETHERLANDS/10370-1/2020",
+                "NETHERLANDS/10370-1A/2020",
+                "NETHERLANDS/10370-2/2020",  # refers to NETHERLANDS/10370-1A/2020
+                "NETHERLANDS/GENT-193/2019",
+                "HESSEN/47/2020",
+                "HUBEI WUJIAGANG/1324/2020",
+                "HEBEI HAIGANG/SWL1572/2019",
+                "SHANDONG/204/2021",
+                "YUNNAN MENGZI/1462/2020",
+                "NORTH CAROLINA/15/2020",
+                "WISCONSIN/3/2021",
+                "PARANA/10835/2021",
+                # 2021-1125 long branches
+                "GANSU_XIFENG/1194/2021",
+                "GANSU_XIFENG/1143/2021",
+                "SICHUAN/1208/2021",
+                "TIANJIN/30/2020",
+                "WISCONSIN/5/2021",
+                "WISCONSIN/4/2021",
+                "NORTH_DAKOTA/12226/2021",
+                # 2021-1217 potential long branch
+                "IOWA/1/2021",  # --> SWINE/MISSOURI/A01104146/2020 (base), SWINE/MISSOURI/A02525160/2021
+                "IOWA/6/2021",  # --> "SWINE/IOWA/A02636087/2021", "SWINE/IOWA/A02636130/2021"
+                "NORTH DAKOTA/12226/2021",  # --> "SWINE/IOWA/A02636087/2021", "SWINE/IOWA/A02636130/2021"
+                # 2021-1217 long branches
+                "NETHERLANDS/10370-1A/2020",
+                # 2022-0131 potential long branch
+                "DENMARK/36/2021",
+                # 2022-04-26 mess in 156-179
+                "INDIA/NIV-NICOBAR91/2020_OR_01A87F80",
+                "INDIA/NIV-NICOBAR163/2020_OR_823B2A0F",
+                "INDIA/NIV-NICOBAR106/2020_OR_B81F1DC2",
+                "INDIA/NIV-NICOBAR164/2020_OR_37A11133",
+                # 2022-10-07 potential long branch
+                "PARANA/20675/2022_OR_3D8D671C",
+                # 2022-12-10 potential long branch
+                "DAKAR/3124/2021_279E04A6",
+                # 2022-12-23 potential long branch
+                "NAVARRA/4050/2022_OR_BBC31B3A",
+                # 2023-01-13 potential long branch
+                "SAO_PAULO/356765942-IAL/2022_OR_71BA8B9D",
+                # 2023-01-28 potential long branches
+                "NAVARRA/4050/2022_OR_BBC31B3A",
+                "DAKAR/3124/2021_279E04A6 pdm09-like",
+                "PAKISTAN/GIHSN-GB-445/2022_OR_A20D55B6",
+                "PAKISTAN/GIHSN-ICT-152/2023_OR_572EBEB8",
+                "PAKISTAN/GIHSN-PB-15/2023_OR_484A375D",
+                "SAO_PAULO/356765942-IAL/2022_OR_71BA8B9D",
+                "CATALONIA/NSVH101996495/2023_OR_2E610047",
+                # 2023-02-04 potential long branch
+                "SWITZERLAND/69094/2022_OR_B3C15C9B",
+                # 2023-0421 potential long branches
+                "CATALONIA/NSVH510598655/2022_OR_57BCC58B",
+                "PAKISTAN/1465/2023_OR_1B7B0A1A",
+                "BADEN-WURTTEMBERG/159/2022_OR_6AB83E7E",
+                "PARANA/44706/2021_OR_25BFEB40",
+                # XXX 2023-0515
+                "A/PAKISTAN/GIHSN/ICT/1838/2023_0867EDC7",
+                "A/PAKISTAN/GIHSN/ICT/1634/2023_OR_3D55578F",
+                "A/PAKISTAN/GIHSN/ICT/1798/2023_OR_C271B3C9",
+                "A/PAKISTAN/GIHSN/ICT/1682/2023_OR_FB7A0386",
+                # XXX 2023-0602
+                "PAKISTAN/GIHSN-ICT2035/2023_OR_4E73FFF6",
+                # XXX  2023-0731
+                "CYCLADES/215/2022_D164055B",
+                # long branch & XXXX 2023-0811
+                "GREECE/SRIHER-001/2022_OR_E68E256A",
+                "SAUDI_ARABIA/40/2020_OR_9B1E74A4",
+                "SAUDI_ARABIA/39/2020_OR_DAE6A100",
+                # 2023-0822 XXXX
+                "PARANA/6405/2023_OR_9ACD4010",
+                "BAHIA/5785/2023_OR_CBFA332A",
+                # 2023-0903 very long branch
+                "NETHERLANDS/10534/2023_OR_6221D5BF",
+                # 2023-09-08 long branch in tree
+                "BADAJOZ/18570374/2023_58158069",
+                # 2023-09-15 XXXX
+                "ALGIERS/251/2023_OR_1A27768",
+                # 2023-10-23 XXX & odd start for SAO_PAULO
+                "SAO_PAULO/CEVI_2300134/2023_OR_BB923F69",
+                "CAMBODIA/KVH230151/2023_OR_1F665D9C",
+                "CAMBODIA/AHC230229/2023_OR_3241A3FC",
+                # 2023-20-28
+                "BULGARIA/725/2023_8A6AF67F",  # nonsense 1-29
+                "CAMBODIA/CCH230213/2023_OR_BE937275",  # XXXX
+                # 2023-12-04
+                "BANGKOK/P5113/2023_OR_CB7624FD",  # long branch
+                # 2024-01-01
+                "SWITZERLAND/114/2023_MDCK1_A2D22DAA",  # long branch
+                # 2024-01-30
+                "CATALONIA/NSAV198289092/2023_OR_291AD7EDPARANA/13897/2023_OR_0A657176",
+                "BELGIUM/H00082/2023_56A80548",
+                "CACERES/59816382/2023_A1324011",
+                "SENEGAL/2098/2023_OR_2EC7BF97",
+                # 2024-0703
+                "GALICIA/GA-CHUAC-98/2024_OR_988888E6",  # 29 nuc differences, 19 nuc differences
+                "MEXICO/2271/2021_338E9C30",  # run of differences, 35-38, 40-42
+                "ALAGOAS/CEVI_2200198/2021_OR_0811FCC2",  # 6 X
+                "MADRID/1832324191549/2024_OR_988BC424",  # 9 X
+                "HUMAN/KENYA/5866/2023_3F1D8A0B",  # 9X
+                # 2024-0718
+                "SAO_PAULO/CEVI_24000816/2024_OR_BC9F903C",  # XXXX
+                "SAO_PAULO/CEVI_24000889/2024_OR_C69399E2",  # dels
+                # 2024-0727
+                "LUXEMBOURG/LNS3963248/2024_04C1C479",  # XXXX
+                "COSTA_RICA/INC-0552-822365/2024_OR_9E1DE43D",  # XXXX
+                # 2024-08-06
+                "CHANTHABURI/P2877/2024_OR_5B993EF6",  # XXXXX
+                "SRI_LANKA/R4_BC75/2024_50C5FC20"  # XXXXX
+                # 2024-0830 XXXX & many changes
+                "OHIO/251/2024_OR_30CB2DAF",
+                "HANOI/PF324163/2024_OR_402B095E",
+                "SOUTH_AFRICA/PET32788/2024_OR_47322CBB",
+                # 2024-0902 long branch
+                "YAOUNDE/24V-3413/2024_8196548B",
+                # 2024-1004
+                "PHUKET/P3423/2024_OR_5E3C7D19",  # XXXX
+                # 2024-1025
+                "PARANA/10835/2021_OR_8025A28A",
+                "TOLEDO/PARANA_10835/2021_OR_8025A28A",
+                "ENGLAND/3640434/2024_OR_A126DDAB",
+                "CATALONIA/NSAV198309324/2024_OR_29D1522E",
+                # 2024-1126
+                "OREGON/FLU-OHSU-242090049/2024_05BD35BD",
+                "OREGON/FLU-OHSU-242090044/2024_DEC6E084",
+                # 2024-1209
+                "NAKHON_PHANOM/F2539/2024_OR_276AD388",
+                # 2025-0901
+                "CAMBODIA/KPH240133/2024_OR_CD9DB776",
+                "ENGLAND/4820116/2024_OR_F5C11575",
+                # 2025-2401
+                "GALICIA/GA-CHUAC-172/2024_OR_000994B0",
+                "ROMANIA/2920/2024_F73C0E92",
+                # 2025-1202
+                "BALTIMORE/JH-173/2025_A2FCE291",
+                "CROATIA/HZJZ-8235/2025_170E7DD7",
+                "ENGLAND/340238/2025_OR_EA36F218",
+                "ENGLAND/121421/2024_OR_2094499C",
+                "ANDALUCIA/PMC-00542/2025_OR_BD2FE74E",
+                "PAKISTAN/NIC-ICT-576/2025_OR_6924EA8E",
+                "ANDALUCIA/PMC-00549/2025_OR_A6464885",
+                "CASTELLON/VAHNSI-GIHSN-02_0386/2025_OR_2E26A6D3",
+                # 2025-0313
+                "QUEENSLAND/IN000908/2025_91CEAA08",
+                "FRANCE/HDF-RELAB-IPP01090/2025_OR_096FF1D6",
+                "CATALONIA/NSVH171785721/2025_OR_C896185E",
+                "KAMCHATKA/205-20V/2025_OR_68CABAFF",
+                # 2025-0507
+                "ENGLAND/5100240/2024_OR_EB872B9D",
+                "CAMBODIA/CCH250029/2025_OR_A4964B9E",
+                "ASTURIAS/232523061/2025_58877E98",
+                "PAKISTAN/NIC_SD193/2025_OR_3A27DCA6",
+                "ESPIRITO_SANTO/475/2025_OR_4FB190FF",
+                "PAKISTAN/NIC_SD184/2025_OR_66AF2F25",
+                "PAKISTAN/NIC_JHL115/2025_OR_53A17665",
+                "GALICIA/22647653/2025_DE4A5E72",
+                "IRELAND/4321/2025_8EB775D5",
+                "ENGLAND/640250/2025_OR_01187600",
+                "PAKISTAN/NIC_NIH749/2025_OR_40914714",
+                "BELGIUM/S4050/2025_OR_E331B39E",
+                "GALICIA/GA-CHUAC-314/2025_OR_59908BA2",
+                "MURCIA/528/2025_OR_E7444F60",
+                "OREL/SWINE-RII-WD2678S/2025_OR_6C9DA738",
+                "OREL/SWINE-RII-WD2681S/2025_OR_B004CABD",
+                "VERMONT/UVM-0478/2022_OR_DFD37A87",
+                "VERMONT/UVM-1652/2022_OR_42E6DF65",
+                "FRANCE/NOR-IPP04189/2025_OR_88070E22",  # caused tree failure
+                # 2025-0716 (omitted exclusions in error, added 29/07, some added 0723 PR)
+                "CAMBODIA/SVH250268/2025_OR_238D9DD5",
+                "CAMBODIA/IAHC250126/2025_OR_FDAC2F6D",
+                "CAMBODIA/IKCM250040/2025_OR_7BD02395",
+                "CAMBODIA/CCH250037/2025_OR_347A5F98",
+                # 2025-0723
+                "NIZHNIY_NOVGOROD/RII-MH239577S/2025_OR_B6AF35B5",
+                "CAMBODIA/KVH250142/2025_OR_3F8690DC",
+                "CAMBODIA/IAHC250133/2025_OR_C34D3AC3",
+                "SURGUT/RII-MH237071S/2025_OR_3A47CC28",
+                "MOROCCO/1168/2025_OR_910D767C",
+                # 2025-0729
+                "ARKHANGELSK/RII-MH246940S/2025_OR_78BF9CC7",
+                # 2025-0818
+                "CATALONIA/NSVH161521968/2025_OR_A0FA1338",
+                "CAMBODIA/NPH250451/2025_OR_3F664AAE",
+                "CAMBODIA/IAHC250237/2025_OR_E4433FD6",
+                "VALENCIA/VAHNSI-GIHSN-09_0742/2025_OR_30A76211",
+                "SAO_PAULO/CEVI_2500217/2025_OR_A0D5251B",
+                "SAO_PAULO/CEVI_2500207/2025_OR_3C666E5E",
+                "HONG_KONG/F40/2024_OR_94A307F6",
+                # 2025-0827
+                "KRASNOGORSK/RII-MH248987S/2025_OR_CA8C4660",
+                # 2025-0910 no exclusions
+                # 2025-0917
+                "CATALONIA/NSVH161521968/2025_OR_A0FA1338",
+                "CAMBODIA/IAHC250237/2025_OR_E4433FD6",
+                "CAMBODIA/NPH250451/2025_OR_3F664AAE",
+                "VALENCIA/VAHNSI-GIHSN-09_0742/2025_OR_30A76211",
+                "SAO_PAULO/CEVI_2500207/2025_OR_3C666E5E",
+                "KRASNOGORSK/RII-MH248987S/2025_OR_CA8C4660",
+                "HONG_KONG/F40/2024_OR_94A307F6",
+                # 2025-1006 no exclusions
+
+            ]
+        )
+        .remove_hash_duplicates()
+        .replace_with_master()
+        .sort("+date")
+        .move_name_to_beginning(outgroup)
+    )
+    report(subtype, selected, expected_nuc_size=1647, limit=0)  # aa 549
+    export(subtype, selected)
+
+
+# ----------------------------------------------------------------------
+
+
+def h3(subtype: str, args: argparse.Namespace):
+    outgroup = "PERTH/16/2009"
+    selected = (
+        ae_backend.seqdb.for_subtype(sSubtypeForSeqdb[subtype])
+        .select_all()
+        .human()
+        .exclude_with_issue()
+        .filter_dates(first="2018-03")
+        .find_masters()  # to be able to use .filter below
+        .include_name(
+            [
+                outgroup,
+                "VICTORIA/361/2011",  # 2011-10-24    3C.3
+                # [2020-09-07] Nearest common ancestor of 2a and 3a in /syn/eu/ac/results/eu/2019-0417-h3-trees/cdc-usa-2009-2019-250-per-year-1.rough-29532.tree.pdf https://notebooks.antigenic-cartography.org/eu/results/eu/2019-0417-h3-trees/
+                "MARYLAND/30/2012",  # 2012-07-26    3C.3
+                # [2020-08-17] Derek thinks that the root (A/STOCKHOLM/6/2014) is not old enough
+                "TEXAS/50/2012",  # 2012-04-15    3C.3  root in MELB tree 2020
+                "VERMONT/6/2012",
+                "STOCKHOLM/6/2014",  # 2014-02-06    3a
+                # [2020-02-07] intermediate strains from nextflu https://nextstrain.org/flu/seasonal/h3n2/ha/2y to keep 3a at the top
+                "SWITZERLAND/9715293/2013",  # 2013-12-06    3a
+                "NORWAY/466/2014",  # 2014-02-03    3a
+                "SOUTH_AUSTRALIA/55/2014",  # 2014-06-29    3a
+                "TASMANIA/11/2014",  # 2014-03-16    3a
+                "KOBE/63/2014",  # 2014-05-21    3a
+                "PERU/27/2015",  # 2015-04-13    3a
+                "NEVADA/22/2016",  # 2016-03-05    3a
+                "IDAHO/33/2016",  # 2016-06-08    3a
+                "TEXAS/88/2016",  # 2016-02-25    3a
+                "TEXAS/71/2017",  # 2017-03-18    3a
+                "BRAZIL/7331/2018",  # 2018-07-09    3a
+                "KANSAS/14/2017",  # 2017-12-14    3a, to have serum circles in the sig page
+                "HONG_KONG/4801/2014",  # 2014-02-26    2a
+                "HAWAII/47/2014",  # 2014-07-18    2a
+                "NORTH_CAROLINA/4/2017",  # 2017-01-26    2a2
+                "NORTH_CAROLINA/4/2016",  # 2016-01-14    2a1
+                "ANTANANARIVO/1067/2016",  # 2016-04-06    2a1
+                "HONG_KONG/2286/2017",  # 2017-05-23    2a1b 135K
+                "WISCONSIN/327/2017",  # 2017-09-22    2a1b 135K
+                "ABU_DHABI/240/2018",  # 2018-01-01    2a1b 135K
+                "JAMAICA/1447/2018",  # 2018-02-19    2a1b 131K
+                # Strains before and after T135N substitution to have a better 135N branch placement
+                # Sarah 2021-02-08 17:05
+                "WISCONSIN/85/2016",
+                "SRI_LANKA/56/2017",
+                "SOUTH_CAROLINA/4/2017",
+                "YOKOHAMA/145/2017",
+                "INDIA/9930/2017",
+                "HONG_KONG/3118/2017",
+                "HAWAII/47/2014",
+                "NIIGATA-C/43/2015",
+                "DAKAR/17/2016",
+                # "CAMEROON/16V-9267/2016", # excluded, truncated sequence
+                "LAOS/3008/2016",
+                "YUNNAN_LINXIANG/1718/2016",
+                "HONG_KONG/2302/2016",
+                "ONTARIO/RV2414/2015",
+                "ONTARIO/RV2414/2015",
+                "HONG_KONG/2286/2017",
+                "HONG_KONG/2286/2017",
+                "HONG_KONG/2286/2017",
+                "HONG_KONG/2286/2017",
+                "HONG_KONG/2286/2017",
+            ]
+        )
+        .exclude_name(
+            [
+                "SWINE/",
+                # long branch (2021-0622)
+                "WISCONSIN/1/2021",
+                # long branch (2021-1117)
+                "HAWAII/28/2020",
+                "SOUTH_AUSTRALIA/85/2018",
+                "SOUTH_AUSTRALIA/1/2021",
+                "MANITOBA/3/2021",
+                "GUANGXI_GANGBEI/190/2019",
+                # 2021-1217 potential long branch
+                "OHIO/6/2021_ISOLATE",
+                # 2022-0204 potential long branch
+                "FRANCE/ARA-HCL021219268801/2021",
+                "FRANCE/ARA-HCL021220304101/2021",
+                # 2022-0209 long branch, eight X, R in nuc
+                "ONTARIO/RV2002/2019_P1_0F1E8F1E",
+                # 2022-0415 potential long branch
+                "ACRE/181823-IEC/2021",
+                # 2022-0819 potential long branch
+                "CATALONIA/NSVH101883267/2022_OR_F79C7813",
+                # 2022-0825 long branch in the tree
+                "INDIANA/27/2018_SIAT1_26C3A2A4",
+                "SWINE/KENTUCKY/18TOSU1939/2018_26C3A2A4",
+                "SWINE/ILLINOIS/18TOSU1411/2018_26C3A2A4",
+                # 2022-0826 potential long branch
+                "FIJI/99/2022_OR_80B95BF8",
+                "FIJI/102/2022_OR_6AEB79D8",
+                "WEST_VIRGINIA/25/2022_SIAT1_3E592413",
+                "WEST_VIRGINIA/26/2022_SIAT1_3E592413",
+                "WEST_VIRGINIA/24/2022_SIAT1_2FDA4DA3",
+                # 2022-0902 potential long branch
+                "FRANCE/ARA-HCL022060609601/2022_65F4520B",
+                # 2022-10-07 potential long branch
+                "CATALONIA/NSVH101908168/2022_OR_D5C0176E",
+                # 2022-10-28 potential long branch
+                "MICHIGAN/48/2022_OR_910196F9",
+                # 2022-11-04 potential long branch
+                "NEW_MEXICO/19/2022_IRX_4BA11056",
+                # 2022-11-11 potential long branches
+                "CATALONIA/NSVH534131326/2022_OR_4AC47F3F",
+                "A/ANAS_PLATYRHYNCHOS/BELGIUM/2499_0006/2021_MIXED_ECE1_DCC5FAD7",
+                "ANAS_PLATYRHYNCHOS/BELGIUM/2499_0006/2021_ECE1_DCC5FAD7",
+                # 2022-11-26 potential long branches
+                "CATALONIA/NSVH101954411/2022_OR_7A633967",
+                "CATALONIA/NSVH510598655/2022_OR_57BCC58B",
+                # 2022-12-02 potential long branches
+                "MISSOURI/19/2022_OR_837C934E",
+                # 2022-12-10 potential long branches
+                "CATALONIA/NSVH560028269/2022_OR_9C189CFA",  # 159X 160X 162X 163X 164X
+                "ATHENS/355/2022_D9D4A86A",  # 38X 40X 41X 42X 59X 67X 81X 128X
+                "MICHIGAN/48/2022_OR_910196F9",
+                "MICHIGAN/UOM10047284024/2022_OR_910196F9",
+                # 2023-01-08 potential long branches
+                "BRITISH_COLUMBIA/PHL-480/2022_OR_EAAE7C01",
+                # 2023-01-13 potential long branch
+                "GALICIA/22034482/2022_2EE89148",
+                "GALICIA/22018524/2022_1EE46082",
+                "GALICIA/22033804/2022_0EE699D6",
+                "GALICIA/21987208/2022_F49E5748",
+                "GALICIA/22036079/2022_430E996A",
+                "GALICIA/22018743/2022_0116B017",
+                "GALICIA/22011636/2022_3D9F40AD",
+                # 2023-01-20 potential long branch
+                "SINGAPORE/GP9117/2022_OR_69761A51",
+                "TURKEY/GIHSN_ANKARA-14020_7/2022_012CD2F7",
+                # 2023-01-28 potential long branches
+                "MICHIGAN/48/2022_OR_910196F9",
+                "MACEDONIA/IPH-MKD-59729/2021_OR_837D0C9D",
+                "KHON_KAEN/FS005/2022_OR_1A5637D8",
+                "TURKEY/GIHSN_ANKARA-14020_7/2022_012CD2F7",
+                "ATHENS/355/2022_D9D4A86",
+                "CATALONIA/NSVH101994299/2023_OR_13A43DA9",
+                "MACEDONIA/IPH-MKD-HD/2021_OR_B52D1807",
+                "SOUTH_AFRICA/R07603/2022_OR_7937FE46",
+                "SOUTH_AFRICA/R05772/2022_OR_552B5F5E",
+                "GALICIA/22034482/2022_2EE89148",
+                "CATALONIA/NSVH560028269/2022_OR_9C189CFA",
+                # 2023-02-04 potential long branches
+                "MANITOBA/RV00728/2022_P1_5236154F",
+                "ONTARIO/198/2022_OR_D1EC3B40",
+                # 2023-04-21 potential long branches
+                "ROMANIA/493/2023_612606B9",
+                "PAKISTAN/1140/2023_OR_3D2D111B",
+                "CATALONIA/NSVH102045605/2023_OR_7490FFA8",
+                # XXX & long branch 2023-0731
+                "BAHIA/PVM105707/2021_OR_BCE07E46",
+                "SOUTH_AFRICA/K056301/2023_30E0E639",
+                # XXXXX 2023-0811 CORRECTED 2023-1023
+                "BAHIA/292038965/2021_70230607",
+                "BAHIA/292104308/2022_D4526D62",
+                # XXXXX 2023-0829 CORRECTED 2023-1023
+                "SOUTH_AFRICA/PET28428/2023_7572E223",
+                "SOUTH_AFRICA/PET28193/2023_BF46BBB4",
+                "NORWAY/8084/2023_OR_4548A267",
+                # 2023-09-08 potential long branch ?why
+                "SOUTH_AFRICA/K056301/2023_CC1FE952"
+                # 2023-10-23 XXX
+                "PARA/CEVI_2200263/2021_OR_6D24213E",
+                "SAO_PAULO/CEVI_2200855/2022_OR_D4E825BF",
+                "SAO_PAULO/CEVI_2200871/2022_OR_280FCE18",
+                # 2023-10-28
+                "SOUTH_AFRICA/K056301/2023_CC1FE952",  # very divergent
+                # 2023-12-04 XXXX
+                "OMAN/CPHL_52323056/2023_OR_297A7E60",
+                "LUSAKA/1-NIC-332/2023_OR_BA018CE9",
+                "NORWAY/11072/2023_OR_EB1EA580",
+                # 2024-01-01
+                "SAINT_PETERSBURG/RII-MH151473S/2023_OR_D20D279D",  # XX
+                "SAINT_PETERSBURG/RII-4937S/2023_OR_95887A8C",  # XX
+                "CANADA/NOVASCOTIA-32036/2022_A90EF453",  # first 7 aa
+                "BRITISH_COLUMBIA/PHL-602/2022_OR_A1B8E845",  # XX
+                # 2024-01-22 for 2024-01-16 file
+                "INDONESIA/BIOKES-IBKL1127/2023_OR_791937E7",  # long branch
+                "SAO_PAULO/CEVI_2201055/2022_OR_BF9D3752",  # XX
+                "ROMANIA/3227/2023_E20D207E",  # XX
+                "SAO_PAULO/CEVI_2200903/2022_OR_BB30A339",  # XX
+                "CACERES/50644480/2023_361FA786",  # long branch
+                "BELGIUM/S1112/2023_OR_D7ABA060",  # long branch
+                "BELGIUM/S0576/2023_OR_CEC5B896",  # long branch
+                "BELGIUM/S0220/2023_OR_0B549607",  # long branch
+                "BELGIUM/H0592/2022_OR_22BD830C",  # long branch
+                # 2024-01-30
+                "SPAIN/GA-HULA-615019/2023_B7077195",
+                "BELGIUM/S03941/2023_F4250630",
+                "NEW_YORK/392/2004_CFB2F75C",
+                "SPAIN/GA-HULA-615037/2023_E8183B9E",
+                "CACERES/59816379/2023_4D9F91F8",
+                "TURKEY/GIHSN_ANKARA-140111_950/2023_E0D8B88D",
+                # 2024-02-11 XXXX Indonesia is long branch
+                "KENYA/AFI-KDH-1820/2023_B3509344",
+                "INDONESIA/BIOKES-IDSW0063/2023_OR_5962326E",
+                "KENYA/AFI-ISB-1107/2023_E5F19B22",
+                "KENYA/AFI-MNB-1100/2023_6D42271",
+                # 2024-0703
+                "CHIANG_RAI/P2287/2024_OR_2744AA9C",  # 3 deletions
+                # 2024-0727
+                "SASKATCHEWAN/RV03900/2024_OR_029CB62D",  # 198 diffs
+                "WASHINGTON/S25532/2024_OR_13A107A6",  # XXXX
+                "OREGON/S25529/2024_OR_5502D106",  # XXXX
+                "OREGON/S25537/2023_OR_BE6502FF",  # XXXX
+                "CAMBODIA/CCH230307/2023_7CC43803",  # XXXX
+                "CAMBODIA/IAHC230253/2023_50A155E0",  # XXXX
+                # 2024-08-06
+                "VIRGINIA/H20-355-5372/2024_OR_53F1E92E",  # XXXXX
+                "PANAMA/M273491/2024_OR_27E79A9B"  # XXXXX
+                # 2024-0830 many changes
+                "COLORADO/150/2024_OR_2BD9D59A",
+                "COLORADO/150/2024_SIAT1_14B3FB98",
+                "MICHIGAN/113/2024_SIAT1_B0E6BEF3",
+                # 2024-0902
+                "SASKATCHEWAN/RV03900/2024_OR_029CB62D",  # long branch
+                "PANAMA/M273491/2024_OR_27E79A9B",  # XXXX
+                # 2024-1004
+                "CAMBODIA/NPH240499/2024_OR_F38419C8",  # XXXX
+                # 2024-1025
+                "CAMBODIA/NPH240575/2024_OR_33D3499A",
+                # 2024-1115
+                "PARANA/44706/2021_OR_25BFEB40",
+                "SANTA_HELENA/PARANA_44706/2021_OR_25BFEB40",
+                # 2024-0111 (tree built 2024-1811)
+                "GREATER_ACCRA_REGION/FS-24-4832/2024_B7004939",
+                "GREATER_ACCRA_REGION/FS-24-4779/2024_1393BD1C",
+                # 2024-2611
+                "QUEENSLAND/IN000643/2024_1ACA7E5A",
+                "QUEENSLAND/IN000245/2024_0854A342",
+                "WASHINGTON/S26082/2022_OR_7462BFDE",
+                "WASHINGTON/S26079/2022_OR_07B0CEEC",
+                "WASHINGTON/S26107/2023_OR_A56901B3",
+                "WASHINGTON/S26104/2022_OR_E80CAD50",
+                "WASHINGTON/S26097/2022_OR_40AE3B8C",
+                "WASHINGTON/S26077/2022_OR_C294BE90",
+                "WASHINGTON/S26098/2022_OR_1EDB1957",
+                "WASHINGTON/S26088/2022_OR_C6B3FAA9",
+                # 2024-0912
+                "GALICIA/28220935/2023_C495745E",
+                "GALICIA/33341960/2023_0FF7D1C8",
+                # 2025-2401
+                "TURKMENISTAN/784/2025_OR_F898A707",
+                # 2025-1202
+                "COTE_DIVOIRE/4331/2024_OR_E0FF092D",
+                # 2025-1202
+                "WISCONSIN/67/2005_XXMDCK2_8C52B46C",
+                # 2025-0716 (omitted exclusions in error, added 29/07 PR)
+                "INDIA/BHO_NIV25-827/2025_MDCK3_C54368E2",
+                "CAMBODIA/IAHC240402/2024_OR_35F1131A",
+                "INDIA/PUN_NIVCOV2572/2025_MDCK1_C9AF818D",
+                "ASTURIAS/232524600/2025_A4329A8F",
+                "OREL/SWINE-RII-WD2652S/2025_OR_57A8B37C",
+                "OREL/SWINE-RII-WD2687S/2025_OR_C384E32B",
+                "MEXICO/2496813201/2025_OR_E2853515",
+                # 2025-0723
+                "NORWAY/6870/2025_OR_828769BE",
+                "BRITISH_COLUMBIA/RV00479/2025_SIAT2/SIAT1_0DA227AA",
+                "QUEBEC/240/2025_OR_8D4D59A8",
+                "GALICIA/52520233/2025_F71B58B8",
+                "BULGARIA/2506/2025_SIAT2/SIAT1_8B0BEF2D",
+                "BULGARIA/1941/2025_SIAT2/SIAT1_0D5E6F90",
+                "CAMBODIA/IBTB250007/2025_OR_4E893E81",
+                "ASTURIAS/232525925/2025_719B9A6C",
+                "BAVARIA/6511057/2025_OR_D759C9B5",
+                "MEXICO/2496813201/2025_OR_E2853515",
+                "CAMBODIA/SVH250074/2025_OR_2253D125",
+                "ALBANIA/310521/2025_SIAT1_5DCA4F3D",
+                "CAMBODIA/IAHC250174/2025_OR_6BFB38A8",
+                "FRANCE/ARA-HCL023004739801/2023_OR_003FC67E",
+                "SOUTH_AFRICA/NHLS-UCT-CERI-C067966/2025_EE268891",
+                "PERU/LIM-UPCH-4915/2025_1E953D52",
+                # 2025-0729 no exclusions
+                # 2025-0818
+                "INDIA/BHO-NIV25-1226/2025_MDCK1_2E99D391",
+                "INDIA/PUD-NIV25-1183/2025_MDCK4_1BD68829",
+                "INDIA/JAI-NIV25-1120/2025_MDCK1_9051692B",
+                "ALBANIA/310569/2025_SIAT1_A284C73A",
+                "SWINE/OHIO/A02858604/2025_OR_3F9C4EB8",
+                "SWINE/NORTH_CAROLINA/A02979483/2025_OR_9F18313D",
+                "SWINE/IOWA/A02858606/2025_OR_8367F95A",
+                "SWINE/IOWA/A02858602/2025_OR_6B07CDAC",
+                "SWINE/MINNESOTA/A02858601/2025_OR_8A30B201",
+                "SWINE/MINNESOTA/A02979412/2025_OR_1838EF26",
+                # 2025-0827 no exclusions
+                # 2025-0910 no exclusions
+                # 2025-0917
+                "INDIA/BHO-NIV25-1226/2025_MDCK1_2E99D391",
+                "INDIA/PUD-NIV25-1183/2025_MDCK4_1BD68829",
+                "ALBANIA/310569/2025_SIAT1_A284C73A",
+                "INDIA/AS-RMRC-DIB-1189/2023_D09F02E4",
+                # 2025-1006
+                "MEXICO/2578825701/2025_OR_B6857194",
+                "CAMPO_GRANDE/LEIAL6538/2025_OR_3083EF3A",
+            ]
+        )
+        .remove_hash_duplicates()
+        .replace_with_master()
+        .sort("+date")
+        .move_name_to_beginning(outgroup)
+    )
+    report(subtype, selected, expected_nuc_size=1650, limit=0)
+    export(subtype, selected)
+
+
+# ----------------------------------------------------------------------
+
+sSubtypeToFunc = {"BVIC": bvic, "BYAM": byam, "A(H1N1)": h1, "A(H3N2)": h3}
+
+# ----------------------------------------------------------------------
+
+
+def export(subtype: str, selected: ae_backend.seqdb.Selected):
+    fasta.write(
+        filename_or_stream=subtype_dir(subtype).joinpath("source.fas"),
+        selected=selected,
+        aa=False,
+    )
+
+
+# ----------------------------------------------------------------------
+
+
+def subtype_dir(subtype: str):
+    dir = Path(sSubdirforSubtype[subtype])
+    dir.mkdir(exist_ok=True)
+    return dir
+
+
+# ----------------------------------------------------------------------
+
+
+def report(
+    subtype: str,
+    selected: ae_backend.seqdb.Selected,
+    expected_nuc_size: int,
+    limit: int = 20,
+):
+    print(f"{subtype:7s} {len(selected)}")
+    for seq in selected:
+        if len(seq.nuc) != expected_nuc_size:
+            print(
+                f">> wrong size {len(seq.nuc)} of {seq.seq_id()} (expected: {expected_nuc_size}) "
+            )
+    for no, seq in enumerate(selected):
+        if no >= limit:
+            break
+        # print(f"{no:4d} {seq.seq_id():40s} [{seq.date()}] {seq.aa}")
+        print(f"{no:4d} {seq.seq_id():40s} [{seq.date()}]")
+
+
+# ======================================================================
+
+try:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("subtype", nargs="*", type=lambda src: src.upper())
+    parser.add_argument(
+        "-v", "--verbose", dest="verbose", action="store_true", default=False
+    )
+    args = parser.parse_args()
+    exit_code = main(args) or 0
+except Exception as err:
+    print(f"> {err}\n{traceback.format_exc()}", file=sys.stderr)
+    exit_code = 1
+exit(exit_code)
+
+# ======================================================================

@@ -1,5 +1,5 @@
 #! /usr/bin/env python3
-import sys, os, datetime, subprocess
+import sys, os, re, datetime, subprocess
 from pathlib import Path
 
 WEEKLY_TREE_ROOT_DIR = Path("/syn/eu/ac/results/trees")
@@ -31,11 +31,11 @@ def init_subtype(subtype: str, previous_dir: Path):
     subtype_dir = TODAY_DIR.joinpath(subtype)
     subtype_dir.mkdir(exist_ok=True)
     if not (previous_newick := subtype_dir.joinpath("previous.newick")).exists():
-        previous_raxml_best = previous_dir.joinpath(subtype, "raxml-best.txt")
-        if not previous_raxml_best.exists():
-            print(f">> no previous raxml best run report: {previous_raxml_best}", file=sys.stderr)
+        previous_tree = previous_dir.joinpath(subtype, "cmaple_tree.txt")
+        if not previous_tree.exists():
+            print(f">> no previous tree run report: {previous_tree}", file=sys.stderr)
             return
-        previous_newick_link_target = Path(previous_raxml_best.open().read().strip())
+        previous_newick_link_target = Path(previous_tree.open().read().strip())
         link = relative_path(previous_newick_link_target, subtype_dir)
         print(f">>> {previous_newick} -> {link}", file=sys.stderr)
         previous_newick.symlink_to(link)
@@ -74,19 +74,24 @@ def relative_path(target: Path, source_dir: Path):
 
 # ----------------------------------------------------------------------
 
+# Finds the most recent directory matching YYYY-MMDD whose date is not today.
+# Uses explicit date parsing (rather than filesystem ordering as previously)
 def find_previous_dir():
-    dirs = list(WEEKLY_TREE_ROOT_DIR.glob("2*"))
-    found = None
-    use = len(dirs) - 1
-    while not found and use >= 0:
-        use_date = dirs[use].stem[:9]
-        if use_date != TODAY:
-            found = dirs[use]
-        use -= 1
-    if not found:
-        dirs_s = "\n    ".join(str(dd) for dd in dirs)
-        raise RuntimeError(f"previous dir not found in\n    {dirs_s}")
-    return found
+    date_re = re.compile(r'^\d{4}-\d{4}$')
+    dated = []
+    for d in WEEKLY_TREE_ROOT_DIR.iterdir():
+        if d.is_dir() and date_re.fullmatch(d.name):
+            try:
+                dated.append((datetime.datetime.strptime(d.name[:9], "%Y-%m%d").date(), d))
+            except ValueError:
+                pass
+    dated.sort(key=lambda x: x[0], reverse=True)
+    today = datetime.date.today()
+    for date, d in dated:
+        if date != today:
+            return d
+    dirs_s = "\n    ".join(str(d) for _, d in dated)
+    raise RuntimeError(f"previous dir not found in\n    {dirs_s}")
 
 # ======================================================================
 

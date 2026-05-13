@@ -2,22 +2,49 @@
 
 import sys, os, argparse, traceback
 from pathlib import Path
+
 sys.path[:0] = [str(Path(os.environ["AE_ROOT"], dir)) for dir in ["build", "py"]]
 import ae_backend
 from ae.sequences.source import fasta
 
 # ======================================================================
 
-sSubtypeForSeqdb = {"B": "B", "BVIC": "B", "BYAM": "B", "A(H1N1)": "A(H1N1)", "H1": "A(H1N1)", "1": "A(H1N1)", "A(H3N2)": "A(H3N2)", "H3": "A(H3N2)", "3": "A(H3N2)"}
-sSubtypeNorm = {"BV": "BVIC", "BVIC": "BVIC", "BY": "BYAM", "BYAM": "BYAM", "A(H1N1)": "A(H1N1)", "H1": "A(H1N1)", "1": "A(H1N1)", "A(H3N2)": "A(H3N2)", "H3": "A(H3N2)", "3": "A(H3N2)"}
+sSubtypeForSeqdb = {
+    "B": "B",
+    "BVIC": "B",
+    "BYAM": "B",
+    "A(H1N1)": "A(H1N1)",
+    "H1": "A(H1N1)",
+    "1": "A(H1N1)",
+    "A(H3N2)": "A(H3N2)",
+    "H3": "A(H3N2)",
+    "3": "A(H3N2)",
+}
+sSubtypeNorm = {
+    "BV": "BVIC",
+    "BVIC": "BVIC",
+    "BY": "BYAM",
+    "BYAM": "BYAM",
+    "A(H1N1)": "A(H1N1)",
+    "H1": "A(H1N1)",
+    "1": "A(H1N1)",
+    "A(H3N2)": "A(H3N2)",
+    "H3": "A(H3N2)",
+    "3": "A(H3N2)",
+}
 sSubdirforSubtype = {"BVIC": "bvic", "BYAM": "byam", "A(H1N1)": "h1", "A(H3N2)": "h3"}
 
+
 def main(args: argparse.Namespace):
-    subtypes = [sSubtypeNorm[st] for st in (args.subtype or ["BVIC", "BYAM", "H1", "H3"])]
+    subtypes = [
+        sSubtypeNorm[st] for st in (args.subtype or ["BVIC", "BYAM", "H1", "H3"])
+    ]
     for subtype in subtypes:
         sSubtypeToFunc[subtype](subtype=subtype, args=args)
 
+
 # ----------------------------------------------------------------------
+
 
 def bvic(subtype: str, args: argparse.Namespace):
     outgroup = "VICTORIA/830/2013"
@@ -28,16 +55,133 @@ def bvic(subtype: str, args: argparse.Namespace):
         .lineage("VICTORIA")
         .exclude_with_issue()
         .filter_dates(first="2016-06")
-        .find_masters()         # to be able to use .filter below
-        .exclude(lambda ref: ref.aa["165-"]) # exclude 6-del and MIE/1/2019 with garbage in the middle
-        .exclude_name([
-            "ANHUI_JINGHU/63/2019", # garbage in 406-414 leading to a long branch (2021-0722)
-            "LISBOA/NISU182_17-18/2018", # yamagata, long branch 2021-1117
-            # "ZAMBIA/503/2021", # potential long branch 2022-0401
-            # 2023-01-28 potential long branch
-            "KRABI/FS002/2022",
-            ])
-        .include_name(outgroup)    # outgroup BRISBANE/60/2008, B/CHONGQING BANAN/1840/2017 (V1A)
+        .find_masters()  # to be able to use .filter below
+        .exclude(
+            lambda ref: ref.aa["165-"]
+        )  # exclude 6-del and MIE/1/2019 with garbage in the middle
+        .exclude_name(
+            [
+                "ANHUI_JINGHU/63/2019",  # garbage in 406-414 leading to a long branch (2021-0722)
+                "LISBOA/NISU182_17-18/2018",  # yamagata, long branch 2021-1117
+                # "ZAMBIA/503/2021", # potential long branch 2022-0401
+                # 2023-01-28 potential long branch
+                "KRABI/FS002/2022",
+                "CATALONIA/NSVH151199301/2023_OR_0ACCE47F",  # XXXX 2023-0421
+                "SOUTH_AFRICA/R10785/2022_OR_0EB8BBEA",  # XXX 2023-0515
+                "SOUTH_AFRICA/R10907/2022_OR_BA5B358C",
+                "SOUTH_AFRICA/R09298/2022_OR_1A5C630A",
+                "SOUTH_AFRICA/R10914/2022_OR_ADA6D682",
+                "SOUTH_AFRICA/R10638/2022_OR_5EAB4CBB",
+                "SOUTH_AFRICA/R11310/2022_OR_12125C84",
+                "SOUTH_AFRICA/R11575/2022_OR_FED84F4F",
+                "SOUTH_AFRICA/R08092/2022_OR_93DDF2B2",
+                # XXX 2023-0602
+                "LA_REUNION/HCL023041635201/2022_103E7754",
+                "ROMANIA/550950/2023_MDCK-SIAT_E0DECCD2",
+                "SAINT_PETERSBURG/RII-10866S/2023_OR_477275F7",
+                # XXX2023-0629
+                "ABU_DHABI/4030/2022_AEC2DE48",
+                "RIO_GRANDE_DO_SUL/28773/2022_455F4FFF",
+                # 2023-0731
+                "MALAYSIA/IMR-SARI0563/2023_25FE3E0E",
+                # 2023-0811 Yam
+                "KENYA/KCH157321/2019_OR_308AC34A",
+                # 2023-0822 XXX
+                "ALAGOAS/5742/2023_OR_441065AD",
+                "ALAGOAS/4659/2023_OR_558AC3D6",
+                "PARANA/5012/2023_OR_D54659DC",
+                # 2023-1005 XXXX
+                "UNITED_KINGDOM/UO-476/2023",
+                # 2024-0130
+                "SANTA_CATARINA/10748/2023_OR_7B192215",
+                # 2024-0703
+                "MADRID/HULP-200063972/2024_C98ADFD1",  # unknown at deletion positions 162-164
+                "MADRID/HULP-200041842/2024_5D4B7141",  # unknown at deletion positions 162-164
+                # 2024-0718
+                "AUSTRIA/MUW1681066/2024_OR_3D9C21FB",  # XXXX
+                "ATHENS/ILI411/2024_OR_556F1400",  # XXXX
+                # 2024-0411
+                "PAIS_VASCO/1919/2024_OR_1D682639",
+                "GALICIA/52314290/2024_AF2005E4",
+                # 2025-2411
+                "MADAGASCAR/3422/2024_OR_DF3D589F",
+                "MEXICO/2429277701/2024_OR_3BF2F243",
+                "GALICIA/GA-CHUAC-250/2025_OR_AC92C5F3",
+                # 2025-1202
+                "PAKISTAN/NIC-JHL/2010_OR_EC56A7FD",
+                "PAKISTAN/NIC-ICT-284/2025_OR_8DAE4B6A",
+                "PAKISTAN/NIC-ICT-218/2025_OR_362FAB6C",
+                "PAKISTAN/NMC-12/2025_OR_7B217EEC",
+                "PAKISTAN/NIC-ICT-190/2025_OR_D4D6D601",
+                "ANDALUCIA/PMC-00528/2025_OR_549D6405",
+                # 2025-0313
+                "GALICIA/52463655/2025_0971E6C6",
+                # 2025-0507
+                "THUERINGEN/31/2025_OR_758A40BD",
+                "FRANCE/ARA-HCL025053223301/2025_OR_1C544F25",
+                "ABAY/NRL-2330/2025_C2E364F7",
+                "RIO_DE_JANEIRO/533/2025_OR_C04A6642",
+                "LA_REUNION/HCL023041635201/2022_OR_103E7754",
+                "ASTURIAS/232465739/2024_EA8BEFAB",
+                "UKRAINE/3471/2025_6E494813",
+                # 2025-0521
+                "GALICIA/52475765/2025_F76C5888",
+                # 2025-0611  no exclusions
+                # 2025-0618  no exclusions
+                # 2025-0625  no exclusions
+                # 2025-0702
+                "PHUKET/P1187/2025_5A09E7D5",
+                # 2025-0716 (omitted exclusions in error,later added in 0723)
+                # 2025-0723
+                "ODISHA/1421/2023_6422458A",
+                # 2025-0729 no exclusions
+                # 2025-0818
+                "INDIA/PUD-NIV25-1188/2025_MDCK3_935FB615",
+                # 2025-0827 no exclusions
+                # 2025-0910 no exclusions
+                # 2025-0917
+                "INDIA/PUD-NIV25-1188/2025_MDCK3_935FB615",
+                "AVILA/227/2024_FLU0789_03C986A9",
+                "AVILA/43/2025_FLU0874_624F5516",
+                "SALAMANCA/214/2024_FLU0771_DF1DA731",
+                "LA_REUNION/CHU725061509401/2025_7A8734BB",
+                # 2025-1006
+                "MEXICO/240450000409/2024_OR_1174529C",
+                # 2025-1028 no exclusions
+                # 2025-1112
+                "SANTA_CATARINA/4844/2025_OR_8B4C49A1",
+                "TOULON/INF_20/2023_OR_06B04496",
+                "TOULON/INF_21/2023_OR_C17020D2",
+                "SANTA_CATARINA/4290/2025_OR_27BF4310",
+                "INDIA/RES-23-4646/2023_AB3871EB",
+                "INDIA/RES-23-1799/2023_840D4617",
+                "INDIA/RES-23-2404/2023_159F0FCE",
+                "INDIA/RES-23-2414/2023_A4EA11A3",
+                # 2025-1126
+                "ODISHA/956/2023_9DD47677",
+                "B/LEE/40_6BCD57B7",
+                # 2025-1212
+                "ALAGOAS/5332/2025_OR_73BD7972",
+                # 2025-1217 no exclusions
+                # 2026-0113
+                "BANGKOK/AST-0350/2024_97C7C01E",
+                "BANGKOK/P5404/2025_07040B42",
+                # 2026-0122
+                "SANTA_CATARINA/6114/2025_OR_03AD5ACD",
+                # 2026-0129 no exclusions
+                # 2026-0208 no exclusions
+                # 2026-0217 no exclusions
+                # 2026-0302
+                "PERM_KRAI/334-1V/2025_OR_1E9DB1DD",
+                # 2026-0312
+                "SOUTH_KOREA/3_PRO/2024_OR_4B4A252C",
+                # 2026-0407
+                "PAKISTAN/NIC-NIH-1721/2026_OR_4FD24E27",
+            ]
+        )
+        .include_name(
+            outgroup
+        )  # outgroup BRISBANE/60/2008, B/CHONGQING BANAN/1840/2017 (V1A)
         .remove_hash_duplicates()
         .replace_with_master()
         .check()
@@ -47,7 +191,9 @@ def bvic(subtype: str, args: argparse.Namespace):
     report(subtype, selected, expected_nuc_size=1710, limit=0)
     export(subtype, selected)
 
+
 # ----------------------------------------------------------------------
+
 
 def byam(subtype: str, args: argparse.Namespace):
     outgroup = "MINNESOTA/2/2014"
@@ -58,9 +204,15 @@ def byam(subtype: str, args: argparse.Namespace):
         .lineage("YAMAGATA")
         .exclude_with_issue()
         .filter_dates(first="2015")
-        .find_masters()         # to be able to use .filter below
-        .include_name([outgroup]) # , "IDAHO/1/2014", "MASSACHUSETTS/7/2014"])
-        .exclude_name([lin for lin in (line.strip() for line in Path("byam-exclude.txt").open()) if lin and lin[0] != "#"])
+        .find_masters()  # to be able to use .filter below
+        .include_name([outgroup])  # , "IDAHO/1/2014", "MASSACHUSETTS/7/2014"])
+        .exclude_name(
+            [
+                lin
+                for lin in (line.strip() for line in Path("byam-exclude.txt").open())
+                if lin and lin[0] != "#"
+            ]
+        )
         .remove_hash_duplicates()
         .replace_with_master()
         .sort("+date")
@@ -69,7 +221,9 @@ def byam(subtype: str, args: argparse.Namespace):
     report(subtype, selected, expected_nuc_size=1710, limit=0)
     export(subtype, selected)
 
+
 # ----------------------------------------------------------------------
+
 
 def h1(subtype: str, args: argparse.Namespace):
     h1_include_txt = Path("h1-include.txt")
@@ -77,7 +231,11 @@ def h1(subtype: str, args: argparse.Namespace):
         h1_include_txt = Path(sys.argv[0]).parent.joinpath(h1_include_txt.name)
         if not h1_include_txt.exists():
             raise RuntimeError("> cannot find {h1_include_txt}")
-    to_include = [lin for lin in (line.strip() for line in h1_include_txt.open()) if lin and lin[0] != "#"]
+    to_include = [
+        lin
+        for lin in (line.strip() for line in h1_include_txt.open())
+        if lin and lin[0] != "#"
+    ]
     # to_include = to_include[:-500]
     outgroup = "SOUTH_AUSTRALIA/30/2013"
     selected = (
@@ -86,85 +244,316 @@ def h1(subtype: str, args: argparse.Namespace):
         .human()
         .exclude_with_issue()
         .filter_dates(first="2019")
-        .find_masters()         # to be able to use .filter below
-        .include_name([
-            outgroup,
-            "MICHIGAN/45/2015",
-            "BRAZIL/5026/2017", # # 183S, trying to show "the different 183P clades has S183P independently", inferred from 2018-0924-ssm tree
-        ] + to_include) # ~/AD/share/conf/h1.183S.2017-2018.seqids
-        .exclude_name([
-            "SWINE/",
-            # 2020-08-10 Sarah: They're not sequenced by a CC or NIC, but by a company.  The sequences don't have obvious errors, but are very different (obviously) from the rest. My feeling is they're either variant viruses (from swine) or a sequencing error.
-            "ANKARA/14015-724/2019",
-            "ANKARA/14017-004/2019",
-            "ANKARA/14015-736/2019",
-            # 2021-06-22 deletion at the end
-            # "BADEN-WURTTEMBERG/1/2020",
-            # long branch 2021-0622
-            "DENMARK/1/2021",
-            "MANITOBA/2/2021",
-            # 2021-1117 long branches
-            "MECKLENBURG-VORPOMMERN/1/2021",
-            "MECKLENBURG-VORPOMMERN/1-A/2021", # refers to MECKLENBURG-VORPOMMERN/1/2021
-            "NETHERLANDS/10370-1/2020",
-            "NETHERLANDS/10370-1A/2020",
-            "NETHERLANDS/10370-2/2020", # refers to NETHERLANDS/10370-1A/2020
-            "NETHERLANDS/GENT-193/2019",
-            "HESSEN/47/2020",
-            "HUBEI WUJIAGANG/1324/2020",
-            "HEBEI HAIGANG/SWL1572/2019",
-            "SHANDONG/204/2021",
-            "YUNNAN MENGZI/1462/2020",
-            "NORTH CAROLINA/15/2020",
-            "WISCONSIN/3/2021",
-            "PARANA/10835/2021",
-            # 2021-1125 long branches
-            "GANSU_XIFENG/1194/2021",
-            "GANSU_XIFENG/1143/2021",
-            "SICHUAN/1208/2021",
-            "TIANJIN/30/2020",
-            "WISCONSIN/5/2021",
-            "WISCONSIN/4/2021",
-            "NORTH_DAKOTA/12226/2021",
-            # 2021-1217 potential long branch
-            "IOWA/1/2021", # --> SWINE/MISSOURI/A01104146/2020 (base), SWINE/MISSOURI/A02525160/2021
-            "IOWA/6/2021", # --> "SWINE/IOWA/A02636087/2021", "SWINE/IOWA/A02636130/2021"
-            "NORTH DAKOTA/12226/2021", # --> "SWINE/IOWA/A02636087/2021", "SWINE/IOWA/A02636130/2021"
-            # 2021-1217 long branches
-            "NETHERLANDS/10370-1A/2020",
-            # 2022-0131 potential long branch
-            "DENMARK/36/2021",
-            # 2022-04-26 mess in 156-179
-            "INDIA/NIV-NICOBAR91/2020_OR_01A87F80",
-            "INDIA/NIV-NICOBAR163/2020_OR_823B2A0F",
-            "INDIA/NIV-NICOBAR106/2020_OR_B81F1DC2",
-            "INDIA/NIV-NICOBAR164/2020_OR_37A11133",
-            # 2022-10-07 potential long branch
-            "PARANA/20675/2022_OR_3D8D671C",
-            # 2022-12-10 potential long branch
-            "DAKAR/3124/2021_279E04A6",
-            # 2022-12-23 potential long branch
-            "NAVARRA/4050/2022_OR_BBC31B3A",
-            # 2023-01-13 potential long branch
-            "SAO_PAULO/356765942-IAL/2022_OR_71BA8B9D",
-            # 2023-01-28 potential long branches
-            "NAVARRA/4050/2022_OR_BBC31B3A",
-            "DAKAR/3124/2021_279E04A6 pdm09-like",
-            "PAKISTAN/GIHSN-GB-445/2022_OR_A20D55B6",
-            "PAKISTAN/GIHSN-ICT-152/2023_OR_572EBEB8",
-            "PAKISTAN/GIHSN-PB-15/2023_OR_484A375D",
-            "SAO_PAULO/356765942-IAL/2022_OR_71BA8B9D",
-            "CATALONIA/NSVH101996495/2023_OR_2E610047",
-        ])
+        .find_masters()  # to be able to use .filter below
+        .include_name(
+            [
+                outgroup,
+                "MICHIGAN/45/2015",
+                "BRAZIL/5026/2017",  # # 183S, trying to show "the different 183P clades has S183P independently", inferred from 2018-0924-ssm tree
+            ]
+            + to_include
+        )  # ~/AD/share/conf/h1.183S.2017-2018.seqids
+        .exclude_name(
+            [
+                "SWINE/",
+                # 2020-08-10 Sarah: They're not sequenced by a CC or NIC, but by a company.  The sequences don't have obvious errors, but are very different (obviously) from the rest. My feeling is they're either variant viruses (from swine) or a sequencing error.
+                "ANKARA/14015-724/2019",
+                "ANKARA/14017-004/2019",
+                "ANKARA/14015-736/2019",
+                # 2021-06-22 deletion at the end
+                # "BADEN-WURTTEMBERG/1/2020",
+                # long branch 2021-0622
+                "DENMARK/1/2021",
+                "MANITOBA/2/2021",
+                # 2021-1117 long branches
+                "MECKLENBURG-VORPOMMERN/1/2021",
+                "MECKLENBURG-VORPOMMERN/1-A/2021",  # refers to MECKLENBURG-VORPOMMERN/1/2021
+                "NETHERLANDS/10370-1/2020",
+                "NETHERLANDS/10370-1A/2020",
+                "NETHERLANDS/10370-2/2020",  # refers to NETHERLANDS/10370-1A/2020
+                "NETHERLANDS/GENT-193/2019",
+                "HESSEN/47/2020",
+                "HUBEI WUJIAGANG/1324/2020",
+                "HEBEI HAIGANG/SWL1572/2019",
+                "SHANDONG/204/2021",
+                "YUNNAN MENGZI/1462/2020",
+                "NORTH CAROLINA/15/2020",
+                "WISCONSIN/3/2021",
+                "PARANA/10835/2021",
+                # 2021-1125 long branches
+                "GANSU_XIFENG/1194/2021",
+                "GANSU_XIFENG/1143/2021",
+                "SICHUAN/1208/2021",
+                "TIANJIN/30/2020",
+                "WISCONSIN/5/2021",
+                "WISCONSIN/4/2021",
+                "NORTH_DAKOTA/12226/2021",
+                # 2021-1217 potential long branch
+                "IOWA/1/2021",  # --> SWINE/MISSOURI/A01104146/2020 (base), SWINE/MISSOURI/A02525160/2021
+                "IOWA/6/2021",  # --> "SWINE/IOWA/A02636087/2021", "SWINE/IOWA/A02636130/2021"
+                "NORTH DAKOTA/12226/2021",  # --> "SWINE/IOWA/A02636087/2021", "SWINE/IOWA/A02636130/2021"
+                # 2021-1217 long branches
+                "NETHERLANDS/10370-1A/2020",
+                # 2022-0131 potential long branch
+                "DENMARK/36/2021",
+                # 2022-04-26 mess in 156-179
+                "INDIA/NIV-NICOBAR91/2020_OR_01A87F80",
+                "INDIA/NIV-NICOBAR163/2020_OR_823B2A0F",
+                "INDIA/NIV-NICOBAR106/2020_OR_B81F1DC2",
+                "INDIA/NIV-NICOBAR164/2020_OR_37A11133",
+                # 2022-10-07 potential long branch
+                "PARANA/20675/2022_OR_3D8D671C",
+                # 2022-12-10 potential long branch
+                "DAKAR/3124/2021_279E04A6",
+                # 2022-12-23 potential long branch
+                "NAVARRA/4050/2022_OR_BBC31B3A",
+                # 2023-01-13 potential long branch
+                "SAO_PAULO/356765942-IAL/2022_OR_71BA8B9D",
+                # 2023-01-28 potential long branches
+                "NAVARRA/4050/2022_OR_BBC31B3A",
+                "DAKAR/3124/2021_279E04A6 pdm09-like",
+                "PAKISTAN/GIHSN-GB-445/2022_OR_A20D55B6",
+                "PAKISTAN/GIHSN-ICT-152/2023_OR_572EBEB8",
+                "PAKISTAN/GIHSN-PB-15/2023_OR_484A375D",
+                "SAO_PAULO/356765942-IAL/2022_OR_71BA8B9D",
+                "CATALONIA/NSVH101996495/2023_OR_2E610047",
+                # 2023-02-04 potential long branch
+                "SWITZERLAND/69094/2022_OR_B3C15C9B",
+                # 2023-0421 potential long branches
+                "CATALONIA/NSVH510598655/2022_OR_57BCC58B",
+                "PAKISTAN/1465/2023_OR_1B7B0A1A",
+                "BADEN-WURTTEMBERG/159/2022_OR_6AB83E7E",
+                "PARANA/44706/2021_OR_25BFEB40",
+                # XXX 2023-0515
+                "A/PAKISTAN/GIHSN/ICT/1838/2023_0867EDC7",
+                "A/PAKISTAN/GIHSN/ICT/1634/2023_OR_3D55578F",
+                "A/PAKISTAN/GIHSN/ICT/1798/2023_OR_C271B3C9",
+                "A/PAKISTAN/GIHSN/ICT/1682/2023_OR_FB7A0386",
+                # XXX 2023-0602
+                "PAKISTAN/GIHSN-ICT2035/2023_OR_4E73FFF6",
+                # XXX  2023-0731
+                "CYCLADES/215/2022_D164055B",
+                # long branch & XXXX 2023-0811
+                "GREECE/SRIHER-001/2022_OR_E68E256A",
+                "SAUDI_ARABIA/40/2020_OR_9B1E74A4",
+                "SAUDI_ARABIA/39/2020_OR_DAE6A100",
+                # 2023-0822 XXXX
+                "PARANA/6405/2023_OR_9ACD4010",
+                "BAHIA/5785/2023_OR_CBFA332A",
+                # 2023-0903 very long branch
+                "NETHERLANDS/10534/2023_OR_6221D5BF",
+                # 2023-09-08 long branch in tree
+                "BADAJOZ/18570374/2023_58158069",
+                # 2023-09-15 XXXX
+                "ALGIERS/251/2023_OR_1A27768",
+                # 2023-10-23 XXX & odd start for SAO_PAULO
+                "SAO_PAULO/CEVI_2300134/2023_OR_BB923F69",
+                "CAMBODIA/KVH230151/2023_OR_1F665D9C",
+                "CAMBODIA/AHC230229/2023_OR_3241A3FC",
+                # 2023-20-28
+                "BULGARIA/725/2023_8A6AF67F",  # nonsense 1-29
+                "CAMBODIA/CCH230213/2023_OR_BE937275",  # XXXX
+                # 2023-12-04
+                "BANGKOK/P5113/2023_OR_CB7624FD",  # long branch
+                # 2024-01-01
+                "SWITZERLAND/114/2023_MDCK1_A2D22DAA",  # long branch
+                # 2024-01-30
+                "CATALONIA/NSAV198289092/2023_OR_291AD7EDPARANA/13897/2023_OR_0A657176",
+                "BELGIUM/H00082/2023_56A80548",
+                "CACERES/59816382/2023_A1324011",
+                "SENEGAL/2098/2023_OR_2EC7BF97",
+                # 2024-0703
+                "GALICIA/GA-CHUAC-98/2024_OR_988888E6",  # 29 nuc differences, 19 nuc differences
+                "MEXICO/2271/2021_338E9C30",  # run of differences, 35-38, 40-42
+                "ALAGOAS/CEVI_2200198/2021_OR_0811FCC2",  # 6 X
+                "MADRID/1832324191549/2024_OR_988BC424",  # 9 X
+                "HUMAN/KENYA/5866/2023_3F1D8A0B",  # 9X
+                # 2024-0718
+                "SAO_PAULO/CEVI_24000816/2024_OR_BC9F903C",  # XXXX
+                "SAO_PAULO/CEVI_24000889/2024_OR_C69399E2",  # dels
+                # 2024-0727
+                "LUXEMBOURG/LNS3963248/2024_04C1C479",  # XXXX
+                "COSTA_RICA/INC-0552-822365/2024_OR_9E1DE43D",  # XXXX
+                # 2024-08-06
+                "CHANTHABURI/P2877/2024_OR_5B993EF6",  # XXXXX
+                "SRI_LANKA/R4_BC75/2024_50C5FC20"  # XXXXX
+                # 2024-0830 XXXX & many changes
+                "OHIO/251/2024_OR_30CB2DAF",
+                "HANOI/PF324163/2024_OR_402B095E",
+                "SOUTH_AFRICA/PET32788/2024_OR_47322CBB",
+                # 2024-0902 long branch
+                "YAOUNDE/24V-3413/2024_8196548B",
+                # 2024-1004
+                "PHUKET/P3423/2024_OR_5E3C7D19",  # XXXX
+                # 2024-1025
+                "PARANA/10835/2021_OR_8025A28A",
+                "TOLEDO/PARANA_10835/2021_OR_8025A28A",
+                "ENGLAND/3640434/2024_OR_A126DDAB",
+                "CATALONIA/NSAV198309324/2024_OR_29D1522E",
+                # 2024-1126
+                "OREGON/FLU-OHSU-242090049/2024_05BD35BD",
+                "OREGON/FLU-OHSU-242090044/2024_DEC6E084",
+                # 2024-1209
+                "NAKHON_PHANOM/F2539/2024_OR_276AD388",
+                # 2025-0901
+                "CAMBODIA/KPH240133/2024_OR_CD9DB776",
+                "ENGLAND/4820116/2024_OR_F5C11575",
+                # 2025-2401
+                "GALICIA/GA-CHUAC-172/2024_OR_000994B0",
+                "ROMANIA/2920/2024_F73C0E92",
+                # 2025-1202
+                "BALTIMORE/JH-173/2025_A2FCE291",
+                "CROATIA/HZJZ-8235/2025_170E7DD7",
+                "ENGLAND/340238/2025_OR_EA36F218",
+                "ENGLAND/121421/2024_OR_2094499C",
+                "ANDALUCIA/PMC-00542/2025_OR_BD2FE74E",
+                "PAKISTAN/NIC-ICT-576/2025_OR_6924EA8E",
+                "ANDALUCIA/PMC-00549/2025_OR_A6464885",
+                "CASTELLON/VAHNSI-GIHSN-02_0386/2025_OR_2E26A6D3",
+                # 2025-0313
+                "QUEENSLAND/IN000908/2025_91CEAA08",
+                "FRANCE/HDF-RELAB-IPP01090/2025_OR_096FF1D6",
+                "CATALONIA/NSVH171785721/2025_OR_C896185E",
+                "KAMCHATKA/205-20V/2025_OR_68CABAFF",
+                # 2025-0507
+                "ENGLAND/5100240/2024_OR_EB872B9D",
+                "CAMBODIA/CCH250029/2025_OR_A4964B9E",
+                "ASTURIAS/232523061/2025_58877E98",
+                "PAKISTAN/NIC_SD193/2025_OR_3A27DCA6",
+                "ESPIRITO_SANTO/475/2025_OR_4FB190FF",
+                "PAKISTAN/NIC_SD184/2025_OR_66AF2F25",
+                "PAKISTAN/NIC_JHL115/2025_OR_53A17665",
+                "GALICIA/22647653/2025_DE4A5E72",
+                "IRELAND/4321/2025_8EB775D5",
+                "ENGLAND/640250/2025_OR_01187600",
+                "PAKISTAN/NIC_NIH749/2025_OR_40914714",
+                "BELGIUM/S4050/2025_OR_E331B39E",
+                "GALICIA/GA-CHUAC-314/2025_OR_59908BA2",
+                "MURCIA/528/2025_OR_E7444F60",
+                "OREL/SWINE-RII-WD2678S/2025_OR_6C9DA738",
+                "OREL/SWINE-RII-WD2681S/2025_OR_B004CABD",
+                "VERMONT/UVM-0478/2022_OR_DFD37A87",
+                "VERMONT/UVM-1652/2022_OR_42E6DF65",
+                "FRANCE/NOR-IPP04189/2025_OR_88070E22",  # caused tree failure
+                # 2025-0716 (omitted exclusions in error, added 29/07, some added 0723 PR)
+                "CAMBODIA/SVH250268/2025_OR_238D9DD5",
+                "CAMBODIA/IAHC250126/2025_OR_FDAC2F6D",
+                "CAMBODIA/IKCM250040/2025_OR_7BD02395",
+                "CAMBODIA/CCH250037/2025_OR_347A5F98",
+                # 2025-0723
+                "NIZHNIY_NOVGOROD/RII-MH239577S/2025_OR_B6AF35B5",
+                "CAMBODIA/KVH250142/2025_OR_3F8690DC",
+                "CAMBODIA/IAHC250133/2025_OR_C34D3AC3",
+                "SURGUT/RII-MH237071S/2025_OR_3A47CC28",
+                "MOROCCO/1168/2025_OR_910D767C",
+                # 2025-0729
+                "ARKHANGELSK/RII-MH246940S/2025_OR_78BF9CC7",
+                # 2025-0818
+                "CATALONIA/NSVH161521968/2025_OR_A0FA1338",
+                "CAMBODIA/NPH250451/2025_OR_3F664AAE",
+                "CAMBODIA/IAHC250237/2025_OR_E4433FD6",
+                "VALENCIA/VAHNSI-GIHSN-09_0742/2025_OR_30A76211",
+                "SAO_PAULO/CEVI_2500217/2025_OR_A0D5251B",
+                "SAO_PAULO/CEVI_2500207/2025_OR_3C666E5E",
+                "HONG_KONG/F40/2024_OR_94A307F6",
+                # 2025-0827
+                "KRASNOGORSK/RII-MH248987S/2025_OR_CA8C4660",
+                # 2025-0910 no exclusions
+                # 2025-0917
+                "CATALONIA/NSVH161521968/2025_OR_A0FA1338",
+                "CAMBODIA/IAHC250237/2025_OR_E4433FD6",
+                "CAMBODIA/NPH250451/2025_OR_3F664AAE",
+                "VALENCIA/VAHNSI-GIHSN-09_0742/2025_OR_30A76211",
+                "SAO_PAULO/CEVI_2500207/2025_OR_3C666E5E",
+                "KRASNOGORSK/RII-MH248987S/2025_OR_CA8C4660",
+                "HONG_KONG/F40/2024_OR_94A307F6",
+                # 2025-1006 no exclusions
+                # 2025-1028
+                "SENEGAL/IPD-2503/2025_OR_20CCF2D9",
+                "POLAND/D7325_10/2023_763600E9",
+                "NETHERLANDS/D6904_36/2022_66C9DF52",
+                "POLAND/D7325_7/2023_CE4D3423",
+                "NETHERLANDS/D7061_16/2022_8D08423F",
+                "SPAIN/D7228_1/2022_F78E9BF7",
+                "AUSTRIA/D7225_20/2023_12AC9B5C",
+                "SPAIN/D7228_40/2023_36844405",
+                "BELGIUM/D6840_21/2022_32C5D497",
+                "SPAIN/D7228_50/2023_99D2EC08",
+                "ITALY/D7434_7/2023_BC9D4B6B",
+                "PORTUGAL/D7272_2/2023_0ED2CAE8",
+                "GERMANY/D7225_5/2023_13A6321B",
+                "GERMANY/D7225_17/2023_E6C859C1",
+                "POLAND/D7325_11/2023_906FE020",
+                "NETHERLANDS/D6840_51/2022_E7F7E7FB",
+                "GERMANY/D7061_22/2023_33D65F89",
+                "POLAND/D6904_24/2022_AF273C3D",
+                "POLAND/D7325_23/2023_36B8A0E4",
+                "NETHERLANDS/D7061_27/2022_DCE07BA1",
+                "POLAND/D6904_5/2022_240EA095",
+                "POLAND/D6840_59/2022_95E58799",
+                "BELGIUM/D7157_61/2023_6A0D50EA",
+                "GERMANY/D7061_33/2022_6DD93351",
+                "SLOVENIA/D7378_1_1/2023_473636B1",
+                "GERMANY/D7061_8/2022_5C22171F",
+                "GERMANY/D7225_1/2023_6BCBB1AC",
+                "GERMANY/D7061_11/2023_EA3CB29E",
+                "GERMANY/D7061_9/2023_D612A4DA",
+                "BULGARIA/D6904_28/2022_74CF41D4",
+                "BULGARIA/D6904_25/2022_DA88ADA9",
+                "SPAIN/D7228_24/2023_F14A6077",
+                # 2025-1112
+                "RIYADH/63/2021_OR_677764E9",
+                "RIYADH/65/2022_OR_B365D7CC",
+                "RIYADH/19/2021_OR_9E0E1562",
+                "RIYADH/88/2022_OR_8E98C98E",
+                "RIYADH/100/2022_OR_8B809E4C",
+                "RIYADH/111/2023_OR_886090A3",
+                "RIYADH/120/2023_OR_EA0E7626",
+                "RIYADH/49/2022_OR_DB27594B",
+                "RIYADH/88/2023_OR_E11E47BF",
+                "RIYADH/66/2022_OR_03C7C7E0",
+                "TOULON/INF_4/2023_OR_A4196D00",
+                # 2025-1126
+                "CAMBODIA/KPH250113/2025_OR_EABF2384",
+                "CAMBODIA/IAHC250287/2025_OR_3BF3D0EB",
+                "CAMBODIA/IMDK250044/2025_OR_037B06A4",
+                "ASTURIAS/232557424/2025_A6C56596",
+                # 2025-1212
+                "GALICIA/GA-CHUAC-596/2025_OR_7B0B4D33",
+                # 2025-1217
+                "MADRID/2321/2025_OR_96C0EEF2",
+                # 2026-0113
+                "BANGKOK/AST-0223/2024_C1120968",
+                "CAMBODIA/PKH250239/2025_OR_EB7D2066",
+                "BARBADOS/BPH3040144/2025_EA30BE52",
+                "BARBADOS/BPH3038943/2025_9326FCD1",
+                # 2026-0122 no exclusions
+                # 2026-0129 no exclusions
+                # 2026-0208
+                "ASTURIAS/232600174/2026_3C05E818",
+                # 2026-0217
+                "CATALONIA/NSAV600497186/2026_OR_6A2A744A",
+                # 2026-0302
+                "SOUTH_AFRICA/PATH-CERI-C073352/2025_OR_CAA90FF6",
+                "TRANG/B151/2026_OR_81878A3F",
+                "MADRID/MD-HULP-201534566/2025_OR_CE2F7F08",
+                # 2026-0312
+                "MADRID/MD-HULP-201490752/2025_OR_59AEC9C9",
+                # 2026-0407
+                "INDIA/PUD_NIV26-373/2025_MDCK3_E2B5854D",
+            ]
+        )
         .remove_hash_duplicates()
         .replace_with_master()
         .sort("+date")
         .move_name_to_beginning(outgroup)
     )
-    report(subtype, selected, expected_nuc_size=1647, limit=0) # aa 549
+    report(subtype, selected, expected_nuc_size=1647, limit=0)  # aa 549
     export(subtype, selected)
 
+
 # ----------------------------------------------------------------------
+
 
 def h3(subtype: str, args: argparse.Namespace):
     outgroup = "PERTH/16/2009"
@@ -174,141 +563,858 @@ def h3(subtype: str, args: argparse.Namespace):
         .human()
         .exclude_with_issue()
         .filter_dates(first="2018-03")
-        .find_masters()         # to be able to use .filter below
-        .include_name([
-            outgroup,
-            "VICTORIA/361/2011",        # 2011-10-24    3C.3
-            # [2020-09-07] Nearest common ancestor of 2a and 3a in /syn/eu/ac/results/eu/2019-0417-h3-trees/cdc-usa-2009-2019-250-per-year-1.rough-29532.tree.pdf https://notebooks.antigenic-cartography.org/eu/results/eu/2019-0417-h3-trees/
-            "MARYLAND/30/2012",          # 2012-07-26    3C.3
-            # [2020-08-17] Derek thinks that the root (A/STOCKHOLM/6/2014) is not old enough
-            "TEXAS/50/2012",                   # 2012-04-15    3C.3  root in MELB tree 2020
-            "VERMONT/6/2012",
-            "STOCKHOLM/6/2014",                          # 2014-02-06    3a
-            # [2020-02-07] intermediate strains from nextflu https://nextstrain.org/flu/seasonal/h3n2/ha/2y to keep 3a at the top
-            "SWITZERLAND/9715293/2013",   # 2013-12-06    3a
-            "NORWAY/466/2014",             # 2014-02-03    3a
-            "SOUTH_AUSTRALIA/55/2014",               # 2014-06-29    3a
-            "TASMANIA/11/2014",                       # 2014-03-16    3a
-            "KOBE/63/2014",                           # 2014-05-21    3a
-            "PERU/27/2015",                     # 2015-04-13    3a
-            "NEVADA/22/2016",                            # 2016-03-05    3a
-            "IDAHO/33/2016",                             # 2016-06-08    3a
-            "TEXAS/88/2016",                             # 2016-02-25    3a
-            "TEXAS/71/2017",                             # 2017-03-18    3a
-            "BRAZIL/7331/2018",                          # 2018-07-09    3a
-            "KANSAS/14/2017",                          # 2017-12-14    3a, to have serum circles in the sig page
-            "HONG_KONG/4801/2014",              # 2014-02-26    2a
-            "HAWAII/47/2014",                         # 2014-07-18    2a
-            "NORTH_CAROLINA/4/2017",                     # 2017-01-26    2a2
-            "NORTH_CAROLINA/4/2016",                     # 2016-01-14    2a1
-            "ANTANANARIVO/1067/2016",                    # 2016-04-06    2a1
-            "HONG_KONG/2286/2017",              # 2017-05-23    2a1b 135K
-            "WISCONSIN/327/2017",                        # 2017-09-22    2a1b 135K
-            "ABU_DHABI/240/2018",                        # 2018-01-01    2a1b 135K
-            "JAMAICA/1447/2018",                         # 2018-02-19    2a1b 131K
-
-            # Strains before and after T135N substitution to have a better 135N branch placement
-            # Sarah 2021-02-08 17:05
-            "WISCONSIN/85/2016",
-            "SRI_LANKA/56/2017",
-            "SOUTH_CAROLINA/4/2017",
-            "YOKOHAMA/145/2017",
-            "INDIA/9930/2017",
-            "HONG_KONG/3118/2017",
-            "HAWAII/47/2014",
-            "NIIGATA-C/43/2015",
-            "DAKAR/17/2016",
-            # "CAMEROON/16V-9267/2016", # excluded, truncated sequence
-            "LAOS/3008/2016",
-            "YUNNAN_LINXIANG/1718/2016",
-            "HONG_KONG/2302/2016",
-            "ONTARIO/RV2414/2015",
-            "ONTARIO/RV2414/2015",
-            "HONG_KONG/2286/2017",
-            "HONG_KONG/2286/2017",
-            "HONG_KONG/2286/2017",
-            "HONG_KONG/2286/2017",
-            "HONG_KONG/2286/2017",
-        ])
-        .exclude_name([
-            "SWINE/",
-             # long branch (2021-0622)
-            "WISCONSIN/1/2021",
-             # long branch (2021-1117)
-            "HAWAII/28/2020",
-            "SOUTH_AUSTRALIA/85/2018",
-            "SOUTH_AUSTRALIA/1/2021",
-            "MANITOBA/3/2021",
-            "GUANGXI_GANGBEI/190/2019",
-            # 2021-1217 potential long branch
-            "OHIO/6/2021_ISOLATE",
-            # 2022-0204 potential long branch
-            "FRANCE/ARA-HCL021219268801/2021",
-            "FRANCE/ARA-HCL021220304101/2021",
-            # 2022-0209 long branch, eight X, R in nuc
-            "ONTARIO/RV2002/2019_P1_0F1E8F1E",
-            # 2022-0415 potential long branch
-            "ACRE/181823-IEC/2021",
-            # 2022-0819 potential long branch
-            "CATALONIA/NSVH101883267/2022_OR_F79C7813",
-            # 2022-0825 long branch in the tree
-            "INDIANA/27/2018_SIAT1_26C3A2A4",
-            "SWINE/KENTUCKY/18TOSU1939/2018_26C3A2A4",
-            "SWINE/ILLINOIS/18TOSU1411/2018_26C3A2A4",
-            # 2022-0826 potential long branch
-            "FIJI/99/2022_OR_80B95BF8",
-            "FIJI/102/2022_OR_6AEB79D8",
-            "WEST_VIRGINIA/25/2022_SIAT1_3E592413",
-            "WEST_VIRGINIA/26/2022_SIAT1_3E592413",
-            "WEST_VIRGINIA/24/2022_SIAT1_2FDA4DA3",
-            # 2022-0902 potential long branch
-            "FRANCE/ARA-HCL022060609601/2022_65F4520B",
-            # 2022-10-07 potential long branch
-            "CATALONIA/NSVH101908168/2022_OR_D5C0176E",
-            # 2022-10-28 potential long branch
-            "MICHIGAN/48/2022_OR_910196F9",
-            # 2022-11-04 potential long branch
-            "NEW_MEXICO/19/2022_IRX_4BA11056",
-            # 2022-11-11 potential long branches
-            "CATALONIA/NSVH534131326/2022_OR_4AC47F3F",
-            "A/ANAS_PLATYRHYNCHOS/BELGIUM/2499_0006/2021_MIXED_ECE1_DCC5FAD7",
-            "ANAS_PLATYRHYNCHOS/BELGIUM/2499_0006/2021_ECE1_DCC5FAD7",
-            # 2022-11-26 potential long branches
-            "CATALONIA/NSVH101954411/2022_OR_7A633967",
-            "CATALONIA/NSVH510598655/2022_OR_57BCC58B",
-            # 2022-12-02 potential long branches
-            "MISSOURI/19/2022_OR_837C934E",
-            # 2022-12-10 potential long branches
-            "CATALONIA/NSVH560028269/2022_OR_9C189CFA", # 159X 160X 162X 163X 164X
-            "ATHENS/355/2022_D9D4A86A",                 # 38X 40X 41X 42X 59X 67X 81X 128X
-            "MICHIGAN/48/2022_OR_910196F9",
-            "MICHIGAN/UOM10047284024/2022_OR_910196F9",
-            # 2023-01-08 potential long branches
-            "BRITISH_COLUMBIA/PHL-480/2022_OR_EAAE7C01",
-            # 2023-01-13 potential long branch
-            "GALICIA/22034482/2022_2EE89148",
-            "GALICIA/22018524/2022_1EE46082",
-            "GALICIA/22033804/2022_0EE699D6",
-            "GALICIA/21987208/2022_F49E5748",
-            "GALICIA/22036079/2022_430E996A",
-            "GALICIA/22018743/2022_0116B017",
-            "GALICIA/22011636/2022_3D9F40AD",
-            # 2023-01-20 potential long branch
-            "SINGAPORE/GP9117/2022_OR_69761A51",
-            "TURKEY/GIHSN_ANKARA-14020_7/2022_012CD2F7",
-            # 2023-01-28 potential long branches
-            "MICHIGAN/48/2022_OR_910196F9",
-            "MACEDONIA/IPH-MKD-59729/2021_OR_837D0C9D",
-            "KHON_KAEN/FS005/2022_OR_1A5637D8",
-            "TURKEY/GIHSN_ANKARA-14020_7/2022_012CD2F7",
-            "ATHENS/355/2022_D9D4A86",
-            "CATALONIA/NSVH101994299/2023_OR_13A43DA9",
-            "MACEDONIA/IPH-MKD-HD/2021_OR_B52D1807",
-            "SOUTH_AFRICA/R07603/2022_OR_7937FE46",
-            "SOUTH_AFRICA/R05772/2022_OR_552B5F5E",
-            "GALICIA/22034482/2022_2EE89148",
-            "CATALONIA/NSVH560028269/2022_OR_9C189CFA",
-        ])
+        .find_masters()  # to be able to use .filter below
+        .include_name(
+            [
+                outgroup,
+                "VICTORIA/361/2011",  # 2011-10-24    3C.3
+                # [2020-09-07] Nearest common ancestor of 2a and 3a in /syn/eu/ac/results/eu/2019-0417-h3-trees/cdc-usa-2009-2019-250-per-year-1.rough-29532.tree.pdf https://notebooks.antigenic-cartography.org/eu/results/eu/2019-0417-h3-trees/
+                "MARYLAND/30/2012",  # 2012-07-26    3C.3
+                # [2020-08-17] Derek thinks that the root (A/STOCKHOLM/6/2014) is not old enough
+                "TEXAS/50/2012",  # 2012-04-15    3C.3  root in MELB tree 2020
+                "VERMONT/6/2012",
+                "STOCKHOLM/6/2014",  # 2014-02-06    3a
+                # [2020-02-07] intermediate strains from nextflu https://nextstrain.org/flu/seasonal/h3n2/ha/2y to keep 3a at the top
+                "SWITZERLAND/9715293/2013",  # 2013-12-06    3a
+                "NORWAY/466/2014",  # 2014-02-03    3a
+                "SOUTH_AUSTRALIA/55/2014",  # 2014-06-29    3a
+                "TASMANIA/11/2014",  # 2014-03-16    3a
+                "KOBE/63/2014",  # 2014-05-21    3a
+                "PERU/27/2015",  # 2015-04-13    3a
+                "NEVADA/22/2016",  # 2016-03-05    3a
+                "IDAHO/33/2016",  # 2016-06-08    3a
+                "TEXAS/88/2016",  # 2016-02-25    3a
+                "TEXAS/71/2017",  # 2017-03-18    3a
+                "BRAZIL/7331/2018",  # 2018-07-09    3a
+                "KANSAS/14/2017",  # 2017-12-14    3a, to have serum circles in the sig page
+                "HONG_KONG/4801/2014",  # 2014-02-26    2a
+                "HAWAII/47/2014",  # 2014-07-18    2a
+                "NORTH_CAROLINA/4/2017",  # 2017-01-26    2a2
+                "NORTH_CAROLINA/4/2016",  # 2016-01-14    2a1
+                "ANTANANARIVO/1067/2016",  # 2016-04-06    2a1
+                "HONG_KONG/2286/2017",  # 2017-05-23    2a1b 135K
+                "WISCONSIN/327/2017",  # 2017-09-22    2a1b 135K
+                "ABU_DHABI/240/2018",  # 2018-01-01    2a1b 135K
+                "JAMAICA/1447/2018",  # 2018-02-19    2a1b 131K
+                # Strains before and after T135N substitution to have a better 135N branch placement
+                # Sarah 2021-02-08 17:05
+                "WISCONSIN/85/2016",
+                "SRI_LANKA/56/2017",
+                "SOUTH_CAROLINA/4/2017",
+                "YOKOHAMA/145/2017",
+                "INDIA/9930/2017",
+                "HONG_KONG/3118/2017",
+                "HAWAII/47/2014",
+                "NIIGATA-C/43/2015",
+                "DAKAR/17/2016",
+                # "CAMEROON/16V-9267/2016", # excluded, truncated sequence
+                "LAOS/3008/2016",
+                "YUNNAN_LINXIANG/1718/2016",
+                "HONG_KONG/2302/2016",
+                "ONTARIO/RV2414/2015",
+                "ONTARIO/RV2414/2015",
+                "HONG_KONG/2286/2017",
+                "HONG_KONG/2286/2017",
+                "HONG_KONG/2286/2017",
+                "HONG_KONG/2286/2017",
+                "HONG_KONG/2286/2017",
+            ]
+        )
+        .exclude_name(
+            [
+                "SWINE/",
+                # long branch (2021-0622)
+                "WISCONSIN/1/2021",
+                # long branch (2021-1117)
+                "HAWAII/28/2020",
+                "SOUTH_AUSTRALIA/85/2018",
+                "SOUTH_AUSTRALIA/1/2021",
+                "MANITOBA/3/2021",
+                "GUANGXI_GANGBEI/190/2019",
+                # 2021-1217 potential long branch
+                "OHIO/6/2021_ISOLATE",
+                # 2022-0204 potential long branch
+                "FRANCE/ARA-HCL021219268801/2021",
+                "FRANCE/ARA-HCL021220304101/2021",
+                # 2022-0209 long branch, eight X, R in nuc
+                "ONTARIO/RV2002/2019_P1_0F1E8F1E",
+                # 2022-0415 potential long branch
+                "ACRE/181823-IEC/2021",
+                # 2022-0819 potential long branch
+                "CATALONIA/NSVH101883267/2022_OR_F79C7813",
+                # 2022-0825 long branch in the tree
+                "INDIANA/27/2018_SIAT1_26C3A2A4",
+                "SWINE/KENTUCKY/18TOSU1939/2018_26C3A2A4",
+                "SWINE/ILLINOIS/18TOSU1411/2018_26C3A2A4",
+                # 2022-0826 potential long branch
+                "FIJI/99/2022_OR_80B95BF8",
+                "FIJI/102/2022_OR_6AEB79D8",
+                "WEST_VIRGINIA/25/2022_SIAT1_3E592413",
+                "WEST_VIRGINIA/26/2022_SIAT1_3E592413",
+                "WEST_VIRGINIA/24/2022_SIAT1_2FDA4DA3",
+                # 2022-0902 potential long branch
+                "FRANCE/ARA-HCL022060609601/2022_65F4520B",
+                # 2022-10-07 potential long branch
+                "CATALONIA/NSVH101908168/2022_OR_D5C0176E",
+                # 2022-10-28 potential long branch
+                "MICHIGAN/48/2022_OR_910196F9",
+                # 2022-11-04 potential long branch
+                "NEW_MEXICO/19/2022_IRX_4BA11056",
+                # 2022-11-11 potential long branches
+                "CATALONIA/NSVH534131326/2022_OR_4AC47F3F",
+                "A/ANAS_PLATYRHYNCHOS/BELGIUM/2499_0006/2021_MIXED_ECE1_DCC5FAD7",
+                "ANAS_PLATYRHYNCHOS/BELGIUM/2499_0006/2021_ECE1_DCC5FAD7",
+                # 2022-11-26 potential long branches
+                "CATALONIA/NSVH101954411/2022_OR_7A633967",
+                "CATALONIA/NSVH510598655/2022_OR_57BCC58B",
+                # 2022-12-02 potential long branches
+                "MISSOURI/19/2022_OR_837C934E",
+                # 2022-12-10 potential long branches
+                "CATALONIA/NSVH560028269/2022_OR_9C189CFA",  # 159X 160X 162X 163X 164X
+                "ATHENS/355/2022_D9D4A86A",  # 38X 40X 41X 42X 59X 67X 81X 128X
+                "MICHIGAN/48/2022_OR_910196F9",
+                "MICHIGAN/UOM10047284024/2022_OR_910196F9",
+                # 2023-01-08 potential long branches
+                "BRITISH_COLUMBIA/PHL-480/2022_OR_EAAE7C01",
+                # 2023-01-13 potential long branch
+                "GALICIA/22034482/2022_2EE89148",
+                "GALICIA/22018524/2022_1EE46082",
+                "GALICIA/22033804/2022_0EE699D6",
+                "GALICIA/21987208/2022_F49E5748",
+                "GALICIA/22036079/2022_430E996A",
+                "GALICIA/22018743/2022_0116B017",
+                "GALICIA/22011636/2022_3D9F40AD",
+                # 2023-01-20 potential long branch
+                "SINGAPORE/GP9117/2022_OR_69761A51",
+                "TURKEY/GIHSN_ANKARA-14020_7/2022_012CD2F7",
+                # 2023-01-28 potential long branches
+                "MICHIGAN/48/2022_OR_910196F9",
+                "MACEDONIA/IPH-MKD-59729/2021_OR_837D0C9D",
+                "KHON_KAEN/FS005/2022_OR_1A5637D8",
+                "TURKEY/GIHSN_ANKARA-14020_7/2022_012CD2F7",
+                "ATHENS/355/2022_D9D4A86",
+                "CATALONIA/NSVH101994299/2023_OR_13A43DA9",
+                "MACEDONIA/IPH-MKD-HD/2021_OR_B52D1807",
+                "SOUTH_AFRICA/R07603/2022_OR_7937FE46",
+                "SOUTH_AFRICA/R05772/2022_OR_552B5F5E",
+                "GALICIA/22034482/2022_2EE89148",
+                "CATALONIA/NSVH560028269/2022_OR_9C189CFA",
+                # 2023-02-04 potential long branches
+                "MANITOBA/RV00728/2022_P1_5236154F",
+                "ONTARIO/198/2022_OR_D1EC3B40",
+                # 2023-04-21 potential long branches
+                "ROMANIA/493/2023_612606B9",
+                "PAKISTAN/1140/2023_OR_3D2D111B",
+                "CATALONIA/NSVH102045605/2023_OR_7490FFA8",
+                # XXX & long branch 2023-0731
+                "BAHIA/PVM105707/2021_OR_BCE07E46",
+                "SOUTH_AFRICA/K056301/2023_30E0E639",
+                # XXXXX 2023-0811 CORRECTED 2023-1023
+                "BAHIA/292038965/2021_70230607",
+                "BAHIA/292104308/2022_D4526D62",
+                # XXXXX 2023-0829 CORRECTED 2023-1023
+                "SOUTH_AFRICA/PET28428/2023_7572E223",
+                "SOUTH_AFRICA/PET28193/2023_BF46BBB4",
+                "NORWAY/8084/2023_OR_4548A267",
+                # 2023-09-08 potential long branch ?why
+                "SOUTH_AFRICA/K056301/2023_CC1FE952"
+                # 2023-10-23 XXX
+                "PARA/CEVI_2200263/2021_OR_6D24213E",
+                "SAO_PAULO/CEVI_2200855/2022_OR_D4E825BF",
+                "SAO_PAULO/CEVI_2200871/2022_OR_280FCE18",
+                # 2023-10-28
+                "SOUTH_AFRICA/K056301/2023_CC1FE952",  # very divergent
+                # 2023-12-04 XXXX
+                "OMAN/CPHL_52323056/2023_OR_297A7E60",
+                "LUSAKA/1-NIC-332/2023_OR_BA018CE9",
+                "NORWAY/11072/2023_OR_EB1EA580",
+                # 2024-01-01
+                "SAINT_PETERSBURG/RII-MH151473S/2023_OR_D20D279D",  # XX
+                "SAINT_PETERSBURG/RII-4937S/2023_OR_95887A8C",  # XX
+                "CANADA/NOVASCOTIA-32036/2022_A90EF453",  # first 7 aa
+                "BRITISH_COLUMBIA/PHL-602/2022_OR_A1B8E845",  # XX
+                # 2024-01-22 for 2024-01-16 file
+                "INDONESIA/BIOKES-IBKL1127/2023_OR_791937E7",  # long branch
+                "SAO_PAULO/CEVI_2201055/2022_OR_BF9D3752",  # XX
+                "ROMANIA/3227/2023_E20D207E",  # XX
+                "SAO_PAULO/CEVI_2200903/2022_OR_BB30A339",  # XX
+                "CACERES/50644480/2023_361FA786",  # long branch
+                "BELGIUM/S1112/2023_OR_D7ABA060",  # long branch
+                "BELGIUM/S0576/2023_OR_CEC5B896",  # long branch
+                "BELGIUM/S0220/2023_OR_0B549607",  # long branch
+                "BELGIUM/H0592/2022_OR_22BD830C",  # long branch
+                # 2024-01-30
+                "SPAIN/GA-HULA-615019/2023_B7077195",
+                "BELGIUM/S03941/2023_F4250630",
+                "NEW_YORK/392/2004_CFB2F75C",
+                "SPAIN/GA-HULA-615037/2023_E8183B9E",
+                "CACERES/59816379/2023_4D9F91F8",
+                "TURKEY/GIHSN_ANKARA-140111_950/2023_E0D8B88D",
+                # 2024-02-11 XXXX Indonesia is long branch
+                "KENYA/AFI-KDH-1820/2023_B3509344",
+                "INDONESIA/BIOKES-IDSW0063/2023_OR_5962326E",
+                "KENYA/AFI-ISB-1107/2023_E5F19B22",
+                "KENYA/AFI-MNB-1100/2023_6D42271",
+                # 2024-0703
+                "CHIANG_RAI/P2287/2024_OR_2744AA9C",  # 3 deletions
+                # 2024-0727
+                "SASKATCHEWAN/RV03900/2024_OR_029CB62D",  # 198 diffs
+                "WASHINGTON/S25532/2024_OR_13A107A6",  # XXXX
+                "OREGON/S25529/2024_OR_5502D106",  # XXXX
+                "OREGON/S25537/2023_OR_BE6502FF",  # XXXX
+                "CAMBODIA/CCH230307/2023_7CC43803",  # XXXX
+                "CAMBODIA/IAHC230253/2023_50A155E0",  # XXXX
+                # 2024-08-06
+                "VIRGINIA/H20-355-5372/2024_OR_53F1E92E",  # XXXXX
+                "PANAMA/M273491/2024_OR_27E79A9B"  # XXXXX
+                # 2024-0830 many changes
+                "COLORADO/150/2024_OR_2BD9D59A",
+                "COLORADO/150/2024_SIAT1_14B3FB98",
+                "MICHIGAN/113/2024_SIAT1_B0E6BEF3",
+                # 2024-0902
+                "SASKATCHEWAN/RV03900/2024_OR_029CB62D",  # long branch
+                "PANAMA/M273491/2024_OR_27E79A9B",  # XXXX
+                # 2024-1004
+                "CAMBODIA/NPH240499/2024_OR_F38419C8",  # XXXX
+                # 2024-1025
+                "CAMBODIA/NPH240575/2024_OR_33D3499A",
+                # 2024-1115
+                "PARANA/44706/2021_OR_25BFEB40",
+                "SANTA_HELENA/PARANA_44706/2021_OR_25BFEB40",
+                # 2024-0111 (tree built 2024-1811)
+                "GREATER_ACCRA_REGION/FS-24-4832/2024_B7004939",
+                "GREATER_ACCRA_REGION/FS-24-4779/2024_1393BD1C",
+                # 2024-2611
+                "QUEENSLAND/IN000643/2024_1ACA7E5A",
+                "QUEENSLAND/IN000245/2024_0854A342",
+                "WASHINGTON/S26082/2022_OR_7462BFDE",
+                "WASHINGTON/S26079/2022_OR_07B0CEEC",
+                "WASHINGTON/S26107/2023_OR_A56901B3",
+                "WASHINGTON/S26104/2022_OR_E80CAD50",
+                "WASHINGTON/S26097/2022_OR_40AE3B8C",
+                "WASHINGTON/S26077/2022_OR_C294BE90",
+                "WASHINGTON/S26098/2022_OR_1EDB1957",
+                "WASHINGTON/S26088/2022_OR_C6B3FAA9",
+                # 2024-0912
+                "GALICIA/28220935/2023_C495745E",
+                "GALICIA/33341960/2023_0FF7D1C8",
+                # 2025-2401
+                "TURKMENISTAN/784/2025_OR_F898A707",
+                # 2025-1202
+                "COTE_DIVOIRE/4331/2024_OR_E0FF092D",
+                # 2025-1202
+                "WISCONSIN/67/2005_XXMDCK2_8C52B46C",
+                # 2025-0716 (omitted exclusions in error, added 29/07 PR)
+                "INDIA/BHO_NIV25-827/2025_MDCK3_C54368E2",
+                "CAMBODIA/IAHC240402/2024_OR_35F1131A",
+                "INDIA/PUN_NIVCOV2572/2025_MDCK1_C9AF818D",
+                "ASTURIAS/232524600/2025_A4329A8F",
+                "OREL/SWINE-RII-WD2652S/2025_OR_57A8B37C",
+                "OREL/SWINE-RII-WD2687S/2025_OR_C384E32B",
+                "MEXICO/2496813201/2025_OR_E2853515",
+                # 2025-0723
+                "NORWAY/6870/2025_OR_828769BE",
+                "BRITISH_COLUMBIA/RV00479/2025_SIAT2/SIAT1_0DA227AA",
+                "QUEBEC/240/2025_OR_8D4D59A8",
+                "GALICIA/52520233/2025_F71B58B8",
+                "BULGARIA/2506/2025_SIAT2/SIAT1_8B0BEF2D",
+                "BULGARIA/1941/2025_SIAT2/SIAT1_0D5E6F90",
+                "CAMBODIA/IBTB250007/2025_OR_4E893E81",
+                "ASTURIAS/232525925/2025_719B9A6C",
+                "BAVARIA/6511057/2025_OR_D759C9B5",
+                "MEXICO/2496813201/2025_OR_E2853515",
+                "CAMBODIA/SVH250074/2025_OR_2253D125",
+                "ALBANIA/310521/2025_SIAT1_5DCA4F3D",
+                "CAMBODIA/IAHC250174/2025_OR_6BFB38A8",
+                "FRANCE/ARA-HCL023004739801/2023_OR_003FC67E",
+                "SOUTH_AFRICA/NHLS-UCT-CERI-C067966/2025_EE268891",
+                "PERU/LIM-UPCH-4915/2025_1E953D52",
+                # 2025-0729 no exclusions
+                # 2025-0818
+                "INDIA/BHO-NIV25-1226/2025_MDCK1_2E99D391",
+                "INDIA/PUD-NIV25-1183/2025_MDCK4_1BD68829",
+                "INDIA/JAI-NIV25-1120/2025_MDCK1_9051692B",
+                "ALBANIA/310569/2025_SIAT1_A284C73A",
+                "SWINE/OHIO/A02858604/2025_OR_3F9C4EB8",
+                "SWINE/NORTH_CAROLINA/A02979483/2025_OR_9F18313D",
+                "SWINE/IOWA/A02858606/2025_OR_8367F95A",
+                "SWINE/IOWA/A02858602/2025_OR_6B07CDAC",
+                "SWINE/MINNESOTA/A02858601/2025_OR_8A30B201",
+                "SWINE/MINNESOTA/A02979412/2025_OR_1838EF26",
+                # 2025-0827 no exclusions
+                # 2025-0910 no exclusions
+                # 2025-0917
+                "INDIA/BHO-NIV25-1226/2025_MDCK1_2E99D391",
+                "INDIA/PUD-NIV25-1183/2025_MDCK4_1BD68829",
+                "ALBANIA/310569/2025_SIAT1_A284C73A",
+                "INDIA/AS-RMRC-DIB-1189/2023_D09F02E4",
+                # 2025-1006
+                "MEXICO/2578825701/2025_OR_B6857194",
+                "CAMPO_GRANDE/LEIAL6538/2025_OR_3083EF3A",
+                # 2025-1028
+                "INDIA/DIB-NIV25-1297/2025_DEAC04B8",
+                "INDIA/PUN-NIV25-1199/2025_EA34056E",
+                "INDIA/DEL-NIV25-1587/2025_01FD20A7",
+                "INDIA/PUN-NIVCOV251684/2025_95A3CE8E",
+                "INDIA/PUD-NIV25-1176/2025_8B8D9E17",
+                "INDIA/LUK-NIV25-1336/2025_4C35C9DE",
+                "INDIA/DIB-NIV25-1309/2025_0D480D68",
+                "INDIA/LUK-NIV25-1344/2025_ED98BB3E",
+                "INDIA/PUD-NIV25-1341/2025_663D69FB",
+                "GALICIA/GA-CHUAC-478/2025_OR_AE004DEB",
+                # 2025-1112
+                "ESPIRITO_SANTO/4988/2025_OR_C4DA8B91",
+                # 2025-1126
+                "CAMBODIA/NPH250828/2025_OR_B75D636B",
+                "CAMBODIA/KVH250244/2025_OR_DB084CEF",
+                "CAMBODIA/ISVR250088/2025_OR_8696921D",
+                "CAMBODIA/KPH250212/2025_OR_0DF92A52",
+                "CAMBODIA/INPH250362/2025_OR_6FD76539",
+                "CAMBODIA/AHC250325/2025_OR_10F98EBA",
+                "CAMBODIA/NPH250817/2025_OR_DD4119F8",
+                "CAMBODIA/AHC250341/2025_OR_D6BA3933",
+                "CAMBODIA/IKPT250105/2025_OR_6BA23E98",
+                "KILIFI/MAT220593/2021_OR_E96D0DC0",
+                "MINAS_GERAIS/CEVI_2501233/2025_OR_ACDD91A4",
+                # 2025-1212
+                "PAKISTAN/NIC-NIH-2339/2025_OR_41C1E276",
+                "PAKISTAN/NIC-NIH-2353/2025_OR_EC364F76",
+                "PAKISTAN/NIC-ICT-1772/2025_OR_238EA9B6",
+                "PAKISTAN/NIC-SWT-611/2025_OR_3DA5ADA5",
+                "PAKISTAN/NIC-NIH-2294/2025_OR_FCE9B73B",
+                "PAKISTAN/NIC-NIH-2304/2025_OR_FC45FB3C",
+                # 2025-1217
+                "NORWAY/11393/2025_OR_07A3E64A",
+                "SWINE/INDIANA/A01812250/2016_241A2C98",
+                # 2026-0113
+                "CAMBODIA/IAHC250323/2025_OR_E9A65CD0",
+                "CAMBODIA/ASRH250014/2025_OR_1DA28D86",
+                "BARBADOS/BPH3041145/2025_40A88772",
+                "PAKISTAN/NIC-NIH-2875/2025_OR_C6731702",
+                "BARBADOS/BPH3041374/2025_6A0F6286",
+                "BARBADOS/BPH3041904/2025_40EF2F12",
+                "CAMBODIA/NDS250127/2025_OR_732B8C5F",
+                "CAMBODIA/NDS250121/2025_OR_0AFE22EF",
+                "CAMBODIA/KVH250292/2025_OR_9A796987",
+                "BARBADOS/BPH3040998/2025_168AEDC2",
+                "CAMBODIA/IBTB250051/2025_OR_AA90803F",
+                "CAMBODIA/NDS250133/2025_OR_8EFF2126",
+                "CAMBODIA/IAHC250377/2025_OR_D7A8131A",
+                "CAMBODIA/ANPH250080/2025_OR_7B0052E9",
+                "CAMBODIA/ASRH250011/2025_OR_D056E2CA",
+                "CAMBODIA/NDS250129/2025_OR_50E87510",
+                "CAMBODIA/KVH250283/2025_OR_C3E5B222",
+                "CAMBODIA/NPH250842/2025_OR_416EC614",
+                "CAMBODIA/ISVR250116/2025_OR_DC6192BC",
+                "CAMBODIA/NDS250118/2025_OR_03F2E751",
+                "CAMBODIA/KPH250237/2025_OR_7D736818",
+                "CAMBODIA/NDS250128/2025_OR_5EC634CB",
+                "BARBADOS/BPH3040772/2025_E5DB1931",
+                "BARBADOS/BPH3040630/2025_688B6AB7",
+                "CAMBODIA/ASRH250058/2025_OR_44A5D1DF",
+                "BARBADOS/BPH3040768/2025_574D939E",
+                "SPAIN/HCB-000055/2025_OR_8AF35739",
+                "PHRA_NAKHON_SI_AYUTTHAYA/P5550/2025_6C221D50",
+                "SPAIN/HCB-000071/2025_OR_6C91FB91",
+                "CATALONIA/NSVH102755333/2025_OR_F9A27B34",
+                "NAVARRA/2511/2025_MDCKX_1EF0DAFF",
+                # 2026-0122
+                "SANTA_CATARINA/6627/2025_OR_2542B04D",
+                "MOLDOVA/40000368/2026_451BADA2",
+                # 2026-0129 Baltimore and Ohio incorrect collection date in gisaid
+                "BADAJOZ/18694794/2025_OR_E7435AEB",
+                "BALTIMORE/JH-187/2025_A9B5F6F4",
+                "BALTIMORE/JH-982/2025_F0273E04",
+                "BALTIMORE/JH-374/2025_3AFEC241",
+                "BALTIMORE/JH-557/2025_CA6F9D01",
+                "BALTIMORE/JH-206/2025_AEE33109",
+                "BALTIMORE/JH-559/2025_153BAA40",
+                "BALTIMORE/JH-746/2025_CDF866B4",
+                "BALTIMORE/JH-231/2025_F3E8694E",
+                "BALTIMORE/JH-159/2025_7EFA9860",
+                "BALTIMORE/JH-224/2025_7EFA9860",
+                "BALTIMORE/JH-232/2025_7EFA9860",
+                "BALTIMORE/JH-621/2025_7EFA9860",
+                "BALTIMORE/JH-903/2025_7EFA9860",
+                "BALTIMORE/JH-912/2025_7EFA9860",
+                "BALTIMORE/JH-987/2025_8C6BD2CE",
+                "BALTIMORE/JH-702/2025_7808B45E",
+                "BALTIMORE/JH-714/2025_7808B45E",
+                "BALTIMORE/JH-532/2025_E4E985F8",
+                "BALTIMORE/JH-277/2025_1AF1EFB6",
+                "BALTIMORE/JH-994/2025_E4E985F8",
+                "BALTIMORE/JH-1011/2025_6E0AAD3C",
+                "BALTIMORE/JH-367/2025_6E0AAD3C",
+                "BALTIMORE/JH-794/2025_6E0AAD3C",
+                "BALTIMORE/JH-955/2025_3148539C",
+                "BALTIMORE/JH-741/2025_5221DDF8",
+                "BALTIMORE/JH-186/2025_71076DD2",
+                "BALTIMORE/JH-202/2025_71076DD2",
+                "BALTIMORE/JH-984/2025_933FD1EE",
+                "BALTIMORE/JH-867/2025_983155EC",
+                "BALTIMORE/JH-190/2025_F6412F54",
+                "BALTIMORE/JH-554/2025_52D01404",
+                "BALTIMORE/JH-1004/2025_52D01404",
+                "BALTIMORE/JH-1021/2025_52D01404",
+                "BALTIMORE/JH-618/2025_52D01404",
+                "BALTIMORE/JH-640/2025_52D01404",
+                "BALTIMORE/JH-845/2025_52D01404",
+                "BALTIMORE/JH-931/2025_52D01404",
+                "BALTIMORE/JH-989/2025_52D01404",
+                "BALTIMORE/JH-995/2025_52D01404",
+                "BALTIMORE/JH-711/2025_639E711F",
+                "BALTIMORE/JH-680/2025_F1E360E9",
+                "BALTIMORE/JH-957/2025_3E57CBFB",
+                "BALTIMORE/JH-876/2025_0FE8B9EE",
+                "BALTIMORE/JH-873/2025_0334A2D6",
+                "BALTIMORE/JH-318/2025_DF1B31B5",
+                "BALTIMORE/JH-280/2025_F4F4EFDB",
+                "BALTIMORE/JH-335/2025_050B5D98",
+                "BALTIMORE/JH-977/2025_43FC0052",
+                "BALTIMORE/JH-958/2025_42BE3238",
+                "BALTIMORE/JH-1031/2025_42BE3238",
+                "BALTIMORE/JH-899/2025_763E3769",
+                "BALTIMORE/JH-1037/2025_863E61F3",
+                "BALTIMORE/JH-885/2025_863E61F3",
+                "BALTIMORE/JH-888/2025_863E61F3",
+                "BALTIMORE/JH-1039/2025_83E4B701",
+                "BALTIMORE/JH-588/2025_35D3FB11",
+                "BALTIMORE/JH-596/2025_35D3FB11",
+                "BALTIMORE/JH-716/2025_35D3FB11",
+                "BALTIMORE/JH-822/2025_35D3FB11",
+                "BALTIMORE/JH-836/2025_35D3FB11",
+                "BALTIMORE/JH-854/2025_35D3FB11",
+                "BALTIMORE/JH-681/2025_01E34342",
+                "BALTIMORE/JH-252/2025_F7089C03",
+                "BALTIMORE/JH-862/2025_CCD83AEE",
+                "BALTIMORE/JH-1062/2025_1F96116C",
+                "BALTIMORE/JH-818/2025_84852FB9",
+                "BALTIMORE/JH-908/2025_84852FB9",
+                "BALTIMORE/JH-255/2025_B8B0ABC5",
+                "BALTIMORE/JH-1027/2025_B8B0ABC5",
+                "BALTIMORE/JH-203/2025_B8B0ABC5",
+                "BALTIMORE/JH-423/2025_B8B0ABC5",
+                "BALTIMORE/JH-563/2025_B8B0ABC5",
+                "BALTIMORE/JH-770/2025_B8B0ABC5",
+                "BALTIMORE/JH-947/2025_0BC91161",
+                "BALTIMORE/JH-815/2025_0BC91161",
+                "BALTIMORE/JH-767/2025_51FF920F",
+                "BALTIMORE/JH-906/2025_1BA08C33",
+                "BALTIMORE/JH-723/2025_D48F567E",
+                "BALTIMORE/JH-985/2025_9198CE36",
+                "BALTIMORE/JH-1034/2025_D4D2E230",
+                "BALTIMORE/JH-834/2025_6D8D3170",
+                "BALTIMORE/JH-800/2025_6D8D3170",
+                "BALTIMORE/JH-211/2025_2B63D480",
+                "BALTIMORE/JH-344/2025_F9C5F5B9",
+                "BALTIMORE/JH-215/2025_B0C3C0B8",
+                "BALTIMORE/JH-1353/2025_59D2E74D",
+                "BALTIMORE/JH-1345/2025_04339D61",
+                "BALTIMORE/JH-1507/2025_8947611B",
+                "BALTIMORE/JH-1603/2025_A5414EED",
+                "BALTIMORE/JH-1446/2025_211E3058",
+                "BALTIMORE/JH-1477/2025_211E3058",
+                "BALTIMORE/JH-1530/2025_211E3058",
+                "BALTIMORE/JH-1510/2025_E5C157CC",
+                "BALTIMORE/JH-1561/2025_E5C157CC",
+                "BALTIMORE/JH-1449/2025_A76EADB7",
+                "BALTIMORE/JH-1553/2025_D2020B60",
+                "BALTIMORE/JH-1367/2025_570B5CA7",
+                "BALTIMORE/JH-1495/2025_9DD8B49A",
+                "BALTIMORE/JH-1361/2025_85E23FFA",
+                "BALTIMORE/JH-1373/2025_85E23FFA",
+                "BALTIMORE/JH-1433/2025_85E23FFA",
+                "BALTIMORE/JH-1440/2025_85E23FFA",
+                "BALTIMORE/JH-1442/2025_85E23FFA",
+                "BALTIMORE/JH-1496/2025_85E23FFA",
+                "BALTIMORE/JH-1509/2025_85E23FFA",
+                "BALTIMORE/JH-1528/2025_85E23FFA",
+                "BALTIMORE/JH-1536/2025_85E23FFA",
+                "BALTIMORE/JH-1546/2025_85E23FFA",
+                "BALTIMORE/JH-1551/2025_85E23FFA",
+                "BALTIMORE/JH-1589/2025_85E23FFA",
+                "BALTIMORE/JH-1451/2025_0A032170",
+                "BALTIMORE/JH-1450/2025_0A032170",
+                "BALTIMORE/JH-1333/2025_95AC86FD",
+                "BALTIMORE/JH-1364/2025_2168B46F",
+                "BALTIMORE/JH-1475/2025_2168B46F",
+                "BALTIMORE/JH-1566/2025_2168B46F",
+                "BALTIMORE/JH-1611/2025_2168B46F",
+                "BALTIMORE/JH-1532/2025_7E7F72D8",
+                "BALTIMORE/JH-1608/2025_595474FC",
+                "BALTIMORE/JH-1434/2025_2748318B",
+                "BALTIMORE/JH-1483/2025_7EA071EA",
+                "BALTIMORE/JH-1381/2025_015B55B8",
+                "BALTIMORE/JH-1588/2025_A313A0F4",
+                "BALTIMORE/JH-1470/2025_5369B952",
+                "BALTIMORE/JH-1584/2025_A7E9954F",
+                "BALTIMORE/JH-1362/2025_228706D4",
+                "BALTIMORE/JH-1371/2025_2E8F09DB",
+                "BALTIMORE/JH-1605/2025_57907002",
+                "BALTIMORE/JH-1344/2025_D4B008A5",
+                "BALTIMORE/JH-1365/2025_CD0B4034",
+                "BALTIMORE/JH-1458/2025_CD0B4034",
+                "BALTIMORE/JH-1607/2025_AB6623A1",
+                "BALTIMORE/JH-1352/2025_FBF58AF3",
+                "BALTIMORE/JH-1448/2025_2BB2DF7E",
+                "BALTIMORE/JH-1484/2025_5409D7B7",
+                "BALTIMORE/JH-1459/2025_2BB2DF7E",
+                "BALTIMORE/JH-1469/2025_2BB2DF7E",
+                "BALTIMORE/JH-1473/2025_2BB2DF7E",
+                "BALTIMORE/JH-1578/2025_2BB2DF7E",
+                "BALTIMORE/JH-1583/2025_2BB2DF7E",
+                "BALTIMORE/JH-1598/2025_2BB2DF7E",
+                "BALTIMORE/JH-1602/2025_2BB2DF7E",
+                "BALTIMORE/JH-1512/2025_1135AED0",
+                "BALTIMORE/JH-1548/2025_2EA131FC",
+                "BALTIMORE/JH-1517/2025_1135AED0",
+                "BALTIMORE/JH-1554/2025_1135AED0",
+                "BALTIMORE/JH-1560/2025_1135AED0",
+                "BALTIMORE/JH-1597/2025_1135AED0",
+                "BALTIMORE/JH-1439/2025_27DFE297",
+                "BALTIMORE/JH-1594/2025_9E2C5917",
+                "BALTIMORE/JH-1378/2025_6820F271",
+                "BALTIMORE/JH-1503/2025_AA453D96",
+                "BALTIMORE/JH-1596/2025_0E75EEB8",
+                "BALTIMORE/JH-1435/2025_7A785F1F",
+                "BALTIMORE/JH-1562/2025_AA453D96",
+                "BALTIMORE/JH-1571/2025_0E75EEB8",
+                "BALTIMORE/JH-1574/2025_0E75EEB8",
+                "BALTIMORE/JH-1355/2025_9C9CA665",
+                "BALTIMORE/JH-1358/2025_9C9CA665",
+                "BALTIMORE/JH-1363/2025_9C9CA665",
+                "BALTIMORE/JH-1370/2025_9C9CA665",
+                "BALTIMORE/JH-1379/2025_9C9CA665",
+                "BALTIMORE/JH-1380/2025_9C9CA665",
+                "BALTIMORE/JH-1382/2025_9C9CA665",
+                "BALTIMORE/JH-1383/2025_9C9CA665",
+                "BALTIMORE/JH-1430/2025_9C9CA665",
+                "BALTIMORE/JH-1437/2025_9C9CA665",
+                "BALTIMORE/JH-1438/2025_9C9CA665",
+                "BALTIMORE/JH-1441/2025_9C9CA665",
+                "BALTIMORE/JH-1447/2025_9C9CA665",
+                "BALTIMORE/JH-1452/2025_9C9CA665",
+                "BALTIMORE/JH-1453/2025_9C9CA665",
+                "BALTIMORE/JH-1456/2025_9C9CA665",
+                "BALTIMORE/JH-1457/2025_9C9CA665",
+                "BALTIMORE/JH-1460/2025_9C9CA665",
+                "BALTIMORE/JH-1464/2025_9C9CA665",
+                "BALTIMORE/JH-1465/2025_9C9CA665",
+                "BALTIMORE/JH-1466/2025_9C9CA665",
+                "BALTIMORE/JH-1467/2025_9C9CA665",
+                "BALTIMORE/JH-1468/2025_9C9CA665",
+                "BALTIMORE/JH-1471/2025_9C9CA665",
+                "BALTIMORE/JH-1474/2025_9C9CA665",
+                "BALTIMORE/JH-1480/2025_9C9CA665",
+                "BALTIMORE/JH-1486/2025_9C9CA665",
+                "BALTIMORE/JH-1487/2025_9C9CA665",
+                "BALTIMORE/JH-1491/2025_9C9CA665",
+                "BALTIMORE/JH-1494/2025_9C9CA665",
+                "BALTIMORE/JH-1498/2025_9C9CA665",
+                "BALTIMORE/JH-1499/2025_9C9CA665",
+                "BALTIMORE/JH-1500/2025_9C9CA665",
+                "BALTIMORE/JH-1501/2025_9C9CA665",
+                "BALTIMORE/JH-1506/2025_9C9CA665",
+                "BALTIMORE/JH-1516/2025_9C9CA665",
+                "BALTIMORE/JH-1518/2025_9C9CA665",
+                "BALTIMORE/JH-1523/2025_9C9CA665",
+                "BALTIMORE/JH-1524/2025_9C9CA665",
+                "BALTIMORE/JH-1529/2025_9C9CA665",
+                "BALTIMORE/JH-1534/2025_9C9CA665",
+                "BALTIMORE/JH-1539/2025_9C9CA665",
+                "BALTIMORE/JH-1542/2025_9C9CA665",
+                "BALTIMORE/JH-1555/2025_9C9CA665",
+                "BALTIMORE/JH-1564/2025_9C9CA665",
+                "BALTIMORE/JH-1568/2025_9C9CA665",
+                "BALTIMORE/JH-1569/2025_9C9CA665",
+                "BALTIMORE/JH-1572/2025_9C9CA665",
+                "BALTIMORE/JH-1573/2025_9C9CA665",
+                "BALTIMORE/JH-1586/2025_9C9CA665",
+                "BALTIMORE/JH-1590/2025_9C9CA665",
+                "BALTIMORE/JH-1591/2025_9C9CA665",
+                "BALTIMORE/JH-1593/2025_9C9CA665",
+                "BALTIMORE/JH-1600/2025_9C9CA665",
+                "BALTIMORE/JH-1609/2025_9C9CA665",
+                "BALTIMORE/JH-1610/2025_9C9CA665",
+                "BALTIMORE/JH-1443/2025_D9C10BA5",
+                "BALTIMORE/JH-1357/2025_E3B4D637",
+                "BALTIMORE/JH-1366/2025_F6052876",
+                "BALTIMORE/JH-1541/2025_1F2F530C",
+                "BALTIMORE/JH-1519/2025_5F528722",
+                "BALTIMORE/JH-1492/2025_DB063A6B",
+                "BALTIMORE/JH-1575/2025_E5020E4B",
+                "BALTIMORE/JH-1485/2025_DE29C264",
+                "BALTIMORE/JH-1552/2025_18D6F993",
+                "BALTIMORE/JH-1582/2025_42FA8E68",
+                "BALTIMORE/JH-1493/2025_C358268B",
+                "BALTIMORE/JH-1520/2025_2F399511",
+                "BALTIMORE/JH-1431/2025_D9C10BA5",
+                "BALTIMORE/JH-1547/2025_D9C10BA5",
+                "BALTIMORE/JH-1462/2025_F6052876",
+                "BALTIMORE/JH-1525/2025_F6052876",
+                "BALTIMORE/JH-1526/2025_F6052876",
+                "BALTIMORE/JH-1579/2025_F6052876",
+                "BALTIMORE/JH-1545/2025_5F528722",
+                "BALTIMORE/JH-1601/2025_5F528722",
+                "BALTIMORE/JH-1565/2025_DB063A6B",
+                "BALTIMORE/JH-1533/2025_C358268B",
+                "BALTIMORE/JH-1543/2025_C358268B",
+                "BALTIMORE/JH-1544/2025_C358268B",
+                "BALTIMORE/JH-1612/2025_C358268B",
+                "BALTIMORE/JH-1478/2025_9532A1CA",
+                "BALTIMORE/JH-1502/2025_F7B71C2F",
+                "BALTIMORE/JH-1563/2025_F7B71C2F",
+                "BALTIMORE/JH-1613/2025_E3862643",
+                "BALTIMORE/JH-1482/2025_F20F49AD",
+                "BALTIMORE/JH-1369/2025_0991F0AC",
+                "BALTIMORE/JH-1535/2025_53E53E85",
+                "BALTIMORE/JH-401/2025_5358495A",
+                "BALTIMORE/JH-587/2025_13FF34B5",
+                "BALTIMORE/JH-415/2025_86920A62",
+                "BALTIMORE/JH-678/2025_5A35FF8E",
+                "BALTIMORE/JH-1348/2025_6DD1D150",
+                "BALTIMORE/JH-217/2025_5AAA2131",
+                "BALTIMORE/JH-946/2025_CE1CB81E",
+                "BALTIMORE/JH-870/2025_76A07272",
+                "BALTIMORE/JH-895/2025_76A07272",
+                "BALTIMORE/JH-607/2025_EC153582",
+                "BALTIMORE/JH-377/2025_DD7582B2",
+                "BALTIMORE/JH-699/2025_3BA45A90",
+                "BALTIMORE/JH-978/2025_92B512B0",
+                "BALTIMORE/JH-700/2025_3BA45A90",
+                "BALTIMORE/JH-785/2025_C5DC4B51",
+                "BALTIMORE/JH-197/2025_5E12CFBA",
+                "BALTIMORE/JH-1020/2025_F24B612C",
+                "BALTIMORE/JH-1010/2025_D6EB33D7",
+                "BALTIMORE/JH-1019/2025_D6EB33D7",
+                "BALTIMORE/JH-1048/2025_D6EB33D7",
+                "BALTIMORE/JH-1058/2025_D6EB33D7",
+                "BALTIMORE/JH-160/2025_D6EB33D7",
+                "BALTIMORE/JH-273/2025_D6EB33D7",
+                "BALTIMORE/JH-289/2025_D6EB33D7",
+                "BALTIMORE/JH-534/2025_D6EB33D7",
+                "BALTIMORE/JH-549/2025_D6EB33D7",
+                "BALTIMORE/JH-691/2025_D6EB33D7",
+                "BALTIMORE/JH-750/2025_D6EB33D7",
+                "BALTIMORE/JH-775/2025_D6EB33D7",
+                "BALTIMORE/JH-776/2025_D6EB33D7",
+                "BALTIMORE/JH-793/2025_D6EB33D7",
+                "BALTIMORE/JH-861/2025_D6EB33D7",
+                "BALTIMORE/JH-894/2025_D6EB33D7",
+                "BALTIMORE/JH-896/2025_D6EB33D7",
+                "BALTIMORE/JH-962/2025_D6EB33D7",
+                "BALTIMORE/JH-992/2025_D6EB33D7",
+                "BALTIMORE/JH-291/2025_2BB16A50",
+                "BALTIMORE/JH-1018/2025_2BB16A50",
+                "BALTIMORE/JH-666/2025_2BB16A50",
+                "BALTIMORE/JH-993/2025_2BB16A50",
+                "BALTIMORE/JH-917/2025_27F33470",
+                "BALTIMORE/JH-542/2025_9346B5B7",
+                "BALTIMORE/JH-366/2025_8525BD57",
+                "BALTIMORE/JH-400/2025_2566040A",
+                "BALTIMORE/JH-991/2025_741714EC",
+                "BALTIMORE/JH-831/2025_DCFBB099",
+                "BALTIMORE/JH-166/2025_FFB2BD32",
+                "BALTIMORE/JH-611/2025_ACCE8929",
+                "BALTIMORE/JH-538/2025_C9332DB7",
+                "BALTIMORE/JH-811/2025_D070A774",
+                "BALTIMORE/JH-803/2025_4744D8BA",
+                "BALTIMORE/JH-235/2025_D0D5FAF4",
+                "BALTIMORE/JH-349/2025_D0D5FAF4",
+                "BALTIMORE/JH-561/2025_D0D5FAF4",
+                "BALTIMORE/JH-1042/2025_2EC6F61A",
+                "BALTIMORE/JH-1038/2025_2EC6F61A",
+                "BALTIMORE/JH-1051/2025_5F3312E1",
+                "BALTIMORE/JH-774/2025_C7E925D9",
+                "BALTIMORE/JH-688/2025_782804A0",
+                "BALTIMORE/JH-886/2025_782804A0",
+                "BALTIMORE/JH-938/2025_782804A0",
+                "BALTIMORE/JH-892/2025_F5539AD8",
+                "BALTIMORE/JH-371/2025_77C49909",
+                "BALTIMORE/JH-360/2025_77C49909",
+                "BALTIMORE/JH-808/2025_D54E6D29",
+                "BALTIMORE/JH-919/2025_D54E6D29",
+                "BALTIMORE/JH-610/2025_5C0AB05A",
+                "BALTIMORE/JH-799/2025_7431BFB9",
+                "BALTIMORE/JH-728/2025_4E621DAC",
+                "BALTIMORE/JH-889/2025_1259E5E2",
+                "BALTIMORE/JH-835/2025_3014B0AF",
+                "BALTIMORE/JH-1017/2025_210D0945",
+                "BALTIMORE/JH-753/2025_CF7E1C83",
+                "BALTIMORE/JH-755/2025_CF7E1C83",
+                "BALTIMORE/JH-758/2025_CF7E1C83",
+                "BALTIMORE/JH-813/2025_CF7E1C83",
+                "BALTIMORE/JH-915/2025_F558AFEA",
+                "BALTIMORE/JH-926/2025_1FC45C9B",
+                "BALTIMORE/JH-576/2025_E0591D61",
+                "BALTIMORE/JH-754/2025_E0591D61",
+                "BALTIMORE/JH-1008/2025_BFDA69FB",
+                "BALTIMORE/JH-772/2025_21C20C98",
+                "BALTIMORE/JH-820/2025_21C20C98",
+                "BALTIMORE/JH-236/2025_EB3C1284",
+                "BALTIMORE/JH-969/2025_532E1124",
+                "BALTIMORE/JH-805/2025_F33D06F4",
+                "BALTIMORE/JH-806/2025_F33D06F4",
+                "BALTIMORE/JH-1025/2025_CFA7EA86",
+                "BALTIMORE/JH-577/2025_CFA7EA86",
+                "BALTIMORE/JH-999/2025_CFA7EA86",
+                "BALTIMORE/JH-271/2025_F304E8B9",
+                "BALTIMORE/JH-213/2025_F304E8B9",
+                "BALTIMORE/JH-183/2025_0D6E6283",
+                "BALTIMORE/JH-533/2025_126BB4E6",
+                "BALTIMORE/JH-1550/2025_015E6CB8",
+                "BALTIMORE/JH-1032/2025_DA347FAE",
+                "BALTIMORE/JH-868/2025_388F04E7",
+                "BALTIMORE/JH-856/2025_C88B99BA",
+                "BALTIMORE/JH-838/2025_16088796"
+                "OHIO/PLMI-GT2HV-00288/2025_OR_4F1B88CB",
+                "OHIO/PLMI-GT2HV-00282/2025_OR_C48CD01E",
+                "OHIO/PLMI-GTD96-00394/2025_OR_74EB5210",
+                "OHIO/PLMI-GTD96-00384/2025_OR_429AA756",
+                "OHIO/PLMI-GT9T7-00413/2025_OR_B8B0ABC5",
+                "OHIO/PLMI-LYT8Y-00446/2025_OR_58884933",
+                "OHIO/PLMI-LYT8Y-00447/2025_OR_A2C85F0D",
+                "OHIO/PLMI-LYTJD-00551/2025_OR_DE0653BC",
+                "OHIO/PLMI-LYTJD-00591/2025_OR_3BA532E0",
+                "OHIO/PLMI-LYTJD-00577/2025_OR_50B02291",
+                "OHIO/PLMI-LYTJD-00553/2025_OR_3B721301",
+                "OHIO/PLMI-LYTJD-00506/2025_OR_D59287BF",
+                "OHIO/PLMI-LYTJD-00549/2025_OR_74DBE181",
+                "OHIO/PLMI-LYTJD-00507/2025_OR_85E23FFA",
+                "OHIO/PLMI-LYTJD-00514/2025_OR_85E23FFA",
+                "OHIO/PLMI-LYTJD-00518/2025_OR_85E23FFA",
+                "OHIO/PLMI-LYTJD-00519/2025_OR_85E23FFA",
+                "OHIO/PLMI-LYTJD-00548/2025_OR_85E23FFA",
+                "OHIO/PLMI-LYTJD-00561/2025_OR_85E23FFA",
+                "OHIO/PLMI-LYTJD-00573/2025_OR_85E23FFA",
+                "OHIO/PLMI-LYTJD-00578/2025_OR_85E23FFA",
+                "OHIO/PLMI-LYTJD-00581/2025_OR_85E23FFA",
+                "OHIO/PLMI-LYTJD-00589/2025_OR_85E23FFA",
+                "OHIO/PLMI-LYTJD-00595/2025_OR_466E12A3",
+                "OHIO/PLMI-LYTJD-00566/2025_OR_7D251458",
+                "OHIO/PLMI-LYT8Y-00437/2025_OR_FBB3DB6D",
+                "OHIO/PLMI-LYTJD-00522/2025_OR_62A6BEDF",
+                "OHIO/PLMI-LYTJD-00515/2025_OR_CF9ED754",
+                "OHIO/PLMI-LYTJD-00516/2025_OR_CF9ED754",
+                "OHIO/PLMI-LYTJD-00526/2025_OR_F45D768D",
+                "OHIO/PLMI-LYTJD-00596/2025_OR_C8CEC5A0",
+                "OHIO/PLMI-LYTJD-00569/2025_OR_AB79A3DE",
+                "OHIO/PLMI-LYTJD-00559/2025_OR_2274C592",
+                "OHIO/PLMI-LYTJD-00531/2025_OR_03E15239",
+                "OHIO/PLMI-LYTJD-00540/2025_OR_E69B2E63",
+                "OHIO/PLMI-LYTJD-00580/2025_OR_B48EA1DA",
+                "OHIO/PLMI-LYTJD-00564/2025_OR_F78894C4",
+                "OHIO/PLMI-LYTJD-00528/2025_OR_3033C1A4",
+                "OHIO/PLMI-LYTJD-00575/2025_OR_6A435FFD",
+                "OHIO/PLMI-LYTJD-00509/2025_OR_3033C1A4",
+                "OHIO/PLMI-LYTJD-00510/2025_OR_3033C1A4",
+                "OHIO/PLMI-LYTJD-00511/2025_OR_3033C1A4",
+                "OHIO/PLMI-LYTJD-00512/2025_OR_3033C1A4",
+                "OHIO/PLMI-LYTJD-00513/2025_OR_3033C1A4",
+                "OHIO/PLMI-LYTJD-00520/2025_OR_3033C1A4",
+                "OHIO/PLMI-LYTJD-00523/2025_OR_3033C1A4",
+                "OHIO/PLMI-LYTJD-00524/2025_OR_3033C1A4",
+                "OHIO/PLMI-LYTJD-00525/2025_OR_3033C1A4",
+                "OHIO/PLMI-LYTJD-00527/2025_OR_3033C1A4",
+                "OHIO/PLMI-LYTJD-00532/2025_OR_3033C1A4",
+                "OHIO/PLMI-LYTJD-00534/2025_OR_3033C1A4",
+                "OHIO/PLMI-LYTJD-00539/2025_OR_3033C1A4",
+                "OHIO/PLMI-LYTJD-00544/2025_OR_3033C1A4",
+                "OHIO/PLMI-LYTJD-00545/2025_OR_3033C1A4",
+                "OHIO/PLMI-LYTJD-00546/2025_OR_3033C1A4",
+                "OHIO/PLMI-LYTJD-00558/2025_OR_3033C1A4",
+                "OHIO/PLMI-LYTJD-00562/2025_OR_3033C1A4",
+                "OHIO/PLMI-LYTJD-00563/2025_OR_3033C1A4",
+                "OHIO/PLMI-LYTJD-00567/2025_OR_3033C1A4",
+                "OHIO/PLMI-LYTJD-00571/2025_OR_3033C1A4",
+                "OHIO/PLMI-LYTJD-00572/2025_OR_3033C1A4",
+                "OHIO/PLMI-LYTJD-00574/2025_OR_3033C1A4",
+                "OHIO/PLMI-LYTJD-00582/2025_OR_3033C1A4",
+                "OHIO/PLMI-LYTJD-00583/2025_OR_3033C1A4",
+                "OHIO/PLMI-LYTJD-00584/2025_OR_3033C1A4",
+                "OHIO/PLMI-LYTJD-00587/2025_OR_3033C1A4",
+                "OHIO/PLMI-LYTJD-00588/2025_OR_3033C1A4",
+                "OHIO/PLMI-LYTJD-00592/2025_OR_3033C1A4",
+                "OHIO/PLMI-LYTJD-00517/2025_OR_84C8A960",
+                "OHIO/PLMI-LYTJD-00594/2025_OR_B0187729",
+                "OHIO/PLMI-LYTJD-00521/2025_OR_B0187729",
+                "OHIO/PLMI-LYTJD-00550/2025_OR_B0187729",
+                "OHIO/PLMI-LYTJD-00593/2025_OR_B0187729",
+                "OHIO/PLMI-LYTJD-00536/2025_OR_460509EE",
+                "OHIO/PLMI-LYT8Y-00445/2025_OR_CD0B4034",
+                "OHIO/PLMI-LYTJD-00537/2025_OR_515E697B",
+                "OHIO/PLMI-LYT8Y-00444/2025_OR_0125FC49",
+                "OHIO/PLMI-LYT8Y-00442/2025_OR_FBF58AF3",
+                "OHIO/PLMI-LYT8Y-00443/2025_OR_FBF58AF3",
+                "OHIO/PLMI-LYT8Y-00459/2025_OR_FBF58AF3",
+                "OHIO/PLMI-LYTJD-00579/2025_OR_2F9D8F6D",
+                "OHIO/PLMI-LYTJD-00547/2025_OR_2F9D8F6D",
+                "OHIO/PLMI-GT2HV-00272/2025_OR_868BA05B",
+                "OHIO/PLMI-LYT8Y-00489/2025_OR_46AF96AA",
+                "OHIO/PLMI-LYT8C-00309/2025_OR_158C766F",
+                "OHIO/PLMI-GTD96-00386/2025_OR_5B64CD65",
+                "OHIO/PLMI-LYT8C-00296/2025_OR_CFBE8D5E",
+                "OHIO/PLMI-GT2HV-00278/2025_OR_D6EB33D7",
+                "OHIO/PLMI-GTD96-00385/2025_OR_D6EB33D7",
+                "OHIO/PLMI-GTD96-00388/2025_OR_D6EB33D7",
+                "OHIO/PLMI-GTD96-00393/2025_OR_D6EB33D7",
+                "OHIO/PLMI-GTD96-00395/2025_OR_D6EB33D7",
+                "OHIO/PLMI-GT2HV-00280/2025_OR_E97AB0CB",
+                "OHIO/PLMI-GT2HV-00284/2025_OR_39FD525F",
+                "OHIO/PLMI-GTD96-00392/2025_OR_F5F2F589",
+                "OHIO/PLMI-GT2HV-00277/2025_OR_5E1755C6",
+                "OHIO/PLMI-GTD96-00390/2025_OR_A60F89B0",
+                "OHIO/PLMI-LYT8Y-00439/2025_OR_D564510F",
+                "OHIO/PLMI-LYT8Y-00456/2025_OR_A48EF93A",
+                "OHIO/PLMI-LYT8Y-00465/2025_OR_08EC5895",
+                # 2026-0208
+                "PAKISTAN/NIC-AFIP-7718/2025_OR_AB46FE14",
+                "ASTURIAS/232590650/2025_5FAACAF0",
+                "CANADA/ABPHL-1821/2025_OR_5CAAFD2D",
+                "SALAMANCA/31/2026_FLU1586_B729881E",
+                # 2026-0217
+                "MILANO/25-7860/2025_6F60FAF2",
+                "COLOMBIA/ANT-LDSP102/2025_110D2C57",
+                "BARBADOS/BPH3042721/2026_6FCCCA35",
+                "PERU/LIM-UPCH-5265/2026_4FD92CD0",
+                # 2026-0302
+                "RUSSIA/386-11V/2025_OR_12DE2374",
+                "RESPUBLIKA_ALTAY/414-T1V/2025_OR_AEC3DA51",
+                "IRELAND/87731/2025_138D1CEC",
+                "SOUTH_AFRICA/PATH-CERI-C073410/2025_OR_BA71C8A5",
+                "BURUNDI/INSP_34/2026_12A971CF",
+                "ODISHA/1151/2023_6BCD57B7",
+                "ESTONIA/INF530/2025_3F642197",
+                "ESTONIA/INF457/2025_700DB9E4",
+                "ESTONIA/INF482/2025_BC2A0663",
+                "ESTONIA/INF478/2025_74A5589F",
+                "ESTONIA/INF536/2025_03F2203F",
+                "ESTONIA/INF510/2025_A1A0A4F0",
+                "ESTONIA/INF455/2024_4F9C1571",
+                "ESTONIA/INF534/2025_FA6B4C5E",
+                "ESTONIA/INF456/2025_C79844FF",
+                # 2026-0312
+                "TREDEGAR/4247/2025_SIAT1_4BDEB447",
+                "MOLDOVA/40000442/2026_A82A7954",
+                "SAINT_PETERSBURG/RII-358/2025_MDCK1_0651E96D",
+                "SAINT_PETERSBURG/RII-447/2025_MDCK-SIAT1_6CA1E422",
+                "NIZHNIY_NOVGOROD/RII-06/2025_MDCK1_454F9793",
+                "VLADIVOSTOK/A850/2025_CEA822C3",
+                "VLADIVOSTOK/A937/2025_658F5177",
+                # 2026-0407
+                "INDIA/PUN_NIVCOV251185/2025_MDCK3_A1E3EF4E",
+                "INDIA/PUN_NIVCOV251293/2025_MDCK2_9505A658",
+                "INDIA/PUN_NIVCOV251286/2025_MDCK2_CE949285",
+                "INDIA/PUD_NIV26-367/2025_MDCK2_166CD2B6",
+                "INDIA/PUN_NIVCOV251246/2025_MDCK2_03CE78D2",
+                "UKRAINE/5273/2026_00D44F9E",
+                "INDIA/JAI_NIV25-2583/2025_MDCK3_BABF541C",
+                "INDIA/PUN-NIVCOV251684/2025_95A3CE8E",
+                "BAHIA/7020/2025_OR_10D851E0",
+                "PERU/LIM-UPCH-5302/2026_0A4B9A1A",
+                "LUGANSK/RII-MH278886S/2026_OR_7E23532A",
+            ]
+        )
         .remove_hash_duplicates()
         .replace_with_master()
         .sort("+date")
@@ -317,41 +1423,61 @@ def h3(subtype: str, args: argparse.Namespace):
     report(subtype, selected, expected_nuc_size=1650, limit=0)
     export(subtype, selected)
 
+
 # ----------------------------------------------------------------------
 
 sSubtypeToFunc = {"BVIC": bvic, "BYAM": byam, "A(H1N1)": h1, "A(H3N2)": h3}
 
 # ----------------------------------------------------------------------
 
-def export(subtype: str, selected :ae_backend.seqdb.Selected):
-    fasta.write(filename_or_stream=subtype_dir(subtype).joinpath("source.fas"), selected=selected, aa=False)
+
+def export(subtype: str, selected: ae_backend.seqdb.Selected):
+    fasta.write(
+        filename_or_stream=subtype_dir(subtype).joinpath("source.fas"),
+        selected=selected,
+        aa=False,
+    )
+
 
 # ----------------------------------------------------------------------
+
 
 def subtype_dir(subtype: str):
     dir = Path(sSubdirforSubtype[subtype])
     dir.mkdir(exist_ok=True)
     return dir
 
+
 # ----------------------------------------------------------------------
 
-def report(subtype: str, selected :ae_backend.seqdb.Selected, expected_nuc_size: int, limit: int = 20):
+
+def report(
+    subtype: str,
+    selected: ae_backend.seqdb.Selected,
+    expected_nuc_size: int,
+    limit: int = 20,
+):
     print(f"{subtype:7s} {len(selected)}")
     for seq in selected:
         if len(seq.nuc) != expected_nuc_size:
-            print(f">> wrong size {len(seq.nuc)} of {seq.seq_id()} (expected: {expected_nuc_size}) ")
+            print(
+                f">> wrong size {len(seq.nuc)} of {seq.seq_id()} (expected: {expected_nuc_size}) "
+            )
     for no, seq in enumerate(selected):
         if no >= limit:
             break
         # print(f"{no:4d} {seq.seq_id():40s} [{seq.date()}] {seq.aa}")
         print(f"{no:4d} {seq.seq_id():40s} [{seq.date()}]")
 
+
 # ======================================================================
 
 try:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("subtype", nargs="*", type=lambda src: src.upper())
-    parser.add_argument("-v", "--verbose", dest="verbose", action="store_true", default=False)
+    parser.add_argument(
+        "-v", "--verbose", dest="verbose", action="store_true", default=False
+    )
     args = parser.parse_args()
     exit_code = main(args) or 0
 except Exception as err:

@@ -1,18 +1,75 @@
+
 #! /usr/bin/env bash
 set -o errexit -o errtrace -o pipefail -o nounset # -o xtrace
+
+# Usage: submit [subtype[:method]] ...
+#
+# Run all subtypes with the default method:
+#   submit
+#
+# Run specific subtypes with the default method:
+#   submit h1 h3
+#
+# Run with a specific method per subtype:
+#   submit h1:scratch h3:add_lazy bvic
+#
+# Subtypes: h1, h3, bvic
+# Methods:
+#   add_reop  (default)  add sequences to existing tree, then re-optimise (EXHAUSTIVE)
+#   add_lazy             add sequences to existing tree, no subsequent re-optimisation (NORMAL)
+#   scratch              discard previous tree, re-optimise from scratch (EXHAUSTIVE)
+
+declare -A NODE_FOR=(["h1"]="i20" ["h3"]="i22" ["bvic"]="i18")
+DEFAULT_METHOD="add_reop"
+ALL_SUBTYPES=(h1 h3 bvic)
+VALID_METHODS=(add_reop add_lazy scratch)
 
 submit_tree()
 {
     NODE="$1"
     SUBTYPE="$2"
+    OPT_METHOD="$3"
+
     (
-        ${AE_ROOT}/proj/weekly-tree/raxml --node ${NODE} ${SUBTYPE} &&
+        ${AE_ROOT}/proj/weekly-tree/make-cmaple --node ${NODE} ${SUBTYPE} --method ${OPT_METHOD} &&
+            ${AE_ROOT}/proj/weekly-tree/rotate.R ${SUBTYPE}/cmaple_tree.txt ${SUBTYPE}/source.fas &&
+            ${AE_ROOT}/proj/weekly-tree/tree_trim.R ${SUBTYPE} ${SUBTYPE}/cmaple_tree-rot.txt ${SUBTYPE}/source.fas &&
             ${AE_ROOT}/proj/weekly-tree/raxml-asr --node ${NODE} ${SUBTYPE} &&
-            ${AE_ROOT}/proj/weekly-tree/garli --node ${NODE} ${SUBTYPE} &&
+            ${AE_ROOT}/proj/weekly-tree/collapse_short_branches.R ${SUBTYPE}/cmaple_tree-rot-trim.txt 0.00005 &&
             ${AE_ROOT}/proj/weekly-tree/pdf ${SUBTYPE}
     ) >${SUBTYPE}/submit.log 2>&1 &
 }
 
-submit_tree i20 h1
-submit_tree i22 h3
-submit_tree i19 bvic
+# Build specs list from args, defaulting to all subtypes
+if [[ $# -eq 0 ]]; then
+    specs=("${ALL_SUBTYPES[@]/%/:${DEFAULT_METHOD}}")
+else
+    specs=()
+    for arg in "$@"; do
+        if [[ "$arg" == *:* ]]; then
+            specs+=("$arg")
+        else
+            specs+=("${arg}:${DEFAULT_METHOD}")
+        fi
+    done
+fi
+
+# Validate all specs before launching anything
+for spec in "${specs[@]}"; do
+    subtype="${spec%%:*}"
+    method="${spec##*:}"
+    if [[ -z "${NODE_FOR[$subtype]+x}" ]]; then
+        echo "unknown subtype: $subtype (valid: ${!NODE_FOR[*]})" >&2; exit 1
+    fi
+    valid_method=0
+    for m in "${VALID_METHODS[@]}"; do [[ "$m" == "$method" ]] && valid_method=1 && break; done
+    if [[ $valid_method -eq 0 ]]; then
+        echo "unknown method: $method (valid: ${VALID_METHODS[*]})" >&2; exit 1
+    fi
+done
+
+for spec in "${specs[@]}"; do
+    subtype="${spec%%:*}"
+    method="${spec##*:}"
+    submit_tree "${NODE_FOR[$subtype]}" "$subtype" "$method"
+done
